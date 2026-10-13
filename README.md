@@ -6,6 +6,8 @@
 Seven Lovelace cards for household appliances, with **realistic animated illustrations** (tumbling drum, water and foam, spin with vibration, rotating spray arms, glowing oven element, turntable, opening fridge door…), live status, power, energy and cost.
 They follow your Home Assistant theme (light/dark) and switch between **French** and **English** automatically.
 
+**▶ [Try it online / Essayer en ligne](https://skyrotter.github.io/ha-appliance-cards/docs/demo.html)** · [Automated tests](https://skyrotter.github.io/ha-appliance-cards/docs/tests.html)
+
 *🇫🇷 Version française plus bas.*
 
 ![preview](docs/preview.png)
@@ -139,5 +141,5 @@ MIT
 
 ## Demo
 
-- Interactive test page (simulated data, no Home Assistant needed): `docs/demo.html`
-- Automated tests: `docs/tests.html`
+- Interactive test page (simulated data, no Home Assistant needed): https://skyrotter.github.io/ha-appliance-cards/docs/demo.html
+- Automated tests: https://skyrotter.github.io/ha-appliance-cards/docs/tests.html
