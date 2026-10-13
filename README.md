@@ -3,14 +3,14 @@
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://hacs.xyz/docs/faq/custom_repositories)
 [![Validate](https://github.com/skyrotter/ha-appliance-electromenager-cards/actions/workflows/validate.yml/badge.svg)](https://github.com/skyrotter/ha-appliance-electromenager-cards/actions/workflows/validate.yml)
 
-Seven Lovelace cards for household appliances, with **realistic animated illustrations** (tumbling drum, water and foam, spin with vibration, rotating spray arms, glowing oven element, turntable, opening fridge door…), live status, power, energy and cost.
+Ten Lovelace cards for household appliances, with **realistic animated illustrations** (tumbling drum, water and foam, spin with vibration, rotating spray arms, glowing oven element, turntable, opening fridge door, flickering pellet-stove flames, water flowing through a pool pump, a 3D printer building its part layer by layer…), live status, power, energy and cost.
 They follow your Home Assistant theme (light/dark) and switch between **French** and **English** automatically.
 
 **▶ [Try it online / Essayer en ligne](https://skyrotter.github.io/ha-appliance-electromenager-cards/docs/demo.html)** · [Automated tests](https://skyrotter.github.io/ha-appliance-electromenager-cards/docs/tests.html)
 
 *🇫🇷 Version française plus bas.*
 
-![preview](docs/preview.png)
+<p align="center"><img src="docs/hero.gif" width="560" alt="10 animated appliance cards for Home Assistant"></p>
 
 | Card | Type |
 |---|---|
@@ -21,6 +21,9 @@ They follow your Home Assistant theme (light/dark) and switch between **French**
 | Oven | `custom:appliance-oven-card` |
 | Microwave | `custom:appliance-microwave-card` |
 | Refrigerator | `custom:appliance-fridge-card` |
+| Pellet stove | `custom:appliance-pellet-stove-card` |
+| Pool pump | `custom:appliance-pool-pump-card` |
+| 3D printer | `custom:appliance-printer-3d-card` |
 
 Works with a simple smart plug (power sensor only) as well as with connected appliances (program, remaining time, progress, door…).
 
@@ -66,6 +69,9 @@ All cards have a visual editor. When added from the card picker, entities are de
 | `door` | all except water heater (`binary_sensor`, `on` = open) |
 | `temperature`, `target_temperature` | water heater, oven, fridge (`temperature` only) |
 | `freezer_temperature`, `freezer_door` | fridge |
+| `power_level` (1–5), `pellet_level` (%), `ignition_threshold` (default 250 W), `pellet_alert` (default 15 %) | pellet stove |
+| `temperature` (water), `runtime` (filtration time today), `speed` (rpm or %), `max_power` | pool pump |
+| `progress`, `remaining`, `program` (job name), `temperature` (nozzle), `bed_temperature`, `filament_color` | 3D printer |
 | `max_temperature` (default 8), `freezer_max_temperature` (default −12) | fridge alerts |
 
 ### How the status is computed
@@ -144,9 +150,85 @@ energy: sensor.washer_plug_energy_today
 
 Suggested values: washer 100 W / 20 W / 8 min, dryer 100 W / 15 W / 5 min, dishwasher 50 W / 10 W / 10 min (dishwashers sit at a few watts while drying). Adjust them to your appliance by looking at its power history. Requires Home Assistant 2024.10 or newer for the `triggers:` / `actions:` syntax; on older versions, use `trigger:` / `platform:` / `action:` / `service:`.
 
+### Pellet stove
+
+A pellet stove draws a lot of power while **igniting** (the igniter element, typically 250–400 W for a few minutes) and little while **burning** (fan and auger, typically 30–100 W). With just a power-monitoring plug, the card therefore tells apart:
+
+| Power | Status | Animation |
+|---|---|---|
+| above `ignition_threshold` (250 W) | Igniting | small flame, red igniter, smoke from the flue |
+| above `threshold` (20 W) | Heating | full flames sized by `power_level`, glowing embers, warm air |
+| below `threshold` | Off / Standby | clock on the display |
+
+Shutting down, cleaning and alarms can't be guessed from power: they come from a status entity (`entity:`) whose text contains *extinction/shutdown/cooling*, *alarme/alarm/error*, *allumage/ignition*, *eco/standby*… A `climate` entity from a stove integration also works (its `hvac_action`, current and target temperature are used).
+
+```yaml
+type: custom:appliance-pellet-stove-card
+power: sensor.stove_plug_power          # enough on its own
+energy: sensor.stove_plug_energy_today
+temperature: sensor.living_room_temperature
+target_temperature: input_number.stove_target   # optional
+power_level: sensor.stove_power_level           # optional, 1–5
+pellet_level: sensor.stove_pellet_level         # optional, %
+```
+
+⚠️ **Never cut a pellet stove's power while it is burning or shutting down**: its fan must keep running to evacuate smoke. Use the stove's own controls or integration to turn it off. If you set `switch:`, the card asks for a second click before cutting power while the stove is igniting, heating or shutting down.
+
+### Pool pump
+
+Water flows in a loop on the drawing: from the pool, through the pre-filter (water swirling, leaves in the basket), the pump and back to the pool, with bubbles at the return jet. The motor fan spins and the pump hums while filtering.
+
+- With a smart plug: above `threshold` (50 W) = **Filtering**. Plug on below it = **Standby**.
+- Animation speed follows the pump speed: `speed` in rpm (2800 rpm = full speed) or %, or the power divided by `max_power` for variable-speed pumps.
+- The display shows the rpm, the % or the power.
+- `runtime`: filtration time today, e.g. a `history_stats` sensor:
+
+```yaml
+sensor:
+  - platform: history_stats
+    name: Pool filtration today
+    entity_id: switch.pool_pump
+    state: "on"
+    type: time
+    start: "{{ today_at() }}"
+    end: "{{ now() }}"
+```
+
+```yaml
+type: custom:appliance-pool-pump-card
+switch: switch.pool_pump
+entity: switch.pool_pump
+power: sensor.pool_pump_power
+energy: sensor.pool_pump_energy_today
+temperature: sensor.pool_water_temperature
+runtime: sensor.pool_filtration_today
+max_power: 1100
+```
+
+### 3D printer
+
+An open-frame, bed-slinger style printer (Bambu Lab A1, Prusa MK, Ender…). The print head sweeps left and right, the gantry rises layer by layer and the part grows with `progress`. The spool turns while printing. While heating, the nozzle glows and heat rises from the bed. The display shows the progress, the nozzle temperature, PAUSE, DONE or ERROR.
+
+- **With a printer integration** (Bambu Lab, OctoPrint, Moonraker/Klipper, PrusaLink…): use its status entity as `entity`. States such as `prepare`, `running`, `pause`, `finish`, `failed`, `idle`, `offline` or `Printing` are recognised. Add `progress`, `remaining`, nozzle and bed temperatures and the job name (`program`).
+- **With a smart plug only**: above `threshold` (40 W) = Printing. The part then grows in a loop, since the real progress is unknown.
+- Set `filament_color` to match your spool (default orange).
+- If you set `switch:`, cutting power while printing or paused needs a second click.
+
+```yaml
+type: custom:appliance-printer-3d-card
+entity: sensor.a1_print_status
+progress: sensor.a1_print_progress
+remaining: sensor.a1_remaining_time
+temperature: sensor.a1_nozzle_temperature
+bed_temperature: sensor.a1_bed_temperature
+program: sensor.a1_task_name
+power: sensor.printer_plug_power
+filament_color: "#ff8a1f"
+```
+
 ### Power button safety
 
-The power button only appears when you set `switch:`. On the **washer, dryer and dishwasher**, cutting the plug **while a cycle is running** takes **two clicks**: the first one turns the button red and shows "Cycle running – click again to cut power" for 4 seconds. Turning the plug on, or off while idle, stays a single click. Set `confirm_off: false` to turn this off.
+The power button only appears when you set `switch:`. On the **washer, dryer, dishwasher and pellet stove**, cutting the plug **while a cycle is running (or the stove is burning)** takes **two clicks**: the first one turns the button red and shows "Cycle running – click again to cut power" for 4 seconds. Turning the plug on, or off while idle, stays a single click. Set `confirm_off: false` to turn this off.
 
 Advice: on a washing machine you usually don't need `switch:` at all. Leave it out and the button won't be shown.
 
@@ -193,7 +275,7 @@ appliance-illustration-size: 116px
 
 ## 🇫🇷 En français
 
-Sept cartes Lovelace pour l'électroménager (lave-linge, sèche-linge, lave-vaisselle, ballon d'eau chaude, four, micro-ondes, réfrigérateur) : illustration animée, état en direct, puissance, énergie et coût. Elles suivent le thème de Home Assistant et s'affichent en français si Home Assistant est en français.
+Dix cartes Lovelace pour l'électroménager (lave-linge, sèche-linge, lave-vaisselle, ballon d'eau chaude, four, micro-ondes, réfrigérateur, poêle à granulés, pompe de piscine, imprimante 3D) : illustration animée, état en direct, puissance, énergie et coût. Elles suivent le thème de Home Assistant et s'affichent en français si Home Assistant est en français.
 
 **Installation HACS** : HACS → ⋮ → *Dépôts personnalisés* → `https://github.com/skyrotter/ha-appliance-electromenager-cards`, catégorie **Dashboard** → installer → recharger le navigateur (Ctrl+F5).
 
@@ -209,7 +291,13 @@ cost: sensor.lave_linge_cout_jour
 
 **Prise connectée + détection de cycle** : pour le lave-linge, le sèche-linge et le lave-vaisselle, utilise l'automatisation de détection de cycle décrite plus haut (section *Smart plug + cycle detection*). Elle allume un `input_boolean` au démarrage (plus de 100 W pendant 30 s) et l'éteint à la fin (moins de 20 W pendant 8 min). Ça évite que la carte passe en « Veille » pendant le trempage.
 
-**Sécurité du bouton marche/arrêt** : sur le lave-linge, le sèche-linge et le lave-vaisselle, couper la prise pendant un cycle demande deux clics (le bouton devient rouge et affiche « Cycle en cours – cliquer encore pour couper »). Option `confirm_off: false` pour désactiver. Conseil : sur un lave-linge, ne mets pas de `switch:` du tout.
+**Poêle à granulés** : avec une simple prise connectée, la carte distingue l'**allumage** (plus de 250 W, la résistance chauffe) de la **chauffe** (20 à 250 W, ventilateur et vis sans fin). L'extinction et les alarmes viennent d'une entité d'état ou de l'intégration du poêle. ⚠️ Ne coupe jamais l'alimentation d'un poêle en fonctionnement ou en extinction : le ventilateur doit évacuer les fumées.
+
+**Pompe de piscine** : l'eau circule sur le dessin (bassin → préfiltre → pompe → bassin) avec le ventilateur du moteur qui tourne. Au-dessus de 50 W, la carte affiche « Filtration ». La vitesse de l'animation suit la vitesse de la pompe (tr/min, %, ou puissance / `max_power`). Tuiles : température de l'eau et durée de filtration du jour (capteur `history_stats`, exemple ci-dessus).
+
+**Imprimante 3D** : la tête va et vient, le portique monte couche par couche et la pièce grandit selon la progression. Fonctionne avec l'intégration Bambu Lab, OctoPrint, Moonraker… (états `prepare`, `running`, `pause`, `finish`, `failed`), ou avec une simple prise (au-dessus de 40 W = impression, la pièce grandit alors en boucle). Couleur du filament réglable (`filament_color`).
+
+**Sécurité du bouton marche/arrêt** : sur le lave-linge, le sèche-linge, le lave-vaisselle et le poêle à granulés, couper la prise pendant un cycle (ou poêle allumé) demande deux clics (le bouton devient rouge et affiche « Cycle en cours – cliquer encore pour couper »). Option `confirm_off: false` pour désactiver. Conseil : sur un lave-linge, ne mets pas de `switch:` du tout.
 
 ## License
 
