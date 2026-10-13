@@ -6,7 +6,7 @@
  */
 (() => {
 "use strict";
-const VERSION = "1.1.3";
+const VERSION = "1.1.4";
 
 /* ------------------------------------------------------------------ */
 /* i18n                                                                */
@@ -21,7 +21,7 @@ const STRINGS = {
     ph_wash: "Washing", ph_rinse: "Rinsing", ph_spin: "Spinning", ph_dry: "Drying", ph_cool: "Cooling down",
     power: "Power", energy: "Energy", cost: "Cost", remaining: "Remaining", program: "Program",
     temperature: "Temperature", target: "Target", fridge_temp: "Fridge", freezer_temp: "Freezer",
-    ends_at: "Ends at", toggle: "Turn on/off",
+    ends_at: "Ends at", toggle: "Turn on/off", confirm_off: "Cycle running – click again to cut power",
     f_name: "Name", f_entity: "Status entity (switch, sensor, input_select…)",
     f_power: "Power sensor (W)", f_energy: "Energy sensor (kWh)", f_cost: "Cost sensor",
     f_remaining: "Remaining time sensor", f_progress: "Progress sensor (%)", f_program: "Program / phase sensor",
@@ -29,7 +29,7 @@ const STRINGS = {
     f_temperature: "Temperature sensor", f_target_temperature: "Target temperature sensor",
     f_freezer_temperature: "Freezer temperature sensor", f_freezer_door: "Freezer door sensor",
     f_max_temperature: "Fridge alert above (°C)", f_freezer_max_temperature: "Freezer alert above (°C)",
-    f_color: "Accent color (CSS)", f_animations: "Animations",
+    f_color: "Accent color (CSS)", f_animations: "Animations", f_confirm_off: "Confirm before cutting power during a cycle",
   },
   fr: {
     washer: "Lave-linge", dryer: "Sèche-linge", dishwasher: "Lave-vaisselle",
@@ -40,7 +40,7 @@ const STRINGS = {
     ph_wash: "Lavage", ph_rinse: "Rinçage", ph_spin: "Essorage", ph_dry: "Séchage", ph_cool: "Refroidissement",
     power: "Puissance", energy: "Énergie", cost: "Coût", remaining: "Restant", program: "Programme",
     temperature: "Température", target: "Consigne", fridge_temp: "Frigo", freezer_temp: "Congélateur",
-    ends_at: "Fin à", toggle: "Allumer/éteindre",
+    ends_at: "Fin à", toggle: "Allumer/éteindre", confirm_off: "Cycle en cours – cliquer encore pour couper",
     f_name: "Nom", f_entity: "Entité d'état (switch, sensor, input_select…)",
     f_power: "Capteur de puissance (W)", f_energy: "Capteur d'énergie (kWh)", f_cost: "Capteur de coût",
     f_remaining: "Capteur de temps restant", f_progress: "Capteur de progression (%)", f_program: "Capteur de programme / phase",
@@ -48,7 +48,7 @@ const STRINGS = {
     f_temperature: "Capteur de température", f_target_temperature: "Capteur de consigne",
     f_freezer_temperature: "Capteur température congélateur", f_freezer_door: "Capteur porte congélateur",
     f_max_temperature: "Alerte frigo au-dessus de (°C)", f_freezer_max_temperature: "Alerte congélateur au-dessus de (°C)",
-    f_color: "Couleur d'accent (CSS)", f_animations: "Animations",
+    f_color: "Couleur d'accent (CSS)", f_animations: "Animations", f_confirm_off: "Confirmer avant de couper pendant un cycle",
   },
 };
 const lang = (hass) => {
@@ -669,9 +669,22 @@ class ApplianceCardBase extends HTMLElement {
 
     if (c.switch && c.show_toggle !== false) {
       const on = isOn(m.sw);
-      $("actions").innerHTML = `<button class="toggle ${on ? "on" : ""}" title="${esc(tr(hass, "toggle"))}" aria-label="${esc(tr(hass, "toggle"))}" aria-pressed="${on}"><ha-icon icon="mdi:power"></ha-icon></button>`;
+      // safety: cutting a washer/dryer/dishwasher mid-cycle needs a second click
+      const guarded = c.confirm_off !== false && on && active && ["washer", "dryer", "dishwasher"].includes(kind);
+      const arming = guarded && this._confirmUntil && Date.now() < this._confirmUntil;
+      const label = arming ? tr(hass, "confirm_off") : tr(hass, "toggle");
+      $("actions").innerHTML = `<button class="toggle ${on ? "on" : ""} ${arming ? "confirm" : ""}" title="${esc(label)}" aria-label="${esc(label)}" aria-pressed="${on}"><ha-icon icon="${arming ? "mdi:alert" : "mdi:power"}"></ha-icon></button>${arming ? `<div class="confirm-tip">${esc(label)}</div>` : ""}`;
       $("actions").querySelector("button").onclick = (ev) => {
         ev.stopPropagation();
+        if (guarded && !(this._confirmUntil && Date.now() < this._confirmUntil)) {
+          this._confirmUntil = Date.now() + 4000;
+          this._render(this._compute());
+          clearTimeout(this._confirmTimer);
+          this._confirmTimer = setTimeout(() => { this._confirmUntil = 0; if (this._hass) this._render(this._compute()); }, 4100);
+          return;
+        }
+        this._confirmUntil = 0;
+        clearTimeout(this._confirmTimer);
         const dom = domainOf(c.switch);
         hass.callService(["switch", "input_boolean", "light", "fan"].includes(dom) ? dom : "homeassistant", "toggle", { entity_id: c.switch });
       };
@@ -749,6 +762,7 @@ function buildForm(kind) {
             { name: "freezer_max_temperature", selector: { number: { min: -30, max: 0, step: 0.5, mode: "box" } } },
           ] : []),
           { name: "animations", selector: { boolean: {} }, default: true },
+          ...(["washer", "dryer", "dishwasher"].includes(kind) ? [{ name: "confirm_off", selector: { boolean: {} }, default: true }] : []),
           { name: "color", selector: { text: {} } },
         ],
       },
@@ -835,6 +849,12 @@ svg { width: 100%; height: 100%; display: block; overflow: visible; }
   color: var(--secondary-text-color); background: rgba(127,127,127,.14); transition: background .2s, color .2s;
 }
 .toggle.on { color: var(--text-primary-color, #fff); background: var(--c); }
+.toggle.confirm { color: #fff; background: var(--ac-alert); animation: ac-pulse 1s ease-in-out infinite; }
+.actions { position: relative; }
+.confirm-tip {
+  position: absolute; right: 0; top: 44px; z-index: 2; width: 170px; padding: 6px 8px; border-radius: 8px;
+  font-size: 11.5px; line-height: 1.3; color: #fff; background: var(--ac-alert); box-shadow: 0 4px 14px rgba(0,0,0,.3);
+}
 .toggle:focus-visible { outline: 2px solid var(--c); outline-offset: 2px; }
 .toggle ha-icon { --mdc-icon-size: 20px; }
 .bar { height: 6px; border-radius: 3px; overflow: hidden; background: rgba(127,127,127,.18); }
