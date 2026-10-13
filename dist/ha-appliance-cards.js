@@ -4,7 +4,9 @@
  * water heater, oven, microwave, refrigerator.
  * MIT License
  */
-const VERSION = "1.1.0";
+(() => {
+"use strict";
+const VERSION = "1.1.1";
 
 /* ------------------------------------------------------------------ */
 /* i18n                                                                */
@@ -467,7 +469,7 @@ class ApplianceCardBase extends HTMLElement {
   disconnectedCallback() { clearInterval(this._tick); }
 
   getCardSize() { return 4; }
-  getGridOptions() { return { columns: 6, min_columns: 6 }; }
+  getGridOptions() { return { columns: 12, min_columns: 6 }; }
 
   _ids() {
     const c = this._config;
@@ -485,13 +487,11 @@ class ApplianceCardBase extends HTMLElement {
         <div class="wrap" id="wrap">
           <div class="top">
             <div class="illus"><svg viewBox="0 0 120 140" aria-hidden="true">${svg}</svg></div>
-            <div class="side">
-              <div class="head">
-                <div class="info" id="info"></div>
-                <div class="actions" id="actions"></div>
-              </div>
-              <div class="stats" id="stats"></div>
+            <div class="head">
+              <div class="info" id="info"></div>
+              <div class="actions" id="actions"></div>
             </div>
+            <div class="stats" id="stats"></div>
           </div>
           <div class="bar" id="bar"><div class="bar-fill" id="barfill"></div></div>
         </div>
@@ -542,6 +542,9 @@ class ApplianceCardBase extends HTMLElement {
     m.tempUnit = m.temp?.attributes.unit_of_measurement || hass.config?.unit_system?.temperature || "°C";
 
     const ref = main || sw;
+    const mainIds = ["entity", "power", "switch", "temperature"].map((k) => c[k]).filter(Boolean);
+    const usable = mainIds.some((i) => hass.states[i] && !BAD.includes(String(hass.states[i].state).toLowerCase()));
+    if (!usable) { m.status = "unavailable"; return m; }
     let base = null;
     if (ref) {
       const s = String(ref.state).toLowerCase();
@@ -798,19 +801,22 @@ const STYLE = `
   --ac-lcd: #38d9ff;
   display: block;
 }
-ha-card { height: 100%; cursor: pointer; overflow: hidden; }
+ha-card { display: block; height: 100%; cursor: pointer; overflow: hidden; container-type: inline-size; }
 .wrap { padding: 14px; display: flex; flex-direction: column; gap: 12px; --c: var(--ac-accent, var(--ac-active)); }
 .wrap.accent-heat { --c: var(--ac-accent, var(--ac-heat)); }
 .wrap.accent-cold { --c: var(--ac-accent, var(--ac-cold)); }
-.top { display: flex; gap: 14px; min-width: 0; }
+.top {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "illus head" "illus stats";
+  column-gap: 14px; row-gap: 10px; align-items: start; min-width: 0;
+}
+.illus { grid-area: illus; } .head { grid-area: head; } .stats { grid-area: stats; }
 .illus {
   width: var(--appliance-illustration-size, 116px); flex: none; aspect-ratio: 120 / 140; border-radius: 16px; padding: 4px; box-sizing: content-box;
   background: radial-gradient(circle at 50% 40%, rgba(127,127,127,.10), rgba(127,127,127,.03) 70%);
 }
 .st-unavailable .illus { opacity: .5; filter: grayscale(1); }
 svg { width: 100%; height: 100%; display: block; overflow: visible; }
-.side { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
-.head { display: flex; gap: 8px; align-items: flex-start; }
+.head { display: flex; gap: 8px; align-items: flex-start; min-width: 0; }
 .info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
 .name { font-size: 16px; font-weight: 600; color: var(--primary-text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .status { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--secondary-text-color); min-width: 0; }
@@ -839,6 +845,11 @@ svg { width: 100%; height: 100%; display: block; overflow: visible; }
 .lbl { display: flex; align-items: center; gap: 3px; font-size: 11px; color: var(--secondary-text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .lbl ha-icon { --mdc-icon-size: 13px; flex: none; }
 .tile.warn .val, .tile.warn .lbl { color: var(--ac-alert); }
+@container (max-width: 400px) {
+  .top { grid-template-areas: "illus head" "stats stats"; }
+  .illus { width: var(--appliance-illustration-size-small, 84px); }
+  .stats { grid-template-columns: repeat(auto-fit, minmax(88px, 1fr)); }
+}
 
 /* ---------- illustration: shared ---------- */
 .lcd { font: 700 7.2px "Courier New", ui-monospace, monospace; letter-spacing: .4px; fill: #24404f; transition: fill .3s; }
@@ -974,3 +985,4 @@ for (const kind of Object.keys(DEF)) {
 console.info(`%c HA-APPLIANCE-CARDS %c v${VERSION} `,
   "color:#fff;background:#03a9f4;font-weight:700;border-radius:3px 0 0 3px",
   "color:#03a9f4;background:#fff;font-weight:700;border-radius:0 3px 3px 0");
+})();
