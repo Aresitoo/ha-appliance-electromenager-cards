@@ -98,6 +98,18 @@ c.sr.querySelector('ha-card').click(); ok('card click -> more-info entity',mi===
 mi=null; c.sr.querySelector('.tile[data-entity="sensor.p"]').click(); ok('tile click -> more-info power',mi==='sensor.p',mi);
 c=card('washer',{entity:'input_boolean.w'},[mk('input_boolean.w','off')]); ok('no toggle without switch',!c.sr.querySelector('.toggle'));
 
+// safety confirmation (washer mid-cycle)
+c=card('washer',{entity:'switch.wp',power:'sensor.p',switch:'switch.wp'},[mk('switch.wp','on'),mk('sensor.p',1800,W)]);
+c.sr.querySelector('.toggle').click(); ok('mid-cycle 1st click does not cut power',c.h.calls.length===0,JSON.stringify(c.h.calls)); ok('mid-cycle 1st click shows confirmation',!!c.sr.querySelector('.toggle.confirm')&&/cliquer encore/i.test(c.sr.getElementById('actions').textContent),c.sr.getElementById('actions').textContent);
+c.sr.querySelector('.toggle').click(); ok('mid-cycle 2nd click cuts power',c.h.calls.length===1&&c.h.calls[0][1]==='toggle',JSON.stringify(c.h.calls));
+c=card('washer',{entity:'switch.wp',power:'sensor.p',switch:'switch.wp'},[mk('switch.wp','on'),mk('sensor.p',1,W)]);
+c.sr.querySelector('.toggle').click(); ok('standby washer toggles on 1st click',c.h.calls.length===1,JSON.stringify(c.h.calls));
+c=card('washer',{entity:'switch.wp',power:'sensor.p',switch:'switch.wp',confirm_off:false},[mk('switch.wp','on'),mk('sensor.p',1800,W)]);
+c.sr.querySelector('.toggle').click(); ok('confirm_off:false toggles on 1st click',c.h.calls.length===1,JSON.stringify(c.h.calls));
+c=card('dishwasher',{entity:'switch.dp',power:'sensor.p',switch:'switch.dp'},[mk('switch.dp','on'),mk('sensor.p',1800,W)]);
+c.sr.querySelector('.toggle').click(); ok('dishwasher mid-cycle also guarded',c.h.calls.length===0);
+c=card('washer',{entity:'switch.wp',power:'sensor.p',switch:'switch.wp'},[mk('switch.wp','off'),mk('sensor.p',0,W)]);
+c.sr.querySelector('.toggle').click(); ok('turning ON is never guarded',c.h.calls.length===1);
 // live update
 c=card('washer',{entity:'input_boolean.w'},[mk('input_boolean.w','off')]); c.el.hass=hassOf([mk('input_boolean.w','on')]); ok('live update off->running',has(c,'st-running'),c.wrap.className);
 
