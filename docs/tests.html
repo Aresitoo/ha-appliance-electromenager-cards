@@ -1,0 +1,125 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Appliance Cards – tests</title><style>body{font:14px system-ui,sans-serif;background:#111;color:#ddd;margin:16px}#g{position:absolute;left:-9999px;width:480px}table{border-collapse:collapse;width:100%;max-width:900px}td{padding:4px 8px;border-top:1px solid #333}.p{color:#3ddc84}.f{color:#ff6b6b}h1{font-size:18px}</style></head><body><h1>Appliance Cards — tests automatiques</h1><p id="sum">…</p><table id="res"></table>
+<div id="g"></div>
+<script>
+customElements.define('ha-card', class extends HTMLElement{});
+customElements.define('ha-icon', class extends HTMLElement{});
+window.__errors=[]; window.addEventListener('error',e=>__errors.push(e.message));
+</script>
+<script src="../dist/ha-appliance-cards.js"></script>
+<script>
+const R=[]; const ok=(name,cond,info='')=>R.push({name,pass:!!cond,info:cond?'':String(info)});
+const now=new Date().toISOString();
+const mk=(id,state,attrs={})=>({entity_id:id,state:String(state),attributes:attrs,last_changed:now});
+const W={unit_of_measurement:'W',device_class:'power'}, T={unit_of_measurement:'°C',device_class:'temperature'};
+function hassOf(states,lang='fr'){const S={};states.forEach(s=>S[s.entity_id]=s);return{states:S,language:lang,locale:{language:lang},config:{},calls:[],callService(d,s,data){this.calls.push([d,s,data]);}};}
+function card(kind,cfg,states,lang){const el=document.createElement(`appliance-${kind}-card`);el.setConfig(cfg);document.getElementById('g').appendChild(el);const h=hassOf(states,lang);el.hass=h;return {el,h,sr:el.shadowRoot,wrap:el.shadowRoot.getElementById('wrap'),txt:()=>el.shadowRoot.getElementById('info').textContent.replace(/\s+/g,' ').trim(),lcd:()=>el.shadowRoot.querySelector('.lcd')?.textContent};}
+const has=(c,cls)=>c.wrap.classList.contains(cls);
+
+// registration
+const tags=['washer','dryer','dishwasher','water-heater','oven','microwave','fridge'];
+tags.forEach(t=>ok(`registered ${t}`,customElements.get(`appliance-${t}-card`)));
+ok('customCards = 7',window.customCards.length===7,window.customCards.length);
+// config validation
+try{document.createElement('appliance-washer-card').setConfig({});ok('empty config throws',false)}catch(e){ok('empty config throws',/entity|power/.test(e.message),e.message)}
+
+// washer state matrix
+const wcases=[
+ ['input_boolean off -> idle',{entity:'input_boolean.w'},[mk('input_boolean.w','off')],'st-idle','OFF'],
+ ['input_boolean on -> running/wash',{entity:'input_boolean.w'},[mk('input_boolean.w','on')],'ph-wash','WASH'],
+ ['plug on + low power -> standby',{entity:'switch.w',power:'sensor.p'},[mk('switch.w','on'),mk('sensor.p',2,W)],'st-standby','OFF'],
+ ['plug on + high power -> running',{entity:'switch.w',power:'sensor.p'},[mk('switch.w','on'),mk('sensor.p',1500,W)],'st-running','WASH'],
+ ['plug off -> off',{entity:'switch.w',power:'sensor.p'},[mk('switch.w','off'),mk('sensor.p',0,W)],'st-off','OFF'],
+ ['power only 0 -> idle',{power:'sensor.p'},[mk('sensor.p',0,W)],'st-idle','OFF'],
+ ['power kW unit -> running',{power:'sensor.p'},[mk('sensor.p',1.2,{unit_of_measurement:'kW',device_class:'power'})],'st-running','WASH'],
+ ['sensor Rinçage -> rinse',{entity:'sensor.s'},[mk('sensor.s','Rinçage')],'ph-rinse','RINSE'],
+ ['sensor spin -> spin',{entity:'sensor.s'},[mk('sensor.s','spin')],'ph-spin','SPIN'],
+ ['program Essorage -> spin',{entity:'sensor.s',program:'sensor.prog'},[mk('sensor.s','running'),mk('sensor.prog','Essorage 1200')],'ph-spin','SPIN'],
+ ['finished -> END',{entity:'sensor.s'},[mk('sensor.s','finished')],'st-finished','END'],
+ ['finished but power high -> running',{entity:'sensor.s',power:'sensor.p'},[mk('sensor.s','finished'),mk('sensor.p',900,W)],'st-running','WASH'],
+ ['unavailable -> st-unavailable',{entity:'sensor.s'},[mk('sensor.s','unavailable')],'st-unavailable','- - -'],
+ ['missing entity -> unavailable',{entity:'sensor.nope'},[],'st-unavailable','- - -'],['power sensor unavailable -> unavailable',{power:'sensor.p'},[mk('sensor.p','unavailable')],'st-unavailable','- - -'],
+];
+for(const [n,cfg,st,cls,l] of wcases){try{const c=card('washer',cfg,st);if(cls)ok(`washer: ${n}`,has(c,cls),c.wrap.className);if(l)ok(`washer LCD: ${n}`,c.lcd()===l,c.lcd());if(!cls)ok(`washer: ${n}`,true)}catch(e){ok(`washer: ${n}`,false,e.message)}}
+
+// remaining formats
+const rcases=[['47 min',[mk('sensor.r',47,{unit_of_measurement:'min'})],'0:47','47 min'],['H:MM:SS',[mk('sensor.r','1:05:00')],'1:05','1 h 05'],['seconds',[mk('sensor.r',90,{unit_of_measurement:'s'})],'1:30','2 min'],
+ ['timestamp',[mk('sensor.r',new Date(Date.now()+30*60000).toISOString(),{device_class:'timestamp'})],'0:30','30 min'],['hours',[mk('sensor.r',2,{unit_of_measurement:'h'})],'2:00','2 h']];
+for(const [n,st,l,tile] of rcases){const c=card('washer',{entity:'input_boolean.w',remaining:'sensor.r'},[mk('input_boolean.w','on'),...st]);
+ ok(`remaining ${n} LCD`,c.lcd()===l,c.lcd()); ok(`remaining ${n} tile`,c.sr.getElementById('stats').textContent.includes(tile),c.sr.getElementById('stats').textContent); ok(`remaining ${n} ends_at`,/Fin à/.test(c.txt()),c.txt());}
+
+// dryer / dishwasher
+let c=card('dryer',{entity:'binary_sensor.d'},[mk('binary_sensor.d','on')]); ok('dryer on -> ph-dry + DRY',has(c,'ph-dry')&&c.lcd()==='DRY',c.wrap.className+' '+c.lcd());
+c=card('dryer',{entity:'sensor.d'},[mk('sensor.d','Refroidissement')]); ok('dryer cooling phase',has(c,'ph-cool'),c.wrap.className);
+c=card('dishwasher',{entity:'sensor.d'},[mk('sensor.d','Séchage')]); ok('dishwasher drying phase',has(c,'ph-dry'),c.wrap.className);
+c=card('dishwasher',{entity:'sensor.d'},[mk('sensor.d','running')]); ok('dishwasher wash phase',has(c,'ph-wash'),c.wrap.className);
+
+// water heater
+c=card('water-heater',{switch:'switch.h',power:'sensor.p',temperature:'sensor.t',target_temperature:'sensor.c'},[mk('switch.h','on'),mk('sensor.p',2400,W),mk('sensor.t',45,T),mk('sensor.c',60,T)]);
+ok('water heater heating',has(c,'st-heating'),c.wrap.className);
+ok('water heater needle rotated',/rotate\(/.test(c.sr.querySelector('.needle').getAttribute('transform')||''));
+ok('water heater gauge text 45°',c.sr.querySelector('.gauge-txt').textContent==='45°',c.sr.querySelector('.gauge-txt').textContent);
+ok('water heater progress bar visible',c.sr.getElementById('bar').style.display!=='none');
+c=card('water-heater',{switch:'switch.h',power:'sensor.p'},[mk('switch.h','on'),mk('sensor.p',0,W)]); ok('water heater ready',has(c,'st-ready'),c.wrap.className);
+c=card('water-heater',{switch:'switch.h'},[mk('switch.h','off')]); ok('water heater off',has(c,'st-off'),c.wrap.className);
+c=card('water-heater',{entity:'water_heater.x'},[mk('water_heater.x','eco',{current_temperature:55,temperature:60})]); ok('water_heater entity attrs used',c.sr.querySelector('.gauge-txt').textContent==='55°',c.sr.querySelector('.gauge-txt').textContent);
+
+// oven
+c=card('oven',{switch:'switch.o',power:'sensor.p',temperature:'sensor.t',target_temperature:'sensor.c'},[mk('switch.o','on'),mk('sensor.p',2500,W),mk('sensor.t',120,T),mk('sensor.c',200,T)]);
+ok('oven preheating',has(c,'st-preheating'),c.wrap.className); ok('oven LCD temp',c.lcd()==='120°',c.lcd());
+c=card('oven',{switch:'switch.o',power:'sensor.p',temperature:'sensor.t',target_temperature:'sensor.c'},[mk('switch.o','on'),mk('sensor.p',2500,W),mk('sensor.t',198,T),mk('sensor.c',200,T)]);
+ok('oven heating at temp',has(c,'st-heating'),c.wrap.className);
+c=card('oven',{power:'sensor.p'},[mk('sensor.p',0,W)]); ok('oven off shows clock',/\d{1,2}:\d{2}/.test(c.lcd()),c.lcd());
+
+// microwave
+c=card('microwave',{power:'sensor.p',remaining:'sensor.r'},[mk('sensor.p',900,W),mk('sensor.r','0:01:45')]); ok('microwave running countdown',has(c,'active')&&c.lcd()==='1:45',c.lcd());
+c=card('microwave',{power:'sensor.p',door:'binary_sensor.d'},[mk('sensor.p',0,W),mk('binary_sensor.d','on')]); ok('microwave door alert',has(c,'alert')&&/Porte ouverte/.test(c.txt()),c.txt());
+
+// fridge
+c=card('fridge',{power:'sensor.p',temperature:'sensor.t',freezer_temperature:'sensor.f'},[mk('sensor.p',90,W),mk('sensor.t',4,T),mk('sensor.f',-18,T)]);
+ok('fridge cooling',has(c,'st-cooling'),c.wrap.className); ok('fridge LCD 4°',c.lcd()==='4°',c.lcd()); ok('fridge no alert',!has(c,'alert'));
+c=card('fridge',{power:'sensor.p',temperature:'sensor.t',door:'binary_sensor.d'},[mk('sensor.p',1,W),mk('sensor.t',10,T),mk('binary_sensor.d','on')]);
+ok('fridge door open + too warm',has(c,'door-open')&&has(c,'warm')&&/Trop chaud/.test(c.txt()),c.wrap.className+' | '+c.txt());
+ok('fridge door transform applied',getComputedStyle(c.sr.querySelector('.fr-door')).transform!=='none');
+c=card('fridge',{temperature:'sensor.t',freezer_temperature:'sensor.f',max_temperature:3},[mk('sensor.t',4,T),mk('sensor.f',-8,T)]);
+ok('fridge custom thresholds alert',has(c,'warm'),c.wrap.className);
+c=card('fridge',{power:'sensor.p',freezer_door:'binary_sensor.fz'},[mk('sensor.p',1,W),mk('binary_sensor.fz','on')]); ok('freezer door open',has(c,'fz-open'));
+
+// language
+c=card('washer',{entity:'input_boolean.w'},[mk('input_boolean.w','on')],'en'); ok('English name',/Washing machine/.test(c.txt())&&/Washing/.test(c.txt()),c.txt());
+c=card('washer',{entity:'input_boolean.w',name:'Ma machine'},[mk('input_boolean.w','on')]); ok('custom name',/Ma machine/.test(c.txt()),c.txt());
+
+// interactions
+c=card('water-heater',{switch:'switch.h'},[mk('switch.h','off')]);
+let mi=null; c.el.addEventListener('hass-more-info',e=>mi=e.detail.entityId);
+c.sr.querySelector('.toggle').click(); ok('toggle calls switch.toggle',JSON.stringify(c.h.calls[0])===JSON.stringify(['switch','toggle',{entity_id:'switch.h'}]),JSON.stringify(c.h.calls)); ok('toggle does not open more-info',mi===null,mi);
+c=card('washer',{entity:'input_boolean.w',power:'sensor.p'},[mk('input_boolean.w','on'),mk('sensor.p',500,W)]);
+mi=null; c.el.addEventListener('hass-more-info',e=>mi=e.detail.entityId);
+c.sr.querySelector('ha-card').click(); ok('card click -> more-info entity',mi==='input_boolean.w',mi);
+mi=null; c.sr.querySelector('.tile[data-entity="sensor.p"]').click(); ok('tile click -> more-info power',mi==='sensor.p',mi);
+c=card('washer',{entity:'input_boolean.w'},[mk('input_boolean.w','off')]); ok('no toggle without switch',!c.sr.querySelector('.toggle'));
+
+// live update
+c=card('washer',{entity:'input_boolean.w'},[mk('input_boolean.w','off')]); c.el.hass=hassOf([mk('input_boolean.w','on')]); ok('live update off->running',has(c,'st-running'),c.wrap.className);
+
+// animations
+c=card('washer',{entity:'sensor.s'},[mk('sensor.s','spin')]); ok('spin drum animated',getComputedStyle(c.sr.querySelector('.drum')).animationName==='ac-rot',getComputedStyle(c.sr.querySelector('.drum')).animationName);
+c=card('washer',{entity:'sensor.s',animations:false},[mk('sensor.s','spin')]); ok('animations:false disables',getComputedStyle(c.sr.querySelector('.drum')).animationName==='none',getComputedStyle(c.sr.querySelector('.drum')).animationName);
+c=card('washer',{entity:'input_boolean.w'},[mk('input_boolean.w','off')]); ok('idle drum static',getComputedStyle(c.sr.querySelector('.drum')).animationName==='none');
+
+// unique SVG ids (no clashes between cards)
+const ids=[...document.querySelectorAll('*')].filter(e=>e.shadowRoot).flatMap(e=>[...e.shadowRoot.querySelectorAll('[id]')].filter(x=>x.closest('svg')).map(x=>x.id));
+ok('SVG ids unique across cards',new Set(ids).size===ids.length,ids.length-new Set(ids).size+' dupes');
+
+// editor + stub
+for(const t of tags){const C=customElements.get(`appliance-${t}-card`);const f=C.getConfigForm();ok(`editor schema ${t}`,Array.isArray(f.schema)&&f.schema.length>3&&typeof f.computeLabel==='function');}
+const gh=hassOf([mk('sensor.washer_power',0,W),mk('sensor.washer_energy_today',1,{device_class:'energy',unit_of_measurement:'kWh'}),mk('switch.washer','on'),mk('sensor.fridge_temperature',4,T),mk('sensor.fridge_power',80,W)]);
+const s1=customElements.get('appliance-washer-card').getStubConfig(gh); ok('stub washer',s1.power==='sensor.washer_power'&&s1.entity==='switch.washer'&&s1.energy==='sensor.washer_energy_today',JSON.stringify(s1));
+const s2=customElements.get('appliance-fridge-card').getStubConfig(gh); ok('stub fridge',s2.temperature==='sensor.fridge_temperature'&&s2.power==='sensor.fridge_power',JSON.stringify(s2));
+const s3=customElements.get('appliance-oven-card').getStubConfig(hassOf([])); ok('stub with nothing still valid',Object.keys(s3).length>0,JSON.stringify(s3));
+ok('card size / grid',typeof c.el.getCardSize()==='number'&&c.el.getGridOptions().columns>0);
+ok('no page errors',__errors.length===0,__errors.join('; '));
+window.RESULTS=R;
+const fails=R.filter(r=>!r.pass).length;
+document.getElementById('sum').innerHTML=`<b class="${fails?'f':'p'}">${R.length-fails} / ${R.length} tests réussis</b> — fichier testé : <code>dist/ha-appliance-cards.js</code>`;
+document.getElementById('res').innerHTML=R.map(r=>`<tr><td class="${r.pass?'p':'f'}">${r.pass?'✔':'✘'}</td><td>${r.name}</td><td>${r.info||''}</td></tr>`).join('');
+</script></body></html>

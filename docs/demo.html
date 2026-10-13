@@ -1,36 +1,237 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Appliance Cards – démo</title>
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Appliance Cards – page de test</title>
+<script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js"></script>
 <style>
-:root{--primary-color:#03a9f4;--primary-text-color:#e1e1e1;--secondary-text-color:#9b9b9b;--card-background-color:#1c1c1c;--error-color:#db4437;--success-color:#43a047;--disabled-text-color:#6f6f6f}
-body.light{--primary-text-color:#212121;--secondary-text-color:#727272;--card-background-color:#fff;background:#eef0f2}
-body{background:#111;font-family:Roboto,system-ui,sans-serif;margin:16px}
-.grid{display:grid;grid-template-columns:repeat(3,360px);gap:14px}
-ha-card{display:block;background:var(--card-background-color);border-radius:12px;border:1px solid rgba(127,127,127,.25)}
-ha-icon{display:inline-block;width:var(--mdc-icon-size,24px);height:var(--mdc-icon-size,24px)}
-</style></head><body>
-<div class="grid" id="g"></div>
+:root {
+  --primary-color:#03a9f4; --error-color:#db4437; --success-color:#43a047; --disabled-text-color:#8a8a8a;
+  --primary-text-color:#e6e6e6; --secondary-text-color:#9da3aa; --card-background-color:#1c1f23;
+  --page-bg:#111315; --panel-bg:#181b1f; --line:rgba(127,127,127,.22);
+}
+body.light {
+  --primary-text-color:#1d2125; --secondary-text-color:#68707a; --card-background-color:#ffffff;
+  --page-bg:#eef0f3; --panel-bg:#f7f8fa;
+}
+* { box-sizing:border-box; }
+body { margin:0; background:var(--page-bg); color:var(--primary-text-color); font:14px/1.45 Roboto, system-ui, -apple-system, "Segoe UI", sans-serif; }
+header { position:sticky; top:0; z-index:5; background:var(--page-bg); border-bottom:1px solid var(--line); padding:12px 16px; display:flex; flex-wrap:wrap; gap:10px 18px; align-items:center; }
+header h1 { font-size:17px; margin:0; font-weight:600; flex:1 1 220px; }
+header h1 small { display:block; font-size:12px; font-weight:400; color:var(--secondary-text-color); }
+.seg { display:inline-flex; border:1px solid var(--line); border-radius:8px; overflow:hidden; }
+.seg button { background:none; border:0; color:var(--secondary-text-color); padding:6px 11px; font:inherit; cursor:pointer; }
+.seg button.on { background:var(--primary-color); color:#fff; }
+header a { color:var(--primary-color); text-decoration:none; font-size:13px; }
+main { padding:16px; display:grid; gap:16px; grid-template-columns:repeat(auto-fill, minmax(min(100%, 360px), 1fr)); max-width:1600px; margin:0 auto; }
+.cell { display:flex; flex-direction:column; gap:10px; }
+ha-card { display:block; background:var(--card-background-color); border-radius:12px; border:1px solid var(--line); }
+.ctl { background:var(--panel-bg); border:1px solid var(--line); border-radius:10px; padding:10px 12px; display:grid; grid-template-columns:auto 1fr auto; gap:6px 10px; align-items:center; font-size:13px; }
+.ctl h3 { grid-column:1/-1; margin:0 0 2px; font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--secondary-text-color); font-weight:600; }
+.ctl label { color:var(--secondary-text-color); white-space:nowrap; }
+.ctl output { font-variant-numeric:tabular-nums; min-width:62px; text-align:right; }
+.ctl select, .ctl input[type=range] { width:100%; min-width:0; }
+.ctl select { background:var(--card-background-color); color:var(--primary-text-color); border:1px solid var(--line); border-radius:6px; padding:4px 6px; font:inherit; }
+.ctl .chk { grid-column:2/-1; display:flex; gap:14px; flex-wrap:wrap; }
+.ctl .chk label { color:var(--primary-text-color); display:flex; gap:5px; align-items:center; }
+details.yaml { grid-column:1/-1; }
+details.yaml summary { cursor:pointer; color:var(--secondary-text-color); font-size:12px; }
+details.yaml pre { margin:6px 0 0; font-size:11.5px; background:var(--card-background-color); border:1px solid var(--line); border-radius:6px; padding:8px; overflow:auto; }
+#log { position:fixed; right:16px; bottom:16px; width:min(340px, calc(100vw - 32px)); max-height:180px; overflow:auto; background:var(--panel-bg); border:1px solid var(--line); border-radius:10px; padding:8px 10px; font-size:12px; box-shadow:0 6px 24px rgba(0,0,0,.25); }
+#log b { display:block; font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--secondary-text-color); margin-bottom:4px; }
+#log div { padding:2px 0; border-top:1px solid var(--line); font-family:ui-monospace, monospace; }
+footer { text-align:center; color:var(--secondary-text-color); font-size:12px; padding:8px 16px 220px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Appliance Cards — page de test <small id="ver">Données simulées · aucune installation Home Assistant nécessaire</small></h1>
+  <div class="seg" id="theme"><button data-v="dark" class="on">Sombre</button><button data-v="light">Clair</button></div>
+  <div class="seg" id="lang"><button data-v="fr" class="on">FR</button><button data-v="en">EN</button></div>
+  <div class="seg" id="anim"><button data-v="1" class="on">Animations</button><button data-v="0">Off</button></div>
+  <a href="tests.html">Tests automatiques →</a>
+  <a href="https://github.com/skyrotter/ha-appliance-cards">GitHub</a>
+</header>
+<main id="main"></main>
+<footer>Les cartes chargées ici sont exactement le fichier <code>dist/ha-appliance-cards.js</code> du dépôt.</footer>
+<div id="log"><b>Actions de la carte</b></div>
+
+<script>
+/* Minimal stand-ins for Home Assistant's own elements */
+customElements.define('ha-card', class extends HTMLElement {});
+customElements.define('ha-icon', class extends HTMLElement {
+  static get observedAttributes() { return ['icon']; }
+  connectedCallback() { this.render(); }
+  attributeChangedCallback() { this.render(); }
+  render() {
+    const s = getComputedStyle(this).getPropertyValue('--mdc-icon-size').trim() || '24px';
+    this.style.display = 'inline-flex'; this.style.width = s; this.style.height = s;
+    this.innerHTML = `<iconify-icon icon="${this.getAttribute('icon') || ''}" width="${s}" height="${s}"></iconify-icon>`;
+  }
+});
+</script>
 <script src="../dist/ha-appliance-cards.js"></script>
 <script>
-customElements.define('ha-card', class extends HTMLElement{});
-customElements.define('ha-icon', class extends HTMLElement{});
-const now=new Date().toISOString();
-const S={};const st=(id,state,a={})=>S[id]={entity_id:id,state:String(state),attributes:a,last_changed:now};
-const W={unit_of_measurement:'W',device_class:'power'},E={unit_of_measurement:'kWh',device_class:'energy'},T={unit_of_measurement:'°C',device_class:'temperature'};
-const P=new URLSearchParams(location.search), L=P.get('lang')||'fr'; if(P.has('light'))document.body.className='light';
-const hass={states:S,language:L,locale:{language:L},config:{},callService:()=>{}};
-const cards=[];
-function add(kind,name,states,cfg){const p=`sensor.${name}_`;for(const [id,v,a] of states)st(id,v,a);cards.push([kind,cfg]);}
-// washer phases
-[['off','idle',0],['wash','Lavage',2100],['rinse','Rinçage',150],['spin','Essorage',480],['end','finished',0]].forEach(([k,s,w])=>{
- add('washer',k,[[`sensor.w_${k}_state`,s],[`sensor.w_${k}_power`,w,W],[`sensor.w_${k}_energy`,1.2,E],[`sensor.w_${k}_rem`,k==='off'||k==='end'?0:38,{unit_of_measurement:'min'}],[`sensor.w_${k}_cost`,0.31,{unit_of_measurement:'€'}]],
- {entity:`sensor.w_${k}_state`,power:`sensor.w_${k}_power`,energy:`sensor.w_${k}_energy`,remaining:`sensor.w_${k}_rem`,cost:`sensor.w_${k}_cost`});});
-add('dryer','d',[['binary_sensor.d_run','on'],['sensor.d_pw',2300,W],['sensor.d_e',2.1,E]],{entity:'binary_sensor.d_run',power:'sensor.d_pw',energy:'sensor.d_e'});
-add('dishwasher','dw',[['sensor.dw_state','running'],['sensor.dw_pw',1900,W],['sensor.dw_rem',72,{unit_of_measurement:'min'}]],{entity:'sensor.dw_state',power:'sensor.dw_pw',remaining:'sensor.dw_rem'});
-add('dishwasher','dw2',[['sensor.dw2_state','Séchage'],['sensor.dw2_pw',20,W]],{entity:'sensor.dw2_state',power:'sensor.dw2_pw'});
-add('water_heater','hw',[['switch.hw','on'],['sensor.hw_pw',2400,W],['sensor.hw_t',52,T],['sensor.hw_c',60,T]],{switch:'switch.hw',power:'sensor.hw_pw',temperature:'sensor.hw_t',target_temperature:'sensor.hw_c'});
-add('oven','ov',[['switch.ov','on'],['sensor.ov_pw',2600,W],['sensor.ov_t',150,T],['sensor.ov_c',180,T]],{switch:'switch.ov',power:'sensor.ov_pw',temperature:'sensor.ov_t',target_temperature:'sensor.ov_c'});
-add('microwave','mw',[['sensor.mw_pw',900,W],['sensor.mw_rem','0:01:45'],['binary_sensor.mw_door','off']],{power:'sensor.mw_pw',remaining:'sensor.mw_rem',door:'binary_sensor.mw_door'});
-add('fridge','fr',[['sensor.fr_pw',85,W],['sensor.fr_t',4,T],['sensor.fz_t',-18,T],['binary_sensor.fr_door','off']],{power:'sensor.fr_pw',temperature:'sensor.fr_t',freezer_temperature:'sensor.fz_t',door:'binary_sensor.fr_door'});
-add('fridge','fr2',[['sensor.fr2_pw',2,W],['sensor.fr2_t',9.5,T],['binary_sensor.fr2_door','on']],{power:'sensor.fr2_pw',temperature:'sensor.fr2_t',door:'binary_sensor.fr2_door'});
-const only=P.get('only');
-for(const [k,c] of cards){ if(only&&!k.startsWith(only))continue; const el=document.createElement(`appliance-${k.replace('_','-')}-card`);el.setConfig(c);el.hass=hass;document.getElementById('g').appendChild(el);}
-</script></body></html>
+const W = { unit_of_measurement: 'W', device_class: 'power' };
+const T = { unit_of_measurement: '°C', device_class: 'temperature' };
+const KWH = { unit_of_measurement: 'kWh', device_class: 'energy' };
+const EUR = { unit_of_measurement: '€' };
+const states = {};
+const set = (id, state, attrs) => { states[id] = { entity_id: id, state: String(state), attributes: attrs || states[id]?.attributes || {}, last_changed: new Date().toISOString() }; };
+let lang = 'fr', animations = true;
+const cards = [];
+const log = (msg) => { const d = document.createElement('div'); d.textContent = `${new Date().toLocaleTimeString()} ${msg}`; document.getElementById('log').insertBefore(d, document.getElementById('log').children[1]); };
+
+const hass = () => ({
+  states: { ...states }, language: lang, locale: { language: lang }, config: {},
+  callService(domain, service, data) {
+    log(`callService ${domain}.${service} ${data.entity_id}`);
+    const cur = states[data.entity_id];
+    if (cur && service === 'toggle') { set(data.entity_id, cur.state === 'on' ? 'off' : 'on'); refresh(); }
+  },
+});
+const refresh = () => { const h = hass(); cards.forEach((c) => (c.hass = h)); };
+
+/* ---------- control widgets ---------- */
+const T_ = (fr, en) => (lang === 'fr' ? fr : en);
+function range(ctl, label, id, min, max, step, val, unit, attrs, fmt) {
+  set(id, val, attrs);
+  const lab = document.createElement('label'); lab.textContent = label;
+  const inp = Object.assign(document.createElement('input'), { type: 'range', min, max, step, value: val });
+  const out = document.createElement('output');
+  const show = () => (out.textContent = fmt ? fmt(+inp.value) : `${inp.value} ${unit}`);
+  inp.oninput = () => { set(id, inp.value); show(); refresh(); };
+  show(); ctl.append(lab, inp, out);
+}
+function select(ctl, label, id, options, val, onChange) {
+  set(id, val);
+  const lab = document.createElement('label'); lab.textContent = label;
+  const sel = document.createElement('select');
+  options.forEach(([v, t]) => sel.append(new Option(t, v, false, v === val)));
+  sel.onchange = () => { set(id, sel.value); onChange && onChange(sel.value); refresh(); };
+  ctl.append(lab, sel, document.createElement('span'));
+  return sel;
+}
+function checks(ctl, items) {
+  const wrap = document.createElement('div'); wrap.className = 'chk';
+  ctl.append(document.createElement('span'), wrap);
+  items.forEach(([label, id, val]) => {
+    set(id, val ? 'on' : 'off');
+    const l = document.createElement('label');
+    const c = Object.assign(document.createElement('input'), { type: 'checkbox', checked: !!val });
+    c.onchange = () => { set(id, c.checked ? 'on' : 'off'); refresh(); };
+    states[id]._input = c;
+    l.append(c, label); wrap.append(l);
+  });
+}
+const mmss = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+
+/* ---------- appliance scenarios ---------- */
+const CYCLE = [
+  ['off', 'Arrêt / Off'], ['Lavage', 'Lavage / Wash'], ['Rinçage', 'Rinçage / Rinse'], ['Essorage', 'Essorage / Spin'],
+  ['finished', 'Terminé / Finished'], ['unavailable', 'Indisponible'],
+];
+const SCEN = [
+  { kind: 'washer', title: 'Lave-linge', p: 'washer',
+    cfg: { entity: 'sensor.washer_status', power: 'sensor.washer_power', energy: 'sensor.washer_energy', cost: 'sensor.washer_cost', remaining: 'sensor.washer_remaining', door: 'binary_sensor.washer_door' },
+    build(ctl) {
+      select(ctl, 'État', 'sensor.washer_status', CYCLE, 'Lavage');
+      range(ctl, 'Puissance', 'sensor.washer_power', 0, 2400, 10, 1850, 'W', W);
+      range(ctl, 'Restant', 'sensor.washer_remaining', 0, 180, 1, 47, 'min', { unit_of_measurement: 'min' });
+      set('sensor.washer_energy', 1.42, KWH); set('sensor.washer_cost', 0.31, EUR);
+      checks(ctl, [['Porte ouverte', 'binary_sensor.washer_door', false]]);
+    } },
+  { kind: 'dryer', title: 'Sèche-linge',
+    cfg: { entity: 'sensor.dryer_status', power: 'sensor.dryer_power', energy: 'sensor.dryer_energy', remaining: 'sensor.dryer_remaining' },
+    build(ctl) {
+      select(ctl, 'État', 'sensor.dryer_status', [['off', 'Arrêt'], ['Séchage', 'Séchage / Dry'], ['Refroidissement', 'Refroidissement / Cool'], ['finished', 'Terminé'], ['unavailable', 'Indisponible']], 'Séchage');
+      range(ctl, 'Puissance', 'sensor.dryer_power', 0, 2800, 10, 2300, 'W', W);
+      range(ctl, 'Restant', 'sensor.dryer_remaining', 0, 180, 1, 64, 'min', { unit_of_measurement: 'min' });
+      set('sensor.dryer_energy', 2.1, KWH);
+    } },
+  { kind: 'dishwasher', title: 'Lave-vaisselle',
+    cfg: { entity: 'sensor.dishwasher_status', power: 'sensor.dishwasher_power', remaining: 'sensor.dishwasher_remaining', progress: 'sensor.dishwasher_progress' },
+    build(ctl) {
+      select(ctl, 'État', 'sensor.dishwasher_status', [['off', 'Arrêt'], ['Lavage', 'Lavage / Wash'], ['Rinçage', 'Rinçage / Rinse'], ['Séchage', 'Séchage / Dry'], ['finished', 'Terminé'], ['unavailable', 'Indisponible']], 'Lavage');
+      range(ctl, 'Puissance', 'sensor.dishwasher_power', 0, 2200, 10, 1900, 'W', W);
+      range(ctl, 'Restant', 'sensor.dishwasher_remaining', 0, 240, 1, 72, 'min', { unit_of_measurement: 'min' });
+      range(ctl, 'Progression', 'sensor.dishwasher_progress', 0, 100, 1, 35, '%', { unit_of_measurement: '%' });
+    } },
+  { kind: 'water-heater', title: "Ballon d'eau chaude",
+    cfg: { switch: 'switch.water_heater', power: 'sensor.water_heater_power', temperature: 'sensor.water_heater_temp', target_temperature: 'sensor.water_heater_target', cost: 'sensor.water_heater_cost' },
+    build(ctl) {
+      set('switch.water_heater', 'on');
+      range(ctl, 'Puissance', 'sensor.water_heater_power', 0, 3000, 50, 2400, 'W', W);
+      range(ctl, 'Température', 'sensor.water_heater_temp', 10, 80, 1, 48, '°C', T);
+      range(ctl, 'Consigne', 'sensor.water_heater_target', 40, 75, 1, 60, '°C', T);
+      set('sensor.water_heater_cost', 0.34, EUR);
+      ctl.append(Object.assign(document.createElement('span'), { textContent: '' }), Object.assign(document.createElement('span'), { textContent: 'Bouton ⏻ de la carte = interrupteur', style: 'color:var(--secondary-text-color);font-size:12px' }), document.createElement('span'));
+    } },
+  { kind: 'oven', title: 'Four',
+    cfg: { switch: 'switch.oven', power: 'sensor.oven_power', temperature: 'sensor.oven_temp', target_temperature: 'sensor.oven_target', door: 'binary_sensor.oven_door' },
+    build(ctl) {
+      set('switch.oven', 'on');
+      range(ctl, 'Puissance', 'sensor.oven_power', 0, 3500, 50, 2600, 'W', W);
+      range(ctl, 'Température', 'sensor.oven_temp', 20, 250, 1, 140, '°C', T);
+      range(ctl, 'Consigne', 'sensor.oven_target', 50, 250, 5, 180, '°C', T);
+      checks(ctl, [['Porte ouverte', 'binary_sensor.oven_door', false]]);
+    } },
+  { kind: 'microwave', title: 'Micro-ondes',
+    cfg: { power: 'sensor.microwave_power', remaining: 'sensor.microwave_remaining', door: 'binary_sensor.microwave_door' },
+    build(ctl) {
+      range(ctl, 'Puissance', 'sensor.microwave_power', 0, 1200, 10, 900, 'W', W);
+      range(ctl, 'Restant', 'sensor.microwave_remaining', 0, 600, 5, 105, 's', { unit_of_measurement: 's' }, mmss);
+      checks(ctl, [['Porte ouverte', 'binary_sensor.microwave_door', false]]);
+    } },
+  { kind: 'fridge', title: 'Réfrigérateur',
+    cfg: { power: 'sensor.fridge_power', temperature: 'sensor.fridge_temp', freezer_temperature: 'sensor.freezer_temp', door: 'binary_sensor.fridge_door', freezer_door: 'binary_sensor.freezer_door', energy: 'sensor.fridge_energy' },
+    build(ctl) {
+      range(ctl, 'Puissance', 'sensor.fridge_power', 0, 200, 1, 85, 'W', W);
+      range(ctl, 'Frigo', 'sensor.fridge_temp', -2, 15, 0.5, 4, '°C', T);
+      range(ctl, 'Congélateur', 'sensor.freezer_temp', -30, 0, 0.5, -18, '°C', T);
+      set('sensor.fridge_energy', 1.1, KWH);
+      checks(ctl, [['Porte frigo', 'binary_sensor.fridge_door', false], ['Porte congélateur', 'binary_sensor.freezer_door', false]]);
+    } },
+];
+
+const toYaml = (kind, cfg) => [`type: custom:appliance-${kind}-card`, ...Object.entries(cfg).map(([k, v]) => `${k}: ${v}`)].join('\n');
+
+function buildAll() {
+  const main = document.getElementById('main');
+  main.innerHTML = ''; cards.length = 0;
+  for (const s of SCEN) {
+    const cell = document.createElement('div'); cell.className = 'cell';
+    const ctl = document.createElement('div'); ctl.className = 'ctl';
+    ctl.innerHTML = `<h3>${s.title} — commandes simulées</h3>`;
+    s.build(ctl);
+    const cfg = { ...s.cfg, ...(animations ? {} : { animations: false }) };
+    const yaml = document.createElement('details'); yaml.className = 'yaml';
+    yaml.innerHTML = `<summary>Voir le YAML</summary><pre>${toYaml(s.kind, cfg)}</pre>`;
+    ctl.append(yaml);
+    const el = document.createElement(`appliance-${s.kind}-card`);
+    el.setConfig(cfg);
+    el.addEventListener('hass-more-info', (e) => log(`more-info ${e.detail.entityId}`));
+    cards.push(el);
+    cell.append(el, ctl); main.append(cell);
+  }
+  refresh();
+}
+
+function seg(id, cb) {
+  const root = document.getElementById(id);
+  root.addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b) return;
+    root.querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b));
+    cb(b.dataset.v);
+  });
+}
+seg('theme', (v) => document.body.classList.toggle('light', v === 'light'));
+seg('lang', (v) => { lang = v; document.documentElement.lang = v; refresh(); });
+seg('anim', (v) => { animations = v === '1'; buildAll(); });
+buildAll();
+const ver = window.customCards ? `${window.customCards.length} cartes chargées` : 'erreur de chargement';
+document.getElementById('ver').textContent += ` · ${ver}`;
+</script>
+</body>
+</html>
