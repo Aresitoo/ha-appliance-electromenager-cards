@@ -42,7 +42,7 @@ const wcases=[
 for(const [n,cfg,st,cls,l] of wcases){try{const c=card('washer',cfg,st);if(cls)ok(`washer: ${n}`,has(c,cls),c.wrap.className);if(l)ok(`washer LCD: ${n}`,c.lcd()===l,c.lcd());if(!cls)ok(`washer: ${n}`,true)}catch(e){ok(`washer: ${n}`,false,e.message)}}
 
 // remaining formats
-const rcases=[['47 min',[mk('sensor.r',47,{unit_of_measurement:'min'})],'0:47','47 min'],['H:MM:SS',[mk('sensor.r','1:05:00')],'1:05','1 h 05'],['seconds',[mk('sensor.r',90,{unit_of_measurement:'s'})],'1:30','2 min'],
+const rcases=[['47 min',[mk('sensor.r',47,{unit_of_measurement:'min'})],'0:47','47 min'],['H:MM:SS',[mk('sensor.r','1:05:00')],'1:05','1 h 05'],['seconds',[mk('sensor.r',90,{unit_of_measurement:'s'})],'0:02','2 min'],
  ['timestamp',[mk('sensor.r',new Date(Date.now()+30*60000).toISOString(),{device_class:'timestamp'})],'0:30','30 min'],['hours',[mk('sensor.r',2,{unit_of_measurement:'h'})],'2:00','2 h']];
 for(const [n,st,l,tile] of rcases){const c=card('washer',{entity:'input_boolean.w',remaining:'sensor.r'},[mk('input_boolean.w','on'),...st]);
  ok(`remaining ${n} LCD`,c.lcd()===l,c.lcd()); ok(`remaining ${n} tile`,c.sr.getElementById('stats').textContent.includes(tile),c.sr.getElementById('stats').textContent); ok(`remaining ${n} ends_at`,/Fin à/.test(c.txt()),c.txt());}
