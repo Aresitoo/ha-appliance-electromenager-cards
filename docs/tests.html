@@ -16,9 +16,9 @@ function card(kind,cfg,states,lang){const el=document.createElement(`appliance-$
 const has=(c,cls)=>c.wrap.classList.contains(cls);
 
 // registration
-const tags=['washer','dryer','dishwasher','water-heater','oven','microwave','fridge'];
+const tags=['washer','dryer','dishwasher','water-heater','oven','microwave','fridge','pellet-stove','pool-pump','printer-3d'];
 tags.forEach(t=>ok(`registered ${t}`,customElements.get(`appliance-${t}-card`)));
-ok('customCards = 7',window.customCards.length===7,window.customCards.length);
+ok('customCards = 10',window.customCards.length===10,window.customCards.length);
 // config validation
 try{document.createElement('appliance-washer-card').setConfig({});ok('empty config throws',false)}catch(e){ok('empty config throws',/entity|power/.test(e.message),e.message)}
 
@@ -110,6 +110,66 @@ c=card('dishwasher',{entity:'switch.dp',power:'sensor.p',switch:'switch.dp'},[mk
 c.sr.querySelector('.toggle').click(); ok('dishwasher mid-cycle also guarded',c.h.calls.length===0);
 c=card('washer',{entity:'switch.wp',power:'sensor.p',switch:'switch.wp'},[mk('switch.wp','off'),mk('sensor.p',0,W)]);
 c.sr.querySelector('.toggle').click(); ok('turning ON is never guarded',c.h.calls.length===1);
+// pellet stove
+const stove=(cfg,st,lang)=>card('pellet-stove',cfg,st,lang);
+c=stove({power:'sensor.p'},[mk('sensor.p',0,W)]); ok('stove plug 0 W -> off',has(c,'st-off'),c.wrap.className);
+c=stove({power:'sensor.p'},[mk('sensor.p',320,W)]); ok('stove plug 320 W -> ignition',has(c,'st-ignition')&&c.lcd()==='ALLUM',c.wrap.className+' '+c.lcd());
+c=stove({power:'sensor.p',temperature:'sensor.t'},[mk('sensor.p',60,W),mk('sensor.t',20.4,T)]); ok('stove plug 60 W -> heating, LCD temp',has(c,'st-heating')&&c.lcd()==='20°',c.wrap.className+' '+c.lcd());
+c=stove({power:'sensor.p',ignition_threshold:400},[mk('sensor.p',320,W)]); ok('stove custom ignition threshold',has(c,'st-heating'),c.wrap.className);
+c=stove({entity:'switch.s',power:'sensor.p'},[mk('switch.s','on'),mk('sensor.p',3,W)]); ok('stove plug on, 3 W -> standby',has(c,'st-standby')&&c.lcd()==='ECO',c.wrap.className+' '+c.lcd());
+c=stove({entity:'sensor.s'},[mk('sensor.s','Extinction')]); ok('stove text Extinction',has(c,'st-extinguishing')&&c.lcd()==='EXTIN',c.wrap.className);
+c=stove({entity:'sensor.s'},[mk('sensor.s','Alarme')]); ok('stove text Alarme',has(c,'st-alarm'),c.wrap.className);
+c=stove({entity:'sensor.s'},[mk('sensor.s','Allumage')]); ok('stove text Allumage',has(c,'st-ignition'),c.wrap.className);
+c=stove({entity:'climate.s'},[mk('climate.s','heat',{hvac_action:'heating',current_temperature:19.5,temperature:21})]); ok('stove climate heating + attrs',has(c,'st-heating')&&c.lcd()==='20°'&&/21/.test(c.sr.getElementById('stats').textContent),c.wrap.className+' '+c.lcd());
+c=stove({entity:'climate.s'},[mk('climate.s','heat',{hvac_action:'idle'})]); ok('stove climate idle -> standby',has(c,'st-standby'),c.wrap.className);
+c=stove({entity:'climate.s'},[mk('climate.s','off',{hvac_action:'off'})]); ok('stove climate off',has(c,'st-off'),c.wrap.className);
+c=stove({power:'sensor.p',power_level:'sensor.l',pellet_level:'sensor.g'},[mk('sensor.p',70,W),mk('sensor.l',5),mk('sensor.g',9,{unit_of_measurement:'%'})]);
+ok('stove level 5 enlarges fire',parseFloat(c.sr.querySelector('.fire').style.getPropertyValue('--fs'))>1,c.sr.querySelector('.fire').style.getPropertyValue('--fs'));
+ok('stove low pellets alert',has(c,'alert')&&/Granulés bas/.test(c.txt())&&!!c.sr.querySelector('.tile.warn'),c.txt());
+ok('stove level tile P5',/P5/.test(c.sr.getElementById('stats').textContent),c.sr.getElementById('stats').textContent);
+ok('stove flames animated when heating',getComputedStyle(c.sr.querySelector('.flame')).animationName==='ac-flick',getComputedStyle(c.sr.querySelector('.flame')).animationName);
+c=stove({power:'sensor.p'},[mk('sensor.p',0,W)]); ok('stove fire hidden when off',getComputedStyle(c.sr.querySelector('.fire')).opacity==='0',getComputedStyle(c.sr.querySelector('.fire')).opacity);
+c=stove({entity:'switch.s',power:'sensor.p',switch:'switch.s'},[mk('switch.s','on'),mk('sensor.p',70,W)]);
+c.sr.querySelector('.toggle').click(); ok('stove burning: 1st click does not cut power',c.h.calls.length===0,JSON.stringify(c.h.calls));
+c=stove({entity:'sensor.s',switch:'switch.s'},[mk('sensor.s','Extinction'),mk('switch.s','on')]);
+c.sr.querySelector('.toggle').click(); ok('stove extinguishing: also guarded',c.h.calls.length===0,JSON.stringify(c.h.calls));
+c=stove({power:'sensor.p'},[mk('sensor.p',320,W)],'en'); ok('stove English',/Pellet stove/.test(c.txt())&&/Igniting/.test(c.txt())&&c.lcd()==='IGNIT',c.txt());
+const s4=customElements.get('appliance-pellet-stove-card').getStubConfig(hassOf([mk('sensor.poele_power',50,W),mk('sensor.poele_temperature',20,T),mk('switch.poele','on')]));
+ok('stub stove (no toggle by default)',s4.power==='sensor.poele_power'&&s4.temperature==='sensor.poele_temperature'&&!s4.switch,JSON.stringify(s4));
+// pool pump
+const pool=(cfg,st,lang)=>card('pool-pump',cfg,st,lang);
+c=pool({switch:'switch.p',entity:'switch.p',power:'sensor.p'},[mk('switch.p','off'),mk('sensor.p',0,W)]); ok('pool off',has(c,'st-off')&&c.lcd()==='OFF',c.wrap.className+' '+c.lcd());
+c=pool({switch:'switch.p',entity:'switch.p',power:'sensor.p'},[mk('switch.p','on'),mk('sensor.p',750,W)]); ok('pool filtering + LCD watts',has(c,'st-filtering')&&c.lcd()==='750W'&&/Filtration/.test(c.txt()),c.wrap.className+' '+c.lcd()+' '+c.txt());
+c=pool({switch:'switch.p',entity:'switch.p',power:'sensor.p'},[mk('switch.p','on'),mk('sensor.p',3,W)]); ok('pool plug on, no draw -> standby',has(c,'st-standby')&&c.lcd()==='STBY',c.wrap.className);
+c=pool({power:'sensor.p',speed:'sensor.s'},[mk('sensor.p',600,W),mk('sensor.s',2400,{unit_of_measurement:'rpm'})]); ok('pool LCD rpm',c.lcd()==='2400',c.lcd()); ok('pool speed from rpm',Math.abs(parseFloat(c.wrap.style.getPropertyValue('--spd'))-0.86)<0.02,c.wrap.style.getPropertyValue('--spd'));
+c=pool({power:'sensor.p',speed:'sensor.s'},[mk('sensor.p',600,W),mk('sensor.s',50,{unit_of_measurement:'%'})]); ok('pool LCD % and speed',c.lcd()==='50%'&&parseFloat(c.wrap.style.getPropertyValue('--spd'))===0.8,c.lcd()+' '+c.wrap.style.getPropertyValue('--spd'));
+c=pool({power:'sensor.p',max_power:1000},[mk('sensor.p',400,W)]); ok('pool speed from max_power',parseFloat(c.wrap.style.getPropertyValue('--spd'))===0.4,c.wrap.style.getPropertyValue('--spd'));
+c=pool({power:'sensor.p',temperature:'sensor.t',runtime:'sensor.r'},[mk('sensor.p',700,W),mk('sensor.t',27.5,T),mk('sensor.r',5.5,{unit_of_measurement:'h'})]);
+ok('pool tiles water + today',/27,5/.test(c.sr.getElementById('stats').textContent)&&/5 h 30/.test(c.sr.getElementById('stats').textContent)&&/Eau/.test(c.sr.getElementById('stats').textContent),c.sr.getElementById('stats').textContent);
+ok('pool flow animated',getComputedStyle(c.sr.querySelector('.flow')).animationName==='ac-flow',getComputedStyle(c.sr.querySelector('.flow')).animationName);
+c=pool({switch:'switch.p',power:'sensor.p'},[mk('switch.p','on'),mk('sensor.p',700,W)]); c.sr.querySelector('.toggle').click(); ok('pool toggle is one click',c.h.calls.length===1,JSON.stringify(c.h.calls));
+c=pool({power:'sensor.p'},[mk('sensor.p',700,W)],'en'); ok('pool English',/Pool pump/.test(c.txt())&&/Filtering/.test(c.txt()),c.txt());
+const s5=customElements.get('appliance-pool-pump-card').getStubConfig(hassOf([mk('sensor.pompe_piscine_power',700,W),mk('switch.pompe_piscine','on'),mk('sensor.piscine_temperature',26,T)]));
+ok('stub pool',s5.power==='sensor.pompe_piscine_power'&&s5.switch==='switch.pompe_piscine'&&s5.temperature==='sensor.piscine_temperature',JSON.stringify(s5));
+// 3D printer
+const pr=(cfg,st,lang)=>card('printer-3d',cfg,st,lang);
+c=pr({entity:'sensor.s',progress:'sensor.pg'},[mk('sensor.s','running'),mk('sensor.pg',40,{unit_of_measurement:'%'})]);
+ok('printer running (Bambu)',has(c,'st-printing')&&c.lcd()==='40%'&&/Impression/.test(c.txt()),c.wrap.className+' '+c.lcd()+' '+c.txt());
+ok('printer object height follows progress',Math.abs(parseFloat(c.wrap.style.getPropertyValue('--h'))-15.2)<0.01&&parseFloat(c.sr.querySelector('.objclip').getAttribute('height'))===15.2,c.wrap.style.getPropertyValue('--h'));
+ok('printer head moves while printing',getComputedStyle(c.sr.querySelector('.head')).animationName==='ac-printx',getComputedStyle(c.sr.querySelector('.head')).animationName);
+ok('printer progress bar',c.sr.getElementById('bar').style.display!=='none'&&c.sr.getElementById('barfill').style.width==='40%');
+c=pr({entity:'sensor.s',temperature:'sensor.n'},[mk('sensor.s','prepare'),mk('sensor.n',185,T)]); ok('printer prepare -> heating, LCD nozzle temp',has(c,'st-heating')&&c.lcd()==='185°'&&!has(c,'indeterminate'),c.wrap.className+' '+c.lcd());
+c=pr({entity:'sensor.s'},[mk('sensor.s','pause')]); ok('printer paused',has(c,'st-paused')&&c.lcd()==='PAUSE',c.wrap.className);
+c=pr({entity:'sensor.s'},[mk('sensor.s','finish')]); ok('printer finished full object',has(c,'st-finished')&&c.lcd()==='DONE'&&parseFloat(c.sr.querySelector('.objclip').getAttribute('height'))===38,c.wrap.className);
+c=pr({entity:'sensor.s'},[mk('sensor.s','failed')]); ok('printer failed',has(c,'st-failed')&&c.lcd()==='ERROR'&&/Échec/.test(c.txt()),c.wrap.className);
+c=pr({entity:'sensor.s'},[mk('sensor.s','idle')]); ok('printer idle -> ready',has(c,'st-ready')&&c.lcd()==='READY',c.wrap.className);
+c=pr({entity:'sensor.s'},[mk('sensor.s','offline')]); ok('printer offline -> off',has(c,'st-off'),c.wrap.className);
+c=pr({entity:'sensor.s'},[mk('sensor.s','Printing')]); ok('printer OctoPrint "Printing"',has(c,'st-printing'),c.wrap.className);
+c=pr({entity:'switch.p',power:'sensor.p'},[mk('switch.p','on'),mk('sensor.p',120,W)]); ok('printer plug only -> printing, indeterminate growth',has(c,'st-printing')&&has(c,'indeterminate')&&getComputedStyle(c.sr.querySelector('.object')).animationName==='ac-grow',c.wrap.className);
+c=pr({entity:'switch.p',power:'sensor.p'},[mk('switch.p','on'),mk('sensor.p',8,W)]); ok('printer plug idle -> ready',has(c,'st-ready'),c.wrap.className);
+c=pr({entity:'sensor.s',filament_color:'#3e8ed0'},[mk('sensor.s','running')]); ok('printer filament color',c.wrap.style.getPropertyValue('--fil')==='#3e8ed0');
+c=pr({entity:'sensor.s',switch:'switch.p'},[mk('sensor.s','running'),mk('switch.p','on')]); c.sr.querySelector('.toggle').click(); ok('printer mid-print cut guarded',c.h.calls.length===0,JSON.stringify(c.h.calls));
+c=pr({entity:'sensor.s'},[mk('sensor.s','running')],'en'); ok('printer English',/3D printer/.test(c.txt())&&/Printing/.test(c.txt()),c.txt());
 // live update
 c=card('washer',{entity:'input_boolean.w'},[mk('input_boolean.w','off')]); c.el.hass=hassOf([mk('input_boolean.w','on')]); ok('live update off->running',has(c,'st-running'),c.wrap.className);
 

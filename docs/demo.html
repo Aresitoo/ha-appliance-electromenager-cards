@@ -184,6 +184,38 @@ const SCEN = [
       range(ctl, 'Restant', 'sensor.microwave_remaining', 0, 600, 5, 105, 's', { unit_of_measurement: 's' }, mmss);
       checks(ctl, [['Porte ouverte', 'binary_sensor.microwave_door', false]]);
     } },
+  { kind: 'pellet-stove', title: 'Poêle à granulés',
+    cfg: { entity: 'sensor.stove_status', power: 'sensor.stove_power', temperature: 'sensor.stove_temp', target_temperature: 'sensor.stove_target', power_level: 'sensor.stove_level', pellet_level: 'sensor.stove_pellets', energy: 'sensor.stove_energy' },
+    build(ctl) {
+      select(ctl, 'État', 'sensor.stove_status', [['on', 'Auto (selon la puissance)'], ['off', 'Éteint'], ['Allumage', 'Allumage'], ['Chauffe', 'Chauffe'], ['Extinction', 'Extinction'], ['Alarme', 'Alarme'], ['unavailable', 'Indisponible']], 'on');
+      range(ctl, 'Puissance', 'sensor.stove_power', 0, 450, 5, 65, 'W', W);
+      range(ctl, 'Niveau', 'sensor.stove_level', 1, 5, 1, 3, '', {}, (v) => `P${v}`);
+      range(ctl, 'Température', 'sensor.stove_temp', 10, 28, 0.5, 19.5, '°C', T);
+      range(ctl, 'Consigne', 'sensor.stove_target', 15, 25, 0.5, 21, '°C', T);
+      range(ctl, 'Granulés', 'sensor.stove_pellets', 0, 100, 1, 64, '%', { unit_of_measurement: '%' });
+      set('sensor.stove_energy', 2.4, KWH);
+    } },
+  { kind: 'pool-pump', title: 'Pompe de piscine',
+    cfg: { switch: 'switch.pool_pump', entity: 'switch.pool_pump', power: 'sensor.pool_pump_power', temperature: 'sensor.pool_water_temp', runtime: 'sensor.pool_runtime_today', energy: 'sensor.pool_pump_energy', cost: 'sensor.pool_pump_cost', max_power: 1100 },
+    build(ctl) {
+      set('switch.pool_pump', 'on');
+      range(ctl, 'Puissance', 'sensor.pool_pump_power', 0, 1100, 10, 650, 'W', W);
+      range(ctl, 'Eau', 'sensor.pool_water_temp', 10, 34, 0.5, 26.5, '°C', T);
+      range(ctl, 'Filtré aujourd’hui', 'sensor.pool_runtime_today', 0, 24, 0.25, 4.5, 'h', { unit_of_measurement: 'h' });
+      set('sensor.pool_pump_energy', 2.9, KWH); set('sensor.pool_pump_cost', 0.48, EUR);
+      ctl.append(document.createElement('span'), Object.assign(document.createElement('span'), { textContent: 'Bouton ⏻ de la carte = prise de la pompe · vitesse d’animation selon la puissance', style: 'color:var(--secondary-text-color);font-size:12px' }), document.createElement('span'));
+    } },
+  { kind: 'printer-3d', title: 'Imprimante 3D',
+    cfg: { entity: 'sensor.printer_status', power: 'sensor.printer_power', progress: 'sensor.printer_progress', remaining: 'sensor.printer_remaining', temperature: 'sensor.printer_nozzle', bed_temperature: 'sensor.printer_bed', program: 'sensor.printer_task' },
+    build(ctl) {
+      select(ctl, 'État', 'sensor.printer_status', [['idle', 'Prêt'], ['prepare', 'Préparation / chauffe'], ['running', 'Impression'], ['pause', 'Pause'], ['finish', 'Terminé'], ['failed', 'Échec'], ['offline', 'Hors ligne']], 'running');
+      range(ctl, 'Progression', 'sensor.printer_progress', 0, 100, 1, 42, '%', { unit_of_measurement: '%' });
+      range(ctl, 'Restant', 'sensor.printer_remaining', 0, 600, 1, 74, 'min', { unit_of_measurement: 'min' });
+      range(ctl, 'Buse', 'sensor.printer_nozzle', 20, 300, 1, 220, '°C', T);
+      range(ctl, 'Plateau', 'sensor.printer_bed', 20, 110, 1, 65, '°C', T);
+      range(ctl, 'Puissance', 'sensor.printer_power', 0, 400, 1, 140, 'W', W);
+      set('sensor.printer_task', 'Vase spirale');
+    } },
   { kind: 'fridge', title: 'Réfrigérateur',
     cfg: { power: 'sensor.fridge_power', temperature: 'sensor.fridge_temp', freezer_temperature: 'sensor.freezer_temp', door: 'binary_sensor.fridge_door', freezer_door: 'binary_sensor.freezer_door', energy: 'sensor.fridge_energy' },
     build(ctl) {
