@@ -6,7 +6,7 @@
  */
 (() => {
 "use strict";
-const VERSION = "1.1.4";
+const VERSION = "1.4.0";
 
 /* ------------------------------------------------------------------ */
 /* i18n                                                                */
@@ -14,7 +14,13 @@ const VERSION = "1.1.4";
 const STRINGS = {
   en: {
     washer: "Washing machine", dryer: "Dryer", dishwasher: "Dishwasher",
-    water_heater: "Water heater", oven: "Oven", microwave: "Microwave", fridge: "Refrigerator",
+    water_heater: "Water heater", oven: "Oven", microwave: "Microwave", fridge: "Refrigerator", pellet_stove: "Pellet stove", pool_pump: "Pool pump", printer_3d: "3D printer",
+    printing: "Printing", paused: "Paused", failed: "Failed", progress: "Progress", nozzle: "Nozzle", bed: "Bed",
+    f_bed_temperature: "Bed temperature sensor", f_filament_color: "Filament color (CSS)",
+    filtering: "Filtering", water: "Water", today: "Today", speed: "Speed",
+    f_runtime: "Filtration time today sensor", f_speed: "Speed sensor (rpm or %)", f_max_power: "Max power at full speed (W)",
+    ignition: "Igniting", extinguishing: "Shutting down", alarm: "Alarm", pellets: "Pellets", pellets_low: "Low pellets", level: "Level",
+    f_power_level: "Heat level sensor (1-5)", f_pellet_level: "Pellet level sensor (%)", f_ignition_threshold: "Ignition above (W)", f_pellet_alert: "Low pellet alert below (%)",
     off: "Off", idle: "Idle", standby: "Standby", running: "Running", finished: "Finished",
     heating: "Heating", ready: "Ready", preheating: "Preheating", cooling: "Cooling",
     door_open: "Door open", unavailable: "Unavailable", too_warm: "Too warm",
@@ -33,7 +39,13 @@ const STRINGS = {
   },
   fr: {
     washer: "Lave-linge", dryer: "Sèche-linge", dishwasher: "Lave-vaisselle",
-    water_heater: "Ballon d'eau chaude", oven: "Four", microwave: "Micro-ondes", fridge: "Réfrigérateur",
+    water_heater: "Ballon d'eau chaude", oven: "Four", microwave: "Micro-ondes", fridge: "Réfrigérateur", pellet_stove: "Poêle à granulés", pool_pump: "Pompe de piscine", printer_3d: "Imprimante 3D",
+    printing: "Impression", paused: "En pause", failed: "Échec", progress: "Progression", nozzle: "Buse", bed: "Plateau",
+    f_bed_temperature: "Capteur de température du plateau", f_filament_color: "Couleur du filament (CSS)",
+    filtering: "Filtration", water: "Eau", today: "Aujourd'hui", speed: "Vitesse",
+    f_runtime: "Capteur de durée de filtration du jour", f_speed: "Capteur de vitesse (tr/min ou %)", f_max_power: "Puissance max à pleine vitesse (W)",
+    ignition: "Allumage", extinguishing: "Extinction", alarm: "Alarme", pellets: "Granulés", pellets_low: "Granulés bas", level: "Niveau",
+    f_power_level: "Capteur de puissance de chauffe (1-5)", f_pellet_level: "Capteur de niveau de granulés (%)", f_ignition_threshold: "Allumage au-dessus de (W)", f_pellet_alert: "Alerte granulés sous (%)",
     off: "Éteint", idle: "Inactif", standby: "Veille", running: "En cours", finished: "Terminé",
     heating: "En chauffe", ready: "Prêt", preheating: "Préchauffage", cooling: "Refroidit",
     door_open: "Porte ouverte", unavailable: "Indisponible", too_warm: "Trop chaud",
@@ -335,6 +347,157 @@ ${lcd(90, 42, 21, 10)}
   <path d="M30 50v76" stroke="#fff" stroke-opacity=".55" stroke-width="2"/>
 </g>
 <g class="mist"><circle cx="40" cy="132" r="1.1"/><circle cx="52" cy="133" r=".9"/><circle cx="66" cy="132" r="1.2"/><circle cx="79" cy="133" r=".9"/></g>`,
+  pellet_stove: () => `
+<defs>${DEFS}
+<clipPath id="ID-win"><rect x="34" y="46" width="52" height="50" rx="5"/></clipPath>
+<linearGradient id="ID-blk" x1="0" x2="1"><stop offset="0" stop-color="#17191c"/><stop offset=".5" stop-color="#34383e"/><stop offset="1" stop-color="#141618"/></linearGradient>
+<linearGradient id="ID-white" x1="0" x2="1"><stop offset="0" stop-color="#d9dde2"/><stop offset=".55" stop-color="#ffffff"/><stop offset="1" stop-color="#c9ced4"/></linearGradient>
+<linearGradient id="ID-brick" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b1712"/><stop offset="1" stop-color="#0f0706"/></linearGradient>
+<radialGradient id="ID-glow" cx=".5" cy=".85" r=".85"><stop offset="0" stop-color="#ffd27a" stop-opacity=".95"/><stop offset=".45" stop-color="#ff7a1a" stop-opacity=".55"/><stop offset="1" stop-color="#3a0d00" stop-opacity="0"/></radialGradient>
+<linearGradient id="ID-fl" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#fff3b0"/><stop offset=".3" stop-color="#ffc23d"/><stop offset=".68" stop-color="#ff7a1a"/><stop offset="1" stop-color="#e5381c" stop-opacity="0"/></linearGradient>
+<linearGradient id="ID-core" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ffffff"/><stop offset=".4" stop-color="#fff0a0"/><stop offset="1" stop-color="#ffc23d" stop-opacity="0"/></linearGradient></defs>
+<g transform="translate(-6.5 -4.5) scale(1.11)">
+<ellipse cx="60" cy="134" rx="44" ry="4.5" fill="url(#ID-shadow)"/>
+<g class="flue-smoke"><path d="M57 0q-4-5 0-10t0-10"/><path d="M63 -2q-4-5 0-10t0-10"/></g>
+<rect x="53" y="3" width="14" height="11" fill="url(#ID-chrome)"/>
+<rect x="51" y="1" width="18" height="4" rx="1.5" fill="url(#ID-chrome)" stroke="#7d858e" stroke-width=".4"/>
+<rect x="28" y="124" width="9" height="7" rx="1.5" fill="#24272b"/><rect x="83" y="124" width="9" height="7" rx="1.5" fill="#24272b"/>
+<rect x="22" y="14" width="76" height="113" rx="7" fill="url(#ID-blk)" stroke="#0b0c0e" stroke-width=".6"/>
+<rect x="22" y="22" width="9.5" height="102" rx="3.5" fill="url(#ID-white)"/>
+<rect x="88.5" y="22" width="9.5" height="102" rx="3.5" fill="url(#ID-white)"/>
+<rect x="19" y="11" width="82" height="8" rx="3" fill="#2b2f34" stroke="#474c53" stroke-width=".6"/>
+<rect x="40" y="12.4" width="40" height="5" rx="1.6" fill="#1b1d21" stroke="#555b63" stroke-width=".5"/>
+<path d="M36 23.5h48M36 26h48M36 28.5h48" stroke="#0b0c0e" stroke-width="1.2"/>
+${lcd(46, 31.5, 28, 9)}
+<circle cx="40" cy="36" r="2" fill="#3b4148" stroke="#5a616a" stroke-width=".4"/>
+<circle class="led l1" cx="80" cy="36" r="1.5"/>
+<rect x="31" y="43" width="58" height="56" rx="7" fill="#0f1113" stroke="#4a5058" stroke-width=".8"/>
+<rect x="34" y="46" width="52" height="50" rx="5" fill="url(#ID-brick)"/>
+<g clip-path="url(#ID-win)">
+  <path d="M34 56h52M34 66h52M34 76h52M46 46v10M62 46v10M78 46v10M40 56v10M56 56v10M72 56v10M48 66v10M64 66v10M80 66v10" stroke="#3d2219" stroke-width=".6" opacity=".9"/>
+  <rect class="glow" x="34" y="46" width="52" height="50" fill="url(#ID-glow)"/>
+  <g class="fire">
+    <path class="flame f2" d="M52.5 86C46.5 81 47.5 73 50 68C51.5 73 54 73.5 54 69C57.5 74.5 58.5 82 52.5 86Z" fill="url(#ID-fl)"/>
+    <path class="flame f3" d="M67.5 86C62 82 63 74 65.5 70C66.5 74.5 68.5 74.5 69.5 70C73.5 76.5 72.5 83 67.5 86Z" fill="url(#ID-fl)"/>
+    <path class="flame f1" d="M60 86C51 80 52.5 69 57 62C58 68.5 61 68.5 60.5 60C67.5 67 71 78 60 86Z" fill="url(#ID-fl)"/>
+    <path class="flame f5" d="M59.5 68C57.5 62 59.5 56 61.5 52C62.5 58 63.5 62.5 59.5 68Z" fill="url(#ID-fl)" opacity=".85"/>
+    <path class="flame f4" d="M60 86C56 83 56 77 58.5 72.5C59.5 76 61.5 76.5 62 73C64.5 78 64.5 83 60 86Z" fill="url(#ID-core)"/>
+  </g>
+  <g class="smoke-in"><path d="M55 82q-3-6 0-12t0-12"/><path d="M64 82q-3-6 0-12t0-12"/></g>
+  <path d="M45 92h30l-3.5-7h-23z" fill="#3a3f45" stroke="#5c636b" stroke-width=".5"/>
+  <g class="pellets" fill="#8a5a2b"><rect x="50" y="83.6" width="3" height="1.4" rx=".7"/><rect x="54" y="84.2" width="3" height="1.4" rx=".7" transform="rotate(20 55.5 85)"/><rect x="58" y="83.4" width="3" height="1.4" rx=".7"/><rect x="62" y="84" width="3" height="1.4" rx=".7" transform="rotate(-15 63.5 84.7)"/><rect x="66" y="83.6" width="3" height="1.4" rx=".7"/></g>
+  <g class="embers"><circle cx="51" cy="84.6" r=".9"/><circle cx="55.5" cy="85.2" r="1"/><circle cx="59.5" cy="84.4" r=".9"/><circle cx="63.5" cy="85" r="1"/><circle cx="67.5" cy="84.6" r=".9"/></g>
+  <circle class="igniter" cx="60" cy="88.5" r="1.8"/>
+</g>
+<path d="M36 60L50 46h8L36 70z" fill="#fff" opacity=".08"/>
+<rect x="34" y="46" width="52" height="50" rx="5" fill="none" stroke="#000" stroke-opacity=".5"/>
+<rect x="86.3" y="60" width="2.3" height="16" rx="1.1" fill="url(#ID-chrome)"/>
+<rect x="34" y="104" width="52" height="12" rx="2" fill="#18191c" stroke="#3b4047" stroke-width=".6"/>
+<rect x="52" y="108.5" width="16" height="3" rx="1.5" fill="#4a5058"/>
+<path d="M36 120h48M36 122.5h48" stroke="#0b0c0e" stroke-width="1"/>
+<g class="warm-air"><path d="M42 30q-2-3 0-6t0-6"/><path d="M54 30q-2-3 0-6t0-6"/><path d="M66 30q-2-3 0-6t0-6"/><path d="M78 30q-2-3 0-6t0-6"/></g>
+</g>`,
+  pool_pump: () => `
+<defs>${DEFS}
+<clipPath id="ID-win"><rect x="22" y="52" width="16" height="32" rx="3"/></clipPath>
+<clipPath id="ID-pool"><rect x="0" y="113" width="120" height="27"/></clipPath>
+<linearGradient id="ID-motor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3f86d8"/><stop offset=".35" stop-color="#6fb0f0"/><stop offset=".6" stop-color="#2f6fbf"/><stop offset="1" stop-color="#174a85"/></linearGradient>
+<linearGradient id="ID-grey" x1="0" x2="1"><stop offset="0" stop-color="#b9c0c7"/><stop offset=".45" stop-color="#eef1f4"/><stop offset="1" stop-color="#a3abb4"/></linearGradient>
+<linearGradient id="ID-water" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5fd0ff"/><stop offset="1" stop-color="#0a6fb8"/></linearGradient>
+<linearGradient id="ID-pot" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9fdcff" stop-opacity=".55"/><stop offset="1" stop-color="#1b88d0" stop-opacity=".85"/></linearGradient></defs>
+<rect x="0" y="113" width="120" height="27" fill="url(#ID-water)"/>
+<g clip-path="url(#ID-pool)">
+  <path d="M0 117h120" stroke="#1d6fa8" stroke-width="2.2" stroke-dasharray="3 1"/>
+  <g class="ripple"><path d="M-30 124q5-2 10 0t10 0t10 0t10 0t10 0t10 0t10 0t10 0t10 0t10 0t10 0t10 0t10 0t10 0t10 0t10 0" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width=".9"/>
+  <path d="M-25 132q5-2 10 0t10 0t10 0t10 0t10 0t10 0t10 0t10 0t10 0t10 0t10 0t10 0t10 0t10 0t10 0t10 0" fill="none" stroke="#fff" stroke-opacity=".3" stroke-width=".9"/></g>
+  <g class="bubbles"><circle cx="108" cy="125" r="1.2"/><circle cx="104" cy="123" r=".9"/><circle cx="106" cy="128" r="1"/><circle cx="101" cy="126" r=".8"/></g>
+</g>
+<rect x="0" y="108" width="120" height="5.5" fill="#d8d0bf"/>
+<path d="M20 108v5.5M44 108v5.5M68 108v5.5M92 108v5.5" stroke="#b7ad98" stroke-width=".6"/>
+<rect x="10" y="100" width="100" height="8" fill="#c4bfb4"/><rect x="10" y="100" width="100" height="1.5" fill="#d6d2c8"/>
+<g class="pipes">
+  <path d="M6 126V72H18" fill="none" stroke="#9aa3ad" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M6 126V72H18" fill="none" stroke="#f1f3f5" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M52 62V26H112V126" fill="none" stroke="#9aa3ad" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M52 62V26H112V126" fill="none" stroke="#f1f3f5" stroke-width="6" stroke-linejoin="round"/>
+  <path class="flow" d="M6 126V72H18"/>
+  <path class="flow" d="M52 62V26H112V124"/>
+  <rect x="2" y="90" width="8" height="5" rx="1" fill="#d5dade" stroke="#9aa3ad" stroke-width=".5"/>
+  <rect x="48" y="38" width="8" height="5" rx="1" fill="#d5dade" stroke="#9aa3ad" stroke-width=".5"/>
+</g>
+<g class="hum">
+<rect x="46" y="92" width="56" height="8" rx="1.5" fill="#3a3f45"/>
+<rect x="18" y="44" width="24" height="48" rx="4" fill="url(#ID-grey)" stroke="#8f979f" stroke-width=".6"/>
+<rect x="16" y="35" width="28" height="9" rx="2.5" fill="#2b3036"/>
+<rect x="19" y="36.5" width="22" height="3" rx="1.5" fill="#cfe9ff" opacity=".55"/>
+<rect x="22" y="52" width="16" height="32" rx="3" fill="url(#ID-pot)"/>
+<g clip-path="url(#ID-win)">
+  <path d="M23 58h14M23 64h14M23 70h14M23 76h14M26 52v32M30 52v32M34 52v32" stroke="#ffffff" stroke-opacity=".35" stroke-width=".5"/>
+  <g class="swirl">
+    <path d="M30 68m-5 0a5 5 0 1 0 10 0a5 5 0 1 0-10 0" fill="none" stroke="#ffffff" stroke-opacity=".55" stroke-width=".8" stroke-dasharray="4 3"/>
+    <path d="M27 63q2-2 4 0q-2 1.5-4 0z" fill="#5c9a34"/><path d="M32 72q2-2 4 0q-2 1.5-4 0z" fill="#8a6a2b"/><path d="M26 74q1.5-2 3.5 0q-1.5 1.5-3.5 0z" fill="#4f8a2a"/>
+  </g>
+</g>
+<rect x="22" y="52" width="16" height="32" rx="3" fill="none" stroke="#6f7881" stroke-width=".6"/>
+<circle cx="52" cy="74" r="13" fill="url(#ID-grey)" stroke="#8f979f" stroke-width=".6"/>
+<circle cx="52" cy="74" r="8" fill="none" stroke="#a7afb7" stroke-width=".7"/>
+<rect x="60" y="56" width="42" height="36" rx="6" fill="url(#ID-motor)"/>
+<path d="M65 58v32M69 58v32M73 58v32M77 58v32M81 58v32M85 58v32M89 58v32M93 58v32M97 58v32" stroke="#123a6a" stroke-opacity=".45" stroke-width=".9"/>
+<rect x="64" y="45" width="32" height="11" rx="2" fill="#1d2126" stroke="#40464e" stroke-width=".5"/>
+${lcd(66, 46.5, 24, 8)}
+<circle class="led l1" cx="93" cy="50.5" r="1.3"/>
+<rect x="99" y="58" width="10" height="32" rx="3" fill="url(#ID-grey)" stroke="#8f979f" stroke-width=".6"/>
+<g class="fan"><path d="M104 74l-3.5-5.5M104 74l6-1M104 74l-2.5 6" stroke="#5b636c" stroke-width="2" stroke-linecap="round"/></g>
+<path d="M100.5 63h7M100.5 67h7M100.5 71h7M100.5 75h7M100.5 79h7M100.5 83h7" stroke="#6f7881" stroke-width=".9"/>
+<path d="M64 60q10-3 34 0" stroke="#fff" stroke-opacity=".35" stroke-width="1.4" fill="none"/>
+</g>`,
+  printer_3d: () => `
+<defs>${DEFS}
+<clipPath id="ID-obj"><rect class="objclip" x="40" y="66" width="40" height="38"/></clipPath>
+<linearGradient id="ID-frame" x1="0" x2="1"><stop offset="0" stop-color="#2a2e33"/><stop offset=".5" stop-color="#4a5058"/><stop offset="1" stop-color="#23272b"/></linearGradient>
+<linearGradient id="ID-alu" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f3f5"/><stop offset=".5" stop-color="#b9c0c7"/><stop offset="1" stop-color="#8d959e"/></linearGradient>
+<linearGradient id="ID-pei" x1="0" x2="1"><stop offset="0" stop-color="#3a3326"/><stop offset=".5" stop-color="#6b5a3a"/><stop offset="1" stop-color="#3a3326"/></linearGradient>
+<linearGradient id="ID-fil" x1="0" x2="1"><stop offset="0" style="stop-color:var(--fil)" stop-opacity=".75"/><stop offset=".45" style="stop-color:var(--fil)"/><stop offset="1" style="stop-color:var(--fil)" stop-opacity=".7"/></linearGradient>
+<pattern id="ID-layers" width="4" height="1.3" patternUnits="userSpaceOnUse"><rect width="4" height=".55" fill="#000" opacity=".18"/></pattern></defs>
+<ellipse cx="60" cy="133" rx="50" ry="4.5" fill="url(#ID-shadow)"/>
+<g class="spool">
+  <circle cx="97" cy="20" r="11" fill="#1f2226" stroke="#3b4047" stroke-width=".6"/>
+  <circle cx="97" cy="20" r="9" style="fill:var(--fil)"/>
+  <circle cx="97" cy="20" r="9" fill="none" stroke="#000" stroke-opacity=".22" stroke-width="2.6" stroke-dasharray=".8 1.2"/>
+  <circle cx="97" cy="20" r="4" fill="#2b2f34" stroke="#555b63" stroke-width=".6"/>
+  <circle cx="97" cy="20" r="1.6" fill="#8d959e"/>
+  <path d="M93 16.5l2 2M101 16.5l-2 2M93 23.5l2-2M101 23.5l-2-2" stroke="#555b63" stroke-width=".8"/>
+</g>
+<rect x="94" y="32" width="6" height="10" rx="1.5" fill="url(#ID-frame)"/>
+<rect x="17" y="16" width="10" height="100" rx="2.5" fill="url(#ID-frame)"/>
+<rect x="15.5" y="13" width="13" height="5" rx="2" fill="#33373d"/>
+<rect x="20.8" y="20" width="2.4" height="92" rx="1.2" fill="url(#ID-alu)" opacity=".85"/>
+<rect x="10" y="112" width="100" height="16" rx="4" fill="url(#ID-frame)" stroke="#16181b" stroke-width=".6"/>
+<rect x="12" y="113" width="96" height="1.6" rx=".8" fill="#fff" opacity=".12"/>
+${lcd(78, 116, 26, 9)}
+<circle class="led l1" cx="72" cy="120.5" r="1.4"/>
+<rect x="32" y="108" width="56" height="4" rx="1" fill="#5d646c"/>
+<g class="bedheat"><path d="M40 101q-2-3 0-6t0-6"/><path d="M54 101q-2-3 0-6t0-6"/><path d="M66 101q-2-3 0-6t0-6"/><path d="M80 101q-2-3 0-6t0-6"/></g>
+<rect x="30" y="104" width="60" height="4.5" rx="1" fill="url(#ID-pei)" stroke="#1c1a15" stroke-width=".5"/>
+<g clip-path="url(#ID-obj)"><g class="object">
+  <path d="M49 104C47 96 45 88 48 80C50 74 52 70 52 66H68C68 70 70 74 72 80C75 88 73 96 71 104Z" fill="url(#ID-fil)"/>
+  <path d="M49 104C47 96 45 88 48 80C50 74 52 70 52 66H68C68 70 70 74 72 80C75 88 73 96 71 104Z" fill="url(#ID-layers)"/>
+  <path d="M53 101C52 94 51 88 53 82" stroke="#fff" stroke-opacity=".35" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+</g></g>
+<g class="gantry">
+  <rect x="22" y="82" width="76" height="5" rx="1.5" fill="url(#ID-alu)" stroke="#7d858e" stroke-width=".4"/>
+  <rect x="94" y="80" width="6" height="9" rx="1.5" fill="url(#ID-frame)"/>
+  <g class="head">
+    <rect x="51" y="78" width="18" height="21" rx="3" fill="#ececec" stroke="#a7afb7" stroke-width=".6"/>
+    <rect x="51" y="78" width="18" height="5" rx="2" fill="#2b2f34"/>
+    <circle cx="60" cy="90" r="4.2" fill="#2b2f34"/>
+    <g class="hfan"><path d="M60 90l0-3.4M60 90l2.9 1.7M60 90l-2.9 1.7" stroke="#8d959e" stroke-width="1.3" stroke-linecap="round"/></g>
+    <path d="M57.5 99h5l-1.6 4h-1.8z" fill="#c9a43a" stroke="#8a6d1f" stroke-width=".4"/>
+    <path d="M69 81q12-4 25-30" fill="none" stroke="#e9ecef" stroke-opacity=".75" stroke-width="1.6" stroke-linecap="round"/>
+    <circle class="tip" cx="60" cy="103.4" r="1.2"/>
+    <rect class="filpath" x="59.2" y="70" width="1.6" height="8" style="fill:var(--fil)"/>
+  </g>
+</g>`,
 };
 
 /* ------------------------------------------------------------------ */
@@ -360,6 +523,15 @@ const DEF = {
   fridge: { accent: "cold", threshold: 20,
     fields: ["entity", "power", "energy", "cost", "temperature", "freezer_temperature", "door", "freezer_door", "switch"],
     keys: ["refrigerateur", "frigo", "fridge", "refrigerator", "frigidaire"] },
+  pellet_stove: { accent: "heat", threshold: 20,
+    fields: ["entity", "power", "energy", "cost", "temperature", "target_temperature", "power_level", "pellet_level", "switch"],
+    keys: ["poele", "pellet", "granule", "stove"] },
+  pool_pump: { accent: "active", threshold: 50,
+    fields: ["entity", "power", "energy", "cost", "temperature", "runtime", "speed", "switch"],
+    keys: ["piscine", "pool", "filtration", "pompe"] },
+  printer_3d: { accent: "active", threshold: 40,
+    fields: ["entity", "power", "energy", "cost", "progress", "remaining", "program", "temperature", "bed_temperature", "switch"],
+    keys: ["imprimante", "printer", "3d", "bambu", "prusa", "octoprint", "klipper", "moonraker"] },
 };
 
 /* ------------------------------------------------------------------ */
@@ -475,7 +647,7 @@ class ApplianceCardBase extends HTMLElement {
   _ids() {
     const c = this._config;
     return ["entity", "power", "energy", "cost", "remaining", "progress", "program", "door", "switch",
-      "temperature", "target_temperature", "freezer_temperature", "freezer_door"].map((k) => c[k]).filter(Boolean);
+      "power_level", "pellet_level", "runtime", "speed", "bed_temperature", "temperature", "target_temperature", "freezer_temperature", "freezer_door"].map((k) => c[k]).filter(Boolean);
   }
 
   _build() {
@@ -532,6 +704,8 @@ class ApplianceCardBase extends HTMLElement {
       progress: num(S(c.progress)), program: S(c.program), door: S(c.door),
       temp: S(c.temperature), target: S(c.target_temperature),
       ftemp: S(c.freezer_temperature), fdoor: S(c.freezer_door),
+      level: num(S(c.power_level)), pellets: num(S(c.pellet_level)),
+      runtime: parseRemaining(S(c.runtime)), speed: S(c.speed), bedTemp: num(S(c.bed_temperature)),
       status: "idle", phase: null, alerts: [],
     };
     if (main && ["water_heater", "climate"].includes(domainOf(c.entity))) {
@@ -579,6 +753,37 @@ class ApplianceCardBase extends HTMLElement {
       if (["off", "idle", "standby", "unavailable", "finished"].includes(base)) m.status = base === "standby" ? "off" : base;
       else if (m.tempVal != null && m.targetVal != null && m.tempVal < m.targetVal - 5) m.status = "preheating";
       else m.status = "heating";
+    } else if (kind === "pellet_stove") {
+      const raw = main ? `${main.state} ${main.attributes.hvac_action || ""} ${main.attributes.status || ""}`.toLowerCase() : "";
+      const ign = c.ignition_threshold ?? 250;
+      const byPower = () => (watts > ign ? "ignition" : powered ? "heating" : "standby");
+      if (/alarm|alarme|error|erreur|d[eé]faut|fault|bloqu|block/.test(raw)) m.status = "alarm";
+      else if (/allum|ignit|d[eé]marr|start|pr[eé]chauf|preheat|charg/.test(raw)) m.status = "ignition";
+      else if (/extin|shut.?down|cool|refroid|clean|nettoy/.test(raw)) m.status = "extinguishing";
+      else if (base === "off" || base === "unavailable") m.status = base;
+      else if (main && ["climate", "water_heater"].includes(domainOf(c.entity))) {
+        const act = String(main.attributes.hvac_action || "").toLowerCase();
+        m.status = act === "off" ? "off" : act === "heating" ? (watts !== null ? (watts > ign ? "ignition" : "heating") : "heating")
+          : act ? "standby" : (watts !== null ? byPower() : "heating");
+      }
+      else if (/eco|veille|standby|attente|wait/.test(raw)) m.status = "standby";
+      else if (watts !== null) m.status = base === "idle" && !powered ? "off" : byPower();
+      else m.status = base === "running" ? "heating" : base === "standby" ? "standby" : "off";
+      if (m.pellets != null && m.pellets < (c.pellet_alert ?? 15)) m.alerts.push("pellets_low");
+    } else if (kind === "pool_pump") {
+      m.status = base === "running" ? "filtering" : base;
+    } else if (kind === "printer_3d") {
+      const raw = main ? `${main.state}`.toLowerCase() : "";
+      if (/fail|error|erreur|[eé]chec/.test(raw)) m.status = "failed";
+      else if (/paus/.test(raw)) m.status = "paused";
+      else if (/finish|done|complete|termin|fini/.test(raw)) m.status = "finished";
+      else if (/prepar|heat|chauff|preheat|calibr|level|homing|init/.test(raw)) m.status = "heating";
+      else if (/print|running|impression|en cours|busy|slicing/.test(raw)) m.status = "printing";
+      else if (/offline|hors ligne/.test(raw)) m.status = "off";
+      else if (/idle|ready|pr[eê]t|operational|standby/.test(raw)) m.status = powered ? "printing" : "ready";
+      else if (base === "running") m.status = "printing";
+      else if (base === "standby" || base === "idle") m.status = main || sw ? "ready" : "off";
+      else m.status = base;
     } else if (kind === "fridge") {
       if (base === "off" || base === "unavailable") m.status = base;
       else m.status = powered ? "cooling" : "standby";
@@ -606,9 +811,36 @@ class ApplianceCardBase extends HTMLElement {
   /* ---------------- rendering ---------------- */
   _lcdText(m) {
     const hass = this._hass, kind = this._kind;
-    const active = ["running", "heating", "preheating", "cooling"].includes(m.status);
+    const active = ["running", "heating", "preheating", "cooling", "ignition", "filtering", "printing"].includes(m.status);
     if (m.status === "unavailable") return "- - -";
     if (kind === "fridge") return m.tempVal != null ? `${fmtNum(hass, m.tempVal, 0)}°` : "--°";
+    if (kind === "printer_3d") {
+      if (m.status === "printing") return m.progress != null ? `${Math.round(m.progress)}%` : m.remaining ? lcdDuration(m.remaining) : "PRINT";
+      if (m.status === "heating") return m.tempVal != null ? `${Math.round(m.tempVal)}°` : "HEAT";
+      if (m.status === "paused") return "PAUSE";
+      if (m.status === "finished") return "DONE";
+      if (m.status === "failed") return "ERROR";
+      if (m.status === "ready") return "READY";
+      return "OFF";
+    }
+    if (kind === "pool_pump") {
+      if (m.status === "filtering") {
+        const sp = num(m.speed), u = String(m.speed?.attributes.unit_of_measurement || "").toLowerCase();
+        if (sp != null && u !== "%") return `${Math.round(sp)}`;
+        if (sp != null) return `${Math.round(sp)}%`;
+        return m.watts != null ? `${Math.round(m.watts)}W` : "ON";
+      }
+      return m.status === "standby" ? "STBY" : "OFF";
+    }
+    if (kind === "pellet_stove") {
+      const fr = lang(hass) === "fr";
+      if (m.status === "ignition") return fr ? "ALLUM" : "IGNIT";
+      if (m.status === "extinguishing") return fr ? "EXTIN" : "COOL";
+      if (m.status === "alarm") return fr ? "ALARM" : "ALARM";
+      if (m.status === "standby") return "ECO";
+      if (m.status === "heating") return m.tempVal != null ? `${Math.round(m.tempVal)}°` : m.level != null ? `P${Math.round(m.level)}` : "ON";
+      return fmtClock(hass, new Date());
+    }
     if (kind === "oven") {
       if (active && m.tempVal != null) return `${Math.round(m.tempVal)}°`;
       if (active) return m.remaining ? lcdDuration(m.remaining) : "ON";
@@ -628,7 +860,7 @@ class ApplianceCardBase extends HTMLElement {
   _render(m) {
     const hass = this._hass, c = this._config, kind = this._kind;
     const $ = (i) => this.shadowRoot.getElementById(i);
-    const active = ["running", "heating", "preheating", "cooling"].includes(m.status);
+    const active = ["running", "heating", "preheating", "cooling", "ignition", "filtering", "printing"].includes(m.status);
     $("wrap").className = [
       "wrap", `k-${kind}`, `st-${m.status}`, `accent-${this._def.accent}`,
       active ? "active" : "", m.phase ? `ph-${m.phase}` : "",
@@ -640,6 +872,31 @@ class ApplianceCardBase extends HTMLElement {
     const sr = this.shadowRoot;
     const lcdEl = sr.querySelector(".lcd");
     if (lcdEl) lcdEl.textContent = this._lcdText(m);
+    if (kind === "printer_3d") {
+      const H = 38;
+      let frac = m.progress != null ? Math.max(0, Math.min(1, m.progress / 100)) : null;
+      if (m.status === "finished") frac = 1;
+      if (m.progress == null && m.status !== "printing" && m.status !== "finished") frac = 0;
+      const wrap = $("wrap");
+      wrap.classList.toggle("indeterminate", frac == null);
+      const h = (frac ?? 0) * H;
+      wrap.style.setProperty("--h", h.toFixed(2));
+      const clip = sr.querySelector(".objclip");
+      clip.setAttribute("y", (104 - h).toFixed(2)); clip.setAttribute("height", h.toFixed(2));
+      wrap.style.setProperty("--fil", c.filament_color || "#ff8a1f");
+    }
+    if (kind === "pool_pump") {
+      const sp = num(m.speed), u = String(m.speed?.attributes.unit_of_measurement || "").toLowerCase();
+      let spd = 1;
+      if (sp != null) spd = u === "%" ? 0.3 + sp / 100 : sp / 2800;
+      else if (m.watts != null && c.max_power) spd = m.watts / c.max_power;
+      spd = Math.max(0.3, Math.min(1.6, spd));
+      $("wrap").style.setProperty("--spd", spd.toFixed(2));
+    }
+    if (kind === "pellet_stove") {
+      const fs = m.level != null ? Math.max(0.55, Math.min(1.2, 0.55 + 0.13 * m.level)) : 1;
+      sr.querySelector(".fire").style.setProperty("--fs", fs.toFixed(2));
+    }
     if (kind === "water_heater") {
       const t = m.tempVal;
       const ang = t == null ? -135 : -135 + Math.max(0, Math.min(1, (t - 10) / 70)) * 270;
@@ -651,7 +908,7 @@ class ApplianceCardBase extends HTMLElement {
     const name = c.name || tr(hass, kind);
     let statusTxt = m.phase ? tr(hass, `ph_${m.phase}`) : tr(hass, m.status);
     if (m.main && ["sensor", "input_select", "select"].includes(domainOf(c.entity)) &&
-        active && !["fridge", "water_heater"].includes(kind)) {
+        active && !["fridge", "water_heater", "printer_3d", "pool_pump"].includes(kind)) {
       const raw = String(m.main.state).toLowerCase();
       if (![...OFF_STATES, ...DONE_STATES, "on", "running", "run"].includes(raw)) statusTxt = stateText(hass, m.main);
     }
@@ -670,7 +927,7 @@ class ApplianceCardBase extends HTMLElement {
     if (c.switch && c.show_toggle !== false) {
       const on = isOn(m.sw);
       // safety: cutting a washer/dryer/dishwasher mid-cycle needs a second click
-      const guarded = c.confirm_off !== false && on && active && ["washer", "dryer", "dishwasher"].includes(kind);
+      const guarded = c.confirm_off !== false && on && (active || ["extinguishing", "paused"].includes(m.status)) && ["washer", "dryer", "dishwasher", "pellet_stove", "printer_3d"].includes(kind);
       const arming = guarded && this._confirmUntil && Date.now() < this._confirmUntil;
       const label = arming ? tr(hass, "confirm_off") : tr(hass, "toggle");
       $("actions").innerHTML = `<button class="toggle ${on ? "on" : ""} ${arming ? "confirm" : ""}" title="${esc(label)}" aria-label="${esc(label)}" aria-pressed="${on}"><ha-icon icon="${arming ? "mdi:alert" : "mdi:power"}"></ha-icon></button>${arming ? `<div class="confirm-tip">${esc(label)}</div>` : ""}`;
@@ -717,11 +974,24 @@ class ApplianceCardBase extends HTMLElement {
         m.tempVal > (c.max_temperature ?? 8) ? "warn" : "");
       if (m.ftemp) tile("mdi:snowflake", fmtUnit(hass, m.ftemp, 1), tr(hass, "freezer_temp"), c.freezer_temperature,
         num(m.ftemp) > (c.freezer_max_temperature ?? -12) ? "warn" : "");
+    } else if (kind === "printer_3d") {
+      if (m.progress != null) tile("mdi:progress-check", `${fmtNum(hass, m.progress, 0)} %`, tr(hass, "progress"), c.progress);
+      if (m.tempVal != null) tile("mdi:printer-3d-nozzle-heat", `${fmtNum(hass, m.tempVal, 0)} ${m.tempUnit}`, tr(hass, "nozzle"), tEntity);
+      if (m.bedTemp != null) tile("mdi:heat-wave", `${fmtNum(hass, m.bedTemp, 0)} ${m.tempUnit}`, tr(hass, "bed"), c.bed_temperature);
+    } else if (kind === "pool_pump") {
+      if (m.tempVal != null) tile("mdi:thermometer-water", `${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}`, tr(hass, "water"), tEntity);
+      if (m.runtime != null) tile("mdi:timer-outline", fmtDuration(m.runtime), tr(hass, "today"), c.runtime);
+      if (num(m.speed) != null) tile("mdi:speedometer", fmtUnit(hass, m.speed, 0), tr(hass, "speed"), c.speed);
+    } else if (kind === "pellet_stove") {
+      if (m.tempVal != null) tile("mdi:thermometer", `${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}`, tr(hass, "temperature"), tEntity);
+      if (m.targetVal != null) tile("mdi:target", `${fmtNum(hass, m.targetVal, 1)} ${m.tempUnit}`, tr(hass, "target"), c.target_temperature || tEntity);
+      if (m.level != null) tile("mdi:fire", `P${fmtNum(hass, m.level, 0)}`, tr(hass, "level"), c.power_level);
+      if (m.pellets != null) tile("mdi:grain", `${fmtNum(hass, m.pellets, 0)} %`, tr(hass, "pellets"), c.pellet_level, m.alerts.includes("pellets_low") ? "warn" : "");
     } else if (kind === "water_heater" || kind === "oven") {
       if (m.tempVal != null) tile("mdi:thermometer", `${fmtNum(hass, m.tempVal, 0)} ${m.tempUnit}`, tr(hass, "temperature"), tEntity);
       if (m.targetVal != null) tile("mdi:target", `${fmtNum(hass, m.targetVal, 0)} ${m.tempUnit}`, tr(hass, "target"), c.target_temperature || tEntity);
     }
-    if (m.remaining != null && active && kind !== "water_heater") tile("mdi:timer-sand", fmtDuration(m.remaining), tr(hass, "remaining"), c.remaining);
+    if (m.remaining != null && m.remaining > 0 && active && kind !== "water_heater") tile("mdi:timer-sand", fmtDuration(m.remaining), tr(hass, "remaining"), c.remaining);
     if (m.pw) tile("mdi:flash", fmtPower(hass, m.pw) ?? "—", tr(hass, "power"), c.power);
     if (m.energy) tile("mdi:lightning-bolt-circle", fmtUnit(hass, m.energy, 2) ?? "—", tr(hass, "energy"), c.energy);
     if (m.cost) tile("mdi:cash", fmtUnit(hass, m.cost, 2, 2) ?? "—", tr(hass, "cost"), c.cost);
@@ -747,6 +1017,11 @@ const SEL = {
   temperature: { entity: { domain: ["sensor", "input_number"], device_class: "temperature" } },
   target_temperature: { entity: { domain: ["sensor", "input_number", "number"] } },
   freezer_temperature: { entity: { domain: "sensor", device_class: "temperature" } },
+  power_level: { entity: { domain: ["sensor", "number", "input_number", "select", "input_select"] } },
+  pellet_level: { entity: { domain: ["sensor", "number", "input_number"] } },
+  runtime: { entity: { domain: ["sensor"] } },
+  bed_temperature: { entity: { domain: ["sensor"], device_class: "temperature" } },
+  speed: { entity: { domain: ["sensor", "number", "input_number", "select"] } },
 };
 function buildForm(kind) {
   const d = DEF[kind];
@@ -762,7 +1037,15 @@ function buildForm(kind) {
             { name: "freezer_max_temperature", selector: { number: { min: -30, max: 0, step: 0.5, mode: "box" } } },
           ] : []),
           { name: "animations", selector: { boolean: {} }, default: true },
-          ...(["washer", "dryer", "dishwasher"].includes(kind) ? [{ name: "confirm_off", selector: { boolean: {} }, default: true }] : []),
+          ...(kind === "printer_3d" ? [{ name: "filament_color", selector: { text: {} } }] : []),
+          ...(kind === "pool_pump" ? [
+            { name: "max_power", selector: { number: { min: 100, max: 3000, step: 10, mode: "box", unit_of_measurement: "W" } } },
+          ] : []),
+          ...(kind === "pellet_stove" ? [
+            { name: "ignition_threshold", selector: { number: { min: 50, max: 1000, step: 10, mode: "box", unit_of_measurement: "W" } } },
+            { name: "pellet_alert", selector: { number: { min: 0, max: 50, step: 1, mode: "box", unit_of_measurement: "%" } } },
+          ] : []),
+          ...(["washer", "dryer", "dishwasher", "pellet_stove", "printer_3d"].includes(kind) ? [{ name: "confirm_off", selector: { boolean: {} }, default: true }] : []),
           { name: "color", selector: { text: {} } },
         ],
       },
@@ -796,9 +1079,9 @@ function stubFor(kind, hass) {
   if (power) cfg.power = power;
   if (energy) cfg.energy = energy;
   if (cost) cfg.cost = cost;
-  if (sw && ["water_heater", "oven", "microwave"].includes(kind)) cfg.switch = sw;
+  if (sw && ["water_heater", "oven", "microwave", "pool_pump"].includes(kind)) cfg.switch = sw;
   else if (sw && !cfg.entity) cfg.entity = sw;
-  if (temp && ["fridge", "water_heater", "oven"].includes(kind)) cfg.temperature = temp;
+  if (temp && ["fridge", "water_heater", "oven", "pellet_stove", "pool_pump", "printer_3d"].includes(kind)) cfg.temperature = temp;
   if (!cfg.entity && !cfg.power && !cfg.switch && !cfg.temperature) cfg.power = "sensor.example_power";
   return cfg;
 }
@@ -956,6 +1239,85 @@ svg { width: 100%; height: 100%; display: block; overflow: visible; }
 .k-microwave.active .bowl { animation: ac-turn 5s linear infinite; }
 .start { fill: #c9ced4; stroke: #8f979f; stroke-width: .4; transition: fill .3s; }
 .k-microwave.active .start { fill: #3ddc84; }
+
+/* ---------- 3D printer ---------- */
+.k-printer_3d { --fil: #ff8a1f; --h: 0; }
+.k-printer_3d .gantry { transform-box: view-box; transform: translateY(calc(var(--h) * -1px)); transition: transform .8s ease; }
+.k-printer_3d .head { transform-box: view-box; }
+.k-printer_3d.st-printing .head { animation: ac-printx 1.1s ease-in-out infinite alternate; }
+.k-printer_3d.st-printing .hfan, .k-printer_3d.st-heating .hfan { transform-box: view-box; transform-origin: 60px 90px; animation: ac-rot .25s linear infinite; }
+.spool { transform-box: view-box; transform-origin: 97px 20px; }
+.k-printer_3d.st-printing .spool { animation: ac-rot 9s linear infinite; }
+.tip { fill: #8a6d1f; transition: fill .4s; }
+.k-printer_3d.st-printing .tip { fill: #ffd27a; filter: drop-shadow(0 0 1.5px #ffb347); }
+.k-printer_3d.st-heating .tip { fill: #ff4a1f; filter: drop-shadow(0 0 2px #ff5a1f); animation: ac-pulse 1s ease-in-out infinite; }
+.bedheat path { fill: none; stroke: var(--ac-heat); stroke-width: 1.4; stroke-linecap: round; opacity: 0; }
+.k-printer_3d.st-heating .bedheat path { animation: ac-steam 1.8s ease-out infinite; }
+.bedheat path:nth-child(2) { animation-delay: .45s !important; } .bedheat path:nth-child(3) { animation-delay: .9s !important; } .bedheat path:nth-child(4) { animation-delay: 1.35s !important; }
+.k-printer_3d.indeterminate.st-printing .gantry { transition: none; animation: ac-zrise 14s linear infinite; }
+.k-printer_3d.indeterminate.st-printing .object { transform-box: view-box; transform-origin: 60px 104px; animation: ac-grow 14s linear infinite; }
+.k-printer_3d.indeterminate.st-printing .objclip { transform: none; }
+.k-printer_3d.indeterminate .objclip { y: 66px; height: 38px; }
+.k-printer_3d.st-paused .lcd { animation: ac-pulse 1s steps(2) infinite; }
+.k-printer_3d.st-failed .lcd { fill: var(--ac-alert); }
+.k-printer_3d.st-printing .l1 { fill: #3ddc84; } .k-printer_3d.st-heating .l1 { fill: #ff8a3d; } .k-printer_3d.st-failed .l1 { fill: var(--ac-alert); }
+.k-printer_3d.st-failed .dot { background: var(--ac-alert); }
+@keyframes ac-printx { from { transform: translateX(-11px); } to { transform: translateX(11px); } }
+@keyframes ac-zrise { from { transform: translateY(0); } to { transform: translateY(-38px); } }
+@keyframes ac-grow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+
+/* ---------- pool pump ---------- */
+.k-pool_pump { --spd: 1; }
+.flow { fill: none; stroke: #36b4f5; stroke-width: 2.2; stroke-linecap: round; stroke-dasharray: 3 5; opacity: 0; transition: opacity .6s; }
+.k-pool_pump.st-filtering .flow { opacity: .95; animation: ac-flow calc(.7s / var(--spd)) linear infinite; }
+.fan { transform-box: view-box; transform-origin: 104px 74px; }
+.k-pool_pump.st-filtering .fan { animation: ac-rot calc(.22s / var(--spd)) linear infinite; }
+.swirl { transform-box: view-box; transform-origin: 30px 68px; }
+.k-pool_pump.st-filtering .swirl { animation: ac-rot calc(2.4s / var(--spd)) linear infinite; }
+.ripple { animation: ac-ripple 6s linear infinite; }
+.k-pool_pump.st-filtering .ripple { animation-duration: 3s; }
+.bubbles circle { fill: #fff; opacity: 0; }
+.k-pool_pump.st-filtering .bubbles circle { animation: ac-jetbub calc(1.4s / var(--spd)) ease-out infinite; }
+.bubbles circle:nth-child(2) { animation-delay: -.35s !important; } .bubbles circle:nth-child(3) { animation-delay: -.7s !important; } .bubbles circle:nth-child(4) { animation-delay: -1.05s !important; }
+.k-pool_pump.st-filtering .hum { animation: ac-shake-soft .18s linear infinite; }
+.k-pool_pump.st-filtering .l1 { fill: #3ddc84; }
+.k-pool_pump .lcd { font-size: 6.4px; }
+@keyframes ac-flow { to { stroke-dashoffset: -16; } }
+@keyframes ac-ripple { from { transform: translateX(0); } to { transform: translateX(20px); } }
+@keyframes ac-jetbub { 0% { opacity: 0; transform: translate(0, 0); } 25% { opacity: .9; } 100% { opacity: 0; transform: translate(-14px, -6px); } }
+
+/* ---------- pellet stove ---------- */
+.k-pellet_stove .fire { transform-box: view-box; transform-origin: 60px 87px; transform: scale(var(--fs, 1)); opacity: 0; transition: opacity .8s, transform 1s ease; }
+.k-pellet_stove.st-heating .fire { opacity: 1; }
+.k-pellet_stove.st-ignition .fire { opacity: .9; transform: scale(.32); }
+.flame { transform-box: fill-box; transform-origin: 50% 100%; }
+.k-pellet_stove.st-heating .flame, .k-pellet_stove.st-ignition .flame { animation: ac-flick .8s ease-in-out infinite alternate; }
+.flame.f2 { animation-duration: .62s !important; } .flame.f3 { animation-duration: .71s !important; animation-delay: -.3s !important; }
+.flame.f4 { animation-duration: .5s !important; } .flame.f5 { animation-duration: 1.1s !important; animation-delay: -.5s !important; }
+.k-pellet_stove .glow { opacity: 0; transition: opacity 1s; }
+.k-pellet_stove.st-heating .glow { opacity: 1; animation: ac-glow 1.6s ease-in-out infinite; }
+.k-pellet_stove.st-ignition .glow { opacity: .35; }
+.k-pellet_stove.st-extinguishing .glow { opacity: .2; }
+.embers circle { fill: #ff8a2a; opacity: 0; }
+.k-pellet_stove.st-heating .embers circle, .k-pellet_stove.st-ignition .embers circle { opacity: 1; animation: ac-pulse 1.3s ease-in-out infinite; }
+.k-pellet_stove.st-extinguishing .embers circle { opacity: .7; fill: #d2511a; animation: ac-pulse 3s ease-in-out infinite; }
+.embers circle:nth-child(2) { animation-delay: -.4s !important; } .embers circle:nth-child(4) { animation-delay: -.8s !important; }
+.igniter { fill: #5a2a20; }
+.k-pellet_stove.st-ignition .igniter { fill: #ff3b1a; filter: drop-shadow(0 0 2px #ff5a1f); animation: ac-pulse .9s ease-in-out infinite; }
+.smoke-in path, .flue-smoke path { fill: none; stroke: #c9ced4; stroke-width: 2.2; stroke-linecap: round; opacity: 0; }
+.k-pellet_stove.st-ignition .smoke-in path, .k-pellet_stove.st-extinguishing .smoke-in path { animation: ac-steam 2.4s ease-out infinite; }
+.k-pellet_stove.st-ignition .flue-smoke path { animation: ac-steam 2.2s ease-out infinite; }
+.smoke-in path:nth-child(2), .flue-smoke path:nth-child(2) { animation-delay: 1.1s !important; }
+.warm-air path { fill: none; stroke: var(--ac-heat); stroke-width: 1.6; stroke-linecap: round; opacity: 0; }
+.k-pellet_stove.st-heating .warm-air path { animation: ac-steam 2s ease-out infinite; }
+.warm-air path:nth-child(2) { animation-delay: .5s !important; } .warm-air path:nth-child(3) { animation-delay: 1s !important; } .warm-air path:nth-child(4) { animation-delay: 1.5s !important; }
+.k-pellet_stove .lcd { fill: #ff9a4a; }
+.k-pellet_stove.st-off .lcd, .k-pellet_stove.st-standby .lcd { fill: #6fd8ff; }
+.k-pellet_stove.st-alarm .dot { background: var(--ac-alert); }
+.k-pellet_stove.st-alarm .status { color: var(--ac-alert); font-weight: 600; }
+.k-pellet_stove.st-alarm .lcd { fill: var(--ac-alert); animation: ac-pulse .8s steps(2) infinite; }
+.k-pellet_stove.st-heating .l1, .k-pellet_stove.st-ignition .l1 { fill: #ff8a3d; }
+@keyframes ac-flick { 0% { transform: scale(1, 1) skewX(0deg); } 35% { transform: scale(.94, 1.08) skewX(3deg); } 70% { transform: scale(1.04, .93) skewX(-2deg); } 100% { transform: scale(.97, 1.04) skewX(1.5deg); } }
 
 /* ---------- fridge ---------- */
 .fz-door, .fr-door { transform-origin: 26px 0; transition: transform .6s cubic-bezier(.3,.7,.3,1); }
