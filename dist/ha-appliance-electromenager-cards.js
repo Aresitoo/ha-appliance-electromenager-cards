@@ -6,7 +6,7 @@
  */
 (() => {
 "use strict";
-const VERSION = "1.1.2";
+const VERSION = "1.1.3";
 
 /* ------------------------------------------------------------------ */
 /* i18n                                                                */
@@ -417,9 +417,10 @@ function fmtDuration(min) {
   const h = Math.floor(m / 60), r = m % 60;
   return r ? `${h} h ${String(r).padStart(2, "0")}` : `${h} h`;
 }
-const lcdDuration = (min) => {
-  if (min < 10) { const s = Math.round(min * 60); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`; }
-  const m = Math.round(min); return `${Math.floor(m / 60)}:${String(m % 60).padStart(2, "0")}`;
+// H:MM like a real washer/oven display; M:SS for short countdowns (microwave)
+const lcdDuration = (min, short = false) => {
+  if (short) { const s = Math.round(min * 60); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`; }
+  const m = Math.ceil(min - 1e-9); return `${Math.floor(m / 60)}:${String(m % 60).padStart(2, "0")}`;
 };
 function fmtClock(hass, date) {
   try { return date.toLocaleTimeString(loc(hass), { hour: "2-digit", minute: "2-digit" }); }
@@ -615,7 +616,7 @@ class ApplianceCardBase extends HTMLElement {
     }
     if (kind === "microwave") {
       if (m.status === "finished") return "End";
-      if (active) return m.remaining != null ? lcdDuration(m.remaining) : "ON";
+      if (active) return m.remaining != null ? lcdDuration(m.remaining, m.remaining < 60) : "ON";
       return fmtClock(hass, new Date());
     }
     if (m.status === "finished") return "END";
