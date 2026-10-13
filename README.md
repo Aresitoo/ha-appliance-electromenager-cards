@@ -139,4 +139,5 @@ MIT
 
 ## Demo
 
-Open `docs/demo.html` in a browser to see every card and animation with simulated data (no Home Assistant needed).
+- Interactive test page (simulated data, no Home Assistant needed): `docs/demo.html`
+- Automated tests: `docs/tests.html`
