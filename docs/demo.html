@@ -1,0 +1,36 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Appliance Cards – démo</title>
+<style>
+:root{--primary-color:#03a9f4;--primary-text-color:#e1e1e1;--secondary-text-color:#9b9b9b;--card-background-color:#1c1c1c;--error-color:#db4437;--success-color:#43a047;--disabled-text-color:#6f6f6f}
+body.light{--primary-text-color:#212121;--secondary-text-color:#727272;--card-background-color:#fff;background:#eef0f2}
+body{background:#111;font-family:Roboto,system-ui,sans-serif;margin:16px}
+.grid{display:grid;grid-template-columns:repeat(3,360px);gap:14px}
+ha-card{display:block;background:var(--card-background-color);border-radius:12px;border:1px solid rgba(127,127,127,.25)}
+ha-icon{display:inline-block;width:var(--mdc-icon-size,24px);height:var(--mdc-icon-size,24px)}
+</style></head><body>
+<div class="grid" id="g"></div>
+<script src="../dist/ha-appliance-cards.js"></script>
+<script>
+customElements.define('ha-card', class extends HTMLElement{});
+customElements.define('ha-icon', class extends HTMLElement{});
+const now=new Date().toISOString();
+const S={};const st=(id,state,a={})=>S[id]={entity_id:id,state:String(state),attributes:a,last_changed:now};
+const W={unit_of_measurement:'W',device_class:'power'},E={unit_of_measurement:'kWh',device_class:'energy'},T={unit_of_measurement:'°C',device_class:'temperature'};
+const P=new URLSearchParams(location.search), L=P.get('lang')||'fr'; if(P.has('light'))document.body.className='light';
+const hass={states:S,language:L,locale:{language:L},config:{},callService:()=>{}};
+const cards=[];
+function add(kind,name,states,cfg){const p=`sensor.${name}_`;for(const [id,v,a] of states)st(id,v,a);cards.push([kind,cfg]);}
+// washer phases
+[['off','idle',0],['wash','Lavage',2100],['rinse','Rinçage',150],['spin','Essorage',480],['end','finished',0]].forEach(([k,s,w])=>{
+ add('washer',k,[[`sensor.w_${k}_state`,s],[`sensor.w_${k}_power`,w,W],[`sensor.w_${k}_energy`,1.2,E],[`sensor.w_${k}_rem`,k==='off'||k==='end'?0:38,{unit_of_measurement:'min'}],[`sensor.w_${k}_cost`,0.31,{unit_of_measurement:'€'}]],
+ {entity:`sensor.w_${k}_state`,power:`sensor.w_${k}_power`,energy:`sensor.w_${k}_energy`,remaining:`sensor.w_${k}_rem`,cost:`sensor.w_${k}_cost`});});
+add('dryer','d',[['binary_sensor.d_run','on'],['sensor.d_pw',2300,W],['sensor.d_e',2.1,E]],{entity:'binary_sensor.d_run',power:'sensor.d_pw',energy:'sensor.d_e'});
+add('dishwasher','dw',[['sensor.dw_state','running'],['sensor.dw_pw',1900,W],['sensor.dw_rem',72,{unit_of_measurement:'min'}]],{entity:'sensor.dw_state',power:'sensor.dw_pw',remaining:'sensor.dw_rem'});
+add('dishwasher','dw2',[['sensor.dw2_state','Séchage'],['sensor.dw2_pw',20,W]],{entity:'sensor.dw2_state',power:'sensor.dw2_pw'});
+add('water_heater','hw',[['switch.hw','on'],['sensor.hw_pw',2400,W],['sensor.hw_t',52,T],['sensor.hw_c',60,T]],{switch:'switch.hw',power:'sensor.hw_pw',temperature:'sensor.hw_t',target_temperature:'sensor.hw_c'});
+add('oven','ov',[['switch.ov','on'],['sensor.ov_pw',2600,W],['sensor.ov_t',150,T],['sensor.ov_c',180,T]],{switch:'switch.ov',power:'sensor.ov_pw',temperature:'sensor.ov_t',target_temperature:'sensor.ov_c'});
+add('microwave','mw',[['sensor.mw_pw',900,W],['sensor.mw_rem','0:01:45'],['binary_sensor.mw_door','off']],{power:'sensor.mw_pw',remaining:'sensor.mw_rem',door:'binary_sensor.mw_door'});
+add('fridge','fr',[['sensor.fr_pw',85,W],['sensor.fr_t',4,T],['sensor.fz_t',-18,T],['binary_sensor.fr_door','off']],{power:'sensor.fr_pw',temperature:'sensor.fr_t',freezer_temperature:'sensor.fz_t',door:'binary_sensor.fr_door'});
+add('fridge','fr2',[['sensor.fr2_pw',2,W],['sensor.fr2_t',9.5,T],['binary_sensor.fr2_door','on']],{power:'sensor.fr2_pw',temperature:'sensor.fr2_t',door:'binary_sensor.fr2_door'});
+const only=P.get('only');
+for(const [k,c] of cards){ if(only&&!k.startsWith(only))continue; const el=document.createElement(`appliance-${k.replace('_','-')}-card`);el.setConfig(c);el.hass=hass;document.getElementById('g').appendChild(el);}
+</script></body></html>
