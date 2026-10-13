@@ -1,12 +1,12 @@
 # Appliance Cards for Home Assistant
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://hacs.xyz/docs/faq/custom_repositories)
-[![Validate](https://github.com/skyrotter/ha-appliance-cards/actions/workflows/validate.yml/badge.svg)](https://github.com/skyrotter/ha-appliance-cards/actions/workflows/validate.yml)
+[![Validate](https://github.com/skyrotter/ha-appliance-electromenager-cards/actions/workflows/validate.yml/badge.svg)](https://github.com/skyrotter/ha-appliance-electromenager-cards/actions/workflows/validate.yml)
 
 Seven Lovelace cards for household appliances, with **realistic animated illustrations** (tumbling drum, water and foam, spin with vibration, rotating spray arms, glowing oven element, turntable, opening fridge door…), live status, power, energy and cost.
 They follow your Home Assistant theme (light/dark) and switch between **French** and **English** automatically.
 
-**▶ [Try it online / Essayer en ligne](https://skyrotter.github.io/ha-appliance-cards/docs/demo.html)** · [Automated tests](https://skyrotter.github.io/ha-appliance-cards/docs/tests.html)
+**▶ [Try it online / Essayer en ligne](https://skyrotter.github.io/ha-appliance-electromenager-cards/docs/demo.html)** · [Automated tests](https://skyrotter.github.io/ha-appliance-electromenager-cards/docs/tests.html)
 
 *🇫🇷 Version française plus bas.*
 
@@ -28,13 +28,13 @@ Works with a simple smart plug (power sensor only) as well as with connected app
 
 ### HACS (recommended)
 
-1. HACS → ⋮ → **Custom repositories** → add `https://github.com/skyrotter/ha-appliance-cards`, category **Dashboard**.
+1. HACS → ⋮ → **Custom repositories** → add `https://github.com/skyrotter/ha-appliance-electromenager-cards`, category **Dashboard**.
 2. Search for **Appliance Cards**, install, then reload your browser (Ctrl+F5).
 
 ### Manual
 
-1. Copy `dist/ha-appliance-cards.js` to `/config/www/`.
-2. Settings → Dashboards → ⋮ → Resources → add `/local/ha-appliance-cards.js` (JavaScript module).
+1. Copy `dist/ha-appliance-electromenager-cards.js` to `/config/www/`.
+2. Settings → Dashboards → ⋮ → Resources → add `/local/ha-appliance-electromenager-cards.js` (JavaScript module).
 
 ## Configuration
 
@@ -123,7 +123,7 @@ appliance-illustration-size: 116px
 
 Sept cartes Lovelace pour l'électroménager (lave-linge, sèche-linge, lave-vaisselle, ballon d'eau chaude, four, micro-ondes, réfrigérateur) : illustration animée, état en direct, puissance, énergie et coût. Elles suivent le thème de Home Assistant et s'affichent en français si Home Assistant est en français.
 
-**Installation HACS** : HACS → ⋮ → *Dépôts personnalisés* → `https://github.com/skyrotter/ha-appliance-cards`, catégorie **Dashboard** → installer → recharger le navigateur (Ctrl+F5).
+**Installation HACS** : HACS → ⋮ → *Dépôts personnalisés* → `https://github.com/skyrotter/ha-appliance-electromenager-cards`, catégorie **Dashboard** → installer → recharger le navigateur (Ctrl+F5).
 
 **Configuration** : éditeur visuel disponible ; les entités sont détectées automatiquement à l'ajout (noms contenant `lave_linge`, `seche_linge`, `lave_vaisselle`, `ballon`, `four`, `micro_ondes`, `frigo`, `washer`, `dryer`, `fridge`…). Les options sont les mêmes que ci-dessus.
 
@@ -141,5 +141,5 @@ MIT
 
 ## Demo
 
-- Interactive test page (simulated data, no Home Assistant needed): https://skyrotter.github.io/ha-appliance-cards/docs/demo.html
-- Automated tests: https://skyrotter.github.io/ha-appliance-cards/docs/tests.html
+- Interactive test page (simulated data, no Home Assistant needed): https://skyrotter.github.io/ha-appliance-electromenager-cards/docs/demo.html
+- Automated tests: https://skyrotter.github.io/ha-appliance-electromenager-cards/docs/tests.html
