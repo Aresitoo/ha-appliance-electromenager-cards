@@ -216,6 +216,55 @@ const SCEN = [
       range(ctl, 'Puissance', 'sensor.printer_power', 0, 400, 1, 140, 'W', W);
       set('sensor.printer_task', 'Vase spirale');
     } },
+  { kind: 'chest-freezer', title: 'Congélateur coffre',
+    cfg: { power: 'sensor.chest_power', temperature: 'sensor.chest_temp', door: 'binary_sensor.chest_lid', energy: 'sensor.chest_energy' },
+    build(ctl) {
+      range(ctl, 'Puissance', 'sensor.chest_power', 0, 200, 1, 85, 'W', W);
+      range(ctl, 'Température', 'sensor.chest_temp', -30, 0, 0.5, -18, '°C', T);
+      set('sensor.chest_energy', 0.9, KWH);
+      checks(ctl, [['Couvercle ouvert', 'binary_sensor.chest_lid', false]]);
+    } },
+  { kind: 'drawer-freezer', title: 'Congélateur à tiroirs',
+    cfg: { power: 'sensor.drawer_power', temperature: 'sensor.drawer_temp', door: 'binary_sensor.drawer_door', energy: 'sensor.drawer_energy' },
+    build(ctl) {
+      range(ctl, 'Puissance', 'sensor.drawer_power', 0, 200, 1, 80, 'W', W);
+      range(ctl, 'Température', 'sensor.drawer_temp', -30, 0, 0.5, -19, '°C', T);
+      set('sensor.drawer_energy', 1.0, KWH);
+      checks(ctl, [['Porte ouverte', 'binary_sensor.drawer_door', false]]);
+    } },
+  { kind: 'solar', title: 'Panneaux solaires',
+    cfg: { power: 'sensor.solar_power', energy: 'sensor.solar_energy_today', cost: 'sensor.solar_savings', sun_entity: 'sun.demo', max_power: 3000 },
+    build(ctl) {
+      select(ctl, 'Soleil', 'sun.demo', [['above_horizon', 'Jour'], ['below_horizon', 'Nuit']], 'above_horizon');
+      range(ctl, 'Production', 'sensor.solar_power', 0, 3000, 10, 2150, 'W', W);
+      range(ctl, 'Aujourd’hui', 'sensor.solar_energy_today', 0, 25, 0.1, 9.8, 'kWh', KWH);
+      set('sensor.solar_savings', 2.15, EUR);
+    } },
+  { kind: 'vmc', title: 'VMC',
+    cfg: { power: 'sensor.vmc_power', humidity: 'sensor.bathroom_humidity', energy: 'sensor.vmc_energy' },
+    build(ctl) {
+      range(ctl, 'Puissance', 'sensor.vmc_power', 0, 80, 1, 18, 'W', W);
+      range(ctl, 'Humidité SdB', 'sensor.bathroom_humidity', 30, 100, 1, 58, '%', { unit_of_measurement: '%', device_class: 'humidity' });
+      set('sensor.vmc_energy', 0.42, KWH);
+      ctl.append(document.createElement('span'), Object.assign(document.createElement('span'), { textContent: '5–35 W = petite vitesse · au-dessus = grande vitesse', style: 'color:var(--secondary-text-color);font-size:12px' }), document.createElement('span'));
+    } },
+  { kind: 'hob', title: 'Plaques de cuisson',
+    cfg: { power: 'sensor.hob_power', energy: 'sensor.hob_energy' },
+    build(ctl) {
+      range(ctl, 'Puissance', 'sensor.hob_power', 0, 7200, 50, 1800, 'W', W);
+      set('sensor.hob_energy', 1.6, KWH);
+      ctl.append(document.createElement('span'), Object.assign(document.createElement('span'), { textContent: 'Les foyers s’allument selon la puissance (≈ 1500 W par foyer) · remets à 0 pour voir le « H » de chaleur résiduelle', style: 'color:var(--secondary-text-color);font-size:12px' }), document.createElement('span'));
+    } },
+  { kind: 'radiator', title: 'Radiateur',
+    cfg: { power: 'sensor.radiator_power', mode: 'select.radiator_mode', temperature: 'sensor.room_temp', target_temperature: 'sensor.radiator_target', window: 'binary_sensor.window', energy: 'sensor.radiator_energy' },
+    build(ctl) {
+      select(ctl, 'Mode (fil pilote)', 'select.radiator_mode', [['confort', 'Confort'], ['eco', 'Éco'], ['hors-gel', 'Hors-gel'], ['arret', 'Arrêt']], 'confort');
+      range(ctl, 'Puissance', 'sensor.radiator_power', 0, 2000, 10, 1300, 'W', W);
+      range(ctl, 'Pièce', 'sensor.room_temp', 10, 26, 0.1, 19.2, '°C', T);
+      range(ctl, 'Consigne', 'sensor.radiator_target', 7, 24, 0.5, 20, '°C', T);
+      set('sensor.radiator_energy', 3.4, KWH);
+      checks(ctl, [['Fenêtre ouverte', 'binary_sensor.window', false]]);
+    } },
   { kind: 'fridge', title: 'Réfrigérateur',
     cfg: { power: 'sensor.fridge_power', temperature: 'sensor.fridge_temp', freezer_temperature: 'sensor.freezer_temp', door: 'binary_sensor.fridge_door', freezer_door: 'binary_sensor.freezer_door', energy: 'sensor.fridge_energy' },
     build(ctl) {

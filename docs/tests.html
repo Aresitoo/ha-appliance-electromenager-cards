@@ -16,9 +16,9 @@ function card(kind,cfg,states,lang){const el=document.createElement(`appliance-$
 const has=(c,cls)=>c.wrap.classList.contains(cls);
 
 // registration
-const tags=['washer','dryer','dishwasher','water-heater','oven','microwave','fridge','pellet-stove','pool-pump','printer-3d'];
+const tags=['washer','dryer','dishwasher','water-heater','oven','microwave','fridge','pellet-stove','pool-pump','printer-3d','chest-freezer','drawer-freezer','solar','vmc','hob','radiator'];
 tags.forEach(t=>ok(`registered ${t}`,customElements.get(`appliance-${t}-card`)));
-ok('customCards = 10',window.customCards.length===10,window.customCards.length);
+ok('customCards = 16',window.customCards.length===16,window.customCards.length);
 // config validation
 try{document.createElement('appliance-washer-card').setConfig({});ok('empty config throws',false)}catch(e){ok('empty config throws',/entity|power/.test(e.message),e.message)}
 
@@ -170,6 +170,81 @@ c=pr({entity:'switch.p',power:'sensor.p'},[mk('switch.p','on'),mk('sensor.p',8,W
 c=pr({entity:'sensor.s',filament_color:'#3e8ed0'},[mk('sensor.s','running')]); ok('printer filament color',c.wrap.style.getPropertyValue('--fil')==='#3e8ed0');
 c=pr({entity:'sensor.s',switch:'switch.p'},[mk('sensor.s','running'),mk('switch.p','on')]); c.sr.querySelector('.toggle').click(); ok('printer mid-print cut guarded',c.h.calls.length===0,JSON.stringify(c.h.calls));
 c=pr({entity:'sensor.s'},[mk('sensor.s','running')],'en'); ok('printer English',/3D printer/.test(c.txt())&&/Printing/.test(c.txt()),c.txt());
+// freezers
+for(const fk of ['chest-freezer','drawer-freezer']){
+  c=card(fk,{power:'sensor.p',temperature:'sensor.t',door:'binary_sensor.d'},[mk('sensor.p',90,W),mk('sensor.t',-18,T),mk('binary_sensor.d','off')]);
+  ok(fk+' cooling, LCD -18°',has(c,'st-cooling')&&c.lcd()==='-18°'&&!has(c,'alert'),c.wrap.className+' '+c.lcd());
+  c=card(fk,{power:'sensor.p',temperature:'sensor.t',door:'binary_sensor.d'},[mk('sensor.p',2,W),mk('sensor.t',-9,T),mk('binary_sensor.d','on')]);
+  ok(fk+' door open + too warm',has(c,'door-open')&&has(c,'warm')&&/Porte ouverte/.test(c.txt())&&/Trop chaud/.test(c.txt())&&has(c,'st-standby'),c.wrap.className+' '+c.txt());
+  c=card(fk,{temperature:'sensor.t',freezer_max_temperature:-20},[mk('sensor.t',-18,T)]); ok(fk+' custom alert threshold',has(c,'warm'),c.wrap.className);
+  c=card(fk,{switch:'switch.z',power:'sensor.p'},[mk('switch.z','on'),mk('sensor.p',2,W)]); c.sr.querySelector('.toggle').click(); ok(fk+' power cut always needs confirmation',c.h.calls.length===0,JSON.stringify(c.h.calls));
+  c=card(fk,{power:'sensor.p'},[mk('sensor.p',90,W)],'en'); ok(fk+' English',/freezer/i.test(c.txt())&&/Cooling/.test(c.txt()),c.txt());
+}
+c=card('chest-freezer',{power:'sensor.p',door:'binary_sensor.d'},[mk('sensor.p',90,W),mk('binary_sensor.d','on')]);
+ok('chest lid opens (open shape applied)',/108 6/.test(getComputedStyle(c.sr.querySelector('.lid-under')).d||''),getComputedStyle(c.sr.querySelector('.lid-under')).d);
+c=card('drawer-freezer',{power:'sensor.p',door:'binary_sensor.d'},[mk('sensor.p',90,W),mk('binary_sensor.d','on')]);
+ok('drawer door opens',getComputedStyle(c.sr.querySelector('.dz-door')).transform!=='none',getComputedStyle(c.sr.querySelector('.dz-door')).transform);
+const s6=customElements.get('appliance-chest-freezer-card').getStubConfig(hassOf([mk('sensor.congelateur_coffre_power',80,W),mk('sensor.congelateur_coffre_temperature',-18,T)]));
+ok('stub chest freezer',s6.power==='sensor.congelateur_coffre_power'&&s6.temperature==='sensor.congelateur_coffre_temperature'&&!s6.switch,JSON.stringify(s6));
+// solar
+const sol=(cfg,st,lang)=>card('solar',cfg,st,lang);
+c=sol({power:'sensor.p',sun_entity:'sun.x',max_power:3000},[mk('sensor.p',2400,W),mk('sun.x','above_horizon')]);
+ok('solar producing, LCD kW',has(c,'st-producing')&&c.lcd()==='2.4kW'&&/Production/.test(c.txt()),c.wrap.className+' '+c.lcd());
+ok('solar sun size follows production',parseFloat(c.wrap.style.getPropertyValue('--sun'))===0.8,c.wrap.style.getPropertyValue('--sun'));
+ok('solar peak % tile',/80 %/.test(c.sr.getElementById('stats').textContent),c.sr.getElementById('stats').textContent);
+ok('solar energy flows',getComputedStyle(c.sr.querySelector('.sflow')).animationName==='ac-flow');
+c=sol({power:'sensor.p',sun_entity:'sun.x',max_power:3000},[mk('sensor.p',250,W),mk('sun.x','above_horizon')]); ok('solar low production (sun still yellow, energy flows)',has(c,'st-low')&&getComputedStyle(c.sr.querySelector('.sflow')).animationName==='ac-flow'&&getComputedStyle(c.sr.querySelector('.sunwrap')).filter==='none',c.wrap.className);
+c=sol({power:'sensor.p',sun_entity:'sun.x'},[mk('sensor.p',0,W),mk('sun.x','below_horizon')]); ok('solar night',has(c,'st-night')&&c.lcd()==='NUIT'&&!/crête/.test(c.sr.getElementById('stats').textContent),c.wrap.className+' '+c.lcd());
+c=sol({power:'sensor.p',sun_entity:'sun.x'},[mk('sensor.p',0,W),mk('sun.x','above_horizon')]); ok('solar no production: grey sun, no flow',has(c,'st-idle')&&/grayscale/.test(getComputedStyle(c.sr.querySelector('.sunwrap')).filter)&&getComputedStyle(c.sr.querySelector('.sflow')).opacity==='0',c.wrap.className+' '+getComputedStyle(c.sr.querySelector('.sunwrap')).filter);
+c=sol({power:'sensor.p',cost:'sensor.c',energy:'sensor.e'},[mk('sensor.p',1500,W),mk('sensor.c',2.5,{unit_of_measurement:'€'}),mk('sensor.e',8.2,{unit_of_measurement:'kWh'})]);
+ok('solar labels Économies / Aujourd’hui',/Économies/.test(c.sr.getElementById('stats').textContent)&&/Aujourd'hui/.test(c.sr.getElementById('stats').textContent),c.sr.getElementById('stats').textContent);
+c=sol({power:'sensor.p'},[mk('sensor.p',12000,W)]); ok('solar big install LCD',c.lcd()==='12kW',c.lcd());
+c=sol({power:'sensor.p',sun_entity:'sun.x'},[mk('sensor.p',0,W),mk('sun.x','below_horizon')],'en'); ok('solar English night',/Solar panels/.test(c.txt())&&c.lcd()==='NIGHT',c.txt());
+// VMC
+const vm=(cfg,st,lang)=>card('vmc',cfg,st,lang);
+c=vm({power:'sensor.p'},[mk('sensor.p',0,W)]); ok('vmc off',has(c,'st-off'),c.wrap.className);
+c=vm({power:'sensor.p'},[mk('sensor.p',18,W)]); ok('vmc plug 18 W -> low speed',has(c,'st-speed1')&&/Petite vitesse/.test(c.txt()),c.wrap.className);
+c=vm({power:'sensor.p'},[mk('sensor.p',48,W)]); ok('vmc plug 48 W -> high speed',has(c,'st-speed2'),c.wrap.className);
+c=vm({power:'sensor.p',high_threshold:60},[mk('sensor.p',48,W)]); ok('vmc custom high threshold',has(c,'st-speed1'),c.wrap.className);
+c=vm({entity:'switch.v',speed:'select.s'},[mk('switch.v','on'),mk('select.s','Grande vitesse')]); ok('vmc speed select text',has(c,'st-speed2'),c.wrap.className);
+c=vm({speed:'sensor.s',power:'sensor.p'},[mk('sensor.s',30,{unit_of_measurement:'%'}),mk('sensor.p',20,W)]); ok('vmc speed % low',has(c,'st-speed1'),c.wrap.className);
+c=vm({speed:'sensor.s',power:'sensor.p'},[mk('sensor.s',2),mk('sensor.p',20,W)]); ok('vmc speed level 2',has(c,'st-speed2'),c.wrap.className);
+c=vm({power:'sensor.p',humidity:'sensor.h'},[mk('sensor.p',40,W),mk('sensor.h',81,{unit_of_measurement:'%'})]); ok('vmc humidity alert',has(c,'humid')&&/Humidité élevée/.test(c.txt())&&!!c.sr.querySelector('.tile.warn'),c.txt());
+ok('vmc steam + condensation when humid',getComputedStyle(c.sr.querySelector('.steam path')).animationName==='ac-steam'&&getComputedStyle(c.sr.querySelector('.condensation path')).opacity!=='0',getComputedStyle(c.sr.querySelector('.steam path')).animationName);
+ok('vmc air sucked in',getComputedStyle(c.sr.querySelector('.intake path')).animationName==='ac-suck');
+ok('vmc fan spins fast in high speed',getComputedStyle(c.sr.querySelector('.fanv')).animationDuration==='0.28s',getComputedStyle(c.sr.querySelector('.fanv')).animationDuration);
+c=vm({power:'sensor.p',humidity:'sensor.h',humidity_max:85},[mk('sensor.p',40,W),mk('sensor.h',81,{unit_of_measurement:'%'})]); ok('vmc custom humidity threshold',!has(c,'humid'),c.wrap.className);
+c=vm({power:'sensor.p'},[mk('sensor.p',18,W)],'en'); ok('vmc English',/Extractor fan/.test(c.txt())&&/Low speed/.test(c.txt()),c.txt());
+// cooktop
+const hb=(cfg,st,lang)=>card('hob',cfg,st,lang);
+const dig=(c)=>[1,2,3,4].map(i=>c.sr.querySelector('.zd'+i).textContent).join('');
+c=hb({power:'sensor.p'},[mk('sensor.p',0,W)]); ok('hob off',has(c,'st-off')&&dig(c)==='0000',c.wrap.className+' '+dig(c));
+c=hb({power:'sensor.p'},[mk('sensor.p',1200,W)]); ok('hob 1 zone from total power',has(c,'st-cooking')&&dig(c)==='7000'&&has(c,'pot-on'),c.wrap.className+' '+dig(c));
+c=hb({power:'sensor.p'},[mk('sensor.p',3000,W)]); ok('hob 2 zones (front-left + back-right)',dig(c)==='9009'&&has(c,'pan-on'),dig(c));
+c=hb({power:'sensor.p',zone_power:2000},[mk('sensor.p',3000,W)]); ok('hob custom zone power',dig(c)==='7007',dig(c));
+c=hb({zone_1:'sensor.a',zone_2:'sensor.b',zone_3:'sensor.c',zone_4:'number.d'},[mk('sensor.a',6),mk('sensor.b','off'),mk('sensor.c',3),mk('number.d',0)]);
+ok('hob per-zone levels',has(c,'st-cooking')&&dig(c)==='6030'&&!/Foyers actifs/.test(c.sr.getElementById('stats').textContent),dig(c)+' '+c.sr.getElementById('stats').textContent);
+c=hb({zone_1:'sensor.a',zone_2:'sensor.b'},[mk('sensor.a',1500,{unit_of_measurement:'W'}),mk('sensor.b','boost')]); ok('hob zone in W and boost',dig(c).startsWith('99'),dig(c));
+c=hb({power:'sensor.p'},[mk('sensor.p',1200,W)]); c.el.hass=hassOf([mk('sensor.p',0,W)]); ok('hob residual heat H after cooking',has(c,'st-residual')&&dig(c)==='H000'&&/Chaleur résiduelle/.test(c.txt()),c.wrap.className+' '+dig(c));
+c=hb({power:'sensor.p',residual_minutes:0},[mk('sensor.p',1200,W)]); c.el.hass=hassOf([mk('sensor.p',0,W)]); ok('hob residual disabled',has(c,'st-off'),c.wrap.className);
+c=hb({power:'sensor.p'},[mk('sensor.p',1700,W)]); ok('hob boil: lid jiggles',has(c,'pot-boil')&&getComputedStyle(c.sr.querySelector('.lid')).animationName==='ac-lid',c.wrap.className);
+c=hb({power:'sensor.p'},[mk('sensor.p',1200,W)],'en'); ok('hob English',/Cooktop/.test(c.txt())&&/Cooking/.test(c.txt()),c.txt());
+// radiator
+const rd=(cfg,st,lang)=>card('radiator',cfg,st,lang);
+c=rd({power:'sensor.p'},[mk('sensor.p',0,W)]); ok('radiator plug 0 W -> standby (on, not heating)',has(c,'st-standby')||has(c,'st-off'),c.wrap.className);
+c=rd({power:'sensor.p',target_temperature:'sensor.c'},[mk('sensor.p',1400,W),mk('sensor.c',20.5,T)]); ok('radiator heating from power, LCD rounded target',has(c,'st-heating')&&c.lcd()==='21°'&&getComputedStyle(c.sr.querySelector('.rwaves path')).animationName==='ac-steam',c.wrap.className+' '+c.lcd());
+ok('radiator heat intensity',Math.abs(parseFloat(c.wrap.style.getPropertyValue('--heat'))-0.93)<0.01,c.wrap.style.getPropertyValue('--heat'));
+c=rd({power:'sensor.p',mode:'select.m'},[mk('sensor.p',0,W),mk('select.m','Eco')]); ok('radiator eco mode, standby',has(c,'st-standby')&&has(c,'mode-eco')&&/Éco/.test(c.txt()),c.wrap.className+' '+c.txt());
+c=rd({power:'sensor.p',mode:'select.m'},[mk('sensor.p',0,W),mk('select.m','hors-gel')]); ok('radiator frost mode',has(c,'mode-frost')&&c.lcd()==='H-G'&&/Hors-gel/.test(c.txt()),c.wrap.className);
+c=rd({power:'sensor.p',mode:'select.m'},[mk('sensor.p',0,W),mk('select.m','arret')]); ok('radiator pilot wire off',has(c,'st-off')&&c.lcd()==='OFF',c.wrap.className);
+c=rd({entity:'climate.r'},[mk('climate.r','heat',{hvac_action:'heating',current_temperature:18.2,temperature:21,preset_mode:'comfort'})]);
+ok('radiator climate heating',has(c,'st-heating')&&has(c,'mode-comfort')&&c.lcd()==='21°'&&/18,2/.test(c.sr.getElementById('stats').textContent),c.wrap.className+' '+c.lcd());
+c=rd({entity:'climate.r'},[mk('climate.r','heat',{hvac_action:'idle',current_temperature:21,temperature:21,preset_mode:'eco'})]); ok('radiator climate idle eco',has(c,'st-standby')&&has(c,'mode-eco'),c.wrap.className);
+c=rd({entity:'climate.r'},[mk('climate.r','off',{hvac_action:'off'})]); ok('radiator climate off',has(c,'st-off'),c.wrap.className);
+c=rd({power:'sensor.p',window:'binary_sensor.w'},[mk('sensor.p',1200,W),mk('binary_sensor.w','on')]); ok('radiator window open alert',has(c,'win-open')&&/Fenêtre ouverte/.test(c.txt())&&getComputedStyle(c.sr.querySelector('.cold-air path')).animationName==='ac-wind',c.txt());
+c=rd({power:'sensor.p'},[mk('sensor.p',1400,W)],'en'); ok('radiator English',/Electric radiator/.test(c.txt())&&/Heating/.test(c.txt()),c.txt());
+const s7=customElements.get('appliance-radiator-card').getStubConfig(hassOf([mk('climate.radiateur_salon','heat'),mk('sensor.radiateur_salon_power',0,W)]));
+ok('stub radiator uses climate',s7.entity==='climate.radiateur_salon'&&s7.power==='sensor.radiateur_salon_power',JSON.stringify(s7));
 // live update
 c=card('washer',{entity:'input_boolean.w'},[mk('input_boolean.w','off')]); c.el.hass=hassOf([mk('input_boolean.w','on')]); ok('live update off->running',has(c,'st-running'),c.wrap.className);
 
