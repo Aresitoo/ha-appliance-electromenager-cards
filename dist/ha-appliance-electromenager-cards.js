@@ -6,7 +6,7 @@
  */
 (() => {
 "use strict";
-const VERSION = "1.4.0";
+const VERSION = "1.9.0";
 
 /* ------------------------------------------------------------------ */
 /* i18n                                                                */
@@ -14,7 +14,11 @@ const VERSION = "1.4.0";
 const STRINGS = {
   en: {
     washer: "Washing machine", dryer: "Dryer", dishwasher: "Dishwasher",
-    water_heater: "Water heater", oven: "Oven", microwave: "Microwave", fridge: "Refrigerator", pellet_stove: "Pellet stove", pool_pump: "Pool pump", printer_3d: "3D printer",
+    water_heater: "Water heater", oven: "Oven", microwave: "Microwave", fridge: "Refrigerator", pellet_stove: "Pellet stove", pool_pump: "Pool pump", printer_3d: "3D printer", chest_freezer: "Chest freezer", drawer_freezer: "Upright freezer", solar: "Solar panels", vmc: "Extractor fan", hob: "Cooktop", radiator: "Electric radiator",
+    comfort: "Comfort", eco: "Eco", frost: "Frost protection", window_open: "Window open", f_mode: "Mode entity (pilot wire, select…)", f_window: "Window sensor", f_max_power_rad: "Radiator power (W)",
+    cooking: "Cooking", residual: "Residual heat", zones: "Active zones", f_zone_power: "Power of one zone (W)", f_zone_1: "Front-left zone (level or W)", f_zone_2: "Front-right zone", f_zone_3: "Back-left zone", f_zone_4: "Back-right zone", f_residual_minutes: "Residual heat display (min)",
+    speed1: "Low speed", speed2: "High speed", humid: "High humidity", humidity: "Humidity", f_humidity: "Humidity sensor (%)", f_high_threshold: "High speed above (W)", f_humidity_max: "Humidity alert above (%)",
+    producing: "Producing", low: "Low production", night: "Night", production: "Production", savings: "Savings", f_sun_entity: "Sun entity", f_max_power_solar: "Peak power (Wp)",
     printing: "Printing", paused: "Paused", failed: "Failed", progress: "Progress", nozzle: "Nozzle", bed: "Bed",
     f_bed_temperature: "Bed temperature sensor", f_filament_color: "Filament color (CSS)",
     filtering: "Filtering", water: "Water", today: "Today", speed: "Speed",
@@ -39,7 +43,11 @@ const STRINGS = {
   },
   fr: {
     washer: "Lave-linge", dryer: "Sèche-linge", dishwasher: "Lave-vaisselle",
-    water_heater: "Ballon d'eau chaude", oven: "Four", microwave: "Micro-ondes", fridge: "Réfrigérateur", pellet_stove: "Poêle à granulés", pool_pump: "Pompe de piscine", printer_3d: "Imprimante 3D",
+    water_heater: "Ballon d'eau chaude", oven: "Four", microwave: "Micro-ondes", fridge: "Réfrigérateur", pellet_stove: "Poêle à granulés", pool_pump: "Pompe de piscine", printer_3d: "Imprimante 3D", chest_freezer: "Congélateur coffre", drawer_freezer: "Congélateur à tiroirs", solar: "Panneaux solaires", vmc: "VMC", hob: "Plaques de cuisson", radiator: "Radiateur",
+    comfort: "Confort", eco: "Éco", frost: "Hors-gel", window_open: "Fenêtre ouverte", f_mode: "Entité de mode (fil pilote, liste…)", f_window: "Capteur de fenêtre", f_max_power_rad: "Puissance du radiateur (W)",
+    cooking: "Cuisson", residual: "Chaleur résiduelle", zones: "Foyers actifs", f_zone_power: "Puissance d'un foyer (W)", f_zone_1: "Foyer avant gauche (niveau ou W)", f_zone_2: "Foyer avant droit", f_zone_3: "Foyer arrière gauche", f_zone_4: "Foyer arrière droit", f_residual_minutes: "Affichage chaleur résiduelle (min)",
+    speed1: "Petite vitesse", speed2: "Grande vitesse", humid: "Humidité élevée", humidity: "Humidité", f_humidity: "Capteur d'humidité (%)", f_high_threshold: "Grande vitesse au-dessus de (W)", f_humidity_max: "Alerte humidité au-dessus de (%)",
+    producing: "Production", low: "Production faible", night: "Nuit", production: "Production", savings: "Économies", f_sun_entity: "Entité soleil", f_max_power_solar: "Puissance crête (Wc)",
     printing: "Impression", paused: "En pause", failed: "Échec", progress: "Progression", nozzle: "Buse", bed: "Plateau",
     f_bed_temperature: "Capteur de température du plateau", f_filament_color: "Couleur du filament (CSS)",
     filtering: "Filtration", water: "Eau", today: "Aujourd'hui", speed: "Vitesse",
@@ -451,6 +459,236 @@ ${lcd(66, 46.5, 24, 8)}
 <path d="M100.5 63h7M100.5 67h7M100.5 71h7M100.5 75h7M100.5 79h7M100.5 83h7" stroke="#6f7881" stroke-width=".9"/>
 <path d="M64 60q10-3 34 0" stroke="#fff" stroke-opacity=".35" stroke-width="1.4" fill="none"/>
 </g>`,
+  chest_freezer: () => `
+<defs>${DEFS}
+<linearGradient id="ID-side" x1="0" x2="1"><stop offset="0" stop-color="#cfd5db"/><stop offset="1" stop-color="#aeb6be"/></linearGradient>
+<linearGradient id="ID-top" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e3e8ec"/></linearGradient>
+<linearGradient id="ID-cav" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfe6f5"/><stop offset="1" stop-color="#f4fbff"/></linearGradient>
+<linearGradient id="ID-liner" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e9edf0"/><stop offset="1" stop-color="#c9d0d6"/></linearGradient></defs>
+<ellipse cx="62" cy="131" rx="54" ry="4.5" fill="url(#ID-shadow)"/>
+<rect x="12" y="126" width="9" height="5" rx="1.5" fill="#3a3f45"/><rect x="88" y="126" width="9" height="5" rx="1.5" fill="#3a3f45"/>
+<path d="M100 73L112 61V117L100 129Z" fill="url(#ID-side)"/>
+<path d="M103 112l6-6M103 116l6-6M103 120l6-6" stroke="#8f979f" stroke-width=".7"/>
+<rect x="8" y="73" width="92" height="56" rx="2.5" fill="url(#ID-body)" stroke="#bfc6ce" stroke-width=".7"/>
+<rect x="8" y="121" width="92" height="8" rx="2" fill="#e2e6ea"/>
+<path d="M76 123.5h20M76 125.5h20M76 127.5h20" stroke="#aab1b9" stroke-width=".6"/>
+<rect x="68" y="79" width="28" height="11" rx="2" fill="#0c1720" stroke="#8f98a2" stroke-width=".5"/>
+<text class="lcd" x="84.5" y="86.8" text-anchor="middle">--°</text>
+<g class="flake"><path d="M72 81.5v6M69.4 83l5.2 3M69.4 86l5.2-3" stroke-width=".8" stroke-linecap="round"/></g>
+<circle class="led l1" cx="72" cy="94" r="1.2"/><circle class="led l2" cx="77" cy="94" r="1.2"/>
+<g class="cavity">
+  <path d="M10 73L98 73L110 61L22 61Z" fill="url(#ID-cav)"/>
+  <path d="M10 73L98 73L110 61L22 61Z" fill="#fffbe6" class="clight"/>
+  <path d="M22 61L110 61M60 61L50 73" stroke="#9fc3db" stroke-width=".6"/>
+  <path d="M18 71l3-4h14l-3 4z" fill="#e5484d"/><path d="M33 71l3-4h12l-3 4z" fill="#3e8ed0"/>
+  <path d="M28 66l2.5-3h10l-2.5 3z" fill="#f2c94c"/><path d="M42 66l2.5-3h9l-2.5 3z" fill="#ffffff" stroke="#c9d3dc" stroke-width=".4"/>
+  <path d="M58 70l4-5h16l-4 5z" fill="#9fd356" opacity=".9"/><path d="M63 64l2-2.5h10l-2 2.5z" fill="#ff8f3d"/>
+  <path d="M80 70l4-5h12l-4 5z" fill="#c4c9cf" stroke="#9aa3ad" stroke-width=".4"/>
+</g>
+<g class="cold-out"><circle cx="40" cy="58" r="2"/><circle cx="58" cy="56" r="2.4"/><circle cx="76" cy="58" r="1.8"/><circle cx="94" cy="57" r="2.1"/></g>
+<g class="lid">
+  <path class="lid-side" d="M100 66L112 54L112 61L100 73Z" fill="url(#ID-side)"/>
+  <path class="lid-top" d="M8 66L100 66L112 54L20 54Z" fill="url(#ID-top)" stroke="#bfc6ce" stroke-width=".6"/>
+  <path class="lid-under" d="M20 54L112 54L112 54L20 54Z" fill="url(#ID-liner)" stroke="#9aa3ad" stroke-width=".6"/>
+  <path class="lid-front" d="M8 66L100 66L100 73L8 73Z" fill="#f1f3f5" stroke="#bfc6ce" stroke-width=".6"/>
+</g>
+<rect class="lid-handle" x="44" y="68.5" width="20" height="2.6" rx="1.3" fill="#7d858e"/>
+<g class="mist"><circle cx="30" cy="131" r="1.1"/><circle cx="46" cy="132" r=".9"/><circle cx="64" cy="131" r="1.2"/><circle cx="80" cy="132" r=".9"/></g>`,
+  drawer_freezer: () => `
+<defs>${DEFS}
+<linearGradient id="ID-in" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#dfeaf3"/></linearGradient></defs>
+<ellipse cx="60" cy="134" rx="40" ry="4.5" fill="url(#ID-shadow)"/>
+<rect x="26" y="4" width="68" height="126" rx="6" fill="#9aa2ab"/>
+<rect x="29" y="7" width="62" height="118" rx="3" fill="url(#ID-in)"/>
+<rect class="flight" x="29" y="7" width="62" height="118" fill="#fffbe6" opacity="0"/>
+<path d="M33 12h54" stroke="#b9c8d6" stroke-width="1.2"/><path d="M37 9.5h46" stroke="#cfdbe5" stroke-width="2" stroke-dasharray="2 1.5"/>
+<g class="drawer d1"><rect x="31" y="16" width="58" height="24" rx="2.5" fill="#e9f5ff" opacity=".9" stroke="#9fc3db" stroke-width=".6"/>
+  <rect x="35" y="23" width="12" height="13" rx="2" fill="#e5484d"/><rect x="49" y="26" width="14" height="10" rx="2" fill="#3e8ed0"/><rect x="65" y="22" width="18" height="14" rx="3" fill="#f2c94c"/>
+  <rect x="31" y="16" width="58" height="5" rx="2" fill="#cfe6f5" opacity=".9"/><rect x="50" y="17.3" width="20" height="2" rx="1" fill="#9fc3db"/></g>
+<g class="drawer d2 pull"><rect x="31" y="43" width="58" height="26" rx="2.5" fill="#e9f5ff" opacity=".92" stroke="#9fc3db" stroke-width=".6"/>
+  <path d="M35 66l3-14h12l3 14z" fill="#9fd356"/><rect x="55" y="54" width="14" height="12" rx="2" fill="#ffffff" stroke="#c9d3dc" stroke-width=".5"/><circle cx="77" cy="61" r="5" fill="#ff8f3d"/>
+  <rect x="31" y="43" width="58" height="5" rx="2" fill="#cfe6f5" opacity=".95"/><rect x="50" y="44.3" width="20" height="2" rx="1" fill="#9fc3db"/></g>
+<g class="drawer d3"><rect x="31" y="72" width="58" height="24" rx="2.5" fill="#e9f5ff" opacity=".9" stroke="#9fc3db" stroke-width=".6"/>
+  <rect x="35" y="80" width="20" height="12" rx="2" fill="#c4c9cf"/><rect x="58" y="78" width="10" height="14" rx="2" fill="#e5484d" opacity=".85"/><rect x="71" y="81" width="14" height="11" rx="2" fill="#8a5a2b" opacity=".8"/>
+  <rect x="31" y="72" width="58" height="5" rx="2" fill="#cfe6f5" opacity=".9"/><rect x="50" y="73.3" width="20" height="2" rx="1" fill="#9fc3db"/></g>
+<g class="drawer d4"><rect x="31" y="99" width="58" height="23" rx="2.5" fill="#e9f5ff" opacity=".9" stroke="#9fc3db" stroke-width=".6"/>
+  <rect x="35" y="107" width="16" height="11" rx="2" fill="#3e8ed0" opacity=".85"/><rect x="54" y="105" width="30" height="13" rx="3" fill="#f6f7f9" stroke="#c9d3dc" stroke-width=".5"/>
+  <rect x="31" y="99" width="58" height="5" rx="2" fill="#cfe6f5" opacity=".9"/><rect x="50" y="100.3" width="20" height="2" rx="1" fill="#9fc3db"/></g>
+<g class="drawer-mist"><circle cx="44" cy="74" r="2"/><circle cx="60" cy="76" r="2.4"/><circle cx="76" cy="74" r="1.8"/></g>
+<g class="dz-door">
+  <rect x="26" y="4" width="68" height="126" rx="6" fill="url(#ID-body)" stroke="#bfc6ce" stroke-width=".7"/>
+  <rect x="84" y="20" width="3.4" height="46" rx="1.7" fill="url(#ID-chrome)" stroke="#6f7781" stroke-width=".4"/>
+  <rect x="35" y="12" width="28" height="12" rx="2" fill="#0c1720" stroke="#7d868f" stroke-width=".5"/>
+  <text class="lcd fr-temp" x="51.5" y="20.8" text-anchor="middle">--°</text>
+  <g class="flake"><path d="M39.5 15v6M36.9 16.5l5.2 3M36.9 19.5l5.2-3" stroke-width=".8" stroke-linecap="round"/></g>
+  <circle class="led l1" cx="38" cy="28" r="1.2"/><circle class="led l2" cx="43" cy="28" r="1.2"/>
+  <rect x="26" y="122" width="68" height="8" rx="3" fill="#e2e6ea"/><path d="M34 125h52M34 127h52" stroke="#aab1b9" stroke-width=".6"/>
+  <path d="M30 8v112" stroke="#fff" stroke-opacity=".6" stroke-width="2"/>
+</g>
+<g class="mist"><circle cx="40" cy="132" r="1.1"/><circle cx="52" cy="133" r=".9"/><circle cx="66" cy="132" r="1.2"/><circle cx="79" cy="133" r=".9"/></g>`,
+  solar: () => `
+<defs>${DEFS}
+<clipPath id="ID-pan"><path d="M7.1 93.1L40.4 93.1L53.9 50.9L20.6 50.9Z M42.1 93.1L75.4 93.1L88.9 50.9L55.6 50.9Z"/></clipPath>
+<linearGradient id="ID-cell" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#132a52"/><stop offset=".55" stop-color="#1f4683"/><stop offset="1" stop-color="#3a6fb8"/></linearGradient>
+<linearGradient id="ID-rail" x1="0" x2="1"><stop offset="0" stop-color="#8d959e"/><stop offset=".5" stop-color="#e3e7eb"/><stop offset="1" stop-color="#7d858e"/></linearGradient>
+<linearGradient id="ID-sweep" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".55"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+<radialGradient id="ID-sunglow"><stop offset="0" stop-color="#fff6c2" stop-opacity=".9"/><stop offset=".5" stop-color="#ffd23f" stop-opacity=".35"/><stop offset="1" stop-color="#ffd23f" stop-opacity="0"/></radialGradient></defs>
+<g class="sunwrap">
+    <circle cx="98" cy="20" r="22" fill="url(#ID-sunglow)"/>
+    <g class="rays"><path d="M98 4v5M98 31v5M82 20h5M109 20h5M86.7 8.7l3.5 3.5M105.8 27.8l3.5 3.5M86.7 31.3l3.5-3.5M105.8 12.2l3.5-3.5" stroke="#ffc51a" stroke-width="2.2" stroke-linecap="round"/></g>
+    <circle cx="98" cy="20" r="8" fill="#ffd23f" stroke="#ffb400" stroke-width="1"/>
+  </g>
+<ellipse cx="46" cy="113" rx="40" ry="3.5" fill="url(#ID-shadow)"/>
+<!-- rear legs and braces (behind the panels) -->
+<rect x="24" y="52" width="3" height="58" fill="url(#ID-rail)"/>
+<rect x="84" y="52" width="3" height="58" fill="url(#ID-rail)"/>
+<path d="M26 104L84 78M26 80L84 104" stroke="#9aa3ad" stroke-width="1.2"/>
+<path d="M26 92L12 104M86 92L72 104" stroke="#9aa3ad" stroke-width="1.2"/>
+<!-- front legs -->
+<rect x="9" y="92" width="2.6" height="18" fill="url(#ID-rail)"/>
+<rect x="69" y="92" width="2.6" height="18" fill="url(#ID-rail)"/>
+<!-- concrete blocks -->
+<rect x="5.5" y="108" width="10" height="5" rx="1" fill="#b8b4ac" stroke="#8f8a80" stroke-width=".5"/>
+<rect x="65.5" y="108" width="10" height="5" rx="1" fill="#b8b4ac" stroke="#8f8a80" stroke-width=".5"/>
+<rect x="20.5" y="108" width="10" height="5" rx="1" fill="#b8b4ac" stroke="#8f8a80" stroke-width=".5"/>
+<rect x="80.5" y="108" width="10" height="5" rx="1" fill="#b8b4ac" stroke="#8f8a80" stroke-width=".5"/>
+<!-- panels -->
+<path d="M6.0 94.0L76.0 94.0L90.0 50.0L20.0 50.0Z" fill="#c9d1da" stroke="#8d959e" stroke-width=".8" stroke-linejoin="round"/>
+<path d="M7.1 93.1L40.4 93.1L53.9 50.9L20.6 50.9Z M42.1 93.1L75.4 93.1L88.9 50.9L55.6 50.9Z" fill="url(#ID-cell)" stroke="#dfe5ea" stroke-width="1" stroke-linejoin="round"/>
+<path d="M9.4 86.1L42.7 86.1M11.6 79.0L44.9 79.0M13.8 72.0L47.2 72.0M16.1 65.0L49.4 65.0M18.3 57.9L51.6 57.9M15.4 93.1L28.9 50.9M23.8 93.1L37.2 50.9M32.1 93.1L45.5 50.9M44.4 86.1L77.7 86.1M46.6 79.0L79.9 79.0M48.8 72.0L82.2 72.0M51.1 65.0L84.4 65.0M53.3 57.9L86.6 57.9M50.5 93.1L63.9 50.9M58.8 93.1L72.2 50.9M67.1 93.1L80.5 50.9" stroke="#6f97d4" stroke-width=".35" opacity=".85"/>
+<g clip-path="url(#ID-pan)"><rect class="sweep" x="-20" y="44" width="24" height="54" fill="url(#ID-sweep)" transform="skewX(-18)"/></g>
+<path class="panglow" d="M7.1 93.1L40.4 93.1L53.9 50.9L20.6 50.9Z M42.1 93.1L75.4 93.1L88.9 50.9L55.6 50.9Z" fill="#ffe28a"/>
+<path class="panshade" d="M7.1 93.1L40.4 93.1L53.9 50.9L20.6 50.9Z M42.1 93.1L75.4 93.1L88.9 50.9L55.6 50.9Z" fill="#0b1630"/>
+<!-- cable to inverter -->
+<path d="M70 92V106H101V98" fill="none" stroke="#2b2f34" stroke-width="1.6" stroke-linejoin="round"/>
+<path class="sflow" d="M70 92V106H101V98"/>
+<!-- inverter on its post -->
+<rect x="100" y="94" width="3" height="16" fill="url(#ID-rail)"/>
+<rect x="97" y="108" width="9" height="5" rx="1" fill="#b8b4ac" stroke="#8f8a80" stroke-width=".5"/>
+<rect x="91" y="64" width="22" height="32" rx="2.5" fill="#e7eaee" stroke="#9aa3ad" stroke-width=".6"/>
+<rect x="91" y="64" width="22" height="4.5" rx="2" fill="#cfd5db"/>
+<path d="M94 88h16M94 90.5h16M94 93h16" stroke="#b3bac2" stroke-width=".6"/>
+${lcd(93, 71, 18, 8)}
+<circle class="led l1" cx="96" cy="83" r="1.3"/>
+<path d="M104 80l-2 4h3l-2 4" stroke="#ffb400" stroke-width=".9" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`,
+  vmc: () => `
+<defs>${DEFS}
+<clipPath id="ID-all"><rect x="0" y="0" width="120" height="140" rx="12"/></clipPath>
+<clipPath id="ID-hole"><circle cx="60" cy="70" r="25"/></clipPath>
+<linearGradient id="ID-stone" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7e7a75"/><stop offset=".5" stop-color="#94908a"/><stop offset="1" stop-color="#6f6b66"/></linearGradient>
+<linearGradient id="ID-tile" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f2ee"/><stop offset="1" stop-color="#e3e0da"/></linearGradient>
+<linearGradient id="ID-face" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".6" stop-color="#f3f5f7"/><stop offset="1" stop-color="#d9dee3"/></linearGradient>
+<radialGradient id="ID-recess" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#e9edf0"/><stop offset=".75" stop-color="#c3cad1"/><stop offset="1" stop-color="#8f979f"/></radialGradient></defs>
+<g clip-path="url(#ID-all)">
+  <rect x="0" y="0" width="120" height="60" fill="url(#ID-stone)"/>
+  <circle cx="28.3" cy="6.0" r="0.54" fill="#8a8580" opacity=".55"/><circle cx="10.8" cy="1.1" r="0.63" fill="#9c978f" opacity=".55"/><circle cx="96.1" cy="44.4" r="0.43" fill="#9c978f" opacity=".55"/><circle cx="33.2" cy="10.0" r="0.36" fill="#8a8580" opacity=".55"/><circle cx="113.2" cy="1.5" r="0.68" fill="#9c978f" opacity=".55"/><circle cx="96.1" cy="11.2" r="0.49" fill="#9c978f" opacity=".55"/><circle cx="10.4" cy="35.1" r="0.70" fill="#8a8580" opacity=".55"/><circle cx="21.3" cy="27.5" r="0.35" fill="#9c978f" opacity=".55"/><circle cx="0.9" cy="16.9" r="0.72" fill="#9c978f" opacity=".55"/><circle cx="101.8" cy="29.5" r="0.55" fill="#9c978f" opacity=".55"/><circle cx="51.7" cy="9.4" r="0.48" fill="#6b6763" opacity=".55"/><circle cx="9.7" cy="26.8" r="0.90" fill="#57534f" opacity=".55"/><circle cx="84.1" cy="8.4" r="0.70" fill="#6b6763" opacity=".55"/><circle cx="49.5" cy="11.8" r="0.68" fill="#9c978f" opacity=".55"/><circle cx="22.0" cy="25.3" r="0.65" fill="#8a8580" opacity=".55"/><circle cx="108.5" cy="5.9" r="0.34" fill="#8a8580" opacity=".55"/><circle cx="33.3" cy="33.8" r="0.82" fill="#6b6763" opacity=".55"/><circle cx="39.7" cy="10.3" r="0.58" fill="#6b6763" opacity=".55"/><circle cx="42.9" cy="4.8" r="0.88" fill="#9c978f" opacity=".55"/><circle cx="88.2" cy="55.7" r="0.31" fill="#9c978f" opacity=".55"/><circle cx="38.6" cy="8.9" r="0.69" fill="#6b6763" opacity=".55"/><circle cx="35.2" cy="11.1" r="0.57" fill="#8a8580" opacity=".55"/><circle cx="30.0" cy="34.7" r="0.40" fill="#6b6763" opacity=".55"/><circle cx="43.6" cy="26.4" r="0.52" fill="#9c978f" opacity=".55"/><circle cx="119.7" cy="33.1" r="0.56" fill="#8a8580" opacity=".55"/><circle cx="50.9" cy="12.1" r="0.34" fill="#6b6763" opacity=".55"/><circle cx="88.5" cy="34.5" r="0.88" fill="#6b6763" opacity=".55"/><circle cx="65.5" cy="33.8" r="0.49" fill="#6b6763" opacity=".55"/><circle cx="14.7" cy="30.7" r="0.76" fill="#57534f" opacity=".55"/><circle cx="78.2" cy="11.6" r="0.42" fill="#57534f" opacity=".55"/><circle cx="49.3" cy="2.1" r="0.55" fill="#8a8580" opacity=".55"/><circle cx="77.7" cy="24.8" r="0.43" fill="#8a8580" opacity=".55"/><circle cx="3.8" cy="14.8" r="0.45" fill="#8a8580" opacity=".55"/><circle cx="92.7" cy="24.2" r="0.46" fill="#9c978f" opacity=".55"/><circle cx="6.2" cy="53.8" r="0.64" fill="#57534f" opacity=".55"/><circle cx="115.5" cy="37.9" r="0.82" fill="#6b6763" opacity=".55"/><circle cx="59.3" cy="5.4" r="0.43" fill="#8a8580" opacity=".55"/><circle cx="40.4" cy="38.1" r="0.78" fill="#9c978f" opacity=".55"/><circle cx="97.8" cy="30.6" r="0.69" fill="#9c978f" opacity=".55"/><circle cx="40.6" cy="22.7" r="0.60" fill="#9c978f" opacity=".55"/><circle cx="115.4" cy="38.8" r="0.33" fill="#8a8580" opacity=".55"/><circle cx="92.0" cy="15.6" r="0.81" fill="#8a8580" opacity=".55"/><circle cx="82.5" cy="26.9" r="0.58" fill="#57534f" opacity=".55"/><circle cx="111.3" cy="12.7" r="0.30" fill="#8a8580" opacity=".55"/><circle cx="1.6" cy="50.8" r="0.37" fill="#57534f" opacity=".55"/><circle cx="105.3" cy="31.9" r="0.83" fill="#8a8580" opacity=".55"/><circle cx="19.4" cy="35.3" r="0.79" fill="#57534f" opacity=".55"/><circle cx="109.8" cy="25.5" r="0.35" fill="#6b6763" opacity=".55"/><circle cx="58.7" cy="50.2" r="0.66" fill="#8a8580" opacity=".55"/><circle cx="5.0" cy="4.6" r="0.83" fill="#6b6763" opacity=".55"/><circle cx="35.6" cy="20.1" r="0.34" fill="#57534f" opacity=".55"/><circle cx="45.7" cy="45.7" r="0.49" fill="#8a8580" opacity=".55"/><circle cx="91.0" cy="49.6" r="0.54" fill="#6b6763" opacity=".55"/><circle cx="13.7" cy="36.0" r="0.83" fill="#57534f" opacity=".55"/><circle cx="49.9" cy="41.3" r="0.57" fill="#8a8580" opacity=".55"/><circle cx="76.4" cy="53.9" r="0.59" fill="#6b6763" opacity=".55"/><circle cx="95.8" cy="9.7" r="0.82" fill="#8a8580" opacity=".55"/><circle cx="84.8" cy="18.9" r="0.82" fill="#9c978f" opacity=".55"/><circle cx="65.0" cy="52.4" r="0.73" fill="#6b6763" opacity=".55"/><circle cx="77.8" cy="7.0" r="0.37" fill="#57534f" opacity=".55"/><circle cx="63.2" cy="30.2" r="0.55" fill="#9c978f" opacity=".55"/><circle cx="42.8" cy="44.5" r="0.89" fill="#6b6763" opacity=".55"/><circle cx="81.2" cy="35.4" r="0.49" fill="#57534f" opacity=".55"/><circle cx="93.9" cy="33.0" r="0.86" fill="#57534f" opacity=".55"/><circle cx="73.6" cy="25.6" r="0.38" fill="#9c978f" opacity=".55"/><circle cx="118.3" cy="19.7" r="0.56" fill="#8a8580" opacity=".55"/><circle cx="81.0" cy="36.1" r="0.47" fill="#9c978f" opacity=".55"/><circle cx="23.7" cy="46.0" r="0.70" fill="#6b6763" opacity=".55"/><circle cx="9.2" cy="37.4" r="0.84" fill="#9c978f" opacity=".55"/><circle cx="78.5" cy="18.9" r="0.48" fill="#6b6763" opacity=".55"/><circle cx="72.5" cy="30.4" r="0.75" fill="#6b6763" opacity=".55"/><circle cx="96.1" cy="46.8" r="0.87" fill="#8a8580" opacity=".55"/><circle cx="21.9" cy="57.2" r="0.70" fill="#6b6763" opacity=".55"/><circle cx="91.2" cy="56.2" r="0.37" fill="#57534f" opacity=".55"/><circle cx="81.0" cy="43.2" r="0.67" fill="#9c978f" opacity=".55"/><circle cx="102.3" cy="39.9" r="0.83" fill="#8a8580" opacity=".55"/><circle cx="107.6" cy="40.8" r="0.49" fill="#8a8580" opacity=".55"/><circle cx="89.5" cy="31.2" r="0.62" fill="#57534f" opacity=".55"/><circle cx="107.9" cy="23.2" r="0.54" fill="#9c978f" opacity=".55"/><circle cx="34.1" cy="23.9" r="0.31" fill="#8a8580" opacity=".55"/><circle cx="107.7" cy="26.6" r="0.64" fill="#9c978f" opacity=".55"/><circle cx="48.5" cy="22.5" r="0.32" fill="#6b6763" opacity=".55"/><circle cx="55.0" cy="56.0" r="0.68" fill="#9c978f" opacity=".55"/><circle cx="72.5" cy="18.1" r="0.35" fill="#9c978f" opacity=".55"/><circle cx="58.0" cy="37.1" r="0.59" fill="#6b6763" opacity=".55"/><circle cx="17.8" cy="13.8" r="0.48" fill="#6b6763" opacity=".55"/><circle cx="19.6" cy="45.8" r="0.71" fill="#9c978f" opacity=".55"/><circle cx="2.2" cy="14.2" r="0.75" fill="#8a8580" opacity=".55"/><circle cx="3.8" cy="18.4" r="0.37" fill="#6b6763" opacity=".55"/><circle cx="105.4" cy="37.3" r="0.67" fill="#8a8580" opacity=".55"/><circle cx="87.8" cy="38.0" r="0.87" fill="#6b6763" opacity=".55"/><circle cx="67.2" cy="40.2" r="0.73" fill="#8a8580" opacity=".55"/><circle cx="60.3" cy="8.9" r="0.81" fill="#57534f" opacity=".55"/><circle cx="60.9" cy="21.8" r="0.40" fill="#9c978f" opacity=".55"/><circle cx="61.8" cy="31.2" r="0.48" fill="#57534f" opacity=".55"/><circle cx="39.4" cy="22.4" r="0.55" fill="#6b6763" opacity=".55"/><circle cx="33.4" cy="39.2" r="0.48" fill="#8a8580" opacity=".55"/><circle cx="10.3" cy="6.7" r="0.67" fill="#6b6763" opacity=".55"/><circle cx="27.8" cy="32.1" r="0.59" fill="#8a8580" opacity=".55"/><circle cx="106.3" cy="26.2" r="0.74" fill="#57534f" opacity=".55"/><circle cx="40.3" cy="10.0" r="0.62" fill="#8a8580" opacity=".55"/><circle cx="12.9" cy="35.9" r="0.85" fill="#9c978f" opacity=".55"/><circle cx="111.7" cy="48.2" r="0.55" fill="#6b6763" opacity=".55"/><circle cx="98.5" cy="12.3" r="0.65" fill="#9c978f" opacity=".55"/><circle cx="94.1" cy="27.7" r="0.80" fill="#6b6763" opacity=".55"/><circle cx="107.0" cy="51.8" r="0.83" fill="#6b6763" opacity=".55"/><circle cx="72.6" cy="30.6" r="0.89" fill="#9c978f" opacity=".55"/><circle cx="111.4" cy="10.3" r="0.33" fill="#8a8580" opacity=".55"/><circle cx="4.7" cy="39.2" r="0.50" fill="#8a8580" opacity=".55"/><circle cx="83.6" cy="6.8" r="0.89" fill="#6b6763" opacity=".55"/><circle cx="8.6" cy="13.1" r="0.46" fill="#6b6763" opacity=".55"/><circle cx="106.9" cy="56.5" r="0.31" fill="#8a8580" opacity=".55"/><circle cx="25.6" cy="14.5" r="0.74" fill="#9c978f" opacity=".55"/><circle cx="97.9" cy="17.3" r="0.53" fill="#57534f" opacity=".55"/><circle cx="4.1" cy="23.9" r="0.88" fill="#9c978f" opacity=".55"/><circle cx="67.2" cy="16.4" r="0.42" fill="#57534f" opacity=".55"/><circle cx="38.6" cy="12.5" r="0.59" fill="#57534f" opacity=".55"/><circle cx="111.8" cy="16.0" r="0.75" fill="#57534f" opacity=".55"/><circle cx="114.0" cy="53.8" r="0.55" fill="#8a8580" opacity=".55"/><circle cx="30.7" cy="29.6" r="0.32" fill="#9c978f" opacity=".55"/><circle cx="73.1" cy="39.2" r="0.68" fill="#9c978f" opacity=".55"/><circle cx="10.4" cy="57.2" r="0.40" fill="#6b6763" opacity=".55"/><circle cx="84.1" cy="54.2" r="0.45" fill="#8a8580" opacity=".55"/><circle cx="106.9" cy="29.0" r="0.37" fill="#9c978f" opacity=".55"/><circle cx="1.0" cy="33.1" r="0.42" fill="#6b6763" opacity=".55"/><circle cx="29.3" cy="48.9" r="0.37" fill="#9c978f" opacity=".55"/><circle cx="35.6" cy="32.9" r="0.70" fill="#6b6763" opacity=".55"/><circle cx="79.4" cy="57.6" r="0.84" fill="#6b6763" opacity=".55"/><circle cx="90.7" cy="46.5" r="0.71" fill="#9c978f" opacity=".55"/><circle cx="4.2" cy="18.8" r="0.50" fill="#9c978f" opacity=".55"/><circle cx="118.4" cy="9.4" r="0.75" fill="#6b6763" opacity=".55"/><circle cx="114.7" cy="55.2" r="0.71" fill="#6b6763" opacity=".55"/><circle cx="80.8" cy="15.2" r="0.85" fill="#57534f" opacity=".55"/><circle cx="12.5" cy="11.6" r="0.38" fill="#57534f" opacity=".55"/><circle cx="72.2" cy="28.8" r="0.49" fill="#57534f" opacity=".55"/><circle cx="89.2" cy="48.6" r="0.76" fill="#6b6763" opacity=".55"/><circle cx="21.7" cy="20.8" r="0.48" fill="#9c978f" opacity=".55"/><circle cx="68.9" cy="11.3" r="0.67" fill="#9c978f" opacity=".55"/><circle cx="46.0" cy="31.1" r="0.37" fill="#8a8580" opacity=".55"/><circle cx="22.9" cy="20.2" r="0.89" fill="#8a8580" opacity=".55"/><circle cx="2.5" cy="6.8" r="0.48" fill="#9c978f" opacity=".55"/><circle cx="112.6" cy="28.8" r="0.32" fill="#9c978f" opacity=".55"/><circle cx="96.0" cy="46.5" r="0.40" fill="#57534f" opacity=".55"/><circle cx="74.1" cy="20.3" r="0.30" fill="#8a8580" opacity=".55"/><circle cx="53.7" cy="43.1" r="0.85" fill="#57534f" opacity=".55"/><circle cx="25.4" cy="19.2" r="0.66" fill="#6b6763" opacity=".55"/><circle cx="107.4" cy="27.9" r="0.88" fill="#6b6763" opacity=".55"/><circle cx="21.7" cy="35.7" r="0.66" fill="#6b6763" opacity=".55"/><circle cx="87.0" cy="1.3" r="0.56" fill="#8a8580" opacity=".55"/><circle cx="74.6" cy="7.8" r="0.66" fill="#8a8580" opacity=".55"/><circle cx="52.2" cy="18.2" r="0.68" fill="#8a8580" opacity=".55"/><circle cx="87.6" cy="53.8" r="0.80" fill="#9c978f" opacity=".55"/><circle cx="31.0" cy="19.4" r="0.62" fill="#8a8580" opacity=".55"/><circle cx="43.9" cy="50.0" r="0.42" fill="#57534f" opacity=".55"/><circle cx="99.4" cy="4.3" r="0.68" fill="#8a8580" opacity=".55"/><circle cx="118.5" cy="8.3" r="0.73" fill="#6b6763" opacity=".55"/><circle cx="64.6" cy="20.1" r="0.86" fill="#6b6763" opacity=".55"/><circle cx="94.2" cy="35.1" r="0.63" fill="#9c978f" opacity=".55"/><circle cx="75.0" cy="17.1" r="0.83" fill="#9c978f" opacity=".55"/><circle cx="25.1" cy="27.4" r="0.47" fill="#6b6763" opacity=".55"/>
+  <rect x="0" y="58" width="120" height="4" fill="#c9c5be"/><rect x="0" y="58" width="120" height="1" fill="#e9e6e0"/>
+  <rect x="0" y="62" width="120" height="78" fill="url(#ID-tile)"/>
+  <g stroke="#d6d2ca" stroke-width=".35" opacity=".8"><path d="M0 64H120" /><path d="M0 67H120" /><path d="M0 70H120" /><path d="M0 73H120" /><path d="M0 76H120" /><path d="M0 79H120" /><path d="M0 82H120" /><path d="M0 85H120" /><path d="M0 88H120" /><path d="M0 91H120" /><path d="M0 94H120" /><path d="M0 97H120" /><path d="M0 100H120" /><path d="M0 103H120" /><path d="M0 106H120" /><path d="M0 109H120" /><path d="M0 112H120" /><path d="M0 115H120" /><path d="M0 118H120" /><path d="M0 121H120" /><path d="M0 124H120" /><path d="M0 127H120" /><path d="M0 130H120" /><path d="M0 133H120" /><path d="M0 136H120" /><path d="M0 139H120" /></g>
+  <g class="condensation"><path d="M10 80q1.2 2 0 3.4q-1.2-1.4 0-3.4z"/><path d="M14 96q1.2 2 0 3.4q-1.2-1.4 0-3.4z"/><path d="M106 84q1.2 2 0 3.4q-1.2-1.4 0-3.4z"/><path d="M110 104q1.2 2 0 3.4q-1.2-1.4 0-3.4z"/><path d="M8 118q1.2 2 0 3.4q-1.2-1.4 0-3.4z"/><path d="M104 122q1.2 2 0 3.4q-1.2-1.4 0-3.4z"/></g>
+  <g class="steam"><path d="M14 136q-4-8 2-14t0-14"/><path d="M28 140q-4-8 2-14t0-14"/><path d="M98 138q-4-8 2-14t0-14"/></g>
+</g>
+<path d="M22 31C42 21 78 35 100 25V117H22Z" fill="#000" opacity=".16" transform="translate(3 4)"/>
+<path d="M19 29C40 19 78 33 101 23V116Q101 120 97 120H23Q19 120 19 116Z" fill="#d3d8dd"/>
+<path d="M18 27C39 17 77 31 99 21V114Q99 118 95 118H22Q18 118 18 114Z" fill="url(#ID-face)" stroke="#c9ced4" stroke-width=".6"/>
+<path d="M21 28C40 19 76 32 97 23" fill="none" stroke="#ffffff" stroke-width="1.6" opacity=".9"/>
+<circle cx="60" cy="70" r="28" fill="#e2e6ea" stroke="#c4cad0" stroke-width=".8"/>
+<circle cx="60" cy="70" r="25" fill="url(#ID-recess)"/>
+<g clip-path="url(#ID-hole)">
+  <circle cx="60" cy="70" r="25" fill="#3d4349" opacity=".55"/>
+  <g class="fanv" fill="#f4f6f8" stroke="#c4cad0" stroke-width=".4"><path d="M60 70C60 61 65 50 75 45C73 55 69 63 60 70Z" transform="rotate(0 60 70)"/><path d="M60 70C60 61 65 50 75 45C73 55 69 63 60 70Z" transform="rotate(30 60 70)"/><path d="M60 70C60 61 65 50 75 45C73 55 69 63 60 70Z" transform="rotate(60 60 70)"/><path d="M60 70C60 61 65 50 75 45C73 55 69 63 60 70Z" transform="rotate(90 60 70)"/><path d="M60 70C60 61 65 50 75 45C73 55 69 63 60 70Z" transform="rotate(120 60 70)"/><path d="M60 70C60 61 65 50 75 45C73 55 69 63 60 70Z" transform="rotate(150 60 70)"/><path d="M60 70C60 61 65 50 75 45C73 55 69 63 60 70Z" transform="rotate(180 60 70)"/><path d="M60 70C60 61 65 50 75 45C73 55 69 63 60 70Z" transform="rotate(210 60 70)"/><path d="M60 70C60 61 65 50 75 45C73 55 69 63 60 70Z" transform="rotate(240 60 70)"/><path d="M60 70C60 61 65 50 75 45C73 55 69 63 60 70Z" transform="rotate(270 60 70)"/><path d="M60 70C60 61 65 50 75 45C73 55 69 63 60 70Z" transform="rotate(300 60 70)"/><path d="M60 70C60 61 65 50 75 45C73 55 69 63 60 70Z" transform="rotate(330 60 70)"/></g>
+  <circle cx="60" cy="70" r="7" fill="#ffffff" stroke="#c4cad0" stroke-width=".6"/>
+  <g class="slats" fill="none" stroke-linecap="round">
+    <g stroke="#9aa3ad" stroke-width="2" transform="translate(0 .7)" opacity=".5"><path d="M30 47.5Q60 45.9 90 47.5" /><path d="M30 52.9Q60 51.3 90 52.9" /><path d="M30 58.3Q60 56.7 90 58.3" /><path d="M30 63.7Q60 62.1 90 63.7" /><path d="M30 69.1Q60 67.5 90 69.1" /><path d="M30 74.5Q60 72.9 90 74.5" /><path d="M30 79.9Q60 78.3 90 79.9" /><path d="M30 85.3Q60 83.7 90 85.3" /><path d="M30 90.7Q60 89.1 90 90.7" /></g>
+    <g stroke="#ffffff" stroke-width="1.7"><path d="M30 47.5Q60 45.9 90 47.5" /><path d="M30 52.9Q60 51.3 90 52.9" /><path d="M30 58.3Q60 56.7 90 58.3" /><path d="M30 63.7Q60 62.1 90 63.7" /><path d="M30 69.1Q60 67.5 90 69.1" /><path d="M30 74.5Q60 72.9 90 74.5" /><path d="M30 79.9Q60 78.3 90 79.9" /><path d="M30 85.3Q60 83.7 90 85.3" /><path d="M30 90.7Q60 89.1 90 90.7" /></g>
+  </g>
+</g>
+<circle cx="60" cy="70" r="25" fill="none" stroke="#b5bcc3" stroke-width="1"/>
+<g class="intake"><path d="M20 98q8-6 14-4"/><path d="M98 100q-8-6-14-3"/><path d="M28 40q8 2 12 8"/><path d="M94 42q-8 2-12 8"/><path d="M60 112q-2-6 0-12"/></g>`,
+  hob: () => `
+<defs>${DEFS}
+<clipPath id="ID-all"><rect x="0" y="0" width="120" height="140" rx="12"/></clipPath>
+<linearGradient id="ID-glass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a2d31"/><stop offset="1" stop-color="#0d0e10"/></linearGradient>
+<linearGradient id="ID-wood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d9c4a3"/><stop offset="1" stop-color="#b89a73"/></linearGradient>
+<radialGradient id="ID-hot"><stop offset="0" stop-color="#ffb347"/><stop offset=".45" stop-color="#ff4a1f"/><stop offset="1" stop-color="#8a1205" stop-opacity=".25"/></radialGradient>
+<linearGradient id="ID-pot" x1="0" x2="1"><stop offset="0" stop-color="#8d959e"/><stop offset=".3" stop-color="#f1f3f5"/><stop offset=".6" stop-color="#c3c9cf"/><stop offset="1" stop-color="#7d858e"/></linearGradient></defs>
+<ellipse cx="60" cy="125" rx="50" ry="4" fill="url(#ID-shadow)"/>
+<g transform="translate(-9 -24) scale(1.15)">
+<path d="M12 122L108 122L97 60L23 60Z" fill="#8d959e"/>
+<path d="M14 120L106 120L96 62L24 62Z" fill="url(#ID-glass)"/>
+<g class="zone z1">
+  <ellipse cx="40" cy="99" rx="18" ry="9.7" fill="none" stroke="#5a6068" stroke-width=".5"/>
+  <ellipse class="zglow" cx="40" cy="99" rx="16" ry="8.5" fill="url(#ID-hot)"/>
+  <g class="coil" fill="none" stroke="#ff5a1f" stroke-width=".7">
+    <ellipse cx="40" cy="99" rx="13.1" ry="7.0"/><ellipse cx="40" cy="99" rx="9.3" ry="4.9"/><ellipse cx="40" cy="99" rx="5.4" ry="2.9"/></g>
+  <ellipse cx="40" cy="99" rx="16" ry="8.5" fill="none" stroke="#7d848c" stroke-width=".7" stroke-dasharray="2 1.4"/>
+</g><g class="zone z2">
+  <ellipse cx="82" cy="99" rx="14" ry="7.7" fill="none" stroke="#5a6068" stroke-width=".5"/>
+  <ellipse class="zglow" cx="82" cy="99" rx="12" ry="6.5" fill="url(#ID-hot)"/>
+  <g class="coil" fill="none" stroke="#ff5a1f" stroke-width=".7">
+    <ellipse cx="82" cy="99" rx="9.8" ry="5.3"/><ellipse cx="82" cy="99" rx="7.0" ry="3.8"/><ellipse cx="82" cy="99" rx="4.1" ry="2.2"/></g>
+  <ellipse cx="82" cy="99" rx="12" ry="6.5" fill="none" stroke="#7d848c" stroke-width=".7" stroke-dasharray="2 1.4"/>
+</g><g class="zone z3">
+  <ellipse cx="44" cy="73" rx="13" ry="6.4" fill="none" stroke="#5a6068" stroke-width=".5"/>
+  <ellipse class="zglow" cx="44" cy="73" rx="11" ry="5.2" fill="url(#ID-hot)"/>
+  <g class="coil" fill="none" stroke="#ff5a1f" stroke-width=".7">
+    <ellipse cx="44" cy="73" rx="9.0" ry="4.3"/><ellipse cx="44" cy="73" rx="6.4" ry="3.0"/><ellipse cx="44" cy="73" rx="3.7" ry="1.8"/></g>
+  <ellipse cx="44" cy="73" rx="11" ry="5.2" fill="none" stroke="#7d848c" stroke-width=".7" stroke-dasharray="2 1.4"/>
+</g><g class="zone z4">
+  <ellipse cx="78" cy="73" rx="16" ry="7.7" fill="none" stroke="#5a6068" stroke-width=".5"/>
+  <ellipse class="zglow" cx="78" cy="73" rx="14" ry="6.5" fill="url(#ID-hot)"/>
+  <g class="coil" fill="none" stroke="#ff5a1f" stroke-width=".7">
+    <ellipse cx="78" cy="73" rx="11.5" ry="5.3"/><ellipse cx="78" cy="73" rx="8.1" ry="3.8"/><ellipse cx="78" cy="73" rx="4.8" ry="2.2"/></g>
+  <ellipse cx="78" cy="73" rx="14" ry="6.5" fill="none" stroke="#7d848c" stroke-width=".7" stroke-dasharray="2 1.4"/>
+</g>
+<path d="M30 63L58 63L22 118L16 118Z" fill="#fff" opacity=".05"/>
+<path d="M18 109H102" stroke="#3b4047" stroke-width=".5"/>
+<g class="digits">
+  <text class="zd zd1" x="28" y="116.5" text-anchor="middle">0</text>
+  <text class="zd zd3" x="44" y="116.5" text-anchor="middle">0</text>
+  <text class="zd zd4" x="76" y="116.5" text-anchor="middle">0</text>
+  <text class="zd zd2" x="92" y="116.5" text-anchor="middle">0</text>
+</g>
+<circle cx="60" cy="114.5" r="2.4" fill="none" stroke="#5a6068" stroke-width=".6"/><path d="M60 112.6v1.6" stroke="#5a6068" stroke-width=".6"/>
+<path d="M51 114.5h3M66 114.5h3M67.5 113v3" stroke="#5a6068" stroke-width=".6"/>
+<g class="pan">
+  <path d="M90 66L104 52" stroke="#2b2f34" stroke-width="2.6" stroke-linecap="round"/>
+  <ellipse cx="78" cy="71" rx="13" ry="6.2" fill="#2b2f34"/>
+  <ellipse cx="78" cy="70" rx="11.5" ry="5.2" fill="#3b4047"/>
+  <ellipse cx="76" cy="70" rx="5" ry="2.6" fill="#ffffff"/><ellipse cx="76.5" cy="69.8" rx="2" ry="1.2" fill="#f2b632"/>
+  <g class="sizzle"><path d="M68 64l-1-3M74 62l0-3M84 62l1-3M89 65l2-2"/></g>
+</g>
+<g class="pot">
+  <path d="M24 86l-10-2" stroke="#2b2f34" stroke-width="2.4" stroke-linecap="round"/>
+  <path d="M25 80V96Q25 101 40 101Q55 101 55 96V80Z" fill="url(#ID-pot)" stroke="#6f7781" stroke-width=".5"/>
+  <ellipse cx="40" cy="96.5" rx="15" ry="4.5" fill="none" stroke="#6f7781" stroke-width=".4" opacity=".6"/>
+  <g class="lid"><ellipse cx="40" cy="80" rx="15.5" ry="4.6" fill="#d7dce1" stroke="#7d858e" stroke-width=".6"/>
+  <ellipse cx="40" cy="79.4" rx="11" ry="3" fill="#eef1f4"/>
+  <rect x="37.5" y="75" width="5" height="3.4" rx="1.4" fill="#2b2f34"/></g>
+  <g class="steam-pot"><path d="M34 72q-3-5 0-10t0-10"/><path d="M41 70q-3-5 0-10t0-10"/><path d="M48 72q-3-5 0-10t0-10"/></g>
+</g></g>`,
+  radiator: () => `
+<defs>${DEFS}
+<clipPath id="ID-fins"><path d="M12.0 27H23.4V100Q23.4 104 20.4 104H15.0Q12.0 104 12.0 100Z"/><path d="M24.8 27H36.2V100Q36.2 104 33.2 104H27.8Q24.8 104 24.8 100Z"/><path d="M37.6 27H49.0V100Q49.0 104 46.0 104H40.6Q37.6 104 37.6 100Z"/><path d="M50.4 27H61.8V100Q61.8 104 58.8 104H53.4Q50.4 104 50.4 100Z"/><path d="M63.2 27H74.6V100Q74.6 104 71.6 104H66.2Q63.2 104 63.2 100Z"/><path d="M76.0 27H87.4V100Q87.4 104 84.4 104H79.0Q76.0 104 76.0 100Z"/></clipPath>
+<linearGradient id="ID-fin" x1="0" x2="1"><stop offset="0" stop-color="#e3e6e9"/><stop offset=".25" stop-color="#ffffff"/><stop offset=".85" stop-color="#f6f7f8"/><stop offset="1" stop-color="#d9dde1"/></linearGradient>
+<linearGradient id="ID-side" x1="0" x2="1"><stop offset="0" stop-color="#e7eaed"/><stop offset="1" stop-color="#cdd2d7"/></linearGradient>
+<linearGradient id="ID-heatglow" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ff8a3d" stop-opacity=".15"/><stop offset="1" stop-color="#ff5a1f" stop-opacity=".9"/></linearGradient>
+<linearGradient id="ID-box" x1="0" x2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e2e5e8"/></linearGradient></defs>
+<g class="rwaves"><path d="M22 18q-3-5 0-10t0-10"/><path d="M38 16q-3-5 0-10t0-10"/><path d="M54 18q-3-5 0-10t0-10"/><path d="M70 16q-3-5 0-10t0-10"/></g>
+<g class="cold-air"><path d="M-6 50q6-3 12 0t12 0"/><path d="M-8 66q6-3 12 0t12 0"/><path d="M-6 82q6-3 12 0t12 0"/></g>
+<path d="M16 30H95.4V108H16Z" fill="#000" opacity=".1" filter="blur(2px)"/>
+<path d="M87.4 27L91.4 23V100L87.4 104Z" fill="url(#ID-side)" stroke="#c9ced4" stroke-width=".4"/>
+<circle cx="89.4" cy="31" r="1.6" fill="#e9ecef" stroke="#aeb5bc" stroke-width=".5"/>
+<path d="M12.0 27L15.5 23H26.9L23.4 27Z" fill="#eef0f2" stroke="#cfd4d9" stroke-width=".4"/><rect x="15.0" y="24" width="8.4" height="1.6" rx=".8" fill="#c3c9cf"/><path d="M24.8 27L28.3 23H39.7L36.2 27Z" fill="#eef0f2" stroke="#cfd4d9" stroke-width=".4"/><rect x="27.8" y="24" width="8.4" height="1.6" rx=".8" fill="#c3c9cf"/><path d="M37.6 27L41.1 23H52.5L49.0 27Z" fill="#eef0f2" stroke="#cfd4d9" stroke-width=".4"/><rect x="40.6" y="24" width="8.4" height="1.6" rx=".8" fill="#c3c9cf"/><path d="M50.4 27L53.9 23H65.3L61.8 27Z" fill="#eef0f2" stroke="#cfd4d9" stroke-width=".4"/><rect x="53.4" y="24" width="8.4" height="1.6" rx=".8" fill="#c3c9cf"/><path d="M63.2 27L66.7 23H78.1L74.6 27Z" fill="#eef0f2" stroke="#cfd4d9" stroke-width=".4"/><rect x="66.2" y="24" width="8.4" height="1.6" rx=".8" fill="#c3c9cf"/><path d="M76.0 27L79.5 23H90.9L87.4 27Z" fill="#eef0f2" stroke="#cfd4d9" stroke-width=".4"/><rect x="79.0" y="24" width="8.4" height="1.6" rx=".8" fill="#c3c9cf"/>
+<path d="M12.0 27H23.4V100Q23.4 104 20.4 104H15.0Q12.0 104 12.0 100Z" fill="url(#ID-fin)" stroke="#d2d6da" stroke-width=".4"/><path d="M24.8 27H36.2V100Q36.2 104 33.2 104H27.8Q24.8 104 24.8 100Z" fill="url(#ID-fin)" stroke="#d2d6da" stroke-width=".4"/><path d="M37.6 27H49.0V100Q49.0 104 46.0 104H40.6Q37.6 104 37.6 100Z" fill="url(#ID-fin)" stroke="#d2d6da" stroke-width=".4"/><path d="M50.4 27H61.8V100Q61.8 104 58.8 104H53.4Q50.4 104 50.4 100Z" fill="url(#ID-fin)" stroke="#d2d6da" stroke-width=".4"/><path d="M63.2 27H74.6V100Q74.6 104 71.6 104H66.2Q63.2 104 63.2 100Z" fill="url(#ID-fin)" stroke="#d2d6da" stroke-width=".4"/><path d="M76.0 27H87.4V100Q87.4 104 84.4 104H79.0Q76.0 104 76.0 100Z" fill="url(#ID-fin)" stroke="#d2d6da" stroke-width=".4"/>
+<g clip-path="url(#ID-fins)"><rect class="rglow" x="10" y="26" width="87.4" height="80" fill="url(#ID-heatglow)"/></g>
+<path d="M82.4 84h18q2 0 2 2v16q0 3-3 6l-3 10h-10q-2 0-2-2V86q0-2 2-2z" fill="url(#ID-box)" stroke="#bfc6ce" stroke-width=".6"/>
+${lcd(84.8, 86.5, 15, 8)}
+<g class="micon m-comfort" transform="translate(87.4 97.3) scale(.48)"><circle r="2.2"/><path d="M0-4.2v1.1M0 3.1v1.1M-4.2 0h1.1M3.1 0h1.1M-3 -3l.8.8M2.2 2.2l.8.8M-3 3l.8-.8M2.2-2.2l.8-.8" stroke-width=".9" stroke-linecap="round"/></g>
+<g class="micon m-eco" transform="translate(92.4 97.3) scale(.48)"><path d="M1.6-3a3.4 3.4 0 1 0 1.8 5.6a2.8 2.8 0 0 1-1.8-5.6z"/></g>
+<g class="micon m-frost" transform="translate(97.4 97.3) scale(.48)"><path d="M0-3.4v6.8M-3 -1.7l6 3.4M-3 1.7l6-3.4" stroke-width="1.1" stroke-linecap="round"/></g>
+<g fill="#eef0f2" stroke="#a7aeb5" stroke-width=".4"><circle cx="86.8" cy="102.5" r="1.4"/><circle cx="91.8" cy="102.5" r="1.4"/><circle cx="96.8" cy="102.5" r="1.4"/><circle cx="89.3" cy="106.5" r="1.4"/><circle cx="94.3" cy="106.5" r="1.4"/></g>
+<circle class="led l1" cx="96.8" cy="106.5" r=".8"/>`,
   printer_3d: () => `
 <defs>${DEFS}
 <clipPath id="ID-obj"><rect class="objclip" x="40" y="66" width="40" height="38"/></clipPath>
@@ -529,6 +767,24 @@ const DEF = {
   pool_pump: { accent: "active", threshold: 50,
     fields: ["entity", "power", "energy", "cost", "temperature", "runtime", "speed", "switch"],
     keys: ["piscine", "pool", "filtration", "pompe"] },
+  chest_freezer: { accent: "cold", threshold: 20,
+    fields: ["entity", "power", "energy", "cost", "temperature", "door", "switch"],
+    keys: ["congelateur_coffre", "coffre", "chest", "bahut"] },
+  drawer_freezer: { accent: "cold", threshold: 20,
+    fields: ["entity", "power", "energy", "cost", "temperature", "door", "switch"],
+    keys: ["congelateur", "freezer", "tiroir"] },
+  solar: { accent: "heat", threshold: 10,
+    fields: ["power", "energy", "cost", "entity"],
+    keys: ["solaire", "solar", "pv", "photovolta", "onduleur", "inverter"] },
+  vmc: { accent: "active", threshold: 5,
+    fields: ["entity", "power", "energy", "cost", "speed", "humidity", "switch"],
+    keys: ["vmc", "ventilation", "extracteur", "mvhr", "hrv"] },
+  hob: { accent: "heat", threshold: 50,
+    fields: ["entity", "power", "energy", "cost", "zone_1", "zone_2", "zone_3", "zone_4"],
+    keys: ["plaque", "cuisson", "induction", "vitro", "hob", "cooktop", "table_de_cuisson"] },
+  radiator: { accent: "heat", threshold: 50,
+    fields: ["entity", "power", "energy", "cost", "temperature", "target_temperature", "mode", "window", "switch"],
+    keys: ["radiateur", "radiator", "chauffage", "heater", "convecteur"] },
   printer_3d: { accent: "active", threshold: 40,
     fields: ["entity", "power", "energy", "cost", "progress", "remaining", "program", "temperature", "bed_temperature", "switch"],
     keys: ["imprimante", "printer", "3d", "bambu", "prusa", "octoprint", "klipper", "moonraker"] },
@@ -617,7 +873,7 @@ class ApplianceCardBase extends HTMLElement {
 
   setConfig(config) {
     if (!config) throw new Error("Invalid configuration");
-    if (!["entity", "power", "switch", "temperature"].some((f) => config[f])) {
+    if (!["entity", "power", "switch", "temperature", "zone_1"].some((f) => config[f])) {
       throw new Error(lang() === "fr"
         ? "Indique au moins `entity`, `power`, `switch` ou `temperature`."
         : "Set at least one of `entity`, `power`, `switch` or `temperature`.");
@@ -647,7 +903,7 @@ class ApplianceCardBase extends HTMLElement {
   _ids() {
     const c = this._config;
     return ["entity", "power", "energy", "cost", "remaining", "progress", "program", "door", "switch",
-      "power_level", "pellet_level", "runtime", "speed", "bed_temperature", "temperature", "target_temperature", "freezer_temperature", "freezer_door"].map((k) => c[k]).filter(Boolean);
+      "power_level", "pellet_level", "runtime", "speed", "bed_temperature", "humidity", "zone_1", "zone_2", "zone_3", "zone_4", "mode", "window", "temperature", "target_temperature", "freezer_temperature", "freezer_door"].map((k) => c[k]).filter(Boolean);
   }
 
   _build() {
@@ -705,7 +961,7 @@ class ApplianceCardBase extends HTMLElement {
       temp: S(c.temperature), target: S(c.target_temperature),
       ftemp: S(c.freezer_temperature), fdoor: S(c.freezer_door),
       level: num(S(c.power_level)), pellets: num(S(c.pellet_level)),
-      runtime: parseRemaining(S(c.runtime)), speed: S(c.speed), bedTemp: num(S(c.bed_temperature)),
+      runtime: parseRemaining(S(c.runtime)), speed: S(c.speed), bedTemp: num(S(c.bed_temperature)), humidity: num(S(c.humidity)), mode: S(c.mode), window: S(c.window),
       status: "idle", phase: null, alerts: [],
     };
     if (main && ["water_heater", "climate"].includes(domainOf(c.entity))) {
@@ -717,7 +973,7 @@ class ApplianceCardBase extends HTMLElement {
     m.tempUnit = m.temp?.attributes.unit_of_measurement || hass.config?.unit_system?.temperature || "°C";
 
     const ref = main || sw;
-    const mainIds = ["entity", "power", "switch", "temperature"].map((k) => c[k]).filter(Boolean);
+    const mainIds = ["entity", "power", "switch", "temperature", "zone_1", "zone_2", "zone_3", "zone_4"].map((k) => c[k]).filter(Boolean);
     const usable = mainIds.some((i) => hass.states[i] && !BAD.includes(String(hass.states[i].state).toLowerCase()));
     if (!usable) { m.status = "unavailable"; return m; }
     let base = null;
@@ -784,6 +1040,79 @@ class ApplianceCardBase extends HTMLElement {
       else if (base === "running") m.status = "printing";
       else if (base === "standby" || base === "idle") m.status = main || sw ? "ready" : "off";
       else m.status = base;
+    } else if (kind === "radiator") {
+      const isClimate = main && domainOf(c.entity) === "climate";
+      const act = isClimate ? String(main.attributes.hvac_action || "").toLowerCase() : "";
+      const raw = String(m.mode && !BAD.includes(String(m.mode.state).toLowerCase()) ? m.mode.state
+        : isClimate ? (main.attributes.preset_mode || main.state) : "").toLowerCase();
+      m.radMode = /hors|frost|gel|away|absent/.test(raw) ? "frost"
+        : /eco|nuit|night|sleep|economy|reduit|réduit/.test(raw) ? "eco"
+        : /^(off|arret|arrêt|stop)$/.test(raw) ? "off"
+        : raw ? "comfort" : null;
+      if (base === "unavailable") m.status = "unavailable";
+      else if (m.radMode === "off" || base === "off" || act === "off" || (isClimate && main.state === "off")) m.status = "off";
+      else if (act === "heating" || (watts != null && powered) || (watts == null && !isClimate && base === "running")) m.status = "heating";
+      else m.status = "standby";
+      m.heat = m.status !== "heating" ? 0 : watts != null ? Math.max(0.3, Math.min(1, watts / (c.max_power || 1500))) : 0.8;
+      if (isOn(m.window)) m.alerts.push("window_open");
+    } else if (kind === "hob") {
+      const zp = c.zone_power || 1500;
+      const lvlOf = (st) => {
+        if (!st || BAD.includes(String(st.state).toLowerCase())) return null;
+        const t = String(st.state).toLowerCase(), n = parseFloat(t), u = String(st.attributes.unit_of_measurement || "");
+        if (/boost|^p$|power/.test(t)) return 9;
+        if (["off", "arret", "arrêt", "0"].includes(t)) return 0;
+        if (!Number.isFinite(n)) return t === "on" ? 5 : 0;
+        if (u === "W") return Math.max(0, Math.min(9, Math.round(n / zp * 9)));
+        if (u === "kW") return Math.max(0, Math.min(9, Math.round(n * 1000 / zp * 9)));
+        if (u === "%") return Math.max(0, Math.min(9, Math.round(n / 100 * 9)));
+        return Math.max(0, Math.min(9, Math.round(n)));
+      };
+      let zl = [1, 2, 3, 4].map((i) => lvlOf(S(c[`zone_${i}`])));
+      if (zl.every((v) => v == null)) {
+        // no per-zone data: spread the total power over zones (front-left, back-right, front-right, back-left)
+        zl = [0, 0, 0, 0];
+        if (base !== "off" && base !== "unavailable" && watts != null && watts > threshold) {
+          const n = Math.max(1, Math.min(4, Math.ceil(watts / (zp * 1.4))));
+          const per = watts / n;
+          const lv = Math.max(1, Math.min(9, Math.round(per / zp * 9)));
+          [0, 3, 1, 2].slice(0, n).forEach((z) => { zl[z] = lv; });
+        }
+      } else zl = zl.map((v) => v ?? 0);
+      const now = Date.now(), keep = (c.residual_minutes ?? 10) * 60000;
+      this._hot = this._hot || [0, 0, 0, 0];
+      zl.forEach((v, i) => { if (v > 0) this._hot[i] = now; });
+      m.zones = zl;
+      m.residualZones = zl.map((v, i) => v === 0 && this._hot[i] && now - this._hot[i] < keep);
+      m.activeZones = zl.filter((v) => v > 0).length;
+      if (base === "unavailable") m.status = "unavailable";
+      else if (m.activeZones > 0) m.status = "cooking";
+      else if (m.residualZones.some(Boolean)) m.status = "residual";
+      else m.status = "off";
+    } else if (kind === "vmc") {
+      const sp = m.speed ? String(m.speed.state).toLowerCase() : "";
+      const spn = num(m.speed);
+      const hi = c.high_threshold ?? 35;
+      if (base === "off" || base === "unavailable") m.status = base;
+      else if (m.speed && !BAD.includes(sp) && /boost|grande|high|max|rapide|fast|gv/.test(sp)) m.status = "speed2";
+      else if (m.speed && !BAD.includes(sp) && /petite|low|eco|lente|slow|min|pv|auto|normal/.test(sp)) m.status = "speed1";
+      else if (spn != null && spn > 0) m.status = (String(m.speed.attributes.unit_of_measurement || "") === "%" ? spn > 60 : spn >= 2) ? "speed2" : "speed1";
+      else if (spn === 0) m.status = "off";
+      else if (watts != null) m.status = watts > hi ? "speed2" : powered ? "speed1" : (base === "standby" ? "standby" : "off");
+      else m.status = base === "running" ? "speed1" : base;
+      if (m.humidity != null && m.humidity > (c.humidity_max ?? 70)) m.alerts.push("humid");
+    } else if (kind === "solar") {
+      const sunSt = hass.states[c.sun_entity || "sun.sun"];
+      const hr = new Date().getHours();
+      const night = sunSt ? sunSt.state === "below_horizon" : (hr >= 21 || hr < 6);
+      m.frac = watts != null ? Math.max(0, Math.min(1, watts / (c.max_power || 3000))) : 0;
+      if (base === "unavailable") m.status = "unavailable";
+      else if (watts != null && watts > threshold) m.status = m.frac < 0.15 ? "low" : "producing";
+      else m.status = night ? "night" : "idle";
+    } else if (kind === "chest_freezer" || kind === "drawer_freezer") {
+      if (base === "off" || base === "unavailable") m.status = base;
+      else m.status = powered ? "cooling" : "standby";
+      if (m.tempVal != null && m.tempVal > (c.freezer_max_temperature ?? c.max_temperature ?? -12)) m.alerts.push("too_warm");
     } else if (kind === "fridge") {
       if (base === "off" || base === "unavailable") m.status = base;
       else m.status = powered ? "cooling" : "standby";
@@ -811,9 +1140,20 @@ class ApplianceCardBase extends HTMLElement {
   /* ---------------- rendering ---------------- */
   _lcdText(m) {
     const hass = this._hass, kind = this._kind;
-    const active = ["running", "heating", "preheating", "cooling", "ignition", "filtering", "printing"].includes(m.status);
+    const active = ["running", "heating", "preheating", "cooling", "ignition", "filtering", "printing", "producing", "low", "speed1", "speed2", "cooking"].includes(m.status);
     if (m.status === "unavailable") return "- - -";
-    if (kind === "fridge") return m.tempVal != null ? `${fmtNum(hass, m.tempVal, 0)}°` : "--°";
+    if (["fridge", "chest_freezer", "drawer_freezer"].includes(kind)) return m.tempVal != null ? `${fmtNum(hass, m.tempVal, 0)}°` : "--°";
+    if (kind === "radiator") {
+      if (m.status === "off") return "OFF";
+      if (m.radMode === "frost") return "H-G";
+      const v = m.targetVal ?? m.tempVal;
+      return v != null ? `${Math.round(v)}°` : "ON";
+    }
+    if (kind === "solar") {
+      if (m.status === "night") return lang(hass) === "fr" ? "NUIT" : "NIGHT";
+      if (m.watts == null) return "--";
+      return m.watts >= 1000 ? `${(m.watts / 1000).toFixed(m.watts >= 10000 ? 0 : 1)}kW` : `${Math.round(m.watts)}W`;
+    }
     if (kind === "printer_3d") {
       if (m.status === "printing") return m.progress != null ? `${Math.round(m.progress)}%` : m.remaining ? lcdDuration(m.remaining) : "PRINT";
       if (m.status === "heating") return m.tempVal != null ? `${Math.round(m.tempVal)}°` : "HEAT";
@@ -860,18 +1200,37 @@ class ApplianceCardBase extends HTMLElement {
   _render(m) {
     const hass = this._hass, c = this._config, kind = this._kind;
     const $ = (i) => this.shadowRoot.getElementById(i);
-    const active = ["running", "heating", "preheating", "cooling", "ignition", "filtering", "printing"].includes(m.status);
+    const active = ["running", "heating", "preheating", "cooling", "ignition", "filtering", "printing", "producing", "low", "speed1", "speed2", "cooking"].includes(m.status);
     $("wrap").className = [
       "wrap", `k-${kind}`, `st-${m.status}`, `accent-${this._def.accent}`,
       active ? "active" : "", m.phase ? `ph-${m.phase}` : "",
       m.alerts.length ? "alert" : "", isOn(m.door) ? "door-open" : "", isOn(m.fdoor) ? "fz-open" : "",
-      m.alerts.includes("too_warm") ? "warm" : "", c.animations === false ? "no-anim" : "",
+      m.alerts.includes("too_warm") ? "warm" : "", m.alerts.includes("humid") ? "humid" : "", c.animations === false ? "no-anim" : "",
     ].filter(Boolean).join(" ");
 
     // illustration dynamic parts
     const sr = this.shadowRoot;
     const lcdEl = sr.querySelector(".lcd");
     if (lcdEl) lcdEl.textContent = this._lcdText(m);
+    if (kind === "solar") $("wrap").style.setProperty("--sun", (m.frac || 0).toFixed(2));
+    if (kind === "radiator") {
+      $("wrap").style.setProperty("--heat", (m.heat || 0).toFixed(2));
+      ["comfort", "eco", "frost"].forEach((k) => $("wrap").classList.toggle(`mode-${k}`, m.radMode === k || (k === "comfort" && !m.radMode && m.status !== "off")));
+      $("wrap").classList.toggle("win-open", isOn(m.window));
+    }
+    if (kind === "hob" && m.zones) {
+      m.zones.forEach((v, i) => {
+        const z = sr.querySelector(`.z${i + 1}`), d = sr.querySelector(`.zd${i + 1}`);
+        const res = m.residualZones[i];
+        z.style.setProperty("--lvl", v > 0 ? (0.25 + v * 0.083).toFixed(2) : res ? "0.12" : "0");
+        z.classList.toggle("on", v > 0); z.classList.toggle("res", !!res);
+        d.textContent = v > 0 ? String(v) : res ? "H" : "0";
+        d.classList.toggle("on", v > 0 || !!res);
+      });
+      $("wrap").classList.toggle("pot-on", m.zones[0] > 0);
+      $("wrap").classList.toggle("pot-boil", m.zones[0] >= 7);
+      $("wrap").classList.toggle("pan-on", m.zones[3] > 0);
+    }
     if (kind === "printer_3d") {
       const H = 38;
       let frac = m.progress != null ? Math.max(0, Math.min(1, m.progress / 100)) : null;
@@ -912,6 +1271,7 @@ class ApplianceCardBase extends HTMLElement {
       const raw = String(m.main.state).toLowerCase();
       if (![...OFF_STATES, ...DONE_STATES, "on", "running", "run"].includes(raw)) statusTxt = stateText(hass, m.main);
     }
+    if (kind === "radiator" && m.radMode && m.radMode !== "off" && m.status !== "off" && m.status !== "unavailable") statusTxt += ` · ${tr(hass, m.radMode)}`;
     const prog = m.program && active && !BAD.includes(String(m.program.state).toLowerCase()) ? stateText(hass, m.program) : "";
     let sub = "";
     if (active && m.remaining != null && m.remaining > 0) {
@@ -927,7 +1287,8 @@ class ApplianceCardBase extends HTMLElement {
     if (c.switch && c.show_toggle !== false) {
       const on = isOn(m.sw);
       // safety: cutting a washer/dryer/dishwasher mid-cycle needs a second click
-      const guarded = c.confirm_off !== false && on && (active || ["extinguishing", "paused"].includes(m.status)) && ["washer", "dryer", "dishwasher", "pellet_stove", "printer_3d"].includes(kind);
+      const freezer = ["chest_freezer", "drawer_freezer"].includes(kind);
+      const guarded = c.confirm_off !== false && on && (freezer || ((active || ["extinguishing", "paused"].includes(m.status)) && ["washer", "dryer", "dishwasher", "pellet_stove", "printer_3d"].includes(kind)));
       const arming = guarded && this._confirmUntil && Date.now() < this._confirmUntil;
       const label = arming ? tr(hass, "confirm_off") : tr(hass, "toggle");
       $("actions").innerHTML = `<button class="toggle ${on ? "on" : ""} ${arming ? "confirm" : ""}" title="${esc(label)}" aria-label="${esc(label)}" aria-pressed="${on}"><ha-icon icon="${arming ? "mdi:alert" : "mdi:power"}"></ha-icon></button>${arming ? `<div class="confirm-tip">${esc(label)}</div>` : ""}`;
@@ -969,11 +1330,22 @@ class ApplianceCardBase extends HTMLElement {
         <span class="val">${esc(value)}</span><span class="lbl"><ha-icon icon="${icon}"></ha-icon>${esc(label)}</span></div>`);
     };
     const tEntity = c.temperature || (["water_heater", "climate"].includes(domainOf(c.entity)) ? c.entity : null);
-    if (kind === "fridge") {
+    if (kind === "chest_freezer" || kind === "drawer_freezer") {
+      if (m.tempVal != null) tile("mdi:snowflake-thermometer", `${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}`, tr(hass, "temperature"), tEntity,
+        m.alerts.includes("too_warm") ? "warn" : "");
+    } else if (kind === "fridge") {
       if (m.tempVal != null) tile("mdi:thermometer", `${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}`, tr(hass, "fridge_temp"), tEntity,
         m.tempVal > (c.max_temperature ?? 8) ? "warn" : "");
       if (m.ftemp) tile("mdi:snowflake", fmtUnit(hass, m.ftemp, 1), tr(hass, "freezer_temp"), c.freezer_temperature,
         num(m.ftemp) > (c.freezer_max_temperature ?? -12) ? "warn" : "");
+    } else if (kind === "radiator") {
+      const te = c.temperature || (domainOf(c.entity) === "climate" ? c.entity : null);
+      if (m.tempVal != null) tile("mdi:home-thermometer", `${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}`, tr(hass, "temperature"), te);
+      if (m.targetVal != null) tile("mdi:target", `${fmtNum(hass, m.targetVal, 1)} ${m.tempUnit}`, tr(hass, "target"), c.target_temperature || te);
+    } else if (kind === "hob") {
+      /* no extra tile */
+    } else if (kind === "vmc") {
+      if (m.humidity != null) tile("mdi:water-percent", `${fmtNum(hass, m.humidity, 0)} %`, tr(hass, "humidity"), c.humidity, m.alerts.includes("humid") ? "warn" : "");
     } else if (kind === "printer_3d") {
       if (m.progress != null) tile("mdi:progress-check", `${fmtNum(hass, m.progress, 0)} %`, tr(hass, "progress"), c.progress);
       if (m.tempVal != null) tile("mdi:printer-3d-nozzle-heat", `${fmtNum(hass, m.tempVal, 0)} ${m.tempUnit}`, tr(hass, "nozzle"), tEntity);
@@ -992,9 +1364,11 @@ class ApplianceCardBase extends HTMLElement {
       if (m.targetVal != null) tile("mdi:target", `${fmtNum(hass, m.targetVal, 0)} ${m.tempUnit}`, tr(hass, "target"), c.target_temperature || tEntity);
     }
     if (m.remaining != null && m.remaining > 0 && active && kind !== "water_heater") tile("mdi:timer-sand", fmtDuration(m.remaining), tr(hass, "remaining"), c.remaining);
-    if (m.pw) tile("mdi:flash", fmtPower(hass, m.pw) ?? "—", tr(hass, "power"), c.power);
-    if (m.energy) tile("mdi:lightning-bolt-circle", fmtUnit(hass, m.energy, 2) ?? "—", tr(hass, "energy"), c.energy);
-    if (m.cost) tile("mdi:cash", fmtUnit(hass, m.cost, 2, 2) ?? "—", tr(hass, "cost"), c.cost);
+    const solar = kind === "solar";
+    if (m.pw) tile(solar ? "mdi:solar-power" : "mdi:flash", fmtPower(hass, m.pw) ?? "—", tr(hass, solar ? "production" : "power"), c.power);
+    if (m.energy) tile("mdi:lightning-bolt-circle", fmtUnit(hass, m.energy, 2) ?? "—", tr(hass, solar ? "today" : "energy"), c.energy);
+    if (m.cost) tile(solar ? "mdi:piggy-bank-outline" : "mdi:cash", fmtUnit(hass, m.cost, 2, 2) ?? "—", tr(hass, solar ? "savings" : "cost"), c.cost);
+    if (solar && m.status !== "night" && m.frac != null && m.pw && !BAD.includes(String(m.pw.state).toLowerCase())) tile("mdi:white-balance-sunny", `${Math.round(m.frac * 100)} %`, lang(hass) === "fr" ? "de la crête" : "of peak", c.power);
     $("stats").innerHTML = tiles.join("");
     $("stats").style.display = tiles.length ? "" : "none";
   }
@@ -1021,6 +1395,13 @@ const SEL = {
   pellet_level: { entity: { domain: ["sensor", "number", "input_number"] } },
   runtime: { entity: { domain: ["sensor"] } },
   bed_temperature: { entity: { domain: ["sensor"], device_class: "temperature" } },
+  humidity: { entity: { domain: ["sensor"], device_class: "humidity" } },
+  mode: { entity: { domain: ["select", "input_select", "sensor", "climate"] } },
+  window: { entity: { domain: "binary_sensor" } },
+  zone_1: { entity: { domain: ["sensor", "number", "select", "input_number"] } },
+  zone_2: { entity: { domain: ["sensor", "number", "select", "input_number"] } },
+  zone_3: { entity: { domain: ["sensor", "number", "select", "input_number"] } },
+  zone_4: { entity: { domain: ["sensor", "number", "select", "input_number"] } },
   speed: { entity: { domain: ["sensor", "number", "input_number", "select"] } },
 };
 function buildForm(kind) {
@@ -1032,12 +1413,30 @@ function buildForm(kind) {
       {
         type: "expandable", name: "", title: "Options", flatten: true, schema: [
           { name: "threshold", selector: { number: { min: 0, max: 3000, step: 1, mode: "box", unit_of_measurement: "W" } } },
+          ...(["chest_freezer", "drawer_freezer"].includes(kind) ? [
+            { name: "freezer_max_temperature", selector: { number: { min: -30, max: 0, step: 0.5, mode: "box" } } },
+          ] : []),
           ...(kind === "fridge" ? [
             { name: "max_temperature", selector: { number: { min: 0, max: 15, step: 0.5, mode: "box" } } },
             { name: "freezer_max_temperature", selector: { number: { min: -30, max: 0, step: 0.5, mode: "box" } } },
           ] : []),
           { name: "animations", selector: { boolean: {} }, default: true },
           ...(kind === "printer_3d" ? [{ name: "filament_color", selector: { text: {} } }] : []),
+          ...(kind === "radiator" ? [
+            { name: "max_power", selector: { number: { min: 100, max: 5000, step: 50, mode: "box", unit_of_measurement: "W" } } },
+          ] : []),
+          ...(kind === "hob" ? [
+            { name: "zone_power", selector: { number: { min: 500, max: 4000, step: 50, mode: "box", unit_of_measurement: "W" } } },
+            { name: "residual_minutes", selector: { number: { min: 0, max: 60, step: 1, mode: "box", unit_of_measurement: "min" } } },
+          ] : []),
+          ...(kind === "vmc" ? [
+            { name: "high_threshold", selector: { number: { min: 5, max: 300, step: 1, mode: "box", unit_of_measurement: "W" } } },
+            { name: "humidity_max", selector: { number: { min: 40, max: 100, step: 1, mode: "box", unit_of_measurement: "%" } } },
+          ] : []),
+          ...(kind === "solar" ? [
+            { name: "max_power", selector: { number: { min: 100, max: 50000, step: 50, mode: "box", unit_of_measurement: "Wc" } } },
+            { name: "sun_entity", selector: { entity: { domain: "sun" } } },
+          ] : []),
           ...(kind === "pool_pump" ? [
             { name: "max_power", selector: { number: { min: 100, max: 3000, step: 10, mode: "box", unit_of_measurement: "W" } } },
           ] : []),
@@ -1045,12 +1444,12 @@ function buildForm(kind) {
             { name: "ignition_threshold", selector: { number: { min: 50, max: 1000, step: 10, mode: "box", unit_of_measurement: "W" } } },
             { name: "pellet_alert", selector: { number: { min: 0, max: 50, step: 1, mode: "box", unit_of_measurement: "%" } } },
           ] : []),
-          ...(["washer", "dryer", "dishwasher", "pellet_stove", "printer_3d"].includes(kind) ? [{ name: "confirm_off", selector: { boolean: {} }, default: true }] : []),
+          ...(["washer", "dryer", "dishwasher", "pellet_stove", "printer_3d", "chest_freezer", "drawer_freezer"].includes(kind) ? [{ name: "confirm_off", selector: { boolean: {} }, default: true }] : []),
           { name: "color", selector: { text: {} } },
         ],
       },
     ],
-    computeLabel: (s) => (s.name ? tr(null, `f_${s.name}`) : undefined),
+    computeLabel: (s) => (s.name ? tr(null, kind === "solar" && s.name === "max_power" ? "f_max_power_solar" : kind === "radiator" && s.name === "max_power" ? "f_max_power_rad" : `f_${s.name}`) : undefined),
   };
 }
 
@@ -1081,7 +1480,9 @@ function stubFor(kind, hass) {
   if (cost) cfg.cost = cost;
   if (sw && ["water_heater", "oven", "microwave", "pool_pump"].includes(kind)) cfg.switch = sw;
   else if (sw && !cfg.entity) cfg.entity = sw;
-  if (temp && ["fridge", "water_heater", "oven", "pellet_stove", "pool_pump", "printer_3d"].includes(kind)) cfg.temperature = temp;
+  const clim = kind === "radiator" ? pick((i) => i.startsWith("climate.")) : null;
+  if (clim) cfg.entity = clim;
+  if (temp && ["fridge", "water_heater", "oven", "pellet_stove", "pool_pump", "printer_3d", "chest_freezer", "drawer_freezer", "radiator"].includes(kind)) cfg.temperature = temp;
   if (!cfg.entity && !cfg.power && !cfg.switch && !cfg.temperature) cfg.power = "sensor.example_power";
   return cfg;
 }
@@ -1240,6 +1641,122 @@ svg { width: 100%; height: 100%; display: block; overflow: visible; }
 .start { fill: #c9ced4; stroke: #8f979f; stroke-width: .4; transition: fill .3s; }
 .k-microwave.active .start { fill: #3ddc84; }
 
+/* ---------- radiator ---------- */
+.k-radiator { --heat: 0; }
+.rglow { opacity: 0; transition: opacity 1.2s; }
+.k-radiator.st-heating .rglow { opacity: calc(var(--heat) * .55); animation: ac-hob 3s ease-in-out infinite; --lvl: calc(var(--heat) * .55); }
+.rwaves path { fill: none; stroke: var(--ac-heat); stroke-width: 1.8; stroke-linecap: round; opacity: 0; }
+.k-radiator.st-heating .rwaves path { animation: ac-steam calc(2.6s - var(--heat) * 1.2s) ease-out infinite; }
+.rwaves path:nth-child(2) { animation-delay: .5s !important; } .rwaves path:nth-child(3) { animation-delay: 1s !important; } .rwaves path:nth-child(4) { animation-delay: 1.5s !important; }
+.micon { fill: #c3c9cf; stroke: #c3c9cf; transition: fill .4s, stroke .4s; }
+.micon.m-comfort circle { stroke: none; }
+.mode-comfort .m-comfort { fill: #ffb400; stroke: #ffb400; }
+.mode-eco .m-eco { fill: #5b7bd5; stroke: #5b7bd5; }
+.mode-frost .m-frost { fill: #2b9af9; stroke: #2b9af9; }
+.k-radiator .lcd { fill: #ff9a4a; }
+.k-radiator.st-off .lcd, .k-radiator.mode-frost .lcd { fill: #6fd8ff; }
+.k-radiator.st-heating .l1 { fill: #ff8a3d; } .k-radiator.st-standby .l1 { fill: #3ddc84; }
+.cold-air path { fill: none; stroke: #6fbfff; stroke-width: 1.8; stroke-linecap: round; opacity: 0; }
+.win-open .cold-air path { animation: ac-wind 1.8s ease-in-out infinite; }
+.cold-air path:nth-child(2) { animation-delay: -.6s !important; } .cold-air path:nth-child(3) { animation-delay: -1.2s !important; }
+@keyframes ac-wind { 0% { opacity: 0; transform: translateX(-6px); } 40% { opacity: .9; } 100% { opacity: 0; transform: translateX(14px); } }
+
+/* ---------- cooktop ---------- */
+.zone { --lvl: 0; }
+.k-hob.st-residual .dot { background: var(--ac-heat); opacity: .6; }
+.zglow { opacity: var(--lvl); transition: opacity .8s; }
+.zone.on .zglow { animation: ac-hob 2.2s ease-in-out infinite; }
+.coil { opacity: 0; transition: opacity .8s; }
+.zone.on .coil { opacity: calc(var(--lvl) * .9); }
+.zone.res .coil { opacity: .12; }
+.zd { font: 700 5.5px "Courier New", ui-monospace, monospace; fill: #4a1d14; }
+.zd.on { fill: #ff4a1f; filter: drop-shadow(0 0 1px #ff5a1f); }
+.steam-pot path { fill: none; stroke: #ffffff; stroke-width: 2.2; stroke-linecap: round; opacity: 0; }
+.pot-on .steam-pot path { animation: ac-steam 2.6s ease-out infinite; }
+.pot-boil .steam-pot path { animation-duration: 1.4s; }
+.steam-pot path:nth-child(2) { animation-delay: .8s !important; } .steam-pot path:nth-child(3) { animation-delay: 1.6s !important; }
+.lid { transform-box: view-box; transform-origin: 40px 80px; }
+.pot-boil .lid { animation: ac-lid .35s steps(2) infinite; }
+.sizzle path { fill: none; stroke: #f2c94c; stroke-width: .8; stroke-linecap: round; opacity: 0; }
+.pan-on .sizzle path { animation: ac-pulse .5s steps(2) infinite; }
+.sizzle path:nth-child(2n) { animation-delay: -.25s !important; }
+@keyframes ac-hob { 0%, 100% { opacity: var(--lvl); } 50% { opacity: calc(var(--lvl) * .78); } }
+@keyframes ac-lid { 0% { transform: translateY(0) rotate(0); } 100% { transform: translateY(-.8px) rotate(-1.5deg); } }
+
+/* ---------- VMC (bathroom extractor fan) ---------- */
+.k-vmc .illus { padding: 0; overflow: hidden; }
+.fanv { transform-box: view-box; transform-origin: 60px 70px; }
+.k-vmc.st-speed1 .fanv { animation: ac-rot 1.1s linear infinite; }
+.k-vmc.st-speed2 .fanv { animation: ac-rot .28s linear infinite; }
+.intake path { fill: none; stroke: #8fb6d8; stroke-width: 1.5; stroke-linecap: round; opacity: 0; transform-box: view-box; transform-origin: 60px 70px; }
+.k-vmc.st-speed1 .intake path { animation: ac-suck 2.4s ease-in infinite; }
+.k-vmc.st-speed2 .intake path { animation: ac-suck 1s ease-in infinite; }
+.intake path:nth-child(2) { animation-delay: -.5s !important; } .intake path:nth-child(3) { animation-delay: -1s !important; }
+.intake path:nth-child(4) { animation-delay: -1.5s !important; } .intake path:nth-child(5) { animation-delay: -2s !important; }
+.k-vmc.st-speed2 .intake path:nth-child(n) { animation-delay: calc(var(--i, 0) * -.2s); }
+.steam path { fill: none; stroke: #ffffff; stroke-width: 3; stroke-linecap: round; opacity: 0; }
+.humid .steam path { animation: ac-steam 2.8s ease-out infinite; }
+.steam path:nth-child(2) { animation-delay: .9s !important; } .steam path:nth-child(3) { animation-delay: 1.8s !important; }
+.condensation path { fill: #9fd6ff; opacity: 0; transition: opacity 1s; }
+.humid .condensation path { opacity: .9; animation: ac-drip 3s ease-in infinite; }
+.condensation path:nth-child(2n) { animation-delay: -1.4s !important; } .condensation path:nth-child(3n) { animation-delay: -2.1s !important; }
+@keyframes ac-suck { 0% { opacity: 0; transform: scale(1.25); } 30% { opacity: .85; } 100% { opacity: 0; transform: scale(.45); } }
+@keyframes ac-drip { 0%, 60% { transform: translateY(0); } 100% { transform: translateY(5px); opacity: .2; } }
+
+/* ---------- solar ---------- */
+.k-solar { --sun: 0; }
+.sunwrap { transform-box: view-box; transform-origin: 98px 20px; transform: scale(calc(.7 + var(--sun) * .45)); transition: transform 1s, opacity 1s, filter 1s; }
+.k-solar:not(.st-producing):not(.st-low) .sunwrap { filter: grayscale(1) brightness(.85); opacity: .45; transform: scale(.75); }
+.k-solar:not(.st-producing):not(.st-low) .sunwrap > circle:first-child { opacity: 0; }
+.rays { transform-box: view-box; transform-origin: 98px 20px; }
+.k-solar.st-producing .rays { animation: ac-rot 18s linear infinite; }
+.k-solar.st-low .rays { animation: ac-rot 40s linear infinite; }
+.panshade { opacity: 0; transition: opacity 1s; }
+.k-solar:not(.st-producing):not(.st-low) .panshade { opacity: .35; }
+.sweep { transform-box: view-box; opacity: 0; }
+.k-solar.st-producing .sweep { opacity: 1; animation: ac-sweep 3.2s ease-in-out infinite; }
+.panglow { opacity: 0; transition: opacity 1s; }
+.k-solar.st-producing .panglow { opacity: calc(var(--sun) * .22); }
+.sflow { fill: none; stroke: #ffd23f; stroke-width: 1.6; stroke-linecap: round; stroke-dasharray: 2 3; opacity: 0; }
+.k-solar.st-producing .sflow, .k-solar.st-low .sflow { opacity: 1; animation: ac-flow calc(1.4s / (var(--sun) + .35)) linear infinite; }
+.k-solar.st-producing .l1, .k-solar.st-low .l1 { fill: #3ddc84; }
+.k-solar .lcd { font-size: 5.4px; }
+.k-solar:not(.st-producing):not(.st-low) .lcd { fill: #24404f; }
+@keyframes ac-sweep { 0% { transform: skewX(-18deg) translateX(0); } 60%, 100% { transform: skewX(-18deg) translateX(130px); } }
+
+/* ---------- freezers ---------- */
+.k-chest_freezer .flake, .k-drawer_freezer .flake { transform-box: view-box; }
+.k-chest_freezer .flake { transform-origin: 72px 84.5px; }
+.k-drawer_freezer .flake { transform-origin: 39.5px 18px; }
+.k-chest_freezer .lcd, .k-drawer_freezer .lcd { fill: #6fd8ff; }
+.warm.k-chest_freezer .lcd, .warm.k-drawer_freezer .lcd { fill: var(--ac-alert); }
+.k-chest_freezer.st-cooling .l1, .k-drawer_freezer.st-cooling .l1 { fill: #3ddc84; }
+.warm.k-chest_freezer .l2, .warm.k-drawer_freezer .l2 { fill: var(--ac-alert); }
+.lid path { transition: d .9s cubic-bezier(.3,.7,.3,1), fill .4s; }
+.lid-top { d: path("M8 66L100 66L112 54L20 54Z"); }
+.lid-front { d: path("M8 66L100 66L100 73L8 73Z"); }
+.lid-side { d: path("M100 66L112 54L112 61L100 73Z"); }
+.lid-under { d: path("M20 54L112 54L112 54L20 54Z"); opacity: 0; transition: d .9s cubic-bezier(.3,.7,.3,1), opacity .3s; }
+.door-open .lid-top { d: path("M22 61L110 61L110 61L22 61Z"); }
+.door-open .lid-front { d: path("M16 6L108 6L108 1L16 1Z"); }
+.door-open .lid-side { d: path("M110 61L108 6L114 3L116 58Z"); }
+.door-open .lid-under { d: path("M22 61L110 61L108 6L16 6Z"); opacity: 1; }
+.lid-handle { transition: opacity .3s; }
+.door-open .lid-handle { opacity: 0; }
+.cavity { opacity: 0; transition: opacity .5s .2s; }
+.door-open .cavity { opacity: 1; }
+.clight { opacity: 0; }
+.door-open .clight { opacity: .3; }
+.cold-out circle, .drawer-mist circle { fill: #dff3ff; opacity: 0; }
+.door-open .cold-out circle, .door-open .drawer-mist circle { animation: ac-steam 2.6s ease-out infinite; }
+.cold-out circle:nth-child(2), .drawer-mist circle:nth-child(2) { animation-delay: .7s !important; }
+.cold-out circle:nth-child(3), .drawer-mist circle:nth-child(3) { animation-delay: 1.4s !important; }
+.cold-out circle:nth-child(4) { animation-delay: 2s !important; }
+.dz-door { transform-box: view-box; transform-origin: 26px 0; transition: transform .6s cubic-bezier(.3,.7,.3,1); }
+.door-open .dz-door { transform: scaleX(.16) skewY(-6deg); }
+.drawer { transform-box: view-box; transform-origin: 60px 56px; transition: transform .6s ease; }
+.door-open .pull { transform: translateY(3px) scale(1.09); transition-delay: .35s; filter: drop-shadow(0 3px 3px rgba(0,0,0,.25)); }
+
 /* ---------- 3D printer ---------- */
 .k-printer_3d { --fil: #ff8a1f; --h: 0; }
 .k-printer_3d .gantry { transform-box: view-box; transform: translateY(calc(var(--h) * -1px)); transition: transform .8s ease; }
@@ -1325,9 +1842,9 @@ svg { width: 100%; height: 100%; display: block; overflow: visible; }
 .fz-open .fz-door { transform: scaleX(.16) skewY(-6deg); }
 .flight { transition: opacity .4s; } .door-open .flight { opacity: .35; }
 .flake { stroke: var(--ac-cold); transform-origin: 39.5px 60px; }
-.k-fridge.st-cooling .flake { animation: ac-pulse 2.4s ease-in-out infinite; }
+.k-fridge.st-cooling .flake, .k-chest_freezer.st-cooling .flake, .k-drawer_freezer.st-cooling .flake { animation: ac-pulse 2.4s ease-in-out infinite; }
 .mist circle { fill: #9fd6ff; opacity: 0; }
-.k-fridge.st-cooling .mist circle { animation: ac-mist 3s ease-out infinite; }
+.k-fridge.st-cooling .mist circle, .k-chest_freezer.st-cooling .mist circle, .k-drawer_freezer.st-cooling .mist circle { animation: ac-mist 3s ease-out infinite; }
 .mist circle:nth-child(2) { animation-delay: .7s !important; } .mist circle:nth-child(3) { animation-delay: 1.4s !important; }
 .mist circle:nth-child(4) { animation-delay: 2.1s !important; }
 
