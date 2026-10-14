@@ -10,7 +10,7 @@ They follow your Home Assistant theme (light/dark) and switch between **French**
 
 *🇫🇷 Version française plus bas.*
 
-<p align="center"><img src="docs/hero.gif" width="560" alt="16 animated appliance cards for Home Assistant"></p>
+<p align="center"><img src="docs/hero.gif" width="560" alt="18 animated appliance cards for Home Assistant"></p>
 
 | Card | Type |
 |---|---|
