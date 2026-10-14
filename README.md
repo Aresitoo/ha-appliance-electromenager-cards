@@ -3,14 +3,14 @@
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://hacs.xyz/docs/faq/custom_repositories)
 [![Validate](https://github.com/skyrotter/ha-appliance-electromenager-cards/actions/workflows/validate.yml/badge.svg)](https://github.com/skyrotter/ha-appliance-electromenager-cards/actions/workflows/validate.yml)
 
-Ten Lovelace cards for household appliances, with **realistic animated illustrations** (tumbling drum, water and foam, spin with vibration, rotating spray arms, glowing oven element, turntable, opening fridge door, flickering pellet-stove flames, water flowing through a pool pump, a 3D printer building its part layer by layer…), live status, power, energy and cost.
+Sixteen Lovelace cards for household appliances, with **realistic animated illustrations** (tumbling drum, water and foam, spin with vibration, rotating spray arms, glowing oven element, turntable, opening fridge door, flickering pellet-stove flames, water flowing through a pool pump, a 3D printer building its part layer by layer, a chest freezer lid lifting, freezer drawers sliding out, a sun powering solar panels on their frame, a bathroom extractor fan drawing in steam, cooktop zones glowing under a steaming pot, an electric radiator sending heat waves…), live status, power, energy and cost.
 They follow your Home Assistant theme (light/dark) and switch between **French** and **English** automatically.
 
 **▶ [Try it online / Essayer en ligne](https://skyrotter.github.io/ha-appliance-electromenager-cards/docs/demo.html)** · [Automated tests](https://skyrotter.github.io/ha-appliance-electromenager-cards/docs/tests.html)
 
 *🇫🇷 Version française plus bas.*
 
-<p align="center"><img src="docs/hero.gif" width="560" alt="10 animated appliance cards for Home Assistant"></p>
+<p align="center"><img src="docs/hero.gif" width="560" alt="16 animated appliance cards for Home Assistant"></p>
 
 | Card | Type |
 |---|---|
@@ -24,6 +24,12 @@ They follow your Home Assistant theme (light/dark) and switch between **French**
 | Pellet stove | `custom:appliance-pellet-stove-card` |
 | Pool pump | `custom:appliance-pool-pump-card` |
 | 3D printer | `custom:appliance-printer-3d-card` |
+| Chest freezer | `custom:appliance-chest-freezer-card` |
+| Upright drawer freezer | `custom:appliance-drawer-freezer-card` |
+| Solar panels | `custom:appliance-solar-card` |
+| Bathroom extractor fan (VMC) | `custom:appliance-vmc-card` |
+| Electric cooktop | `custom:appliance-hob-card` |
+| Electric radiator | `custom:appliance-radiator-card` |
 
 Works with a simple smart plug (power sensor only) as well as with connected appliances (program, remaining time, progress, door…).
 
@@ -72,6 +78,11 @@ All cards have a visual editor. When added from the card picker, entities are de
 | `power_level` (1–5), `pellet_level` (%), `ignition_threshold` (default 250 W), `pellet_alert` (default 15 %) | pellet stove |
 | `temperature` (water), `runtime` (filtration time today), `speed` (rpm or %), `max_power` | pool pump |
 | `progress`, `remaining`, `program` (job name), `temperature` (nozzle), `bed_temperature`, `filament_color` | 3D printer |
+| `temperature`, `door`, `freezer_max_temperature` (default −12 °C) | chest freezer, drawer freezer |
+| `power` (production), `energy` (today), `cost` (savings), `max_power` (peak Wp, default 3000), `sun_entity` (default `sun.sun`) | solar panels |
+| `speed` (select/sensor: text, level or %), `humidity`, `high_threshold` (default 35 W), `humidity_max` (default 70 %) | extractor fan (VMC) |
+| `zone_1`…`zone_4` (level 0–9, W or %), `zone_power` (default 1500 W), `residual_minutes` (default 10) | cooktop |
+| `mode` (pilot wire / select: comfort, eco, frost, off), `window`, `temperature`, `target_temperature`, `max_power` (default 1500 W) | electric radiator |
 | `max_temperature` (default 8), `freezer_max_temperature` (default −12) | fridge alerts |
 
 ### How the status is computed
@@ -226,6 +237,91 @@ power: sensor.printer_plug_power
 filament_color: "#ff8a1f"
 ```
 
+### Freezers (chest and upright with drawers)
+
+- **Chest freezer**: drawn in three-quarter view. When `door` opens, the **lid lifts up** and reveals the lit inside (tubs, bags, basket) with cold mist escaping.
+- **Upright drawer freezer**: when `door` opens, the door swings open on **four transparent drawers** full of food and one **drawer slides out**.
+- Both: the display shows the temperature, the snowflake pulses and cold air flows out at the bottom while the compressor runs (power above `threshold`, 20 W). A **too warm** alert fires above `freezer_max_temperature` (−12 °C by default), plus a door-open alert.
+- A freezer should never be switched off by mistake: if you set `switch:`, turning it off always needs a second click.
+
+```yaml
+type: custom:appliance-chest-freezer-card
+power: sensor.chest_freezer_plug_power
+energy: sensor.chest_freezer_plug_energy_today
+temperature: sensor.chest_freezer_temperature
+door: binary_sensor.chest_freezer_lid
+```
+
+### Solar panels
+
+Just the sun, two panels on their aluminium frame and the inverter on its post (no background).
+
+| Situation | What you see | Display |
+|---|---|---|
+| Producing | yellow sun growing with production (vs `max_power`), turning rays, light sweeping over the panels, energy flowing along the cable to the inverter | `2.4kW` |
+| Low production (< 15 % of peak) | same, slower | `280W` |
+| Not producing (night or no sun) | grey sun, darkened panels, cable and inverter at rest | `0W` / `NIGHT` |
+
+Tiles: production now, energy today, savings (`cost`) and % of peak.
+
+```yaml
+type: custom:appliance-solar-card
+power: sensor.solar_power
+energy: sensor.solar_energy_today
+cost: sensor.solar_savings_today   # optional
+max_power: 3000                    # your installation's peak power (Wp)
+```
+
+### Bathroom extractor fan (VMC)
+
+A wall-mounted bathroom extractor: white square front with a wavy top edge, round grille with horizontal slats and curved fan blades behind it, on a tiled bathroom wall.
+
+- **Low speed**: the blades turn slowly and humid air is drawn towards the grille.
+- **High speed**: everything goes faster.
+- **High humidity** (above `humidity_max`, 70 %): steam rises and condensation drops run down the tiles, with an alert.
+- With a smart plug: 5–35 W = low speed, above `high_threshold` (35 W) = high speed. A `speed` entity (select, sensor, level or %) takes priority if you have one.
+
+```yaml
+type: custom:appliance-vmc-card
+power: sensor.vmc_plug_power
+energy: sensor.vmc_plug_energy_today
+humidity: sensor.bathroom_humidity
+```
+
+### Electric cooktop
+
+A black glass cooktop with four zones, a saucepan on the front-left zone and a frying pan on the back-right one.
+
+- Each active zone **glows red**, brighter with its level, and the touch strip shows the level (1–9).
+- The pot steams; at high level the lid rattles. The pan sizzles.
+- After cooking, an **H** (residual heat) stays on the zones that were used for `residual_minutes` (10 min).
+- **Per-zone data** (`zone_1` = front-left, `zone_2` = front-right, `zone_3` = back-left, `zone_4` = back-right), as a level, W or %, when your cooktop integration provides it (Home Connect, SmartThings…).
+- **Total power only**: the zones are lit from the power (about `zone_power`, 1500 W, per zone).
+
+⚠️ A cooktop is wired on a dedicated 20–32 A circuit, **never on a smart plug**. Measure it with a DIN-rail energy meter or a CT clamp at the electrical panel.
+
+```yaml
+type: custom:appliance-hob-card
+power: sensor.cooktop_power      # from a DIN-rail meter or CT clamp
+energy: sensor.cooktop_energy_today
+```
+
+### Electric radiator
+
+A wall-mounted inertia radiator with six wide vertical elements and its control box (display, Comfort / Eco / Frost icons and buttons).
+
+- **Heating**: the columns glow and heat waves rise from the top grille, stronger with the power drawn (vs `max_power`).
+- **Mode**: sun = Comfort, moon = Eco, snowflake = Frost protection (`H-G` on the display), read from a pilot-wire `select`, a `climate` preset or any mode entity. The display shows the target temperature.
+- **Window open** (`window`): cold air blows in and an alert is shown.
+- Works with a `climate` entity (current/target temperature, `hvac_action`, `preset_mode`), a pilot-wire mode entity, or simply a power sensor (above `threshold`, 50 W = heating).
+
+```yaml
+type: custom:appliance-radiator-card
+entity: climate.living_room_radiator   # or power / mode only
+power: sensor.radiator_power
+window: binary_sensor.living_room_window
+```
+
 ### Power button safety
 
 The power button only appears when you set `switch:`. On the **washer, dryer, dishwasher and pellet stove**, cutting the plug **while a cycle is running (or the stove is burning)** takes **two clicks**: the first one turns the button red and shows "Cycle running – click again to cut power" for 4 seconds. Turning the plug on, or off while idle, stays a single click. Set `confirm_off: false` to turn this off.
@@ -275,7 +371,7 @@ appliance-illustration-size: 116px
 
 ## 🇫🇷 En français
 
-Dix cartes Lovelace pour l'électroménager (lave-linge, sèche-linge, lave-vaisselle, ballon d'eau chaude, four, micro-ondes, réfrigérateur, poêle à granulés, pompe de piscine, imprimante 3D) : illustration animée, état en direct, puissance, énergie et coût. Elles suivent le thème de Home Assistant et s'affichent en français si Home Assistant est en français.
+Seize cartes Lovelace pour l'électroménager et l'énergie (lave-linge, sèche-linge, lave-vaisselle, ballon d'eau chaude, four, micro-ondes, réfrigérateur, poêle à granulés, pompe de piscine, imprimante 3D, congélateur coffre, congélateur à tiroirs, panneaux solaires, VMC, plaques de cuisson, radiateur électrique) : illustration animée, état en direct, puissance, énergie et coût. Elles suivent le thème de Home Assistant et s'affichent en français si Home Assistant est en français.
 
 **Installation HACS** : HACS → ⋮ → *Dépôts personnalisés* → `https://github.com/skyrotter/ha-appliance-electromenager-cards`, catégorie **Dashboard** → installer → recharger le navigateur (Ctrl+F5).
 
@@ -296,6 +392,16 @@ cost: sensor.lave_linge_cout_jour
 **Pompe de piscine** : l'eau circule sur le dessin (bassin → préfiltre → pompe → bassin) avec le ventilateur du moteur qui tourne. Au-dessus de 50 W, la carte affiche « Filtration ». La vitesse de l'animation suit la vitesse de la pompe (tr/min, %, ou puissance / `max_power`). Tuiles : température de l'eau et durée de filtration du jour (capteur `history_stats`, exemple ci-dessus).
 
 **Imprimante 3D** : la tête va et vient, le portique monte couche par couche et la pièce grandit selon la progression. Fonctionne avec l'intégration Bambu Lab, OctoPrint, Moonraker… (états `prepare`, `running`, `pause`, `finish`, `failed`), ou avec une simple prise (au-dessus de 40 W = impression, la pièce grandit alors en boucle). Couleur du filament réglable (`filament_color`).
+
+**Congélateurs** : le coffre lève son couvercle quand le capteur d'ouverture s'ouvre (intérieur éclairé, froid qui s'échappe). Le congélateur armoire ouvre sa porte sur 4 tiroirs, et un tiroir sort. Alerte « Trop chaud » au-dessus de −12 °C (réglable) et alerte porte ouverte. Couper un congélateur demande toujours une confirmation.
+
+**Panneaux solaires** : uniquement le soleil, deux panneaux sur leur structure et l'onduleur (sans fond). En production, le soleil jaune grossit selon la production (par rapport à `max_power`), un reflet balaie les panneaux et l'énergie circule jusqu'à l'onduleur. Sans production, le soleil devient gris et les panneaux s'assombrissent. Tuiles : production, énergie du jour, économies, % de la crête.
+
+**VMC** : façade blanche murale, grille ronde à lamelles et hélice visible, sur un mur carrelé. L'hélice tourne, l'air humide est aspiré vers la grille, et en cas d'humidité élevée la buée monte et la condensation coule sur le carrelage. Petite vitesse (5–35 W) et grande vitesse (au-dessus de 35 W) détectées par la prise, ou via une entité de vitesse. Alerte humidité au-dessus de 70 %.
+
+**Plaques de cuisson** : table vitrocéramique noire avec 4 foyers qui rougeoient selon leur niveau, une casserole qui fume (couvercle qui tremble à feu fort) et une poêle qui grésille. Le bandeau affiche le niveau de chaque foyer et un « H » de chaleur résiduelle après l'arrêt. Niveaux par foyer via l'intégration de la plaque, ou déduits de la puissance totale (≈ 1500 W par foyer). ⚠️ Une plaque n'est jamais sur une prise connectée : mesure-la avec un compteur modulaire ou une pince au tableau.
+
+**Radiateur électrique** : radiateur à inertie mural à 6 éléments avec son boîtier de commande (écran, icônes de mode, boutons). En chauffe, les éléments rougeoient et des ondes de chaleur montent (selon la puissance). Mode affiché : soleil = Confort, lune = Éco, flocon = Hors-gel (fil pilote, `climate` ou liste). Fenêtre ouverte : air froid et alerte. Fonctionne avec un thermostat `climate`, un fil pilote ou une simple mesure de puissance.
 
 **Sécurité du bouton marche/arrêt** : sur le lave-linge, le sèche-linge, le lave-vaisselle et le poêle à granulés, couper la prise pendant un cycle (ou poêle allumé) demande deux clics (le bouton devient rouge et affiche « Cycle en cours – cliquer encore pour couper »). Option `confirm_off: false` pour désactiver. Conseil : sur un lave-linge, ne mets pas de `switch:` du tout.
 
