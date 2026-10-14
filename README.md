@@ -3,7 +3,7 @@
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://hacs.xyz/docs/faq/custom_repositories)
 [![Validate](https://github.com/skyrotter/ha-appliance-electromenager-cards/actions/workflows/validate.yml/badge.svg)](https://github.com/skyrotter/ha-appliance-electromenager-cards/actions/workflows/validate.yml)
 
-Sixteen Lovelace cards for household appliances, with **realistic animated illustrations** (tumbling drum, water and foam, spin with vibration, rotating spray arms, glowing oven element, turntable, opening fridge door, flickering pellet-stove flames, water flowing through a pool pump, a 3D printer building its part layer by layer, a chest freezer lid lifting, freezer drawers sliding out, a sun powering solar panels on their frame, a bathroom extractor fan drawing in steam, cooktop zones glowing under a steaming pot, an electric radiator sending heat waves…), live status, power, energy and cost.
+Eighteen Lovelace cards for household appliances, with **realistic animated illustrations** (tumbling drum, water and foam, spin with vibration, rotating spray arms, glowing oven element, turntable, opening fridge door, flickering pellet-stove flames, water flowing through a pool pump, a 3D printer building its part layer by layer, a chest freezer lid lifting, freezer drawers sliding out, a sun powering solar panels on their frame, a bathroom extractor fan drawing in steam, cooktop zones glowing under a steaming pot, an electric radiator sending heat waves, a dual-basket air fryer blowing hot air over fries, a coffee maker filling the carafe or the cup…), live status, power, energy and cost.
 They follow your Home Assistant theme (light/dark) and switch between **French** and **English** automatically.
 
 **▶ [Try it online / Essayer en ligne](https://skyrotter.github.io/ha-appliance-electromenager-cards/docs/demo.html)** · [Automated tests](https://skyrotter.github.io/ha-appliance-electromenager-cards/docs/tests.html)
@@ -30,6 +30,8 @@ They follow your Home Assistant theme (light/dark) and switch between **French**
 | Bathroom extractor fan (VMC) | `custom:appliance-vmc-card` |
 | Electric cooktop | `custom:appliance-hob-card` |
 | Electric radiator | `custom:appliance-radiator-card` |
+| Air fryer (dual basket) | `custom:appliance-air-fryer-card` |
+| Coffee maker (drip, pods, espresso) | `custom:appliance-coffee-maker-card` |
 
 Works with a simple smart plug (power sensor only) as well as with connected appliances (program, remaining time, progress, door…).
 
@@ -69,9 +71,9 @@ All cards have a visual editor. When added from the card picker, entities are de
 
 | Option | Cards |
 |---|---|
-| `remaining` | washer, dryer, dishwasher, oven, microwave — minutes, `H:MM[:SS]`, or a timestamp of the end |
+| `remaining` | washer, dryer, dishwasher, oven, microwave, air fryer — minutes, `H:MM[:SS]`, or a timestamp of the end |
 | `progress` | washer, dryer, dishwasher — % |
-| `program` | washer, dryer, dishwasher, oven, microwave |
+| `program` | washer, dryer, dishwasher, oven, microwave, air fryer |
 | `door` | all except water heater (`binary_sensor`, `on` = open) |
 | `temperature`, `target_temperature` | water heater, oven, fridge (`temperature` only) |
 | `freezer_temperature`, `freezer_door` | fridge |
@@ -322,6 +324,44 @@ power: sensor.radiator_power
 window: binary_sensor.living_room_window
 ```
 
+### Air fryer
+
+<p align="center"><img src="docs/air-fryer.gif" width="340" alt="Air fryer card"></p>
+
+A black dual-basket air fryer with its touch panel and two stainless drawers with windows (fries on the left, nuggets on the right).
+
+- **Cooking** (power above `threshold`, 50 W by default): the baskets light up, the heating coils glow, hot air swirls, the food bounces and steam escapes from the top. The display shows the remaining time (`remaining`), otherwise the temperature (`temperature`), otherwise `ON`.
+- **Finished**: `End` in green on the display (with a status entity reporting `finished`), food golden brown.
+- Designed for a simple smart plug (power + energy), works with a connected air fryer too.
+
+```yaml
+type: custom:appliance-air-fryer-card
+entity: switch.airfryer_plug        # optional: the plug
+power: sensor.airfryer_power
+energy: sensor.airfryer_energy_today
+cost: sensor.airfryer_cost_today
+# remaining: sensor.airfryer_remaining   # optional
+```
+
+### Coffee maker
+
+<p align="center"><img src="docs/coffee-maker.gif" width="520" alt="Coffee maker card"></p>
+
+Three illustrations, chosen with `style`: `filtre` (drip coffee maker with glass carafe, default), `dosette` (pod machine: Senseo, Nespresso, Dolce Gusto…) or `expresso` (bean-to-cup espresso machine).
+
+- **Brewing** (power above `threshold`, 300 W by default): coffee drips or flows, the carafe or cup fills up, the water tank empties, steam rises, the buttons blink and the display shows `BREW` (`CAFE` in French).
+- **Keeping warm** (drip only, between `warm_threshold` — 5 W by default — and `threshold`): the hot plate glows and the full carafe steams.
+- **Ready** (pods / espresso, same power range): green LEDs, display `READY`.
+- Designed for a smart plug (power + energy). If your keep-warm plate draws more than 300 W, raise `threshold`.
+
+```yaml
+type: custom:appliance-coffee-maker-card
+style: dosette                 # filtre | dosette | expresso
+entity: switch.coffee_plug
+power: sensor.coffee_power
+energy: sensor.coffee_energy_today
+```
+
 ### Power button safety
 
 The power button only appears when you set `switch:`. On the **washer, dryer, dishwasher and pellet stove**, cutting the plug **while a cycle is running (or the stove is burning)** takes **two clicks**: the first one turns the button red and shows "Cycle running – click again to cut power" for 4 seconds. Turning the plug on, or off while idle, stays a single click. Set `confirm_off: false` to turn this off.
@@ -371,7 +411,7 @@ appliance-illustration-size: 116px
 
 ## 🇫🇷 En français
 
-Seize cartes Lovelace pour l'électroménager et l'énergie (lave-linge, sèche-linge, lave-vaisselle, ballon d'eau chaude, four, micro-ondes, réfrigérateur, poêle à granulés, pompe de piscine, imprimante 3D, congélateur coffre, congélateur à tiroirs, panneaux solaires, VMC, plaques de cuisson, radiateur électrique) : illustration animée, état en direct, puissance, énergie et coût. Elles suivent le thème de Home Assistant et s'affichent en français si Home Assistant est en français.
+Dix-huit cartes Lovelace pour l'électroménager et l'énergie (lave-linge, sèche-linge, lave-vaisselle, ballon d'eau chaude, four, micro-ondes, réfrigérateur, poêle à granulés, pompe de piscine, imprimante 3D, congélateur coffre, congélateur à tiroirs, panneaux solaires, VMC, plaques de cuisson, radiateur électrique, airfryer, cafetière) : illustration animée, état en direct, puissance, énergie et coût. Elles suivent le thème de Home Assistant et s'affichent en français si Home Assistant est en français.
 
 **Installation HACS** : HACS → ⋮ → *Dépôts personnalisés* → `https://github.com/skyrotter/ha-appliance-electromenager-cards`, catégorie **Dashboard** → installer → recharger le navigateur (Ctrl+F5).
 
@@ -402,6 +442,10 @@ cost: sensor.lave_linge_cout_jour
 **Plaques de cuisson** : table vitrocéramique noire avec 4 foyers qui rougeoient selon leur niveau, une casserole qui fume (couvercle qui tremble à feu fort) et une poêle qui grésille. Le bandeau affiche le niveau de chaque foyer et un « H » de chaleur résiduelle après l'arrêt. Niveaux par foyer via l'intégration de la plaque, ou déduits de la puissance totale (≈ 1500 W par foyer). ⚠️ Une plaque n'est jamais sur une prise connectée : mesure-la avec un compteur modulaire ou une pince au tableau.
 
 **Radiateur électrique** : radiateur à inertie mural à 6 éléments avec son boîtier de commande (écran, icônes de mode, boutons). En chauffe, les éléments rougeoient et des ondes de chaleur montent (selon la puissance). Mode affiché : soleil = Confort, lune = Éco, flocon = Hors-gel (fil pilote, `climate` ou liste). Fenêtre ouverte : air froid et alerte. Fonctionne avec un thermostat `climate`, un fil pilote ou une simple mesure de puissance.
+
+**Airfryer** : airfryer noir double bac avec bandeau tactile et deux tiroirs inox à hublot (frites à gauche, nuggets à droite). En cuisson (au-dessus de 50 W sur la prise), les bacs s'éclairent, les résistances rougeoient, l'air chaud tourbillonne, les frites sautillent et de la vapeur sort du dessus. L'écran affiche le temps restant (`remaining`), sinon la température, sinon `ON` ; `End` en vert quand c'est terminé. Type : `custom:appliance-air-fryer-card`.
+
+**Cafetière** : trois dessins au choix avec `style` : `filtre` (verseuse en verre, par défaut), `dosette` (Senseo, Nespresso, Dolce Gusto…) ou `expresso` (machine à grains). Au-dessus de 300 W sur la prise, le café coule, la verseuse ou la tasse se remplit, le réservoir d'eau se vide et la vapeur monte (écran `CAFE`). Entre 5 et 300 W : « Maintien au chaud » (plaque rouge) pour une cafetière filtre, « Prêt » pour les autres. Type : `custom:appliance-coffee-maker-card`.
 
 **Sécurité du bouton marche/arrêt** : sur le lave-linge, le sèche-linge, le lave-vaisselle et le poêle à granulés, couper la prise pendant un cycle (ou poêle allumé) demande deux clics (le bouton devient rouge et affiche « Cycle en cours – cliquer encore pour couper »). Option `confirm_off: false` pour désactiver. Conseil : sur un lave-linge, ne mets pas de `switch:` du tout.
 
