@@ -184,6 +184,28 @@ const SCEN = [
       range(ctl, 'Restant', 'sensor.microwave_remaining', 0, 600, 5, 105, 's', { unit_of_measurement: 's' }, mmss);
       checks(ctl, [['Porte ouverte', 'binary_sensor.microwave_door', false]]);
     } },
+  { kind: 'air-fryer', title: 'Airfryer',
+    cfg: { entity: 'switch.airfryer', power: 'sensor.airfryer_power', remaining: 'sensor.airfryer_remaining', energy: 'sensor.airfryer_energy', cost: 'sensor.airfryer_cost' },
+    build(ctl) {
+      set('switch.airfryer', 'on');
+      range(ctl, 'Puissance', 'sensor.airfryer_power', 0, 2400, 10, 1650, 'W', W);
+      range(ctl, 'Restant', 'sensor.airfryer_remaining', 0, 1800, 15, 720, 's', { unit_of_measurement: 's' }, mmss);
+      set('sensor.airfryer_energy', 0.42, KWH);
+      set('sensor.airfryer_cost', 0.09, { unit_of_measurement: '€', device_class: 'monetary' });
+    } },
+  { kind: 'coffee-maker', title: 'Cafetière (filtre)',
+    cfg: { entity: 'switch.coffee', power: 'sensor.coffee_power', energy: 'sensor.coffee_energy', style: 'filtre' },
+    build(ctl) {
+      set('switch.coffee', 'on');
+      range(ctl, 'Puissance', 'sensor.coffee_power', 0, 1500, 10, 950, 'W', W);
+      set('sensor.coffee_energy', 0.18, KWH);
+    } },
+  { kind: 'coffee-maker', title: 'Cafetière (dosettes)',
+    cfg: { power: 'sensor.pod_power', style: 'dosette' },
+    build(ctl) { range(ctl, 'Puissance', 'sensor.pod_power', 0, 1500, 10, 1400, 'W', W); } },
+  { kind: 'coffee-maker', title: 'Cafetière (expresso)',
+    cfg: { power: 'sensor.espresso_power', style: 'expresso' },
+    build(ctl) { range(ctl, 'Puissance', 'sensor.espresso_power', 0, 1500, 10, 1300, 'W', W); } },
   { kind: 'pellet-stove', title: 'Poêle à granulés',
     cfg: { entity: 'sensor.stove_status', power: 'sensor.stove_power', temperature: 'sensor.stove_temp', target_temperature: 'sensor.stove_target', power_level: 'sensor.stove_level', pellet_level: 'sensor.stove_pellets', energy: 'sensor.stove_energy' },
     build(ctl) {
