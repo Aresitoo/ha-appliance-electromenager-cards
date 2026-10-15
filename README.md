@@ -368,9 +368,12 @@ energy: sensor.coffee_energy_today
 
 <p align="center"><img src="docs/tv-range-hood.gif" width="560" alt="TV and range hood cards"></p>
 
-**TV** (`custom:appliance-tv-card`): a flat screen on its stand.
-- **Switching on**: a bright line opens up into the picture, like a real panel; **switching off**: the picture collapses into a line, then a dot.
-- **On**: a moving landscape plays with a progress bar and a soft ambient glow. **Standby**: black screen, red LED. **Off**: black screen, no LED.
+**TV** (`custom:appliance-tv-card`): a wall-mounted flat screen, nothing around it.
+
+<p align="center"><img src="docs/tv.gif" width="300" alt="TV card"></p>
+
+- **Switching on**: a bright line opens up the panel, light streaks converge into a start-up logo, then the streaming home screen appears; **switching off**: the picture collapses into a line, then a dot.
+- **On**: a streaming home screen (featured banner, rows of tiles scrolling, moving selection). **Standby**: black screen, red LED. **Off**: black screen, no LED.
 - With a smart plug: on above `threshold` (25 W), standby between `standby_threshold` (0.2 W) and 25 W, off below. With a `media_player`: `on` / `playing` / `paused` / `idle` = on, `standby` = standby, `off` = off, and the app or source is shown (« Allumée · Netflix »).
 
 ```yaml
@@ -476,7 +479,7 @@ cost: sensor.lave_linge_cout_jour
 
 **Cafetière** : trois dessins au choix avec `style` : `filtre` (verseuse en verre, par défaut), `dosette` (Senseo, Nespresso, Dolce Gusto…) ou `expresso` (machine à grains). Au-dessus de 300 W sur la prise, le café coule, la verseuse ou la tasse se remplit, le réservoir d'eau se vide et la vapeur monte (écran `CAFE`). Entre 5 et 300 W : « Maintien au chaud » (plaque rouge) pour une cafetière filtre, « Prêt » pour les autres. Type : `custom:appliance-coffee-maker-card`.
 
-**Téléviseur** : écran plat sur son pied. À l'allumage, une ligne lumineuse s'ouvre sur l'image ; à l'extinction, l'image se replie en une ligne puis un point. Allumée : paysage animé et halo lumineux ; veille : écran noir et voyant rouge ; éteinte : rien. Avec une prise : allumée au-dessus de 25 W, veille entre 0,2 et 25 W. Avec un `media_player`, l'appli ou la source s'affiche (« Allumée · Netflix »). Type : `custom:appliance-tv-card`.
+**Téléviseur** : écran plat fixé au mur, sans pied. À l'allumage, une ligne lumineuse s'ouvre, des faisceaux convergent vers un logo de démarrage, puis l'écran d'accueil de streaming apparaît ; à l'extinction, l'image se replie en une ligne puis un point. Allumée : écran d'accueil animé (bannière, rangées de vignettes qui défilent) ; veille : écran noir et voyant rouge ; éteinte : rien. Avec une prise : allumée au-dessus de 25 W, veille entre 0,2 et 25 W. Avec un `media_player`, l'appli ou la source s'affiche (« Allumée · Netflix »). Type : `custom:appliance-tv-card`.
 
 **Hotte aspirante** : hotte cheminée au-dessus d'une plaque et d'une casserole qui fume. Moteur en marche : l'hélice tourne, la vapeur est aspirée, l'air monte (plus vite en grande vitesse). Éclairage : les spots éclairent la plaque (quelques watts sans moteur = « Éclairage », ou entité `light`). Vitesses : au-dessus de 40 W petite vitesse, au-dessus de 130 W grande vitesse (`high_threshold`), ou entité `speed`. Type : `custom:appliance-range-hood-card`.
 
