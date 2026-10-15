@@ -206,6 +206,19 @@ const SCEN = [
   { kind: 'coffee-maker', title: 'Cafetière (expresso)',
     cfg: { power: 'sensor.espresso_power', style: 'expresso' },
     build(ctl) { range(ctl, 'Puissance', 'sensor.espresso_power', 0, 1500, 10, 1300, 'W', W); } },
+  { kind: 'tv', title: 'Téléviseur',
+    cfg: { entity: 'switch.tv', power: 'sensor.tv_power', energy: 'sensor.tv_energy' },
+    build(ctl) {
+      set('switch.tv', 'on');
+      range(ctl, 'Puissance', 'sensor.tv_power', 0, 200, 0.5, 90, 'W', W);
+      set('sensor.tv_energy', 0.35, KWH);
+    } },
+  { kind: 'range-hood', title: 'Hotte aspirante',
+    cfg: { power: 'sensor.hood_power', energy: 'sensor.hood_energy' },
+    build(ctl) {
+      range(ctl, 'Puissance', 'sensor.hood_power', 0, 300, 1, 80, 'W', W);
+      set('sensor.hood_energy', 0.12, KWH);
+    } },
   { kind: 'pellet-stove', title: 'Poêle à granulés',
     cfg: { entity: 'sensor.stove_status', power: 'sensor.stove_power', temperature: 'sensor.stove_temp', target_temperature: 'sensor.stove_target', power_level: 'sensor.stove_level', pellet_level: 'sensor.stove_pellets', energy: 'sensor.stove_energy' },
     build(ctl) {

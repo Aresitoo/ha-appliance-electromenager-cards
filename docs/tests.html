@@ -16,9 +16,9 @@ function card(kind,cfg,states,lang){const el=document.createElement(`appliance-$
 const has=(c,cls)=>c.wrap.classList.contains(cls);
 
 // registration
-const tags=['washer','dryer','dishwasher','water-heater','oven','microwave','fridge','pellet-stove','pool-pump','printer-3d','chest-freezer','drawer-freezer','solar','vmc','hob','radiator','air-fryer','coffee-maker'];
+const tags=['washer','dryer','dishwasher','water-heater','oven','microwave','fridge','pellet-stove','pool-pump','printer-3d','chest-freezer','drawer-freezer','solar','vmc','hob','radiator','air-fryer','coffee-maker','tv','range-hood'];
 tags.forEach(t=>ok(`registered ${t}`,customElements.get(`appliance-${t}-card`)));
-ok('customCards = 18',window.customCards.length===18,window.customCards.length);
+ok('customCards = 20',window.customCards.length===20,window.customCards.length);
 // config validation
 try{document.createElement('appliance-washer-card').setConfig({});ok('empty config throws',false)}catch(e){ok('empty config throws',/entity|power/.test(e.message),e.message)}
 
@@ -89,6 +89,19 @@ c=card('coffee-maker',{entity:'switch.cf',power:'sensor.p'},[mk('switch.cf','on'
 c=card('coffee-maker',{entity:'switch.cf',power:'sensor.p',style:'dosette'},[mk('switch.cf','on'),mk('sensor.p',70,W)]); ok('coffee pod ready',has(c,'st-ready')&&c.sr.querySelector('.s-dosette'),c.wrap.className);
 c=card('coffee-maker',{power:'sensor.p',style:'espresso'},[mk('sensor.p',1,W)]); ok('coffee espresso idle + svg',has(c,'st-idle')&&c.sr.querySelector('.s-expresso'),c.wrap.className);
 c=card('coffee-maker',{entity:'switch.cf',power:'sensor.p'},[mk('switch.cf','off'),mk('sensor.p',0,W)]); ok('coffee off',has(c,'st-off')&&c.lcd()==='OFF',c.wrap.className+' '+c.lcd());
+
+// tv
+c=card('tv',{entity:'switch.tv',power:'sensor.p'},[mk('switch.tv','on'),mk('sensor.p',85,W)]); ok('tv on',has(c,'st-screen_on')&&/Allumée/.test(c.txt()),c.wrap.className+' '+c.txt());
+c=card('tv',{entity:'switch.tv',power:'sensor.p'},[mk('switch.tv','on'),mk('sensor.p',0.5,W)]); ok('tv standby',has(c,'st-standby')&&/Veille/.test(c.txt()),c.wrap.className);
+c=card('tv',{entity:'switch.tv',power:'sensor.p'},[mk('switch.tv','off'),mk('sensor.p',0,W)]); ok('tv off',has(c,'st-off'),c.wrap.className);
+c=card('tv',{entity:'media_player.tv'},[mk('media_player.tv','playing',{app_name:'Netflix'})]); ok('tv media_player playing + app',has(c,'st-screen_on')&&/Netflix/.test(c.txt()),c.txt());
+c=card('tv',{entity:'media_player.tv'},[mk('media_player.tv','off')]); ok('tv media_player off',has(c,'st-off'),c.wrap.className);
+// range hood
+c=card('range-hood',{power:'sensor.p'},[mk('sensor.p',80,W)]); ok('hood speed1 + lights',has(c,'st-speed1')&&has(c,'lights-on'),c.wrap.className);
+c=card('range-hood',{power:'sensor.p'},[mk('sensor.p',220,W)]); ok('hood speed2',has(c,'st-speed2')&&/Grande vitesse/.test(c.txt()),c.wrap.className);
+c=card('range-hood',{power:'sensor.p'},[mk('sensor.p',8,W)]); ok('hood lights only',has(c,'st-lights')&&has(c,'lights-on')&&/Éclairage/.test(c.txt()),c.wrap.className+' '+c.txt());
+c=card('range-hood',{power:'sensor.p',light:'light.hotte'},[mk('sensor.p',80,W),mk('light.hotte','off')]); ok('hood light entity off',has(c,'st-speed1')&&!has(c,'lights-on'),c.wrap.className);
+c=card('range-hood',{power:'sensor.p'},[mk('sensor.p',0,W)]); ok('hood off',has(c,'st-off'),c.wrap.className);
 
 // fridge
 c=card('fridge',{power:'sensor.p',temperature:'sensor.t',freezer_temperature:'sensor.f'},[mk('sensor.p',90,W),mk('sensor.t',4,T),mk('sensor.f',-18,T)]);
