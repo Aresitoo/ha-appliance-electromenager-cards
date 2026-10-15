@@ -1,12 +1,12 @@
 /*!
  * HA Appliance Cards
  * Lovelace cards for household appliances: washer, dryer, dishwasher,
- * water heater, oven, microwave, refrigerator, air fryer, coffee maker…
+ * water heater, oven, microwave, refrigerator, air fryer, coffee maker, TV, range hood…
  * MIT License
  */
 (() => {
 "use strict";
-const VERSION = "1.11.0";
+const VERSION = "1.12.0";
 
 /* ------------------------------------------------------------------ */
 /* i18n                                                                */
@@ -14,7 +14,7 @@ const VERSION = "1.11.0";
 const STRINGS = {
   en: {
     washer: "Washing machine", dryer: "Dryer", dishwasher: "Dishwasher",
-    water_heater: "Water heater", oven: "Oven", microwave: "Microwave", air_fryer: "Air fryer", coffee_maker: "Coffee maker", brewing: "Brewing", keep_warm: "Keeping warm", f_style: "Coffee maker type", f_warm_threshold: "Keep-warm / ready above (W)", fridge: "Refrigerator", pellet_stove: "Pellet stove", pool_pump: "Pool pump", printer_3d: "3D printer", chest_freezer: "Chest freezer", drawer_freezer: "Upright freezer", solar: "Solar panels", vmc: "Extractor fan", hob: "Cooktop", radiator: "Electric radiator",
+    water_heater: "Water heater", oven: "Oven", microwave: "Microwave", air_fryer: "Air fryer", coffee_maker: "Coffee maker", tv: "TV", range_hood: "Range hood", screen_on: "On", lights: "Lights only", f_light: "Light entity (optional)", brewing: "Brewing", keep_warm: "Keeping warm", f_style: "Coffee maker type", f_warm_threshold: "Keep-warm / ready above (W)", fridge: "Refrigerator", pellet_stove: "Pellet stove", pool_pump: "Pool pump", printer_3d: "3D printer", chest_freezer: "Chest freezer", drawer_freezer: "Upright freezer", solar: "Solar panels", vmc: "Extractor fan", hob: "Cooktop", radiator: "Electric radiator",
     comfort: "Comfort", eco: "Eco", frost: "Frost protection", window_open: "Window open", f_mode: "Mode entity (pilot wire, select…)", f_window: "Window sensor", f_max_power_rad: "Radiator power (W)",
     cooking: "Cooking", residual: "Residual heat", zones: "Active zones", f_zone_power: "Power of one zone (W)", f_zone_1: "Front-left zone (level or W)", f_zone_2: "Front-right zone", f_zone_3: "Back-left zone", f_zone_4: "Back-right zone", f_residual_minutes: "Residual heat display (min)",
     speed1: "Low speed", speed2: "High speed", humid: "High humidity", humidity: "Humidity", f_humidity: "Humidity sensor (%)", f_high_threshold: "High speed above (W)", f_humidity_max: "Humidity alert above (%)",
@@ -43,7 +43,7 @@ const STRINGS = {
   },
   fr: {
     washer: "Lave-linge", dryer: "Sèche-linge", dishwasher: "Lave-vaisselle",
-    water_heater: "Ballon d'eau chaude", oven: "Four", microwave: "Micro-ondes", air_fryer: "Airfryer", coffee_maker: "Cafetière", brewing: "Préparation du café", keep_warm: "Maintien au chaud", f_style: "Type de cafetière", f_warm_threshold: "Maintien au chaud / prête au-dessus de (W)", fridge: "Réfrigérateur", pellet_stove: "Poêle à granulés", pool_pump: "Pompe de piscine", printer_3d: "Imprimante 3D", chest_freezer: "Congélateur coffre", drawer_freezer: "Congélateur à tiroirs", solar: "Panneaux solaires", vmc: "VMC", hob: "Plaques de cuisson", radiator: "Radiateur",
+    water_heater: "Ballon d'eau chaude", oven: "Four", microwave: "Micro-ondes", air_fryer: "Airfryer", coffee_maker: "Cafetière", tv: "Téléviseur", range_hood: "Hotte aspirante", screen_on: "Allumée", lights: "Éclairage", f_light: "Entité d'éclairage (optionnel)", brewing: "Préparation du café", keep_warm: "Maintien au chaud", f_style: "Type de cafetière", f_warm_threshold: "Maintien au chaud / prête au-dessus de (W)", fridge: "Réfrigérateur", pellet_stove: "Poêle à granulés", pool_pump: "Pompe de piscine", printer_3d: "Imprimante 3D", chest_freezer: "Congélateur coffre", drawer_freezer: "Congélateur à tiroirs", solar: "Panneaux solaires", vmc: "VMC", hob: "Plaques de cuisson", radiator: "Radiateur",
     comfort: "Confort", eco: "Éco", frost: "Hors-gel", window_open: "Fenêtre ouverte", f_mode: "Entité de mode (fil pilote, liste…)", f_window: "Capteur de fenêtre", f_max_power_rad: "Puissance du radiateur (W)",
     cooking: "Cuisson", residual: "Chaleur résiduelle", zones: "Foyers actifs", f_zone_power: "Puissance d'un foyer (W)", f_zone_1: "Foyer avant gauche (niveau ou W)", f_zone_2: "Foyer avant droit", f_zone_3: "Foyer arrière gauche", f_zone_4: "Foyer arrière droit", f_residual_minutes: "Affichage chaleur résiduelle (min)",
     speed1: "Petite vitesse", speed2: "Grande vitesse", humid: "Humidité élevée", humidity: "Humidité", f_humidity: "Capteur d'humidité (%)", f_high_threshold: "Grande vitesse au-dessus de (W)", f_humidity_max: "Alerte humidité au-dessus de (%)",
@@ -470,6 +470,65 @@ ${lcd(80, 112, 24, 9)}
 ${steam([44, 56], 19)}
 </g>`;
   },
+
+  tv: () => `
+<defs>${DEFS}<clipPath id="ID-scr"><rect x="9" y="33" width="102" height="57" rx="1.2"/></clipPath>
+<linearGradient id="ID-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a6fd6"/><stop offset=".55" stop-color="#7cc4ff"/><stop offset="1" stop-color="#ffd59a"/></linearGradient>
+<linearGradient id="ID-off" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1b2027"/><stop offset=".6" stop-color="#0a0c0f"/><stop offset="1" stop-color="#14181d"/></linearGradient>
+<radialGradient id="ID-amb" cx=".5" cy=".5" r=".6"><stop offset="0" stop-color="#5fa8ff" stop-opacity=".55"/><stop offset="1" stop-color="#5fa8ff" stop-opacity="0"/></radialGradient></defs>
+<ellipse class="tv-glow" cx="60" cy="61" rx="64" ry="42" fill="url(#ID-amb)"/>
+<ellipse cx="60" cy="126" rx="40" ry="4" fill="url(#ID-shadow)"/>
+<path d="M52 94h16l3 26h-22z" fill="url(#ID-dark)"/>
+<rect x="32" y="119" width="56" height="5" rx="2.5" fill="url(#ID-chrome)" stroke="#5c646d" stroke-width=".4"/>
+<rect x="5" y="29" width="110" height="65" rx="3" fill="#0d0f12" stroke="#2c3138" stroke-width=".8"/>
+<rect x="9" y="33" width="102" height="57" rx="1.2" fill="url(#ID-off)"/>
+<g clip-path="url(#ID-scr)">
+  <g class="tv-content">
+    <rect x="9" y="33" width="102" height="57" fill="url(#ID-sky)"/>
+    <circle class="tv-sun" cx="84" cy="52" r="7" fill="#ffe27a"/>
+    <g class="tv-clouds" fill="#fff" opacity=".85"><ellipse cx="30" cy="44" rx="9" ry="3.2"/><ellipse cx="36" cy="42" rx="6" ry="3"/><ellipse cx="70" cy="40" rx="7" ry="2.6"/><ellipse cx="130" cy="44" rx="9" ry="3.2"/><ellipse cx="136" cy="42" rx="6" ry="3"/><ellipse cx="170" cy="40" rx="7" ry="2.6"/></g>
+    <path d="M9 78l16-14l12 9l18-17l20 18l12-8l24 14v10h-102z" fill="#2e7d4f"/>
+    <path d="M9 84l22-10l18 7l24-9l20 8l18-5v15h-102z" fill="#1f5f3a"/>
+    <g class="tv-bird" fill="none" stroke="#1d2a3a" stroke-width=".9" stroke-linecap="round"><path d="M20 48q2-2 4 0q2-2 4 0"/></g>
+    <rect x="13" y="85" width="94" height="1.6" rx=".8" fill="#fff" opacity=".35"/>
+    <rect class="tv-prog" x="13" y="85" width="94" height="1.6" rx=".8" fill="#e53935"/>
+  </g>
+  <rect class="tv-flash" x="9" y="33" width="102" height="57" fill="#eef6ff"/>
+</g>
+<path d="M9 33L47 33L9 70z" fill="#fff" opacity=".07"/>
+<rect x="9" y="33" width="102" height="57" rx="1.2" fill="none" stroke="#000" stroke-opacity=".5"/>
+<rect x="54" y="91" width="12" height="2" rx="1" fill="#1f242a"/>
+<circle class="tv-led" cx="60" cy="92" r=".9"/>`,
+
+  range_hood: () => `
+<defs>${DEFS}
+<linearGradient id="ID-beam" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff4c9" stop-opacity=".55"/><stop offset="1" stop-color="#fff4c9" stop-opacity="0"/></linearGradient>
+<linearGradient id="ID-glass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b3138"/><stop offset="1" stop-color="#0d1013"/></linearGradient></defs>
+<ellipse cx="60" cy="133" rx="52" ry="4" fill="url(#ID-shadow)"/>
+<g class="hd-beam"><path d="M24 80l-12 40h32z" fill="url(#ID-beam)"/><path d="M96 80l-12 40h32z" fill="url(#ID-beam)"/></g>
+<g class="hd-air"><path d="M38 118q-4-18 10-36"/><path d="M60 116v-34"/><path d="M82 118q4-18-10-36"/><path d="M28 112q2-16 18-30"/><path d="M92 112q-2-16-18-30"/></g>
+<g class="hd-steam"><path d="M54 96q-3-5 0-9t0-9"/><path d="M60 95q-3-5 0-9t0-9"/><path d="M66 96q-3-5 0-9t0-9"/></g>
+<rect x="46" y="4" width="28" height="46" fill="url(#ID-inox)" stroke="#8f979f" stroke-width=".6"/>
+<path d="M48 4v46" stroke="#fff" stroke-opacity=".6" stroke-width="1.2"/>
+<path d="M50 40h20M50 43h20M50 46h20" stroke="#6f7780" stroke-width=".7"/>
+<path d="M16 50h88l10 20h-108z" fill="url(#ID-inox)" stroke="#7d858e" stroke-width=".6"/>
+<path d="M20 52h40l-6 16h-44z" fill="#fff" opacity=".18"/>
+<rect x="6" y="70" width="108" height="8" rx="1.5" fill="url(#ID-chrome)" stroke="#6f7780" stroke-width=".5"/>
+<circle cx="60" cy="60" r="7.5" fill="#22272d" stroke="#6f7780" stroke-width=".6"/>
+<g class="hd-fan"><path d="M60 60l0-6.2M60 60l5.4 3.1M60 60l-5.4 3.1" stroke="#a9b1ba" stroke-width="2.4" stroke-linecap="round"/></g>
+<circle cx="60" cy="60" r="1.6" fill="#d7dce1"/>
+<circle cx="60" cy="60" r="7.5" fill="url(#ID-holes)" opacity=".6"/>
+<circle class="hd-led s1" cx="86" cy="74" r="1.4"/><circle class="hd-led s2" cx="93" cy="74" r="1.4"/><circle class="hd-led s3" cx="100" cy="74" r="1.4"/>
+<circle class="hd-led lt" cx="20" cy="74" r="1.4"/>
+<path d="M17 74h-3M27 74h-3" stroke="#59616b" stroke-width=".8"/>
+<rect x="9" y="78" width="102" height="3" rx="1" fill="#2a2f35"/><rect x="12" y="78" width="96" height="3" fill="url(#ID-mesh)"/>
+<rect class="hd-lamp" x="20" y="79.6" width="8" height="1.8" rx=".9"/><rect class="hd-lamp" x="92" y="79.6" width="8" height="1.8" rx=".9"/>
+<path d="M45 98h30v16q0 4-4 4h-22q-4 0-4-4z" fill="url(#ID-inox)" stroke="#7d858e" stroke-width=".6"/>
+<rect x="44" y="96" width="32" height="3" rx="1.5" fill="url(#ID-chrome)"/><rect x="57" y="93.5" width="6" height="3" rx="1.2" fill="#2a2f35"/>
+<path d="M45 102h-5M75 102h5" stroke="#2a2f35" stroke-width="2.2" stroke-linecap="round"/>
+<rect x="10" y="118" width="100" height="7" rx="1.5" fill="url(#ID-glass)" stroke="#05070a" stroke-width=".5"/>
+<ellipse class="hd-zone" cx="60" cy="119.5" rx="17" ry="1.3"/>
+<ellipse cx="88" cy="121" rx="10" ry="1.2" fill="none" stroke="#3a424b" stroke-width=".6"/>`,
 
   fridge: () => `
 <defs>${DEFS}
@@ -909,6 +968,12 @@ const DEF = {
   air_fryer: { accent: "heat", threshold: 50,
     fields: ["entity", "power", "energy", "cost", "remaining", "program", "temperature", "switch"],
     keys: ["air_fryer", "airfryer", "air_frier", "friteuse", "fryer", "cosori", "ninja_foodi", "dual_zone"] },
+  tv: { accent: "active", threshold: 25,
+    fields: ["entity", "power", "energy", "cost", "switch"],
+    keys: ["tv", "tele", "television", "televiseur", "bravia", "webos", "android_tv", "tizen", "salon_tv"] },
+  range_hood: { accent: "active", threshold: 40,
+    fields: ["entity", "power", "energy", "cost", "speed", "light", "switch"],
+    keys: ["hotte", "range_hood", "cooker_hood", "hood", "aspirante"] },
   coffee_maker: { accent: "heat", threshold: 300,
     fields: ["entity", "power", "energy", "cost", "switch"],
     keys: ["cafetiere", "coffee", "senseo", "nespresso", "dolce_gusto", "tassimo", "expresso", "espresso", "cafe"] },
@@ -1057,7 +1122,7 @@ class ApplianceCardBase extends HTMLElement {
   _ids() {
     const c = this._config;
     return ["entity", "power", "energy", "cost", "remaining", "progress", "program", "door", "switch",
-      "power_level", "pellet_level", "runtime", "speed", "bed_temperature", "humidity", "zone_1", "zone_2", "zone_3", "zone_4", "mode", "window", "temperature", "target_temperature", "freezer_temperature", "freezer_door"].map((k) => c[k]).filter(Boolean);
+      "power_level", "pellet_level", "runtime", "speed", "bed_temperature", "humidity", "light", "zone_1", "zone_2", "zone_3", "zone_4", "mode", "window", "temperature", "target_temperature", "freezer_temperature", "freezer_door"].map((k) => c[k]).filter(Boolean);
   }
 
   _build() {
@@ -1115,7 +1180,7 @@ class ApplianceCardBase extends HTMLElement {
       temp: S(c.temperature), target: S(c.target_temperature),
       ftemp: S(c.freezer_temperature), fdoor: S(c.freezer_door),
       level: num(S(c.power_level)), pellets: num(S(c.pellet_level)),
-      runtime: parseRemaining(S(c.runtime)), speed: S(c.speed), bedTemp: num(S(c.bed_temperature)), humidity: num(S(c.humidity)), mode: S(c.mode), window: S(c.window),
+      runtime: parseRemaining(S(c.runtime)), speed: S(c.speed), bedTemp: num(S(c.bed_temperature)), humidity: num(S(c.humidity)), mode: S(c.mode), window: S(c.window), light: S(c.light),
       status: "idle", phase: null, alerts: [],
     };
     if (main && ["water_heater", "climate"].includes(domainOf(c.entity))) {
@@ -1267,6 +1332,25 @@ class ApplianceCardBase extends HTMLElement {
       if (base === "off" || base === "unavailable") m.status = base;
       else m.status = powered ? "cooling" : "standby";
       if (m.tempVal != null && m.tempVal > (c.freezer_max_temperature ?? c.max_temperature ?? -12)) m.alerts.push("too_warm");
+    } else if (kind === "tv") {
+      const dom = main ? domainOf(c.entity) : null, ms = main ? String(main.state).toLowerCase() : "";
+      if (dom === "media_player" && !BAD.includes(ms)) {
+        m.status = ["on", "playing", "paused", "idle", "buffering"].includes(ms) ? "screen_on" : ms === "standby" ? "standby" : "off";
+        if (watts !== null && m.status !== "screen_on" && watts > threshold) m.status = "screen_on";
+      } else if (["off", "unavailable"].includes(base)) m.status = base;
+      else if (watts !== null) m.status = watts > threshold ? "screen_on" : watts >= (c.standby_threshold ?? 0.2) ? "standby" : "off";
+      else m.status = base === "running" ? "screen_on" : "standby";
+      if (sw && String(sw.state).toLowerCase() === "off") m.status = "off";
+    } else if (kind === "range_hood") {
+      const sp = m.speed ? String(m.speed.state).toLowerCase() : "", spn = num(m.speed);
+      const hi = c.high_threshold ?? 130, lightT = c.light_threshold ?? 3;
+      if (base === "off" || base === "unavailable") m.status = base;
+      else if (m.speed && !BAD.includes(sp) && /boost|grande|high|max|rapide|fast|3|intensi/.test(sp)) m.status = "speed2";
+      else if (m.speed && !BAD.includes(sp) && /petite|low|eco|lente|slow|min|1|2|moyen|medium/.test(sp)) m.status = "speed1";
+      else if (spn === 0) m.status = "off";
+      else if (watts !== null) m.status = watts > hi ? "speed2" : powered ? "speed1" : watts > lightT ? "lights" : "off";
+      else m.status = base === "running" ? "speed1" : base === "standby" ? "off" : base;
+      m.lights = m.light ? isOn(m.light) : (m.status === "lights" || ((m.status === "speed1" || m.status === "speed2") && c.light === undefined && watts !== null && watts > threshold));
     } else if (kind === "coffee_maker") {
       const warmT = c.warm_threshold ?? 5;
       if (["off", "unavailable"].includes(base)) m.status = base;
@@ -1302,7 +1386,7 @@ class ApplianceCardBase extends HTMLElement {
   /* ---------------- rendering ---------------- */
   _lcdText(m) {
     const hass = this._hass, kind = this._kind;
-    const active = ["running", "heating", "preheating", "cooling", "ignition", "filtering", "printing", "producing", "low", "speed1", "speed2", "cooking", "brewing", "keep_warm"].includes(m.status);
+    const active = ["running", "heating", "preheating", "cooling", "ignition", "filtering", "printing", "producing", "low", "speed1", "speed2", "cooking", "brewing", "keep_warm", "screen_on"].includes(m.status);
     if (m.status === "unavailable") return "- - -";
     if (["fridge", "chest_freezer", "drawer_freezer"].includes(kind)) return m.tempVal != null ? `${fmtNum(hass, m.tempVal, 0)}°` : "--°";
     if (kind === "radiator") {
@@ -1375,15 +1459,25 @@ class ApplianceCardBase extends HTMLElement {
   _render(m) {
     const hass = this._hass, c = this._config, kind = this._kind;
     const $ = (i) => this.shadowRoot.getElementById(i);
-    const active = ["running", "heating", "preheating", "cooling", "ignition", "filtering", "printing", "producing", "low", "speed1", "speed2", "cooking", "brewing", "keep_warm"].includes(m.status);
+    const active = ["running", "heating", "preheating", "cooling", "ignition", "filtering", "printing", "producing", "low", "speed1", "speed2", "cooking", "brewing", "keep_warm", "screen_on"].includes(m.status);
     $("wrap").className = [
       "wrap", `k-${kind}`, `st-${m.status}`, `accent-${this._def.accent}`,
       active ? "active" : "", m.phase ? `ph-${m.phase}` : "",
       m.alerts.length ? "alert" : "", isOn(m.door) ? "door-open" : "", isOn(m.fdoor) ? "fz-open" : "",
-      m.alerts.includes("too_warm") ? "warm" : "", m.alerts.includes("humid") ? "humid" : "", c.animations === false ? "no-anim" : "",
+      m.alerts.includes("too_warm") ? "warm" : "", m.alerts.includes("humid") ? "humid" : "", c.animations === false ? "no-anim" : "", m.lights ? "lights-on" : "",
     ].filter(Boolean).join(" ");
 
     // illustration dynamic parts
+    if (kind === "tv") {
+      const prev = this._tvPrev, on = m.status === "screen_on";
+      const scr = this.shadowRoot.querySelector(".tv-flash");
+      if (prev !== undefined && scr && (prev === "screen_on") !== on) {
+        const g = this.shadowRoot.querySelector("svg");
+        g.classList.remove("tv-boot", "tv-shut"); void g.getBoundingClientRect(); g.classList.add(on ? "tv-boot" : "tv-shut");
+        clearTimeout(this._tvT); this._tvT = setTimeout(() => g.classList.remove("tv-boot", "tv-shut"), 1400);
+      }
+      this._tvPrev = m.status;
+    }
     const sr = this.shadowRoot;
     const lcdEl = sr.querySelector(".lcd");
     if (lcdEl) lcdEl.textContent = this._lcdText(m);
@@ -1447,6 +1541,10 @@ class ApplianceCardBase extends HTMLElement {
       if (![...OFF_STATES, ...DONE_STATES, "on", "running", "run"].includes(raw)) statusTxt = stateText(hass, m.main);
     }
     if (kind === "radiator" && m.radMode && m.radMode !== "off" && m.status !== "off" && m.status !== "unavailable") statusTxt += ` · ${tr(hass, m.radMode)}`;
+    if (kind === "tv" && m.status === "screen_on" && m.main && domainOf(c.entity) === "media_player") {
+      const a = m.main.attributes || {}, what = a.app_name || a.media_title || a.source;
+      if (what) statusTxt += ` · ${what}`;
+    }
     const prog = m.program && active && !BAD.includes(String(m.program.state).toLowerCase()) ? stateText(hass, m.program) : "";
     let sub = "";
     if (active && m.remaining != null && m.remaining > 0) {
@@ -1569,6 +1667,7 @@ const SEL = {
   power_level: { entity: { domain: ["sensor", "number", "input_number", "select", "input_select"] } },
   pellet_level: { entity: { domain: ["sensor", "number", "input_number"] } },
   runtime: { entity: { domain: ["sensor"] } },
+  light: { entity: { domain: ["light", "switch", "binary_sensor", "input_boolean"] } },
   bed_temperature: { entity: { domain: ["sensor"], device_class: "temperature" } },
   humidity: { entity: { domain: ["sensor"], device_class: "humidity" } },
   mode: { entity: { domain: ["select", "input_select", "sensor", "climate"] } },
@@ -1597,6 +1696,9 @@ function buildForm(kind) {
           ] : []),
           { name: "animations", selector: { boolean: {} }, default: true },
           ...(kind === "printer_3d" ? [{ name: "filament_color", selector: { text: {} } }] : []),
+          ...(kind === "range_hood" ? [
+            { name: "high_threshold", selector: { number: { min: 40, max: 600, step: 5, mode: "box", unit_of_measurement: "W" } } },
+          ] : []),
           ...(kind === "coffee_maker" ? [
             { name: "style", selector: { select: { mode: "dropdown", options: [
               { value: "filtre", label: "Filtre / Drip" }, { value: "dosette", label: "Dosettes / Pods" }, { value: "expresso", label: "Expresso / Bean-to-cup" }] } } },
@@ -1649,7 +1751,7 @@ function stubFor(kind, hass) {
   const cost = pick((i) => i.startsWith("sensor.") && /(cout|cost|prix)/.test(i) && /(jour|daily|today|day)/.test(i))
     || pick((i, st) => i.startsWith("sensor.") && dc(st) === "monetary");
   const sw = pick((i) => i.startsWith("switch.") && !/(child_lock|lock|led|indicator)/.test(i));
-  const wh = kind === "water_heater" ? pick((i) => i.startsWith("water_heater.")) : null;
+  const wh = kind === "water_heater" ? pick((i) => i.startsWith("water_heater.")) : kind === "tv" ? pick((i) => i.startsWith("media_player.")) : null;
   const temp = pick((i, st) => i.startsWith("sensor.") && dc(st) === "temperature");
   const flag = ["washer", "dryer", "dishwasher", "microwave"].includes(kind)
     ? pick((i) => /^(input_boolean|binary_sensor)\./.test(i) && /(running|en_cours|marche|cycle)/.test(i)) : null;
@@ -1658,7 +1760,7 @@ function stubFor(kind, hass) {
   if (power) cfg.power = power;
   if (energy) cfg.energy = energy;
   if (cost) cfg.cost = cost;
-  if (sw && ["water_heater", "oven", "microwave", "pool_pump", "air_fryer", "coffee_maker"].includes(kind)) cfg.switch = sw;
+  if (sw && ["water_heater", "oven", "microwave", "pool_pump", "air_fryer", "coffee_maker", "tv", "range_hood"].includes(kind)) cfg.switch = sw;
   else if (sw && !cfg.entity) cfg.entity = sw;
   const clim = kind === "radiator" ? pick((i) => i.startsWith("climate.")) : null;
   if (clim) cfg.entity = clim;
@@ -2090,6 +2192,56 @@ svg { width: 100%; height: 100%; display: block; overflow: visible; }
 @keyframes cf-drain { from { transform: scaleY(1); } to { transform: scaleY(.3); } }
 @keyframes cf-flow { to { stroke-dashoffset: -12; } }
 @keyframes cf-drop { 0% { opacity: 0; transform: translateY(0); } 15% { opacity: .95; } 100% { opacity: .9; transform: translateY(26px); } }
+
+/* ---------- TV ---------- */
+.k-tv svg { overflow: visible; }
+.tv-glow { opacity: 0; transition: opacity 1s; }
+.k-tv.st-screen_on .tv-glow { opacity: 1; animation: tv-amb 6s ease-in-out infinite; }
+.tv-content { opacity: 0; transition: opacity .5s; transform-box: view-box; transform-origin: 60px 61.5px; }
+.k-tv.st-screen_on .tv-content { opacity: 1; }
+.tv-clouds { animation: tv-pan 14s linear infinite; animation-play-state: paused; }
+.tv-sun { transform-box: fill-box; transform-origin: center; }
+.tv-bird { animation: tv-bird 7s linear infinite; animation-play-state: paused; }
+.tv-prog { transform-box: fill-box; transform-origin: 0 50%; transform: scaleX(.3); animation: tv-prog 30s linear infinite; animation-play-state: paused; }
+.k-tv.st-screen_on .tv-clouds, .k-tv.st-screen_on .tv-bird, .k-tv.st-screen_on .tv-prog { animation-play-state: running; }
+.k-tv.st-screen_on .tv-sun { animation: ac-pulse 4s ease-in-out infinite; }
+.tv-flash { opacity: 0; transform-box: view-box; transform-origin: 60px 61.5px; }
+.tv-boot .tv-content { animation: tv-boot 1.1s cubic-bezier(.2,.8,.3,1) both; }
+.tv-boot .tv-flash { animation: tv-bflash 1.1s ease-out both; }
+.tv-shut .tv-flash { animation: tv-shut .9s ease-in both; }
+.tv-led { fill: #3a2222; transition: fill .4s; }
+.k-tv.st-standby .tv-led { fill: #ff3b30; filter: drop-shadow(0 0 1.2px #ff3b30); }
+.k-tv.st-screen_on .tv-led { fill: #ffffff; opacity: .5; }
+@keyframes tv-amb { 0%,100% { opacity: .85; } 33% { opacity: 1; filter: hue-rotate(40deg); } 66% { opacity: .9; filter: hue-rotate(-50deg); } }
+@keyframes tv-pan { from { transform: translateX(0); } to { transform: translateX(-100px); } }
+@keyframes tv-bird { from { transform: translate(0, 0); } 50% { transform: translate(45px, -4px); } to { transform: translate(90px, 2px); } }
+@keyframes tv-prog { from { transform: scaleX(.05); } to { transform: scaleX(1); } }
+@keyframes tv-boot { 0% { transform: scale(.02, .015); filter: brightness(3); } 35% { transform: scale(1, .015); filter: brightness(3); } 70% { transform: scale(1, 1); filter: brightness(1.6); } 100% { transform: none; filter: none; } }
+@keyframes tv-bflash { 0% { opacity: .9; transform: scale(.02, .015); } 35% { opacity: .9; transform: scale(1, .015); } 70% { opacity: .35; transform: scale(1, 1); } 100% { opacity: 0; } }
+@keyframes tv-shut { 0% { opacity: .85; transform: scale(1, 1); } 45% { opacity: 1; transform: scale(1, .015); } 75% { opacity: 1; transform: scale(.03, .015); } 100% { opacity: 0; transform: scale(0, 0); } }
+
+/* ---------- range hood ---------- */
+.hd-fan { transform-box: view-box; transform-origin: 60px 60px; }
+.k-range_hood.st-speed1 .hd-fan { animation: ac-rot .9s linear infinite; }
+.k-range_hood.st-speed2 .hd-fan { animation: ac-rot .28s linear infinite; }
+.hd-air path { fill: none; stroke: #cfe6ff; stroke-width: 1.3; stroke-linecap: round; stroke-dasharray: 3 5; opacity: 0; transition: opacity .6s; }
+.k-range_hood.st-speed1 .hd-air path { opacity: .55; animation: hd-up 1.4s linear infinite; }
+.k-range_hood.st-speed2 .hd-air path { opacity: .8; animation: hd-up .6s linear infinite; }
+.hd-steam path { transform-box: fill-box; transform-origin: 50% 100%; fill: none; stroke: #e3e8ed; stroke-width: 2.2; stroke-linecap: round; opacity: 0; }
+.k-range_hood.st-speed1 .hd-steam path, .k-range_hood.st-speed2 .hd-steam path { animation: hd-suck 2s ease-in infinite; }
+.k-range_hood.st-speed2 .hd-steam path { animation-duration: 1.2s; }
+.hd-steam path:nth-child(2) { animation-delay: .5s !important; } .hd-steam path:nth-child(3) { animation-delay: 1s !important; }
+.hd-led { fill: #59616b; transition: fill .3s; }
+.k-range_hood.st-speed1 .s1, .k-range_hood.st-speed2 .s1, .k-range_hood.st-speed2 .s2, .k-range_hood.st-speed2 .s3 { fill: #38d9ff; }
+.k-range_hood.lights-on .lt { fill: #ffd76a; }
+.hd-lamp { fill: #6b737c; transition: fill .4s; }
+.k-range_hood.lights-on .hd-lamp { fill: #fff6d5; filter: drop-shadow(0 0 2px #ffe9a0); }
+.hd-beam { opacity: 0; transition: opacity .6s; }
+.k-range_hood.lights-on .hd-beam { opacity: 1; }
+.hd-zone { fill: none; stroke: #ff5a1f; stroke-width: 1; opacity: 0; transition: opacity .6s; }
+.k-range_hood.st-speed1 .hd-zone, .k-range_hood.st-speed2 .hd-zone { opacity: .85; filter: drop-shadow(0 0 1.5px #ff7a2e); }
+@keyframes hd-up { to { stroke-dashoffset: -16; } }
+@keyframes hd-suck { 0% { opacity: 0; transform: translateY(2px) scaleX(1); } 30% { opacity: .7; } 100% { opacity: 0; transform: translateY(-14px) scaleX(.5); } }
 .no-anim *, .no-anim { animation: none !important; }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
 `;
