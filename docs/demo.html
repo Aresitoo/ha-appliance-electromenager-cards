@@ -219,6 +219,37 @@ const SCEN = [
       range(ctl, 'Puissance', 'sensor.hood_power', 0, 300, 1, 80, 'W', W);
       set('sensor.hood_energy', 0.12, KWH);
     } },
+  { kind: 'towel-dryer', title: 'Sèche-serviettes',
+    cfg: { switch: 'switch.towel', power: 'sensor.towel_power', temperature: 'sensor.bathroom_temp', target_temperature: 'sensor.towel_target', energy: 'sensor.towel_energy' },
+    build(ctl) {
+      set('switch.towel', 'on');
+      range(ctl, 'Puissance', 'sensor.towel_power', 0, 1000, 10, 500, 'W', W);
+      range(ctl, 'Salle de bain', 'sensor.bathroom_temp', 10, 30, 0.5, 20, '°C', T);
+      range(ctl, 'Consigne', 'sensor.towel_target', 15, 30, 0.5, 22, '°C', T);
+      set('sensor.towel_energy', 1.2, KWH);
+    } },
+  { kind: 'server-rack', title: 'Baie informatique (homelab)',
+    cfg: { switch: 'switch.rack', power: 'sensor.rack_power', temperature: 'sensor.rack_temp', energy: 'sensor.rack_energy', max_power: 300 },
+    build(ctl) {
+      set('switch.rack', 'on');
+      range(ctl, 'Puissance', 'sensor.rack_power', 0, 400, 1, 145, 'W', W);
+      range(ctl, 'Température', 'sensor.rack_temp', 15, 50, 0.5, 29, '°C', T);
+      set('sensor.rack_energy', 3.5, KWH);
+    } },
+  { kind: 'desktop-pc', title: 'PC fixe',
+    cfg: { switch: 'switch.pc', power: 'sensor.pc_power', energy: 'sensor.pc_energy' },
+    build(ctl) {
+      set('switch.pc', 'on');
+      range(ctl, 'Puissance', 'sensor.pc_power', 0, 500, 0.5, 120, 'W', W);
+      set('sensor.pc_energy', 0.8, KWH);
+    } },
+  { kind: 'laptop', title: 'PC portable',
+    cfg: { switch: 'switch.laptop', power: 'sensor.laptop_power', energy: 'sensor.laptop_energy' },
+    build(ctl) {
+      set('switch.laptop', 'on');
+      range(ctl, 'Puissance', 'sensor.laptop_power', 0, 120, 0.5, 45, 'W', W);
+      set('sensor.laptop_energy', 0.2, KWH);
+    } },
   { kind: 'ac-split', title: 'Climatiseur (split)',
     cfg: { entity: 'climate.ac' },
     build(ctl) {
