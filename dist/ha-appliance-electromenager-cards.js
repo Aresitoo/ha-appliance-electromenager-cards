@@ -7,7 +7,7 @@
  */
 (() => {
 "use strict";
-const VERSION = "1.14.0";
+const VERSION = "1.15.0";
 
 /* ------------------------------------------------------------------ */
 /* i18n                                                                */
@@ -15,7 +15,7 @@ const VERSION = "1.14.0";
 const STRINGS = {
   en: {
     washer: "Washing machine", dryer: "Dryer", dishwasher: "Dishwasher",
-    water_heater: "Water heater", oven: "Oven", microwave: "Microwave", air_fryer: "Air fryer", coffee_maker: "Coffee maker", tv: "TV", range_hood: "Range hood", towel_dryer: "Heated towel rail", server_rack: "Server rack (homelab)", desktop_pc: "Desktop PC", laptop: "Laptop", online: "Online", f_max_power_rack: "Max load (W)", ac_split: "Air conditioner (indoor)", heat_pump: "Heat pump (outdoor unit)", ac_dry: "Drying", ac_fan: "Fan only", at_target: "At target", defrost: "Defrosting", f_hvac: "Mode without climate entity", screen_on: "On", lights: "Lights only", f_light: "Light entity (optional)", brewing: "Brewing", keep_warm: "Keeping warm", f_style: "Coffee maker type", f_warm_threshold: "Keep-warm / ready above (W)", fridge: "Refrigerator", pellet_stove: "Pellet stove", pool_pump: "Pool pump", printer_3d: "3D printer", chest_freezer: "Chest freezer", drawer_freezer: "Upright freezer", solar: "Solar panels", vmc: "Extractor fan", hob: "Cooktop", radiator: "Electric radiator",
+    water_heater: "Water heater", oven: "Oven", microwave: "Microwave", air_fryer: "Air fryer", coffee_maker: "Coffee maker", tv: "TV", range_hood: "Range hood", towel_dryer: "Heated towel rail", server_rack: "Server rack (homelab)", desktop_pc: "Desktop PC", laptop: "Laptop", online: "Online", f_max_power_rack: "Max load (W)", f_power_solar: "Solar surplus power sensor (W)", f_energy_solar: "Solar surplus energy sensor (kWh)", solar_surplus: "Solar surplus", mode_off: "Off", wine_cooler: "Wine cooler", f_max_temperature_wine: "Alert above (°C)", f_show_modes: "Show mode buttons", grid: "Grid", energy_grid: "Grid energy", energy_solar: "Solar energy", ac_split: "Air conditioner (indoor)", heat_pump: "Heat pump (outdoor unit)", ac_dry: "Drying", ac_fan: "Fan only", at_target: "At target", defrost: "Defrosting", f_hvac: "Mode without climate entity", screen_on: "On", lights: "Lights only", f_light: "Light entity (optional)", brewing: "Brewing", keep_warm: "Keeping warm", f_style: "Coffee maker type", f_warm_threshold: "Keep-warm / ready above (W)", fridge: "Refrigerator", pellet_stove: "Pellet stove", pool_pump: "Pool pump", printer_3d: "3D printer", chest_freezer: "Chest freezer", drawer_freezer: "Upright freezer", solar: "Solar panels", vmc: "Extractor fan", hob: "Cooktop", radiator: "Electric radiator",
     comfort: "Comfort", eco: "Eco", frost: "Frost protection", window_open: "Window open", f_mode: "Mode entity (pilot wire, select…)", f_window: "Window sensor", f_max_power_rad: "Radiator power (W)",
     cooking: "Cooking", residual: "Residual heat", zones: "Active zones", f_zone_power: "Power of one zone (W)", f_zone_1: "Front-left zone (level or W)", f_zone_2: "Front-right zone", f_zone_3: "Back-left zone", f_zone_4: "Back-right zone", f_residual_minutes: "Residual heat display (min)",
     speed1: "Low speed", speed2: "High speed", humid: "High humidity", humidity: "Humidity", f_humidity: "Humidity sensor (%)", f_high_threshold: "High speed above (W)", f_humidity_max: "Humidity alert above (%)",
@@ -44,7 +44,7 @@ const STRINGS = {
   },
   fr: {
     washer: "Lave-linge", dryer: "Sèche-linge", dishwasher: "Lave-vaisselle",
-    water_heater: "Ballon d'eau chaude", oven: "Four", microwave: "Micro-ondes", air_fryer: "Airfryer", coffee_maker: "Cafetière", tv: "Téléviseur", range_hood: "Hotte aspirante", towel_dryer: "Sèche-serviettes", server_rack: "Baie informatique (homelab)", desktop_pc: "PC fixe", laptop: "PC portable", online: "En ligne", f_max_power_rack: "Charge max (W)", ac_split: "Climatiseur (split)", heat_pump: "Pompe à chaleur (ext.)", ac_dry: "Déshumidification", ac_fan: "Ventilation", at_target: "Consigne atteinte", defrost: "Dégivrage", f_hvac: "Mode sans entité climate", screen_on: "Allumée", lights: "Éclairage", f_light: "Entité d'éclairage (optionnel)", brewing: "Préparation du café", keep_warm: "Maintien au chaud", f_style: "Type de cafetière", f_warm_threshold: "Maintien au chaud / prête au-dessus de (W)", fridge: "Réfrigérateur", pellet_stove: "Poêle à granulés", pool_pump: "Pompe de piscine", printer_3d: "Imprimante 3D", chest_freezer: "Congélateur coffre", drawer_freezer: "Congélateur à tiroirs", solar: "Panneaux solaires", vmc: "VMC", hob: "Plaques de cuisson", radiator: "Radiateur",
+    water_heater: "Ballon d'eau chaude", oven: "Four", microwave: "Micro-ondes", air_fryer: "Airfryer", coffee_maker: "Cafetière", tv: "Téléviseur", range_hood: "Hotte aspirante", towel_dryer: "Sèche-serviettes", server_rack: "Baie informatique (homelab)", desktop_pc: "PC fixe", laptop: "PC portable", online: "En ligne", f_max_power_rack: "Charge max (W)", f_power_solar: "Capteur de puissance surplus solaire (W)", f_energy_solar: "Capteur d'énergie surplus solaire (kWh)", solar_surplus: "Surplus solaire", mode_off: "Arrêt", wine_cooler: "Cave à vin", f_max_temperature_wine: "Alerte au-dessus de (°C)", f_show_modes: "Afficher les boutons de mode", grid: "Réseau", energy_grid: "Énergie réseau", energy_solar: "Énergie solaire", ac_split: "Climatiseur (split)", heat_pump: "Pompe à chaleur (ext.)", ac_dry: "Déshumidification", ac_fan: "Ventilation", at_target: "Consigne atteinte", defrost: "Dégivrage", f_hvac: "Mode sans entité climate", screen_on: "Allumée", lights: "Éclairage", f_light: "Entité d'éclairage (optionnel)", brewing: "Préparation du café", keep_warm: "Maintien au chaud", f_style: "Type de cafetière", f_warm_threshold: "Maintien au chaud / prête au-dessus de (W)", fridge: "Réfrigérateur", pellet_stove: "Poêle à granulés", pool_pump: "Pompe de piscine", printer_3d: "Imprimante 3D", chest_freezer: "Congélateur coffre", drawer_freezer: "Congélateur à tiroirs", solar: "Panneaux solaires", vmc: "VMC", hob: "Plaques de cuisson", radiator: "Radiateur",
     comfort: "Confort", eco: "Éco", frost: "Hors-gel", window_open: "Fenêtre ouverte", f_mode: "Entité de mode (fil pilote, liste…)", f_window: "Capteur de fenêtre", f_max_power_rad: "Puissance du radiateur (W)",
     cooking: "Cuisson", residual: "Chaleur résiduelle", zones: "Foyers actifs", f_zone_power: "Puissance d'un foyer (W)", f_zone_1: "Foyer avant gauche (niveau ou W)", f_zone_2: "Foyer avant droit", f_zone_3: "Foyer arrière gauche", f_zone_4: "Foyer arrière droit", f_residual_minutes: "Affichage chaleur résiduelle (min)",
     speed1: "Petite vitesse", speed2: "Grande vitesse", humid: "Humidité élevée", humidity: "Humidité", f_humidity: "Capteur d'humidité (%)", f_high_threshold: "Grande vitesse au-dessus de (W)", f_humidity_max: "Alerte humidité au-dessus de (%)",
@@ -722,6 +722,57 @@ ${lcd(74, 110, 22, 10)}
 <path d="M18 81h84l5 20h-94z" fill="url(#ID-lpglow)" class="lp-glow"/>
 <circle class="lp-led" cx="60" cy="111" r="1.1"/>`,
 
+  wine_cooler: () => `
+<defs>${DEFS}
+<linearGradient id="ID-wnlight" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff1c9" stop-opacity=".85"/><stop offset=".55" stop-color="#ffd98a" stop-opacity=".25"/><stop offset="1" stop-color="#ffd98a" stop-opacity="0"/></linearGradient>
+<linearGradient id="ID-wncab" x1="0" x2="1"><stop offset="0" stop-color="#2b3036"/><stop offset=".5" stop-color="#14171b"/><stop offset="1" stop-color="#262b31"/></linearGradient>
+<linearGradient id="ID-wnwood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c9a26b"/><stop offset="1" stop-color="#8a6a3f"/></linearGradient>
+<clipPath id="ID-wnclip"><rect x="30" y="32" width="60" height="86"/></clipPath></defs>
+<ellipse cx="60" cy="133" rx="46" ry="3.5" fill="url(#ID-shadow)"/>
+<rect x="22" y="6" width="76" height="122" rx="4" fill="url(#ID-wncab)" stroke="#05070a" stroke-width=".8"/>
+<rect x="26" y="9" width="68" height="17" rx="2" fill="#0d1013"/>
+<circle class="wn-led" cx="34" cy="17.5" r="1.6"/>
+<path d="M42 15h10M42 18h10M42 21h10" stroke="#3b424a" stroke-width=".8" stroke-linecap="round"/>
+<rect x="64" y="12" width="26" height="11" rx="1.6" fill="#0c1720" stroke="#59616b" stroke-width=".5"/>
+<text class="lcd" x="77" y="20.4" text-anchor="middle">OFF</text>
+<rect x="28" y="30" width="64" height="92" fill="#07090b"/>
+<g class="wn-inside" clip-path="url(#ID-wnclip)">
+  <rect x="30" y="32" width="60" height="86" fill="#14181d"/>
+  <rect class="wn-light" x="30" y="32" width="60" height="86" fill="url(#ID-wnlight)"/>
+  <rect x="31" y="33" width="58" height="2" fill="#fff6dc" class="wn-strip"/>
+  <g class="wn-bottles">
+    <g>
+      <circle cx="37" cy="44" r="5" fill="#5b1226"/><circle cx="48.6" cy="44" r="5" fill="#1f4d2e"/><circle cx="60.2" cy="44" r="5" fill="#5b1226"/><circle cx="71.8" cy="44" r="5" fill="#b0852f"/><circle cx="83.4" cy="44" r="5" fill="#1f4d2e"/>
+      <circle cx="37" cy="44" r="2.4" fill="none" stroke="#fff" stroke-opacity=".22"/><circle cx="48.6" cy="44" r="2.4" fill="none" stroke="#fff" stroke-opacity=".22"/><circle cx="60.2" cy="44" r="2.4" fill="none" stroke="#fff" stroke-opacity=".22"/><circle cx="71.8" cy="44" r="2.4" fill="none" stroke="#fff" stroke-opacity=".22"/>
+      <path d="M33.6 41.6a4.6 4.6 0 0 1 4-2" stroke="#fff" stroke-opacity=".5" stroke-width="1" fill="none" stroke-linecap="round"/><path d="M56.8 41.6a4.6 4.6 0 0 1 4-2" stroke="#fff" stroke-opacity=".5" stroke-width="1" fill="none" stroke-linecap="round"/>
+    </g>
+    <rect x="30" y="49.5" width="60" height="3" fill="url(#ID-wnwood)"/>
+    <g>
+      <circle cx="37" cy="70" r="5" fill="#d48a8a"/><circle cx="48.6" cy="70" r="5" fill="#5b1226"/><circle cx="60.2" cy="70" r="5" fill="#b0852f"/><circle cx="71.8" cy="70" r="5" fill="#1f4d2e"/><circle cx="83.4" cy="70" r="5" fill="#5b1226"/>
+      <circle cx="37" cy="70" r="2.4" fill="none" stroke="#fff" stroke-opacity=".22"/><circle cx="48.6" cy="70" r="2.4" fill="none" stroke="#fff" stroke-opacity=".22"/><circle cx="60.2" cy="70" r="2.4" fill="none" stroke="#fff" stroke-opacity=".22"/><circle cx="71.8" cy="70" r="2.4" fill="none" stroke="#fff" stroke-opacity=".22"/>
+      <path d="M33.6 67.6a4.6 4.6 0 0 1 4-2" stroke="#fff" stroke-opacity=".5" stroke-width="1" fill="none" stroke-linecap="round"/><path d="M45.1 67.6a4.6 4.6 0 0 1 4-2" stroke="#fff" stroke-opacity=".5" stroke-width="1" fill="none" stroke-linecap="round"/>
+    </g>
+    <rect x="30" y="75.5" width="60" height="3" fill="url(#ID-wnwood)"/>
+    <g>
+      <circle cx="37" cy="96" r="5" fill="#1f4d2e"/><circle cx="48.6" cy="96" r="5" fill="#b0852f"/><circle cx="60.2" cy="96" r="5" fill="#5b1226"/><circle cx="71.8" cy="96" r="5" fill="#d48a8a"/><circle cx="83.4" cy="96" r="5" fill="#1f4d2e"/>
+      <circle cx="37" cy="96" r="2.4" fill="none" stroke="#fff" stroke-opacity=".22"/><circle cx="48.6" cy="96" r="2.4" fill="none" stroke="#fff" stroke-opacity=".22"/><circle cx="60.2" cy="96" r="2.4" fill="none" stroke="#fff" stroke-opacity=".22"/><circle cx="71.8" cy="96" r="2.4" fill="none" stroke="#fff" stroke-opacity=".22"/>
+      <path d="M33.6 93.6a4.6 4.6 0 0 1 4-2" stroke="#fff" stroke-opacity=".5" stroke-width="1" fill="none" stroke-linecap="round"/><path d="M68.4 93.6a4.6 4.6 0 0 1 4-2" stroke="#fff" stroke-opacity=".5" stroke-width="1" fill="none" stroke-linecap="round"/>
+    </g>
+    <rect x="30" y="101.5" width="60" height="3" fill="url(#ID-wnwood)"/>
+    <rect x="30" y="112" width="60" height="3" fill="url(#ID-wnwood)"/>
+  </g>
+  <g class="wn-air" fill="none" stroke-linecap="round"><path d="M44 116q-5-14 0-28t-3-30"/><path d="M60 116q5-14 0-28t3-30"/><path d="M76 116q-5-14 0-28t-3-30"/></g>
+</g>
+<g class="wn-door">
+  <rect x="26" y="28" width="68" height="96" rx="2" fill="none" stroke="#0a0c0f" stroke-width="3"/>
+  <rect x="29" y="31" width="62" height="90" fill="#0d1b2a" opacity=".3"/>
+  <g class="wn-drops"><circle cx="40" cy="48" r="1.1"/><circle cx="64" cy="58" r="1.1"/><circle cx="80" cy="46" r="1.1"/><circle cx="52" cy="88" r="1.1"/><circle cx="76" cy="100" r="1.1"/></g>
+  <path d="M29 31h62l-26 90h-36z" fill="url(#ID-gloss)" opacity=".45"/>
+  <rect x="89" y="50" width="3.6" height="46" rx="1.8" fill="url(#ID-chrome)" stroke="#6f7780" stroke-width=".4"/>
+</g>
+<path d="M28 124h64" stroke="#3b424a" stroke-width="1"/>
+<rect x="30" y="127" width="10" height="5" rx="1.5" fill="#3a3f45"/><rect x="80" y="127" width="10" height="5" rx="1.5" fill="#3a3f45"/>`,
+
   range_hood: () => `
 <defs>${DEFS}
 <linearGradient id="ID-beam" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff4c9" stop-opacity=".55"/><stop offset="1" stop-color="#fff4c9" stop-opacity="0"/></linearGradient>
@@ -1229,7 +1280,7 @@ const DEF = {
   dishwasher: { accent: "active", threshold: 10, fields: CYCLE_FIELDS,
     keys: ["lave_vaisselle", "lavevaisselle", "dishwasher"] },
   water_heater: { accent: "heat", threshold: 50,
-    fields: ["entity", "power", "energy", "cost", "temperature", "target_temperature", "switch"],
+    fields: ["entity", "power", "power_solar", "energy", "energy_solar", "cost", "temperature", "target_temperature", "switch"],
     keys: ["ballon_eau_chaude", "ballon", "chauffe_eau", "water_heater", "boiler", "cumulus"] },
   oven: { accent: "heat", threshold: 50,
     fields: ["entity", "power", "energy", "cost", "temperature", "target_temperature", "remaining", "program", "door", "switch"],
@@ -1253,7 +1304,7 @@ const DEF = {
     fields: ["entity", "power", "energy", "cost", "speed", "light", "switch"],
     keys: ["hotte", "range_hood", "cooker_hood", "hood", "aspirante"] },
   towel_dryer: { accent: "heat", threshold: 50,
-    fields: ["entity", "power", "energy", "cost", "temperature", "target_temperature", "switch"],
+    fields: ["entity", "power", "energy", "cost", "temperature", "target_temperature", "mode", "switch"],
     keys: ["seche_serviette", "serviette", "towel", "porte_serviette", "towel_rail", "towel_dryer"] },
   server_rack: { accent: "active", threshold: 30,
     fields: ["entity", "power", "energy", "cost", "temperature", "switch"],
@@ -1267,6 +1318,9 @@ const DEF = {
   coffee_maker: { accent: "heat", threshold: 300,
     fields: ["entity", "power", "energy", "cost", "switch"],
     keys: ["cafetiere", "coffee", "senseo", "nespresso", "dolce_gusto", "tassimo", "expresso", "espresso", "cafe"] },
+  wine_cooler: { accent: "cold", threshold: 15,
+    fields: ["entity", "power", "energy", "cost", "temperature", "door", "switch"],
+    keys: ["cave_a_vin", "cave", "vin", "wine", "cellar", "wine_cooler", "wine_fridge", "vinotheque"] },
   fridge: { accent: "cold", threshold: 20,
     fields: ["entity", "power", "energy", "cost", "temperature", "freezer_temperature", "door", "freezer_door", "switch"],
     keys: ["refrigerateur", "frigo", "fridge", "refrigerator", "frigidaire"] },
@@ -1312,6 +1366,28 @@ const num = (st) => {
   return Number.isFinite(n) ? n : null;
 };
 const domainOf = (id) => (id || "").split(".")[0];
+// modes radiateur / sèche-serviettes : confort, éco, hors-gel, arrêt
+const MODE_RX = { comfort: /confort|comfort/, eco: /eco|nuit|night|sleep|economy|reduit|réduit/, frost: /hors|frost|gel|away|absent/, off: /^(off|arret|arrêt|stop)$/ };
+const MODE_ORDER = ["comfort", "eco", "frost", "off"];
+const MODE_ICON = { comfort: "mdi:fire", eco: "mdi:leaf", frost: "mdi:snowflake", off: "mdi:power" };
+const modeOptions = (st) => {
+  if (!st) return [];
+  const d = domainOf(st.entity_id);
+  if (d === "select" || d === "input_select") return st.attributes.options || [];
+  if (d === "climate") return [...(st.attributes.preset_modes || []), ...(st.attributes.hvac_modes || [])];
+  return [];
+};
+const pickMode = (opts, key) => opts.find((o) => MODE_RX[key].test(String(o).toLowerCase()));
+function modeOf(m, main, c) {
+  const isClimate = main && domainOf(c.entity) === "climate";
+  const raw = isClimate && main.state === "off" ? "off"
+    : String(m.mode && !BAD.includes(String(m.mode.state).toLowerCase()) ? m.mode.state
+      : isClimate ? (main.attributes.preset_mode || main.state) : "").toLowerCase();
+  return /hors|frost|gel|away|absent/.test(raw) ? "frost"
+    : /eco|nuit|night|sleep|economy|reduit|réduit/.test(raw) ? "eco"
+    : /^(off|arret|arrêt|stop)$/.test(raw) ? "off"
+    : raw ? "comfort" : null;
+}
 const loc = (hass) => hass?.locale?.language || hass?.language || undefined;
 
 function fmtNum(hass, n, digits, minDigits = 0) {
@@ -1382,7 +1458,7 @@ class ApplianceCardBase extends HTMLElement {
 
   setConfig(config) {
     if (!config) throw new Error("Invalid configuration");
-    if (!["entity", "power", "switch", "temperature", "zone_1"].some((f) => config[f])) {
+    if (!["entity", "power", "power_solar", "switch", "temperature", "zone_1"].some((f) => config[f])) {
       throw new Error(lang() === "fr"
         ? "Indique au moins `entity`, `power`, `switch` ou `temperature`."
         : "Set at least one of `entity`, `power`, `switch` or `temperature`.");
@@ -1411,7 +1487,7 @@ class ApplianceCardBase extends HTMLElement {
 
   _ids() {
     const c = this._config;
-    return ["entity", "power", "energy", "cost", "remaining", "progress", "program", "door", "switch",
+    return ["entity", "power", "power_solar", "energy_solar", "energy", "cost", "remaining", "progress", "program", "door", "switch",
       "power_level", "pellet_level", "runtime", "speed", "bed_temperature", "humidity", "light", "zone_1", "zone_2", "zone_3", "zone_4", "mode", "window", "temperature", "target_temperature", "freezer_temperature", "freezer_door"].map((k) => c[k]).filter(Boolean);
   }
 
@@ -1431,12 +1507,13 @@ class ApplianceCardBase extends HTMLElement {
             </div>
             <div class="stats" id="stats"></div>
           </div>
+          <div class="modes" id="modes"></div>
           <div class="bar" id="bar"><div class="bar-fill" id="barfill"></div></div>
         </div>
       </ha-card>`;
     this.shadowRoot.querySelector("ha-card").addEventListener("click", (ev) => {
       const path = ev.composedPath();
-      if (path.some((n) => n.classList && n.classList.contains("toggle"))) return;
+      if (path.some((n) => n.classList && (n.classList.contains("toggle") || n.classList.contains("mode-btn")))) return;
       const tile = path.find((n) => n.dataset && n.dataset.entity);
       const c = this._config;
       const eid = tile ? tile.dataset.entity : (c.entity || c.power || c.switch || c.temperature);
@@ -1460,12 +1537,14 @@ class ApplianceCardBase extends HTMLElement {
   _compute() {
     const hass = this._hass, c = this._config, d = this._def, kind = this._kind;
     const S = (i) => (i ? hass.states[i] : undefined);
-    const main = S(c.entity), pw = S(c.power), sw = S(c.switch);
+    const main = S(c.entity), pw = S(c.power), pwS = S(c.power_solar), sw = S(c.switch);
     const threshold = c.threshold ?? d.threshold;
-    const watts = powerW(pw);
+    // deux sources de puissance possibles (ex. contacteur réseau + routeur solaire) : on additionne
+    const wGrid = powerW(pw), wSolar = powerW(pwS);
+    const watts = wGrid === null && wSolar === null ? null : (wGrid || 0) + (wSolar || 0);
     const m = {
-      main, pw, sw, watts, threshold,
-      energy: S(c.energy), cost: S(c.cost), remaining: parseRemaining(S(c.remaining)),
+      main, pw, pwS, wGrid, wSolar, sw, watts, threshold,
+      energy: S(c.energy), energyS: S(c.energy_solar), cost: S(c.cost), remaining: parseRemaining(S(c.remaining)),
       progress: num(S(c.progress)), program: S(c.program), door: S(c.door),
       temp: S(c.temperature), target: S(c.target_temperature),
       ftemp: S(c.freezer_temperature), fdoor: S(c.freezer_door),
@@ -1482,7 +1561,7 @@ class ApplianceCardBase extends HTMLElement {
     m.tempUnit = m.temp?.attributes.unit_of_measurement || hass.config?.unit_system?.temperature || "°C";
 
     const ref = main || sw;
-    const mainIds = ["entity", "power", "switch", "temperature", "zone_1", "zone_2", "zone_3", "zone_4"].map((k) => c[k]).filter(Boolean);
+    const mainIds = ["entity", "power", "power_solar", "switch", "temperature", "zone_1", "zone_2", "zone_3", "zone_4"].map((k) => c[k]).filter(Boolean);
     const usable = mainIds.some((i) => hass.states[i] && !BAD.includes(String(hass.states[i].state).toLowerCase()));
     if (!usable) { m.status = "unavailable"; return m; }
     let base = null;
@@ -1501,7 +1580,7 @@ class ApplianceCardBase extends HTMLElement {
       // input_boolean / binary_sensor "on", or a descriptive sensor state, means running
       else base = "running";
     }
-    if (base === null && !pw && ref) base = "unavailable";
+    if (base === null && !pw && !pwS && ref) base = "unavailable";
     const powered = watts !== null && watts > threshold;
     if (base === "on" || base === null) {
       if (watts !== null) base = powered ? "running" : (base === "on" ? "standby" : "idle");
@@ -1510,6 +1589,7 @@ class ApplianceCardBase extends HTMLElement {
     if (base === "finished" && powered) base = "running";
     if (sw && String(sw.state).toLowerCase() === "off" && base !== "unavailable") base = "off";
 
+    m.solarHeat = kind === "water_heater" && wSolar !== null && wSolar > threshold;
     if (kind === "water_heater") {
       if (base === "off" || base === "unavailable") m.status = base;
       else if (powered || (watts === null && base === "running")) m.status = "heating";
@@ -1552,12 +1632,7 @@ class ApplianceCardBase extends HTMLElement {
     } else if (kind === "radiator") {
       const isClimate = main && domainOf(c.entity) === "climate";
       const act = isClimate ? String(main.attributes.hvac_action || "").toLowerCase() : "";
-      const raw = String(m.mode && !BAD.includes(String(m.mode.state).toLowerCase()) ? m.mode.state
-        : isClimate ? (main.attributes.preset_mode || main.state) : "").toLowerCase();
-      m.radMode = /hors|frost|gel|away|absent/.test(raw) ? "frost"
-        : /eco|nuit|night|sleep|economy|reduit|réduit/.test(raw) ? "eco"
-        : /^(off|arret|arrêt|stop)$/.test(raw) ? "off"
-        : raw ? "comfort" : null;
+      m.radMode = modeOf(m, main, c);
       if (base === "unavailable") m.status = "unavailable";
       else if (m.radMode === "off" || base === "off" || act === "off" || (isClimate && main.state === "off")) m.status = "off";
       else if (act === "heating" || (watts != null && powered) || (watts == null && !isClimate && base === "running")) m.status = "heating";
@@ -1658,9 +1733,11 @@ class ApplianceCardBase extends HTMLElement {
       else m.status = base === "running" ? "speed1" : base === "standby" ? "off" : base;
       m.lights = m.light ? isOn(m.light) : (m.status === "lights" || ((m.status === "speed1" || m.status === "speed2") && c.light === undefined && watts !== null && watts > threshold));
     } else if (kind === "towel_dryer") {
+      m.radMode = modeOf(m, main, c);
       if (base === "off" || base === "unavailable") m.status = base;
-      else if (powered || (watts === null && base === "running")) m.status = "heating";
-      else m.status = base === "standby" || isOn(sw) ? "at_target" : "off";
+      else if (m.radMode === "off") m.status = "off";
+      else if (powered || (watts === null && base === "running" && !m.mode)) m.status = "heating";
+      else m.status = base === "standby" || isOn(sw) || m.radMode ? "at_target" : "off";
     } else if (kind === "server_rack") {
       if (base === "off" || base === "unavailable") m.status = base;
       else if (watts !== null) m.status = powered ? "online" : watts > 0.5 ? "standby" : "off";
@@ -1678,6 +1755,10 @@ class ApplianceCardBase extends HTMLElement {
       else m.status = base === "running" ? "brewing" : "idle";
     } else if (kind === "air_fryer") {
       m.status = base === "running" ? "cooking" : base === "standby" ? "idle" : base;
+    } else if (kind === "wine_cooler") {
+      if (base === "off" || base === "unavailable") m.status = base;
+      else m.status = powered || (watts === null && base === "running") ? "cooling" : "standby";
+      if (m.tempVal != null && m.tempVal > (c.max_temperature ?? 18)) m.alerts.push("too_warm");
     } else if (kind === "fridge") {
       if (base === "off" || base === "unavailable") m.status = base;
       else m.status = powered ? "cooling" : "standby";
@@ -1702,14 +1783,36 @@ class ApplianceCardBase extends HTMLElement {
     return m;
   }
 
+  async _setMode(key) {
+    const hass = this._hass, c = this._config;
+    const id = c.mode || (domainOf(c.entity) === "climate" ? c.entity : null);
+    const st = id && hass.states[id];
+    if (!st) return;
+    const dom = domainOf(id), opts = modeOptions(st);
+    const opt = pickMode(opts, key);
+    if (!opt) return;
+    if (dom === "select" || dom === "input_select") {
+      hass.callService(dom, "select_option", { entity_id: id, option: opt });
+    } else if (dom === "climate") {
+      const hv = st.attributes.hvac_modes || [];
+      if (key === "off") { hass.callService("climate", "set_hvac_mode", { entity_id: id, hvac_mode: hv.find((x) => x === "off") || "off" }); return; }
+      if (st.state === "off") {
+        const on = hv.find((x) => ["heat", "heat_cool", "auto"].includes(x));
+        if (on) await hass.callService("climate", "set_hvac_mode", { entity_id: id, hvac_mode: on });
+      }
+      if ((st.attributes.preset_modes || []).includes(opt)) hass.callService("climate", "set_preset_mode", { entity_id: id, preset_mode: opt });
+    }
+  }
+
   /* ---------------- rendering ---------------- */
   _lcdText(m) {
     const hass = this._hass, kind = this._kind;
     const active = ["running", "heating", "preheating", "cooling", "ignition", "filtering", "printing", "producing", "low", "speed1", "speed2", "cooking", "brewing", "keep_warm", "screen_on", "online", "ac_dry", "ac_fan", "defrost"].includes(m.status);
     if (m.status === "unavailable") return "- - -";
-    if (["fridge", "chest_freezer", "drawer_freezer"].includes(kind)) return m.tempVal != null ? `${fmtNum(hass, m.tempVal, 0)}°` : "--°";
+    if (["fridge", "wine_cooler", "chest_freezer", "drawer_freezer"].includes(kind)) return m.tempVal != null ? `${fmtNum(hass, m.tempVal, 0)}°` : "--°";
     if (kind === "towel_dryer") {
       if (m.status === "off") return "OFF";
+      if (m.radMode === "frost") return "H-G";
       const v = m.targetVal ?? m.tempVal;
       return v != null ? `${Math.round(v)}°` : "ON";
     }
@@ -1797,7 +1900,7 @@ class ApplianceCardBase extends HTMLElement {
       "wrap", `k-${kind}`, `st-${m.status}`, `accent-${m.accent || this._def.accent}`,
       active ? "active" : "", m.phase ? `ph-${m.phase}` : "",
       m.alerts.length ? "alert" : "", isOn(m.door) ? "door-open" : "", isOn(m.fdoor) ? "fz-open" : "",
-      m.alerts.includes("too_warm") ? "warm" : "", m.alerts.includes("humid") ? "humid" : "", c.animations === false ? "no-anim" : "", m.lights ? "lights-on" : "", m.acMode ? `mode-${m.acMode}` : "",
+      m.alerts.includes("too_warm") ? "warm" : "", m.alerts.includes("humid") ? "humid" : "", c.animations === false ? "no-anim" : "", m.lights ? "lights-on" : "", m.solarHeat ? "solar-heat" : "", m.acMode ? `mode-${m.acMode}` : "",
     ].filter(Boolean).join(" ");
 
     // illustration dynamic parts
@@ -1816,10 +1919,10 @@ class ApplianceCardBase extends HTMLElement {
     if (lcdEl) lcdEl.textContent = this._lcdText(m);
     if (kind === "server_rack") $("wrap").style.setProperty("--load", (m.load ?? 0.4).toFixed(2));
     if (kind === "solar") $("wrap").style.setProperty("--sun", (m.frac || 0).toFixed(2));
-    if (kind === "radiator") {
+    if (kind === "radiator" || kind === "towel_dryer") {
       $("wrap").style.setProperty("--heat", (m.heat || 0).toFixed(2));
       ["comfort", "eco", "frost"].forEach((k) => $("wrap").classList.toggle(`mode-${k}`, m.radMode === k || (k === "comfort" && !m.radMode && m.status !== "off")));
-      $("wrap").classList.toggle("win-open", isOn(m.window));
+      if (kind === "radiator") $("wrap").classList.toggle("win-open", isOn(m.window));
     }
     if (kind === "hob" && m.zones) {
       m.zones.forEach((v, i) => {
@@ -1874,11 +1977,12 @@ class ApplianceCardBase extends HTMLElement {
       const raw = String(m.main.state).toLowerCase();
       if (![...OFF_STATES, ...DONE_STATES, "on", "running", "run"].includes(raw)) statusTxt = stateText(hass, m.main);
     }
-    if (kind === "radiator" && m.radMode && m.radMode !== "off" && m.status !== "off" && m.status !== "unavailable") statusTxt += ` · ${tr(hass, m.radMode)}`;
+    if ((kind === "radiator" || kind === "towel_dryer") && m.radMode && m.radMode !== "off" && m.status !== "off" && m.status !== "unavailable") statusTxt += ` · ${tr(hass, m.radMode)}`;
     if (kind === "tv" && m.status === "screen_on" && m.main && domainOf(c.entity) === "media_player") {
       const a = m.main.attributes || {}, what = a.app_name || a.media_title || a.source;
       if (what) statusTxt += ` · ${what}`;
     }
+    if (m.solarHeat && active) statusTxt += ` · ${tr(hass, "solar_surplus")}`;
     const prog = m.program && active && !BAD.includes(String(m.program.state).toLowerCase()) ? stateText(hass, m.program) : "";
     let sub = "";
     if (active && m.remaining != null && m.remaining > 0) {
@@ -1929,6 +2033,17 @@ class ApplianceCardBase extends HTMLElement {
       $("barfill").style.width = `${Math.max(0, Math.min(100, pct))}%`;
     } else $("bar").style.display = "none";
 
+    // boutons de mode (confort / éco / hors-gel / arrêt)
+    const modesEl = $("modes");
+    const mEnt = c.mode || (domainOf(c.entity) === "climate" ? c.entity : null);
+    if ((kind === "radiator" || kind === "towel_dryer") && mEnt && c.show_modes !== false && hass.states[mEnt]) {
+      const opts = modeOptions(hass.states[mEnt]);
+      const cur = m.radMode ?? (m.status !== "off" ? "comfort" : "off");
+      modesEl.innerHTML = MODE_ORDER.filter((k) => pickMode(opts, k)).map((k) =>
+        `<button class="mode-btn ${cur === k ? "on" : ""}" data-mode="${k}" aria-pressed="${cur === k}"><ha-icon icon="${MODE_ICON[k]}"></ha-icon>${esc(tr(hass, k === "off" ? "mode_off" : k))}</button>`).join("");
+      modesEl.querySelectorAll("button").forEach((b) => { b.onclick = (ev) => { ev.stopPropagation(); this._setMode(b.dataset.mode); }; });
+    } else modesEl.innerHTML = "";
+
     // stats
     const tiles = [];
     const tile = (icon, value, label, entity, cls = "") => {
@@ -1940,6 +2055,8 @@ class ApplianceCardBase extends HTMLElement {
     if (kind === "chest_freezer" || kind === "drawer_freezer") {
       if (m.tempVal != null) tile("mdi:snowflake-thermometer", `${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}`, tr(hass, "temperature"), tEntity,
         m.alerts.includes("too_warm") ? "warn" : "");
+    } else if (kind === "wine_cooler") {
+      if (m.tempVal != null) tile("mdi:thermometer", `${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}`, tr(hass, "temperature"), tEntity, m.alerts.includes("too_warm") ? "warn" : "");
     } else if (kind === "fridge") {
       if (m.tempVal != null) tile("mdi:thermometer", `${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}`, tr(hass, "fridge_temp"), tEntity,
         m.tempVal > (c.max_temperature ?? 8) ? "warn" : "");
@@ -1972,8 +2089,11 @@ class ApplianceCardBase extends HTMLElement {
     }
     if (m.remaining != null && m.remaining > 0 && active && kind !== "water_heater") tile("mdi:timer-sand", fmtDuration(m.remaining), tr(hass, "remaining"), c.remaining);
     const solar = kind === "solar";
-    if (m.pw) tile(solar ? "mdi:solar-power" : "mdi:flash", fmtPower(hass, m.pw) ?? "—", tr(hass, solar ? "production" : "power"), c.power);
-    if (m.energy) tile("mdi:lightning-bolt-circle", fmtUnit(hass, m.energy, 2) ?? "—", tr(hass, solar ? "today" : "energy"), c.energy);
+    const dual = kind === "water_heater" && (m.pwS || m.energyS);
+    if (m.pw) tile(solar ? "mdi:solar-power" : "mdi:flash", fmtPower(hass, m.pw) ?? "—", tr(hass, solar ? "production" : dual ? "grid" : "power"), c.power);
+    if (m.pwS) tile("mdi:solar-power", fmtPower(hass, m.pwS) ?? "—", tr(hass, "solar_surplus"), c.power_solar);
+    if (m.energy) tile("mdi:lightning-bolt-circle", fmtUnit(hass, m.energy, 2) ?? "—", tr(hass, solar ? "today" : dual ? "energy_grid" : "energy"), c.energy);
+    if (m.energyS) tile("mdi:solar-power-variant", fmtUnit(hass, m.energyS, 2) ?? "—", tr(hass, "energy_solar"), c.energy_solar);
     if (m.cost) tile(solar ? "mdi:piggy-bank-outline" : "mdi:cash", fmtUnit(hass, m.cost, 2, 2) ?? "—", tr(hass, solar ? "savings" : "cost"), c.cost);
     if (solar && m.status !== "night" && m.frac != null && m.pw && !BAD.includes(String(m.pw.state).toLowerCase())) tile("mdi:white-balance-sunny", `${Math.round(m.frac * 100)} %`, lang(hass) === "fr" ? "de la crête" : "of peak", c.power);
     $("stats").innerHTML = tiles.join("");
@@ -1988,6 +2108,8 @@ const SEL = {
   entity: { entity: {} },
   power: { entity: { domain: "sensor", device_class: "power" } },
   energy: { entity: { domain: "sensor", device_class: "energy" } },
+  power_solar: { entity: { domain: "sensor", device_class: "power" } },
+  energy_solar: { entity: { domain: "sensor", device_class: "energy" } },
   cost: { entity: { domain: ["sensor", "input_number"] } },
   remaining: { entity: { domain: "sensor" } },
   progress: { entity: { domain: "sensor" } },
@@ -2024,6 +2146,9 @@ function buildForm(kind) {
           ...(["chest_freezer", "drawer_freezer"].includes(kind) ? [
             { name: "freezer_max_temperature", selector: { number: { min: -30, max: 0, step: 0.5, mode: "box" } } },
           ] : []),
+          ...(kind === "wine_cooler" ? [
+            { name: "max_temperature", selector: { number: { min: 5, max: 25, step: 0.5, mode: "box" } } },
+          ] : []),
           ...(kind === "fridge" ? [
             { name: "max_temperature", selector: { number: { min: 0, max: 15, step: 0.5, mode: "box" } } },
             { name: "freezer_max_temperature", selector: { number: { min: -30, max: 0, step: 0.5, mode: "box" } } },
@@ -2042,6 +2167,7 @@ function buildForm(kind) {
               { value: "filtre", label: "Filtre / Drip" }, { value: "dosette", label: "Dosettes / Pods" }, { value: "expresso", label: "Expresso / Bean-to-cup" }] } } },
             { name: "warm_threshold", selector: { number: { min: 0, max: 300, step: 1, mode: "box", unit_of_measurement: "W" } } },
           ] : []),
+          ...(["radiator", "towel_dryer"].includes(kind) ? [{ name: "show_modes", selector: { boolean: {} }, default: true }] : []),
           ...(kind === "server_rack" ? [
             { name: "max_power", selector: { number: { min: 50, max: 3000, step: 10, mode: "box", unit_of_measurement: "W" } } },
           ] : []),
@@ -2072,7 +2198,7 @@ function buildForm(kind) {
         ],
       },
     ],
-    computeLabel: (s) => (s.name ? tr(null, kind === "solar" && s.name === "max_power" ? "f_max_power_solar" : kind === "server_rack" && s.name === "max_power" ? "f_max_power_rack" : kind === "radiator" && s.name === "max_power" ? "f_max_power_rad" : `f_${s.name}`) : undefined),
+    computeLabel: (s) => (s.name ? tr(null, kind === "solar" && s.name === "max_power" ? "f_max_power_solar" : kind === "wine_cooler" && s.name === "max_temperature" ? "f_max_temperature_wine" : kind === "server_rack" && s.name === "max_power" ? "f_max_power_rack" : kind === "radiator" && s.name === "max_power" ? "f_max_power_rad" : `f_${s.name}`) : undefined),
   };
 }
 
@@ -2101,11 +2227,11 @@ function stubFor(kind, hass) {
   if (power) cfg.power = power;
   if (energy) cfg.energy = energy;
   if (cost) cfg.cost = cost;
-  if (sw && ["water_heater", "oven", "microwave", "pool_pump", "air_fryer", "coffee_maker", "tv", "range_hood", "ac_split", "heat_pump", "towel_dryer", "server_rack", "desktop_pc", "laptop"].includes(kind)) cfg.switch = sw;
+  if (sw && ["water_heater", "oven", "microwave", "pool_pump", "air_fryer", "coffee_maker", "tv", "range_hood", "ac_split", "heat_pump", "towel_dryer", "server_rack", "desktop_pc", "laptop", "wine_cooler"].includes(kind)) cfg.switch = sw;
   else if (sw && !cfg.entity) cfg.entity = sw;
   const clim = kind === "radiator" ? pick((i) => i.startsWith("climate.")) : null;
   if (clim) cfg.entity = clim;
-  if (temp && ["fridge", "water_heater", "oven", "air_fryer", "pellet_stove", "pool_pump", "printer_3d", "chest_freezer", "drawer_freezer", "radiator", "towel_dryer", "server_rack"].includes(kind)) cfg.temperature = temp;
+  if (temp && ["fridge", "water_heater", "oven", "air_fryer", "pellet_stove", "pool_pump", "printer_3d", "chest_freezer", "drawer_freezer", "radiator", "towel_dryer", "server_rack", "wine_cooler"].includes(kind)) cfg.temperature = temp;
   if (!cfg.entity && !cfg.power && !cfg.switch && !cfg.temperature) cfg.power = "sensor.example_power";
   return cfg;
 }
@@ -2714,6 +2840,38 @@ svg { width: 100%; height: 100%; display: block; overflow: visible; }
 .k-laptop.st-screen_on .lp-led { fill: #43e08a; filter: drop-shadow(0 0 1.2px #43e08a); }
 .k-laptop.st-standby .lp-led { fill: #ffb020; animation: ac-pulse 2.4s ease-in-out infinite; }
 @keyframes lp-draw { 0% { stroke-dashoffset: 130; } 55%, 85% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: -130; } }
+.modes:empty { display: none; }
+.modes { display: grid; grid-template-columns: repeat(auto-fit, minmax(78px, 1fr)); gap: 6px; }
+.mode-btn { white-space: nowrap; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; padding: 7px 6px; border-radius: 10px; font: inherit; font-size: 12.5px; color: var(--secondary-text-color); background: rgba(127,127,127,.12); transition: background .2s, color .2s; }
+.mode-btn:hover { background: rgba(127,127,127,.22); }
+.mode-btn ha-icon { --mdc-icon-size: 16px; }
+.mode-btn.on { color: #fff; background: var(--mc, var(--c)); }
+.mode-btn[data-mode="comfort"] { --mc: #f5a300; } .mode-btn[data-mode="eco"] { --mc: #5b7bd5; } .mode-btn[data-mode="frost"] { --mc: #2b9af9; } .mode-btn[data-mode="off"] { --mc: #6b737c; }
+.mode-btn:focus-visible { outline: 2px solid var(--c); outline-offset: 2px; }
+.k-towel_dryer.mode-eco.st-heating .td-glow { opacity: .55; } .k-towel_dryer.mode-frost.st-heating .td-glow { opacity: .3; }
+.k-towel_dryer.mode-frost .lcd { fill: #6fd8ff; }
+.wrap.solar-heat { --c: var(--ac-accent, #f5b301); }
+/* ---------- wine cooler ---------- */
+.wn-led { fill: #5a636d; transition: fill .3s; }
+.k-wine_cooler.st-cooling .wn-led { fill: #38d9ff; filter: drop-shadow(0 0 1.4px #38d9ff); animation: ac-pulse 2.4s ease-in-out infinite; }
+.k-wine_cooler.st-standby .wn-led { fill: #43c07a; }
+.wn-light, .wn-strip { opacity: 0; transition: opacity .8s; }
+.k-wine_cooler.st-cooling .wn-light, .k-wine_cooler.st-standby .wn-light { opacity: .8; }
+.k-wine_cooler.st-cooling .wn-strip, .k-wine_cooler.st-standby .wn-strip { opacity: 1; }
+.wn-bottles { transition: opacity .8s; opacity: .55; }
+.k-wine_cooler.st-cooling .wn-bottles, .k-wine_cooler.st-standby .wn-bottles { opacity: 1; }
+.wn-air path { stroke: #9fdcff; stroke-width: 1.4; stroke-dasharray: 3 6; opacity: 0; transition: opacity .6s; }
+.k-wine_cooler.st-cooling .wn-air path { opacity: .6; animation: hd-up 2s linear infinite; }
+.wn-air path:nth-child(2) { animation-duration: 1.5s !important; } .wn-air path:nth-child(3) { animation-duration: 2.4s !important; }
+.wn-drops circle { fill: #cfeeff; opacity: 0; }
+.k-wine_cooler.st-cooling .wn-drops circle { animation: ac-fall 4s ease-in infinite; }
+.wn-drops circle:nth-child(2) { animation-delay: 1.1s !important; } .wn-drops circle:nth-child(3) { animation-delay: 2.2s !important; }
+.wn-drops circle:nth-child(4) { animation-delay: .6s !important; } .wn-drops circle:nth-child(5) { animation-delay: 1.8s !important; }
+.wn-door { transform-box: view-box; transform-origin: 26px 76px; transition: transform .6s cubic-bezier(.3,.7,.3,1); }
+.door-open .wn-door { transform: scaleX(.2) skewY(-5deg); }
+.k-wine_cooler .lcd { fill: #6fd8ff; }
+.k-wine_cooler.st-off .lcd { fill: #24404f; }
+.k-wine_cooler.warm .lcd { fill: var(--ac-alert); }
 .no-anim *, .no-anim { animation: none !important; }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
 `;
