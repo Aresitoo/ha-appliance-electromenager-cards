@@ -219,6 +219,15 @@ const SCEN = [
       range(ctl, 'Puissance', 'sensor.hood_power', 0, 300, 1, 80, 'W', W);
       set('sensor.hood_energy', 0.12, KWH);
     } },
+  { kind: 'ac-split', title: 'Climatiseur (split)',
+    cfg: { entity: 'climate.ac' },
+    build(ctl) {
+      select(ctl, 'Mode', 'climate.ac', [['cool', 'Clim'], ['heat', 'Chauffage'], ['dry', 'Déshumidification'], ['fan_only', 'Ventilation'], ['off', 'Arrêt']], 'cool');
+      states['climate.ac'].attributes = { current_temperature: 26, temperature: 23 };
+    } },
+  { kind: 'heat-pump', title: 'Pompe à chaleur (ext.)',
+    cfg: { entity: 'climate.ac', power: 'sensor.ac_power' },
+    build(ctl) { range(ctl, 'Puissance', 'sensor.ac_power', 0, 2000, 10, 900, 'W', W); } },
   { kind: 'pellet-stove', title: 'Poêle à granulés',
     cfg: { entity: 'sensor.stove_status', power: 'sensor.stove_power', temperature: 'sensor.stove_temp', target_temperature: 'sensor.stove_target', power_level: 'sensor.stove_level', pellet_level: 'sensor.stove_pellets', energy: 'sensor.stove_energy' },
     build(ctl) {
