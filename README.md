@@ -3,7 +3,7 @@
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://hacs.xyz/docs/faq/custom_repositories)
 [![Validate](https://github.com/skyrotter/ha-appliance-electromenager-cards/actions/workflows/validate.yml/badge.svg)](https://github.com/skyrotter/ha-appliance-electromenager-cards/actions/workflows/validate.yml)
 
-Twenty-six Lovelace cards for household appliances, with **realistic animated illustrations** (tumbling drum, water and foam, spin with vibration, rotating spray arms, glowing oven element, turntable, opening fridge door, flickering pellet-stove flames, water flowing through a pool pump, a 3D printer building its part layer by layer, a chest freezer lid lifting, freezer drawers sliding out, a sun powering solar panels on their frame, a bathroom extractor fan drawing in steam, cooktop zones glowing under a steaming pot, an electric radiator sending heat waves, a dual-basket air fryer blowing hot air over fries, a coffee maker filling the carafe or the cup, a flat TV switching on like a real screen, a range hood sucking up the steam, an air-conditioning split and its outdoor heat pump, a heated towel rail glowing with warm towels, a homelab server rack with blinking LEDs and spinning fans, a desktop PC with RGB fans and a laptop with a live screen…), live status, power, energy and cost.
+Twenty-seven Lovelace cards for household appliances, with **realistic animated illustrations** (tumbling drum, water and foam, spin with vibration, rotating spray arms, glowing oven element, turntable, opening fridge door, flickering pellet-stove flames, water flowing through a pool pump, a 3D printer building its part layer by layer, a chest freezer lid lifting, freezer drawers sliding out, a sun powering solar panels on their frame, a bathroom extractor fan drawing in steam, cooktop zones glowing under a steaming pot, an electric radiator sending heat waves, a dual-basket air fryer blowing hot air over fries, a coffee maker filling the carafe or the cup, a flat TV switching on like a real screen, a range hood sucking up the steam, an air-conditioning split and its outdoor heat pump, a heated towel rail glowing with warm towels, a homelab server rack with blinking LEDs and spinning fans, a desktop PC with RGB fans, a laptop with a live screen and a wine cooler with cold air flowing between the bottles…), live status, power, energy and cost.
 They follow your Home Assistant theme (light/dark) and switch between **French** and **English** automatically.
 
 **▶ [Try it online / Essayer en ligne](https://skyrotter.github.io/ha-appliance-electromenager-cards/docs/demo.html)** · [Automated tests](https://skyrotter.github.io/ha-appliance-electromenager-cards/docs/tests.html)
@@ -40,6 +40,7 @@ They follow your Home Assistant theme (light/dark) and switch between **French**
 | Server rack (homelab) | `custom:appliance-server-rack-card` |
 | Desktop PC | `custom:appliance-desktop-pc-card` |
 | Laptop | `custom:appliance-laptop-card` |
+| Wine cooler | `custom:appliance-wine-cooler-card` |
 
 Works with a simple smart plug (power sensor only) as well as with connected appliances (program, remaining time, progress, door…).
 
@@ -449,6 +450,39 @@ type: custom:appliance-laptop-card
 power: sensor.laptop_power
 ```
 
+### Wine cooler
+
+`custom:appliance-wine-cooler-card`: a glass-door wine cabinet with bottles on wooden shelves. When the compressor runs (above `threshold`, 15 W) the interior lights up, cold air flows between the bottles, condensation drips on the glass and the LED pulses. On standby the cabinet stays lit; opening the door (`door` sensor) swings it open. The display shows the temperature, and the card warns when it exceeds `max_temperature` (18 °C by default).
+
+```yaml
+type: custom:appliance-wine-cooler-card
+power: sensor.cave_a_vin_power
+temperature: sensor.cave_a_vin_temperature
+door: binary_sensor.cave_a_vin_door   # optional
+```
+
+### Modes (radiator and heated towel rail)
+
+With a `mode` entity (`select`, `input_select`, or a `climate` entity used as `entity`), the radiator and the heated towel rail show four buttons — **Comfort, Eco, Frost protection, Off** — to switch mode, and the active mode is highlighted. Options are matched by name (Confort, Eco/Nuit, Hors-gel, Arrêt/Off…); a button is only shown if a matching option exists. Hide them with `show_modes: false`.
+
+```yaml
+type: custom:appliance-towel-dryer-card
+power: sensor.towel_rail_power
+mode: select.towel_rail_mode
+```
+
+### Water heater with a solar router
+
+The water heater card accepts a second power sensor (`power_solar`) and a second energy sensor (`energy_solar`), e.g. a classic contactor on `power` and a solar-surplus router on `power_solar`. Both are added up to detect heating; when the solar one is above `threshold`, the card shows "Solar surplus" and separate Grid / Solar tiles.
+
+```yaml
+type: custom:appliance-water-heater-card
+power: sensor.contacteur_power
+power_solar: sensor.routeur_solaire_power
+energy: sensor.contacteur_energy
+energy_solar: sensor.routeur_solaire_energy
+```
+
 ### Power button safety
 
 The power button only appears when you set `switch:`. On the **washer, dryer, dishwasher and pellet stove**, cutting the plug **while a cycle is running (or the stove is burning)** takes **two clicks**: the first one turns the button red and shows "Cycle running – click again to cut power" for 4 seconds. Turning the plug on, or off while idle, stays a single click. Set `confirm_off: false` to turn this off.
@@ -498,7 +532,7 @@ appliance-illustration-size: 116px
 
 ## 🇫🇷 En français
 
-Vingt-six cartes Lovelace pour l'électroménager et l'énergie (lave-linge, sèche-linge, lave-vaisselle, ballon d'eau chaude, four, micro-ondes, réfrigérateur, poêle à granulés, pompe de piscine, imprimante 3D, congélateur coffre, congélateur à tiroirs, panneaux solaires, VMC, plaques de cuisson, radiateur électrique, airfryer, cafetière, téléviseur, hotte aspirante, climatiseur et pompe à chaleur) : illustration animée, état en direct, puissance, énergie et coût. Elles suivent le thème de Home Assistant et s'affichent en français si Home Assistant est en français.
+Vingt-sept cartes Lovelace pour l'électroménager et l'énergie (lave-linge, sèche-linge, lave-vaisselle, ballon d'eau chaude, four, micro-ondes, réfrigérateur, poêle à granulés, pompe de piscine, imprimante 3D, congélateur coffre, congélateur à tiroirs, panneaux solaires, VMC, plaques de cuisson, radiateur électrique, airfryer, cafetière, téléviseur, hotte aspirante, climatiseur et pompe à chaleur) : illustration animée, état en direct, puissance, énergie et coût. Elles suivent le thème de Home Assistant et s'affichent en français si Home Assistant est en français.
 
 **Installation HACS** : HACS → ⋮ → *Dépôts personnalisés* → `https://github.com/skyrotter/ha-appliance-electromenager-cards`, catégorie **Dashboard** → installer → recharger le navigateur (Ctrl+F5).
 
@@ -542,7 +576,7 @@ cost: sensor.lave_linge_cout_jour
 
 **Sécurité du bouton marche/arrêt** : sur le lave-linge, le sèche-linge, le lave-vaisselle et le poêle à granulés, couper la prise pendant un cycle (ou poêle allumé) demande deux clics (le bouton devient rouge et affiche « Cycle en cours – cliquer encore pour couper »). Option `confirm_off: false` pour désactiver. Conseil : sur un lave-linge, ne mets pas de `switch:` du tout.
 
-**Sèche-serviettes, baie informatique, PC fixe, PC portable** : quatre cartes pilotées par une prise connectée (`power`). `custom:appliance-towel-dryer-card` : au-dessus de 50 W, les barres rougeoient, la chaleur monte, les serviettes se balancent et fument ; prise allumée sous le seuil : « Consigne atteinte ». `custom:appliance-server-rack-card` (homelab) : au-dessus de 30 W, les LED clignotent, les ventilateurs tournent, les baies de disques s'allument en bleu et les données circulent dans les câbles ; la vitesse suit la charge (`max_power`, 300 W par défaut) et l'onduleur affiche la puissance. `custom:appliance-desktop-pc-card` : au-dessus de 40 W, l'écran s'allume (code qui s'écrit, graphique, curseur) et les ventilateurs RGB tournent ; entre 0,5 W et le seuil : veille (voyant orange). `custom:appliance-laptop-card` : au-dessus de 15 W, l'écran affiche un tableau de bord animé et le clavier est rétroéclairé ; en dessous : veille.
+**Sèche-serviettes, baie informatique, PC fixe, PC portable, cave à vin** : cinq cartes pilotées par une prise connectée (`power`). `custom:appliance-towel-dryer-card` : au-dessus de 50 W, les barres rougeoient, la chaleur monte, les serviettes se balancent et fument ; prise allumée sous le seuil : « Consigne atteinte ». `custom:appliance-server-rack-card` (homelab) : au-dessus de 30 W, les LED clignotent, les ventilateurs tournent, les baies de disques s'allument en bleu et les données circulent dans les câbles ; la vitesse suit la charge (`max_power`, 300 W par défaut) et l'onduleur affiche la puissance. `custom:appliance-desktop-pc-card` : au-dessus de 40 W, l'écran s'allume (code qui s'écrit, graphique, curseur) et les ventilateurs RGB tournent ; entre 0,5 W et le seuil : veille (voyant orange). `custom:appliance-laptop-card` : au-dessus de 15 W, l'écran affiche un tableau de bord animé et le clavier est rétroéclairé ; en dessous : veille. `custom:appliance-wine-cooler-card` : cave vitrée ; quand le compresseur tourne (au-dessus de 15 W), l'intérieur s'éclaire, l'air froid circule entre les bouteilles et la condensation coule ; la porte s'ouvre avec un capteur `door` ; alerte au-dessus de `max_temperature` (18 °C).
 
 ## License
 
