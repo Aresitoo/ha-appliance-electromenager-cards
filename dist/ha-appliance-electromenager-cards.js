@@ -1,12 +1,13 @@
 /*!
  * HA Appliance Cards
  * Lovelace cards for household appliances: washer, dryer, dishwasher,
- * water heater, oven, microwave, refrigerator, air fryer, coffee maker, TV, range hood, air conditioning…
+ * water heater, oven, microwave, refrigerator, air fryer, coffee maker, TV, range hood, air conditioning,
+ * heated towel rail, server rack, desktop PC, laptop…
  * MIT License
  */
 (() => {
 "use strict";
-const VERSION = "1.13.0";
+const VERSION = "1.14.0";
 
 /* ------------------------------------------------------------------ */
 /* i18n                                                                */
@@ -14,7 +15,7 @@ const VERSION = "1.13.0";
 const STRINGS = {
   en: {
     washer: "Washing machine", dryer: "Dryer", dishwasher: "Dishwasher",
-    water_heater: "Water heater", oven: "Oven", microwave: "Microwave", air_fryer: "Air fryer", coffee_maker: "Coffee maker", tv: "TV", range_hood: "Range hood", ac_split: "Air conditioner (indoor)", heat_pump: "Heat pump (outdoor unit)", ac_dry: "Drying", ac_fan: "Fan only", at_target: "At target", defrost: "Defrosting", f_hvac: "Mode without climate entity", screen_on: "On", lights: "Lights only", f_light: "Light entity (optional)", brewing: "Brewing", keep_warm: "Keeping warm", f_style: "Coffee maker type", f_warm_threshold: "Keep-warm / ready above (W)", fridge: "Refrigerator", pellet_stove: "Pellet stove", pool_pump: "Pool pump", printer_3d: "3D printer", chest_freezer: "Chest freezer", drawer_freezer: "Upright freezer", solar: "Solar panels", vmc: "Extractor fan", hob: "Cooktop", radiator: "Electric radiator",
+    water_heater: "Water heater", oven: "Oven", microwave: "Microwave", air_fryer: "Air fryer", coffee_maker: "Coffee maker", tv: "TV", range_hood: "Range hood", towel_dryer: "Heated towel rail", server_rack: "Server rack (homelab)", desktop_pc: "Desktop PC", laptop: "Laptop", online: "Online", f_max_power_rack: "Max load (W)", ac_split: "Air conditioner (indoor)", heat_pump: "Heat pump (outdoor unit)", ac_dry: "Drying", ac_fan: "Fan only", at_target: "At target", defrost: "Defrosting", f_hvac: "Mode without climate entity", screen_on: "On", lights: "Lights only", f_light: "Light entity (optional)", brewing: "Brewing", keep_warm: "Keeping warm", f_style: "Coffee maker type", f_warm_threshold: "Keep-warm / ready above (W)", fridge: "Refrigerator", pellet_stove: "Pellet stove", pool_pump: "Pool pump", printer_3d: "3D printer", chest_freezer: "Chest freezer", drawer_freezer: "Upright freezer", solar: "Solar panels", vmc: "Extractor fan", hob: "Cooktop", radiator: "Electric radiator",
     comfort: "Comfort", eco: "Eco", frost: "Frost protection", window_open: "Window open", f_mode: "Mode entity (pilot wire, select…)", f_window: "Window sensor", f_max_power_rad: "Radiator power (W)",
     cooking: "Cooking", residual: "Residual heat", zones: "Active zones", f_zone_power: "Power of one zone (W)", f_zone_1: "Front-left zone (level or W)", f_zone_2: "Front-right zone", f_zone_3: "Back-left zone", f_zone_4: "Back-right zone", f_residual_minutes: "Residual heat display (min)",
     speed1: "Low speed", speed2: "High speed", humid: "High humidity", humidity: "Humidity", f_humidity: "Humidity sensor (%)", f_high_threshold: "High speed above (W)", f_humidity_max: "Humidity alert above (%)",
@@ -43,7 +44,7 @@ const STRINGS = {
   },
   fr: {
     washer: "Lave-linge", dryer: "Sèche-linge", dishwasher: "Lave-vaisselle",
-    water_heater: "Ballon d'eau chaude", oven: "Four", microwave: "Micro-ondes", air_fryer: "Airfryer", coffee_maker: "Cafetière", tv: "Téléviseur", range_hood: "Hotte aspirante", ac_split: "Climatiseur (split)", heat_pump: "Pompe à chaleur (ext.)", ac_dry: "Déshumidification", ac_fan: "Ventilation", at_target: "Consigne atteinte", defrost: "Dégivrage", f_hvac: "Mode sans entité climate", screen_on: "Allumée", lights: "Éclairage", f_light: "Entité d'éclairage (optionnel)", brewing: "Préparation du café", keep_warm: "Maintien au chaud", f_style: "Type de cafetière", f_warm_threshold: "Maintien au chaud / prête au-dessus de (W)", fridge: "Réfrigérateur", pellet_stove: "Poêle à granulés", pool_pump: "Pompe de piscine", printer_3d: "Imprimante 3D", chest_freezer: "Congélateur coffre", drawer_freezer: "Congélateur à tiroirs", solar: "Panneaux solaires", vmc: "VMC", hob: "Plaques de cuisson", radiator: "Radiateur",
+    water_heater: "Ballon d'eau chaude", oven: "Four", microwave: "Micro-ondes", air_fryer: "Airfryer", coffee_maker: "Cafetière", tv: "Téléviseur", range_hood: "Hotte aspirante", towel_dryer: "Sèche-serviettes", server_rack: "Baie informatique (homelab)", desktop_pc: "PC fixe", laptop: "PC portable", online: "En ligne", f_max_power_rack: "Charge max (W)", ac_split: "Climatiseur (split)", heat_pump: "Pompe à chaleur (ext.)", ac_dry: "Déshumidification", ac_fan: "Ventilation", at_target: "Consigne atteinte", defrost: "Dégivrage", f_hvac: "Mode sans entité climate", screen_on: "Allumée", lights: "Éclairage", f_light: "Entité d'éclairage (optionnel)", brewing: "Préparation du café", keep_warm: "Maintien au chaud", f_style: "Type de cafetière", f_warm_threshold: "Maintien au chaud / prête au-dessus de (W)", fridge: "Réfrigérateur", pellet_stove: "Poêle à granulés", pool_pump: "Pompe de piscine", printer_3d: "Imprimante 3D", chest_freezer: "Congélateur coffre", drawer_freezer: "Congélateur à tiroirs", solar: "Panneaux solaires", vmc: "VMC", hob: "Plaques de cuisson", radiator: "Radiateur",
     comfort: "Confort", eco: "Éco", frost: "Hors-gel", window_open: "Fenêtre ouverte", f_mode: "Entité de mode (fil pilote, liste…)", f_window: "Capteur de fenêtre", f_max_power_rad: "Puissance du radiateur (W)",
     cooking: "Cuisson", residual: "Chaleur résiduelle", zones: "Foyers actifs", f_zone_power: "Puissance d'un foyer (W)", f_zone_1: "Foyer avant gauche (niveau ou W)", f_zone_2: "Foyer avant droit", f_zone_3: "Foyer arrière gauche", f_zone_4: "Foyer arrière droit", f_residual_minutes: "Affichage chaleur résiduelle (min)",
     speed1: "Petite vitesse", speed2: "Grande vitesse", humid: "Humidité élevée", humidity: "Humidité", f_humidity: "Capteur d'humidité (%)", f_high_threshold: "Grande vitesse au-dessus de (W)", f_humidity_max: "Alerte humidité au-dessus de (%)",
@@ -523,6 +524,203 @@ ${steam([44, 56], 19)}
 <path d="M4 38L46 38L4 78z" fill="#fff" opacity=".06"/>
 <rect x="4" y="38" width="112" height="63" rx="1" fill="none" stroke="#000" stroke-opacity=".5"/>
 <circle class="tv-led" cx="60" cy="101.8" r=".7"/>`,
+
+  towel_dryer: () => `
+<defs>${DEFS}
+<linearGradient id="ID-tdglow" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb877"/><stop offset="1" stop-color="#ff6a1f"/></linearGradient>
+<linearGradient id="ID-tdtowel" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2f9fb3"/><stop offset=".5" stop-color="#58c3d4"/><stop offset="1" stop-color="#2a8ea1"/></linearGradient>
+<linearGradient id="ID-tdwall" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7a828b" stop-opacity=".16"/><stop offset="1" stop-color="#7a828b" stop-opacity="0"/></linearGradient></defs>
+<rect x="14" y="10" width="92" height="116" rx="6" fill="url(#ID-tdwall)"/>
+<g class="td-heat"><path d="M44 112q-4-20 2-44t-2-44"/><path d="M60 112q4-20-2-44t2-44"/><path d="M76 112q-4-20 2-44t-2-44"/></g>
+<rect x="22" y="16" width="9" height="106" rx="4.5" fill="#000" opacity=".12"/>
+<rect x="89" y="16" width="9" height="106" rx="4.5" fill="#000" opacity=".12"/>
+<path d="M44 55h32v22h-32z" fill="#237a8b"/>
+<g class="td-bars">
+  <rect x="29" y="22" width="62" height="5" rx="2.5" fill="url(#ID-body)" stroke="#aeb6be" stroke-width=".5"/>
+  <rect x="29" y="38" width="62" height="5" rx="2.5" fill="url(#ID-body)" stroke="#aeb6be" stroke-width=".5"/>
+  <rect x="29" y="54" width="62" height="5" rx="2.5" fill="url(#ID-body)" stroke="#aeb6be" stroke-width=".5"/>
+  <rect x="29" y="70" width="62" height="5" rx="2.5" fill="url(#ID-body)" stroke="#aeb6be" stroke-width=".5"/>
+  <rect x="29" y="86" width="62" height="5" rx="2.5" fill="url(#ID-body)" stroke="#aeb6be" stroke-width=".5"/>
+  <rect x="29" y="102" width="62" height="5" rx="2.5" fill="url(#ID-body)" stroke="#aeb6be" stroke-width=".5"/>
+</g>
+<g class="td-glow" fill="url(#ID-tdglow)">
+  <rect x="29" y="22" width="62" height="5" rx="2.5"/><rect x="29" y="38" width="62" height="5" rx="2.5"/><rect x="29" y="54" width="62" height="5" rx="2.5"/>
+  <rect x="29" y="70" width="62" height="5" rx="2.5"/><rect x="29" y="86" width="62" height="5" rx="2.5"/><rect x="29" y="102" width="62" height="5" rx="2.5"/>
+  <rect x="20" y="14" width="9" height="106" rx="4.5"/><rect x="91" y="14" width="9" height="106" rx="4.5"/>
+</g>
+<path d="M29 23.2h62M29 39.2h62M29 55.2h62M29 71.2h62M29 87.2h62M29 103.2h62" stroke="#fff" stroke-opacity=".85" stroke-width="1"/>
+<rect x="20" y="14" width="9" height="106" rx="4.5" fill="url(#ID-body)" stroke="#aeb6be" stroke-width=".6"/>
+<rect x="91" y="14" width="9" height="106" rx="4.5" fill="url(#ID-body)" stroke="#aeb6be" stroke-width=".6"/>
+<path d="M22.5 18v98M93.5 18v98" stroke="#fff" stroke-width="1.6" stroke-linecap="round" opacity=".9"/>
+<g class="td-glow td-glow2" fill="url(#ID-tdglow)"><rect x="20" y="14" width="9" height="106" rx="4.5"/><rect x="91" y="14" width="9" height="106" rx="4.5"/></g>
+<g class="td-towel">
+  <path d="M42 56h36v30q-3 3-6 0q-3 3-6 0q-3 3-6 0q-3 3-6 0q-3 3-6 0q-3 3-3 0z" fill="url(#ID-tdtowel)"/>
+  <path d="M42 80h36v3h-36z" fill="#e8f7fa" opacity=".9"/>
+  <path d="M42 56h36v3h-36z" fill="#1f7384" opacity=".5"/>
+  <path d="M50 59v20M60 59v20M70 59v20" stroke="#1f7384" stroke-opacity=".25" stroke-width="1"/>
+</g>
+<g class="td-towel td-towel2">
+  <path d="M63 88h20v12q-3 2-5 0q-3 2-5 0q-3 2-5 0q-3 2-5 0z" fill="#f2a6b8"/>
+  <path d="M63 96h20v2h-20z" fill="#fff" opacity=".7"/>
+</g>
+<g class="td-steam"><path d="M48 52q-3-4 0-8t0-8"/><path d="M60 50q-3-4 0-8t0-8"/><path d="M72 52q-3-4 0-8t0-8"/></g>
+<rect x="18" y="120" width="13" height="5" rx="1.5" fill="#3a3f45"/><rect x="89" y="120" width="13" height="5" rx="1.5" fill="#3a3f45"/>
+<rect x="70" y="108" width="36" height="14" rx="3" fill="url(#ID-dark)" stroke="#8f98a2" stroke-width=".6"/>
+${lcd(74, 110, 22, 10)}
+<circle class="td-led" cx="101" cy="115" r="1.4"/>
+<ellipse cx="60" cy="132" rx="46" ry="3" fill="url(#ID-shadow)"/>`,
+
+  server_rack: () => `
+<defs>${DEFS}
+<linearGradient id="ID-rkframe" x1="0" x2="1"><stop offset="0" stop-color="#2a2f35"/><stop offset=".5" stop-color="#14171b"/><stop offset="1" stop-color="#262b31"/></linearGradient>
+<linearGradient id="ID-rkunit" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3b424a"/><stop offset=".15" stop-color="#262b31"/><stop offset="1" stop-color="#16191d"/></linearGradient>
+<linearGradient id="ID-rkblue" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3b9cff" stop-opacity=".5"/><stop offset="1" stop-color="#3b9cff" stop-opacity="0"/></linearGradient></defs>
+<ellipse cx="60" cy="135" rx="50" ry="3.5" fill="url(#ID-shadow)"/>
+<rect x="16" y="4" width="88" height="126" rx="3" fill="url(#ID-rkframe)" stroke="#4a525a" stroke-width=".8"/>
+<rect x="22" y="10" width="76" height="114" fill="#07090b"/>
+<path d="M19 12v110M101 12v110" stroke="#556068" stroke-width=".6" stroke-dasharray="1.2 4.2"/>
+<g class="rk-glow"><rect x="22" y="92" width="76" height="30" fill="url(#ID-rkblue)"/></g>
+<rect x="24" y="12" width="72" height="7" rx="1" fill="url(#ID-rkunit)" stroke="#59616b" stroke-width=".4"/>
+<circle class="rk-led rk-g" cx="30" cy="15.5" r="1"/><circle class="rk-led rk-r" cx="35" cy="15.5" r="1"/>
+<path d="M44 14h4M50 14h4M56 14h4M62 14h4M68 14h4M74 14h4M80 14h4M86 14h4" stroke="#7d858e" stroke-width="1.4"/>
+<path d="M44 17.2h46" stroke="#59616b" stroke-width=".5"/>
+<rect x="24" y="30" width="72" height="1" fill="#2b3138"/>
+<rect x="46" y="22" width="28" height="8" rx="1.6" fill="#d7dce1" stroke="#9aa2ab" stroke-width=".4"/>
+<circle class="rk-led rk-g" cx="52" cy="26" r="1"/><circle class="rk-led rk-g" cx="57" cy="26" r="1" style="animation-delay:.4s"/><circle class="rk-led rk-b" cx="62" cy="26" r="1" style="animation-delay:.9s"/>
+<rect x="24" y="32" width="72" height="14" rx="1" fill="url(#ID-rkunit)" stroke="#59616b" stroke-width=".4"/>
+<rect x="26" y="33.6" width="24" height="3.2" rx=".8" fill="#e9ecef"/>
+<path d="M30 40h40M30 42.4h40M30 44.8h40" stroke="#080a0d" stroke-width="1.2" stroke-linecap="round" opacity=".9"/>
+<circle class="rk-led rk-g" cx="84" cy="36.5" r="1"/><circle class="rk-led rk-g" cx="89" cy="36.5" r="1" style="animation-delay:.6s"/>
+<g class="rk-fan"><circle cx="80" cy="42" r="3.2" fill="#0b0d10"/><path d="M80 42v-3M80 42l2.6 1.5M80 42l-2.6 1.5" stroke="#8d959f" stroke-width="1" stroke-linecap="round"/><circle cx="80" cy="42" r="3.2" fill="none"/></g>
+<rect x="24" y="48" width="72" height="7" rx="1" fill="#dfe3e7" stroke="#9aa2ab" stroke-width=".4"/>
+<path d="M27 50h3v3h-3zM32 50h3v3h-3zM37 50h3v3h-3zM42 50h3v3h-3zM47 50h3v3h-3zM52 50h3v3h-3zM57 50h3v3h-3zM62 50h3v3h-3zM67 50h3v3h-3zM72 50h3v3h-3zM77 50h3v3h-3zM82 50h3v3h-3z" fill="#2b3138"/>
+<path d="M28.5 53v4M33.5 53v5M38.5 53v4M43.5 53v6M48.5 53v4" stroke="#f4f6f8" stroke-width="1.4" stroke-linecap="round"/>
+<rect x="24" y="57" width="72" height="9" rx="1" fill="url(#ID-rkunit)" stroke="#59616b" stroke-width=".4"/>
+<text x="29" y="63.4" font-family="Arial,sans-serif" font-size="3.6" font-weight="700" fill="#e04b3c">APC</text>
+<rect x="60" y="58.4" width="30" height="6.4" rx="1.2" fill="#0c1720" stroke="#8f98a2" stroke-width=".4"/>
+<text class="lcd" x="75" y="63.6" text-anchor="middle">OFF</text>
+<rect x="24" y="68" width="72" height="8" rx="1" fill="url(#ID-panel)" stroke="#9aa2ab" stroke-width=".4"/>
+<rect x="27" y="70" width="40" height="4" rx=".8" fill="#2b3138"/>
+<circle class="rk-led rk-g" cx="30" cy="72" r=".9"/><circle class="rk-led rk-g" cx="34" cy="72" r=".9" style="animation-delay:.2s"/><circle class="rk-led rk-g" cx="38" cy="72" r=".9" style="animation-delay:.7s"/>
+<circle class="rk-led rk-g" cx="42" cy="72" r=".9" style="animation-delay:.4s"/><circle class="rk-led rk-g" cx="46" cy="72" r=".9" style="animation-delay:1s"/><circle class="rk-led rk-g" cx="50" cy="72" r=".9" style="animation-delay:.1s"/>
+<circle class="rk-led rk-g" cx="54" cy="72" r=".9" style="animation-delay:.8s"/><circle class="rk-led rk-g" cx="58" cy="72" r=".9" style="animation-delay:.5s"/><circle class="rk-led rk-g" cx="62" cy="72" r=".9" style="animation-delay:1.2s"/>
+<path d="M72 72h20" stroke="#7d858e" stroke-width="2" stroke-linecap="round"/>
+<rect x="24" y="78" width="72" height="14" rx="1" fill="url(#ID-rkunit)" stroke="#59616b" stroke-width=".4"/>
+<rect x="26" y="80" width="30" height="10" rx="1" fill="#0b0d10"/>
+<g class="rk-fan"><circle cx="34" cy="85" r="4" fill="#15181c"/><path d="M34 85v-3.6M34 85l3.1 1.8M34 85l-3.1 1.8" stroke="#a9b1ba" stroke-width="1.3" stroke-linecap="round"/><circle cx="34" cy="85" r="4" fill="none"/></g>
+<g class="rk-fan"><circle cx="48" cy="85" r="4" fill="#15181c"/><path d="M48 85v-3.6M48 85l3.1 1.8M48 85l-3.1 1.8" stroke="#a9b1ba" stroke-width="1.3" stroke-linecap="round"/><circle cx="48" cy="85" r="4" fill="none"/></g>
+<rect x="26" y="80" width="30" height="10" fill="url(#ID-mesh)" opacity=".5"/>
+<circle class="rk-led rk-g" cx="84" cy="82" r="1"/><circle class="rk-led rk-b" cx="89" cy="82" r="1" style="animation-delay:.7s"/>
+<path d="M62 85h14M62 88h14" stroke="#4a525a" stroke-width=".8"/>
+<rect x="24" y="94" width="72" height="26" rx="1.5" fill="url(#ID-rkunit)" stroke="#59616b" stroke-width=".4"/>
+<g fill="#0a0c0f" stroke="#4a525a" stroke-width=".5">
+  <rect x="27" y="97" width="12" height="9" rx=".8"/><rect x="41" y="97" width="12" height="9" rx=".8"/><rect x="55" y="97" width="12" height="9" rx=".8"/><rect x="69" y="97" width="12" height="9" rx=".8"/>
+  <rect x="27" y="108" width="12" height="9" rx=".8"/><rect x="41" y="108" width="12" height="9" rx=".8"/><rect x="55" y="108" width="12" height="9" rx=".8"/><rect x="69" y="108" width="12" height="9" rx=".8"/>
+</g>
+<g class="rk-hdd">
+  <rect class="rk-led rk-b" x="29" y="103.6" width="8" height="1.4"/><rect class="rk-led rk-b" x="43" y="103.6" width="8" height="1.4" style="animation-delay:.5s"/>
+  <rect class="rk-led rk-b" x="57" y="103.6" width="8" height="1.4" style="animation-delay:1.1s"/><rect class="rk-led rk-b" x="71" y="103.6" width="8" height="1.4" style="animation-delay:.3s"/>
+  <rect class="rk-led rk-b" x="29" y="114.6" width="8" height="1.4" style="animation-delay:.9s"/><rect class="rk-led rk-b" x="43" y="114.6" width="8" height="1.4" style="animation-delay:.2s"/>
+  <rect class="rk-led rk-b" x="57" y="114.6" width="8" height="1.4" style="animation-delay:.7s"/><rect class="rk-led rk-b" x="71" y="114.6" width="8" height="1.4" style="animation-delay:1.3s"/>
+</g>
+<rect x="85" y="97" width="9" height="20" rx="1" fill="#15181c" stroke="#4a525a" stroke-width=".4"/>
+<circle class="rk-led rk-g" cx="89.5" cy="102" r="1"/><circle class="rk-led rk-b" cx="89.5" cy="107" r="1" style="animation-delay:.6s"/>
+<g class="rk-cables" fill="none" stroke-linecap="round">
+  <path d="M27 54q-9 2 -6 10t6 10" stroke="#2dd4bf" stroke-width="1.3"/><path d="M29 54q-12 4 -8 14t8 8" stroke="#f5d90a" stroke-width="1.3"/>
+  <path d="M93 54q9 2 6 10t-6 10" stroke="#2dd4bf" stroke-width="1.3"/>
+</g>
+<g class="rk-flow" fill="none" stroke-linecap="round" stroke-width="1.6">
+  <path d="M27 54q-9 2 -6 10t6 10"/><path d="M29 54q-12 4 -8 14t8 8"/><path d="M93 54q9 2 6 10t-6 10"/>
+</g>
+<rect x="22" y="121" width="76" height="3" fill="#1c2024"/>
+<path d="M18 130v4M102 130v4" stroke="#14171b" stroke-width="4" stroke-linecap="round"/>
+<path d="M20 6h80" stroke="#fff" stroke-opacity=".25" stroke-width="1"/>`,
+
+  desktop_pc: () => `
+<defs>${DEFS}
+<linearGradient id="ID-pcwall" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0f2a5c"/><stop offset=".55" stop-color="#1c5fc4"/><stop offset="1" stop-color="#5ec8ff"/></linearGradient>
+<linearGradient id="ID-pcdesk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d9c3a5"/><stop offset="1" stop-color="#b79a74"/></linearGradient>
+<linearGradient id="ID-pcglass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2b3138"/><stop offset="1" stop-color="#090b0e"/></linearGradient>
+<clipPath id="ID-pcclip"><rect x="10" y="22" width="68" height="44" rx="1"/></clipPath></defs>
+<ellipse cx="60" cy="126" rx="56" ry="3.5" fill="url(#ID-shadow)"/>
+<path d="M2 110h116l-5 12h-106z" fill="url(#ID-pcdesk)"/>
+<path d="M2 110h116" stroke="#fff" stroke-opacity=".5" stroke-width="1"/>
+<path d="M36 104h12l2 7h-16z" fill="url(#ID-dark)"/>
+<rect x="38" y="70" width="8" height="36" fill="url(#ID-inox)" stroke="#7d858e" stroke-width=".4"/>
+<ellipse cx="42" cy="108" rx="16" ry="3.2" fill="url(#ID-inox)" stroke="#7d858e" stroke-width=".4"/>
+<rect x="6" y="18" width="76" height="52" rx="3.5" fill="url(#ID-dark)" stroke="#05070a" stroke-width=".6"/>
+<rect x="10" y="22" width="68" height="44" rx="1" fill="#0a0d11"/>
+<g class="pc-screen" clip-path="url(#ID-pcclip)">
+  <rect x="10" y="22" width="68" height="44" fill="url(#ID-pcwall)"/>
+  <circle cx="64" cy="32" r="9" fill="#bfeaff" opacity=".35"/>
+  <rect x="13" y="26" width="30" height="24" rx="1.5" fill="#0d1520" stroke="#2b4a73" stroke-width=".4"/>
+  <rect x="13" y="26" width="30" height="3.4" rx="1.5" fill="#22344d"/>
+  <circle cx="15.2" cy="27.7" r=".7" fill="#ff5f56"/><circle cx="17.6" cy="27.7" r=".7" fill="#ffbd2e"/><circle cx="20" cy="27.7" r=".7" fill="#27c93f"/>
+  <g class="pc-code"><rect x="16" y="32" width="16" height="1.6" rx=".8" fill="#6fd8ff"/><rect x="19" y="35.4" width="20" height="1.6" rx=".8" fill="#b894ff"/><rect x="19" y="38.8" width="12" height="1.6" rx=".8" fill="#ffd76a"/><rect x="16" y="42.2" width="22" height="1.6" rx=".8" fill="#6fe3a1"/><rect x="19" y="45.6" width="14" height="1.6" rx=".8" fill="#6fd8ff"/></g>
+  <rect x="46" y="38" width="28" height="19" rx="1.5" fill="#f4f7fb" opacity=".92"/>
+  <g class="pc-bars"><rect x="50" y="48" width="4" height="7" fill="#3b82f6"/><rect x="56" y="43" width="4" height="12" fill="#22c55e"/><rect x="62" y="45.5" width="4" height="9.5" fill="#f59e0b"/><rect x="68" y="41" width="4" height="14" fill="#ef4444"/></g>
+  <rect x="10" y="61" width="68" height="5" fill="#0b1626" opacity=".85"/>
+  <circle cx="14" cy="63.5" r="1.4" fill="#5ec8ff"/><rect x="19" y="62.6" width="3.4" height="1.8" rx=".5" fill="#8fa3bd"/><rect x="24" y="62.6" width="3.4" height="1.8" rx=".5" fill="#8fa3bd"/><rect x="29" y="62.6" width="3.4" height="1.8" rx=".5" fill="#8fa3bd"/>
+  <path class="pc-cursor" d="M0 0l0 6l1.7 -1.6l1.2 2.7l1.1 -.5l-1.2 -2.6l2.3 0z" fill="#fff" stroke="#000" stroke-width=".4"/>
+</g>
+<path d="M10 22h68l-28 44h-40z" fill="url(#ID-gloss)" opacity=".35"/>
+<circle class="pc-mled" cx="44" cy="68" r=".9"/>
+<g class="pc-tower">
+  <rect x="86" y="38" width="28" height="74" rx="3" fill="url(#ID-dark)" stroke="#05070a" stroke-width=".6"/>
+  <rect x="90" y="43" width="20" height="62" rx="1.5" fill="url(#ID-pcglass)" stroke="#3b424a" stroke-width=".4"/>
+  <g class="pc-rgb" fill="none" stroke-width="1.3">
+    <circle cx="100" cy="53" r="7.6"/><circle cx="100" cy="72" r="7.6"/><circle cx="100" cy="91" r="7.6"/>
+  </g>
+  <g class="pc-fan"><circle cx="100" cy="53" r="6.5" fill="#12161a"/><path d="M100 53v-6M100 53l5.2 3M100 53l-5.2 3" stroke="#a9b1ba" stroke-width="2" stroke-linecap="round"/><circle cx="100" cy="53" r="7.6" fill="none"/></g>
+  <g class="pc-fan"><circle cx="100" cy="72" r="6.5" fill="#12161a"/><path d="M100 72v-6M100 72l5.2 3M100 72l-5.2 3" stroke="#a9b1ba" stroke-width="2" stroke-linecap="round"/><circle cx="100" cy="72" r="7.6" fill="none"/></g>
+  <g class="pc-fan"><circle cx="100" cy="91" r="6.5" fill="#12161a"/><path d="M100 91v-6M100 91l5.2 3M100 91l-5.2 3" stroke="#a9b1ba" stroke-width="2" stroke-linecap="round"/><circle cx="100" cy="91" r="7.6" fill="none"/></g>
+  <circle cx="100" cy="53" r="1.4" fill="#d7dce1"/><circle cx="100" cy="72" r="1.4" fill="#d7dce1"/><circle cx="100" cy="91" r="1.4" fill="#d7dce1"/>
+  <path d="M91 44h8l-8 14z" fill="#fff" opacity=".07"/>
+  <rect x="104" y="40.2" width="6" height="1.8" rx=".9" fill="#2a2f35"/>
+  <circle class="pc-led" cx="94" cy="41" r="1.2"/>
+  <rect x="90" y="106.6" width="20" height="3" rx="1" fill="#2a2f35"/>
+</g>
+<rect x="10" y="114" width="62" height="7" rx="1.4" fill="url(#ID-dark)" stroke="#05070a" stroke-width=".4"/>
+<g class="pc-keys" fill="#4b535c"><rect x="12" y="115.2" width="58" height="1.2" opacity=".9"/><rect x="12" y="117.2" width="58" height="1.2" opacity=".9"/><rect x="12" y="119.2" width="58" height="1.2" opacity=".9"/></g>
+<path d="M12 116.4h58M12 118.4h58" stroke="#05070a" stroke-width=".4" stroke-dasharray="2.2 .8"/>
+<ellipse cx="78" cy="117" rx="3.6" ry="3" fill="url(#ID-dark)" stroke="#05070a" stroke-width=".4"/><path d="M78 114.2v2" stroke="#6f7780" stroke-width=".6"/>`,
+
+  laptop: () => `
+<defs>${DEFS}
+<linearGradient id="ID-lpwall" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2a1a63"/><stop offset=".5" stop-color="#6b3fc9"/><stop offset="1" stop-color="#ff8fab"/></linearGradient>
+<linearGradient id="ID-lpbody" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e4e8ec"/><stop offset="1" stop-color="#bfc6cd"/></linearGradient>
+<radialGradient id="ID-lpglow" cx=".5" cy="0" r="1"><stop offset="0" stop-color="#7fdcff" stop-opacity=".55"/><stop offset="1" stop-color="#7fdcff" stop-opacity="0"/></radialGradient>
+<clipPath id="ID-lpclip"><rect x="22" y="21" width="76" height="52" rx="1"/></clipPath></defs>
+<ellipse cx="60" cy="116" rx="54" ry="4" fill="url(#ID-shadow)"/>
+<rect x="16" y="14" width="88" height="64" rx="5" fill="url(#ID-dark)" stroke="#05070a" stroke-width=".6"/>
+<rect x="22" y="21" width="76" height="52" rx="1" fill="#0a0d11"/>
+<g class="lp-screen" clip-path="url(#ID-lpclip)">
+  <rect x="22" y="21" width="76" height="52" fill="url(#ID-lpwall)"/>
+  <rect x="22" y="21" width="76" height="5" fill="#0b1020" opacity=".6"/>
+  <circle cx="26" cy="23.5" r="1" fill="#fff" opacity=".8"/><rect x="82" y="22.6" width="14" height="1.8" rx=".9" fill="#fff" opacity=".7"/>
+  <rect x="27" y="30" width="20" height="14" rx="2" fill="#fff" opacity=".9"/><rect x="50" y="30" width="20" height="14" rx="2" fill="#fff" opacity=".9"/><rect x="73" y="30" width="20" height="14" rx="2" fill="#fff" opacity=".9"/>
+  <circle cx="33" cy="37" r="3" fill="#ffb347"/><circle cx="56" cy="37" r="3" fill="#38d9ff"/><circle cx="79" cy="37" r="3" fill="#43c07a"/>
+  <rect x="38" y="35.4" width="7" height="1.6" rx=".8" fill="#4b535c"/><rect x="61" y="35.4" width="7" height="1.6" rx=".8" fill="#4b535c"/><rect x="84" y="35.4" width="7" height="1.6" rx=".8" fill="#4b535c"/>
+  <rect x="27" y="48" width="66" height="19" rx="2" fill="#0d1520" opacity=".88"/>
+  <path class="lp-line" d="M30 62l8-4l7 3l8-8l8 5l8-7l8 3l8-6l6 2" fill="none" stroke="#38d9ff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M30 64h60" stroke="#3b4a63" stroke-width=".5"/>
+  <circle class="lp-dot" cx="90" cy="53" r="1.6" fill="#fff"/>
+</g>
+<path d="M22 21h76l-26 52h-50z" fill="url(#ID-gloss)" opacity=".3"/>
+<circle cx="60" cy="17.4" r=".9" fill="#2a2f35"/><circle class="lp-cam" cx="60" cy="17.4" r=".45"/>
+<path d="M14 78h92l8 30h-108z" fill="url(#ID-lpbody)" stroke="#9aa2ab" stroke-width=".6"/>
+<path d="M14 78h92" stroke="#fff" stroke-width="1" opacity=".8"/>
+<path d="M6 108h108v3q0 2.5-3 2.5h-102q-3 0-3-2.5z" fill="#aab2ba" stroke="#8f98a2" stroke-width=".5"/>
+<path d="M48 108h24v1.6q-12 1.6-24 0z" fill="#8f98a2"/>
+<path d="M18 81h84l5 20h-94z" fill="#151a1f" opacity=".85"/>
+<g class="lp-keys" fill="#cfd5db">
+  <path d="M20.6 83h8l-1.2 3h-8zM30.4 83h8l-.5 3h-8zM40.2 83h8l-.2 3h-8zM50 83h8v3h-8zM59.8 83h8v3h-8zM69.6 83h8l.2 3h-8zM79.4 83h8l.5 3h-8zM89.2 83h8l1.2 3h-8z"/>
+  <path d="M19.2 87.4h8.6l-1.2 3.2h-8.6zM29.4 87.4h8.6l-.6 3.2h-8.6zM39.6 87.4h8.6l-.2 3.2h-8.6zM49.8 87.4h8.6v3.2h-8.6zM60 87.4h8.6l.2 3.2h-8.6zM70.2 87.4h8.6l.6 3.2h-8.6zM80.4 87.4h8.6l1.2 3.2h-8.6zM90.6 87.4h6.4l1.4 3.2h-6.6z"/>
+  <path d="M17.8 92h9.2l-1.3 3.4h-9.2zM28.6 92h9.2l-.6 3.4h-9.2zM39.4 92h9.2l-.2 3.4h-9.2zM50.2 92h9.2v3.4h-9.2zM61 92h9.2l.2 3.4h-9.2zM71.8 92h9.2l.6 3.4h-9.2zM82.6 92h9.2l1.3 3.4h-9.2z"/>
+</g>
+<path d="M46 97h28l1 4h-30z" fill="#aab2ba" stroke="#8f98a2" stroke-width=".4"/>
+<path d="M18 81h84l5 20h-94z" fill="url(#ID-lpglow)" class="lp-glow"/>
+<circle class="lp-led" cx="60" cy="111" r="1.1"/>`,
 
   range_hood: () => `
 <defs>${DEFS}
@@ -1054,6 +1252,18 @@ const DEF = {
   range_hood: { accent: "active", threshold: 40,
     fields: ["entity", "power", "energy", "cost", "speed", "light", "switch"],
     keys: ["hotte", "range_hood", "cooker_hood", "hood", "aspirante"] },
+  towel_dryer: { accent: "heat", threshold: 50,
+    fields: ["entity", "power", "energy", "cost", "temperature", "target_temperature", "switch"],
+    keys: ["seche_serviette", "serviette", "towel", "porte_serviette", "towel_rail", "towel_dryer"] },
+  server_rack: { accent: "active", threshold: 30,
+    fields: ["entity", "power", "energy", "cost", "temperature", "switch"],
+    keys: ["baie", "rack", "homelab", "home_lab", "serveur", "server", "proxmox", "unraid", "nas"] },
+  desktop_pc: { accent: "active", threshold: 40,
+    fields: ["entity", "power", "energy", "cost", "switch"],
+    keys: ["pc_fixe", "pcfixe", "desktop", "ordinateur", "gaming", "workstation", "pc_bureau"] },
+  laptop: { accent: "active", threshold: 15,
+    fields: ["entity", "power", "energy", "cost", "switch"],
+    keys: ["pc_portable", "portable", "laptop", "macbook", "notebook", "thinkpad", "chromebook"] },
   coffee_maker: { accent: "heat", threshold: 300,
     fields: ["entity", "power", "energy", "cost", "switch"],
     keys: ["cafetiere", "coffee", "senseo", "nespresso", "dolce_gusto", "tassimo", "expresso", "espresso", "cafe"] },
@@ -1447,6 +1657,19 @@ class ApplianceCardBase extends HTMLElement {
       else if (watts !== null) m.status = watts > hi ? "speed2" : powered ? "speed1" : watts > lightT ? "lights" : "off";
       else m.status = base === "running" ? "speed1" : base === "standby" ? "off" : base;
       m.lights = m.light ? isOn(m.light) : (m.status === "lights" || ((m.status === "speed1" || m.status === "speed2") && c.light === undefined && watts !== null && watts > threshold));
+    } else if (kind === "towel_dryer") {
+      if (base === "off" || base === "unavailable") m.status = base;
+      else if (powered || (watts === null && base === "running")) m.status = "heating";
+      else m.status = base === "standby" || isOn(sw) ? "at_target" : "off";
+    } else if (kind === "server_rack") {
+      if (base === "off" || base === "unavailable") m.status = base;
+      else if (watts !== null) m.status = powered ? "online" : watts > 0.5 ? "standby" : "off";
+      else m.status = base === "running" ? "online" : base === "standby" ? "standby" : "off";
+      m.load = watts !== null ? Math.max(0, Math.min(1, watts / (c.max_power || 300))) : 0.4;
+    } else if (kind === "desktop_pc" || kind === "laptop") {
+      if (base === "off" || base === "unavailable") m.status = base;
+      else if (watts !== null) m.status = powered ? "screen_on" : watts >= (c.standby_threshold ?? 0.5) ? "standby" : "off";
+      else m.status = base === "running" ? "screen_on" : "standby";
     } else if (kind === "coffee_maker") {
       const warmT = c.warm_threshold ?? 5;
       if (["off", "unavailable"].includes(base)) m.status = base;
@@ -1482,9 +1705,19 @@ class ApplianceCardBase extends HTMLElement {
   /* ---------------- rendering ---------------- */
   _lcdText(m) {
     const hass = this._hass, kind = this._kind;
-    const active = ["running", "heating", "preheating", "cooling", "ignition", "filtering", "printing", "producing", "low", "speed1", "speed2", "cooking", "brewing", "keep_warm", "screen_on", "ac_dry", "ac_fan", "defrost"].includes(m.status);
+    const active = ["running", "heating", "preheating", "cooling", "ignition", "filtering", "printing", "producing", "low", "speed1", "speed2", "cooking", "brewing", "keep_warm", "screen_on", "online", "ac_dry", "ac_fan", "defrost"].includes(m.status);
     if (m.status === "unavailable") return "- - -";
     if (["fridge", "chest_freezer", "drawer_freezer"].includes(kind)) return m.tempVal != null ? `${fmtNum(hass, m.tempVal, 0)}°` : "--°";
+    if (kind === "towel_dryer") {
+      if (m.status === "off") return "OFF";
+      const v = m.targetVal ?? m.tempVal;
+      return v != null ? `${Math.round(v)}°` : "ON";
+    }
+    if (kind === "server_rack") {
+      if (m.status === "off") return "OFF";
+      if (m.status === "standby") return "STBY";
+      return m.watts != null ? `${Math.round(m.watts)}W` : "ON";
+    }
     if (kind === "radiator") {
       if (m.status === "off") return "OFF";
       if (m.radMode === "frost") return "H-G";
@@ -1559,7 +1792,7 @@ class ApplianceCardBase extends HTMLElement {
   _render(m) {
     const hass = this._hass, c = this._config, kind = this._kind;
     const $ = (i) => this.shadowRoot.getElementById(i);
-    const active = ["running", "heating", "preheating", "cooling", "ignition", "filtering", "printing", "producing", "low", "speed1", "speed2", "cooking", "brewing", "keep_warm", "screen_on", "ac_dry", "ac_fan", "defrost"].includes(m.status);
+    const active = ["running", "heating", "preheating", "cooling", "ignition", "filtering", "printing", "producing", "low", "speed1", "speed2", "cooking", "brewing", "keep_warm", "screen_on", "online", "ac_dry", "ac_fan", "defrost"].includes(m.status);
     $("wrap").className = [
       "wrap", `k-${kind}`, `st-${m.status}`, `accent-${m.accent || this._def.accent}`,
       active ? "active" : "", m.phase ? `ph-${m.phase}` : "",
@@ -1581,6 +1814,7 @@ class ApplianceCardBase extends HTMLElement {
     const sr = this.shadowRoot;
     const lcdEl = sr.querySelector(".lcd");
     if (lcdEl) lcdEl.textContent = this._lcdText(m);
+    if (kind === "server_rack") $("wrap").style.setProperty("--load", (m.load ?? 0.4).toFixed(2));
     if (kind === "solar") $("wrap").style.setProperty("--sun", (m.frac || 0).toFixed(2));
     if (kind === "radiator") {
       $("wrap").style.setProperty("--heat", (m.heat || 0).toFixed(2));
@@ -1732,7 +1966,7 @@ class ApplianceCardBase extends HTMLElement {
       if (m.targetVal != null) tile("mdi:target", `${fmtNum(hass, m.targetVal, 1)} ${m.tempUnit}`, tr(hass, "target"), c.target_temperature || tEntity);
       if (m.level != null) tile("mdi:fire", `P${fmtNum(hass, m.level, 0)}`, tr(hass, "level"), c.power_level);
       if (m.pellets != null) tile("mdi:grain", `${fmtNum(hass, m.pellets, 0)} %`, tr(hass, "pellets"), c.pellet_level, m.alerts.includes("pellets_low") ? "warn" : "");
-    } else if (kind === "water_heater" || kind === "oven" || kind === "air_fryer" || kind === "ac_split" || kind === "heat_pump") {
+    } else if (["water_heater", "oven", "air_fryer", "ac_split", "heat_pump", "towel_dryer", "server_rack"].includes(kind)) {
       if (m.tempVal != null) tile("mdi:thermometer", `${fmtNum(hass, m.tempVal, 0)} ${m.tempUnit}`, tr(hass, "temperature"), tEntity);
       if (m.targetVal != null) tile("mdi:target", `${fmtNum(hass, m.targetVal, 0)} ${m.tempUnit}`, tr(hass, "target"), c.target_temperature || tEntity);
     }
@@ -1808,6 +2042,9 @@ function buildForm(kind) {
               { value: "filtre", label: "Filtre / Drip" }, { value: "dosette", label: "Dosettes / Pods" }, { value: "expresso", label: "Expresso / Bean-to-cup" }] } } },
             { name: "warm_threshold", selector: { number: { min: 0, max: 300, step: 1, mode: "box", unit_of_measurement: "W" } } },
           ] : []),
+          ...(kind === "server_rack" ? [
+            { name: "max_power", selector: { number: { min: 50, max: 3000, step: 10, mode: "box", unit_of_measurement: "W" } } },
+          ] : []),
           ...(kind === "radiator" ? [
             { name: "max_power", selector: { number: { min: 100, max: 5000, step: 50, mode: "box", unit_of_measurement: "W" } } },
           ] : []),
@@ -1835,7 +2072,7 @@ function buildForm(kind) {
         ],
       },
     ],
-    computeLabel: (s) => (s.name ? tr(null, kind === "solar" && s.name === "max_power" ? "f_max_power_solar" : kind === "radiator" && s.name === "max_power" ? "f_max_power_rad" : `f_${s.name}`) : undefined),
+    computeLabel: (s) => (s.name ? tr(null, kind === "solar" && s.name === "max_power" ? "f_max_power_solar" : kind === "server_rack" && s.name === "max_power" ? "f_max_power_rack" : kind === "radiator" && s.name === "max_power" ? "f_max_power_rad" : `f_${s.name}`) : undefined),
   };
 }
 
@@ -1864,11 +2101,11 @@ function stubFor(kind, hass) {
   if (power) cfg.power = power;
   if (energy) cfg.energy = energy;
   if (cost) cfg.cost = cost;
-  if (sw && ["water_heater", "oven", "microwave", "pool_pump", "air_fryer", "coffee_maker", "tv", "range_hood", "ac_split", "heat_pump"].includes(kind)) cfg.switch = sw;
+  if (sw && ["water_heater", "oven", "microwave", "pool_pump", "air_fryer", "coffee_maker", "tv", "range_hood", "ac_split", "heat_pump", "towel_dryer", "server_rack", "desktop_pc", "laptop"].includes(kind)) cfg.switch = sw;
   else if (sw && !cfg.entity) cfg.entity = sw;
   const clim = kind === "radiator" ? pick((i) => i.startsWith("climate.")) : null;
   if (clim) cfg.entity = clim;
-  if (temp && ["fridge", "water_heater", "oven", "air_fryer", "pellet_stove", "pool_pump", "printer_3d", "chest_freezer", "drawer_freezer", "radiator"].includes(kind)) cfg.temperature = temp;
+  if (temp && ["fridge", "water_heater", "oven", "air_fryer", "pellet_stove", "pool_pump", "printer_3d", "chest_freezer", "drawer_freezer", "radiator", "towel_dryer", "server_rack"].includes(kind)) cfg.temperature = temp;
   if (!cfg.entity && !cfg.power && !cfg.switch && !cfg.temperature) cfg.power = "sensor.example_power";
   return cfg;
 }
@@ -2397,6 +2634,86 @@ svg { width: 100%; height: 100%; display: block; overflow: visible; }
 .k-heat_pump.st-cooling .hp-led, .k-heat_pump.st-heating .hp-led, .k-heat_pump.st-ac_dry .hp-led, .k-heat_pump.st-defrost .hp-led { fill: #3ddc84; }
 .k-heat_pump.st-at_target .hp-led, .k-heat_pump.st-ac_fan .hp-led { fill: #ffd76a; }
 @keyframes hp-wave { 0% { opacity: .8; transform: scale(1); } 100% { opacity: 0; transform: scale(1.55); } }
+/* ---------- towel dryer ---------- */
+.td-glow { opacity: 0; transition: opacity .8s; }
+.td-glow2 { mix-blend-mode: multiply; }
+.k-towel_dryer.st-heating .td-glow { opacity: .85; animation: ac-glow 2.6s ease-in-out infinite; }
+.k-towel_dryer.st-at_target .td-glow { opacity: .22; }
+.td-heat path { fill: none; stroke: #ff9a52; stroke-width: 1.6; stroke-linecap: round; stroke-dasharray: 2 7; opacity: 0; transition: opacity .6s; }
+.k-towel_dryer.st-heating .td-heat path { opacity: .6; animation: hd-up 1.8s linear infinite; }
+.td-heat path:nth-child(2) { animation-duration: 1.4s !important; } .td-heat path:nth-child(3) { animation-duration: 2.2s !important; }
+.td-towel { transform-box: fill-box; transform-origin: 50% 0; }
+.k-towel_dryer.st-heating .td-towel { animation: td-sway 3.2s ease-in-out infinite; }
+.k-towel_dryer.st-heating .td-towel2 { animation-duration: 2.6s; animation-delay: .4s; }
+.td-steam path { transform-box: fill-box; transform-origin: 50% 100%; fill: none; stroke: #e3e8ed; stroke-width: 2; stroke-linecap: round; opacity: 0; }
+.k-towel_dryer.st-heating .td-steam path { animation: hd-suck 2.6s ease-out infinite; }
+.td-steam path:nth-child(2) { animation-delay: .8s !important; } .td-steam path:nth-child(3) { animation-delay: 1.6s !important; }
+.td-led { fill: #5a636d; transition: fill .3s; }
+.k-towel_dryer.st-heating .td-led { fill: #ff7a2e; filter: drop-shadow(0 0 1.5px #ff7a2e); }
+.k-towel_dryer.st-at_target .td-led { fill: #43c07a; }
+.k-towel_dryer .lcd { fill: #6fd8ff; }
+.k-towel_dryer.st-off .lcd { fill: #24404f; }
+@keyframes td-sway { 0%, 100% { transform: skewX(0deg); } 50% { transform: skewX(1.6deg); } }
+
+/* ---------- server rack (homelab) ---------- */
+.rk-led { fill: #2d3640; transition: fill .4s; }
+.rk-fan { transform-box: fill-box; transform-origin: 50% 50%; }
+.k-server_rack.st-online .rk-fan { animation: ac-rot calc(.9s - var(--load, .4) * .6s) linear infinite; }
+.k-server_rack.st-online .rk-g { fill: #34d27a; animation: rk-blink calc(1.8s - var(--load, .4) * 1.3s) steps(1, end) infinite; }
+.k-server_rack.st-online .rk-b { fill: #3b9cff; filter: drop-shadow(0 0 1.2px #3b9cff); animation: rk-blink calc(1.3s - var(--load, .4) * .9s) steps(1, end) infinite; }
+.k-server_rack.st-online .rk-r { fill: #ffb020; }
+.k-server_rack.st-standby .rk-g { fill: #34d27a; opacity: .6; }
+.k-server_rack.st-standby .rk-r { fill: #ffb020; }
+.rk-glow { opacity: 0; transition: opacity .8s; }
+.k-server_rack.st-online .rk-glow { opacity: 1; animation: ac-glow 3s ease-in-out infinite; }
+.rk-flow path { stroke: #fff; stroke-dasharray: 1.4 9; opacity: 0; transition: opacity .6s; }
+.k-server_rack.st-online .rk-flow path { opacity: .85; animation: ac-flow calc(1.8s - var(--load, .4) * 1.2s) linear infinite; }
+.k-server_rack:not(.st-online) .rk-cables { opacity: .55; }
+.k-server_rack .lcd { font-size: 5.6px; fill: #24404f; }
+.k-server_rack.active .lcd { fill: var(--ac-lcd); }
+@keyframes rk-blink { 0% { opacity: 1; } 20% { opacity: .25; } 35% { opacity: 1; } 62% { opacity: .35; } 78% { opacity: 1; } 100% { opacity: 1; } }
+
+/* ---------- desktop PC ---------- */
+.pc-screen, .lp-screen { opacity: 0; transition: opacity .5s; }
+.k-desktop_pc.st-screen_on .pc-screen, .k-laptop.st-screen_on .lp-screen { opacity: 1; }
+.pc-fan { transform-box: fill-box; transform-origin: 50% 50%; }
+.k-desktop_pc.st-screen_on .pc-fan { animation: ac-rot .7s linear infinite; }
+.pc-rgb circle { stroke: #1d242b; transition: stroke .5s; }
+.k-desktop_pc.st-screen_on .pc-rgb circle { animation: pc-rgb 4s linear infinite; filter: drop-shadow(0 0 1.6px currentColor); }
+.pc-rgb circle:nth-child(2) { animation-delay: -1.3s !important; } .pc-rgb circle:nth-child(3) { animation-delay: -2.6s !important; }
+.pc-led { fill: #5a636d; transition: fill .3s; }
+.k-desktop_pc.st-screen_on .pc-led { fill: #38d9ff; filter: drop-shadow(0 0 1.4px #38d9ff); }
+.k-desktop_pc.st-standby .pc-led { fill: #ffb020; animation: ac-pulse 2.4s ease-in-out infinite; }
+.pc-mled { fill: #3a424b; } .k-desktop_pc.st-screen_on .pc-mled { fill: #43c07a; } .k-desktop_pc.st-standby .pc-mled { fill: #ffb020; }
+.pc-code rect { transform-box: fill-box; transform-origin: 0 50%; }
+.k-desktop_pc.st-screen_on .pc-code rect { animation: pc-type 4.4s ease-in-out infinite; }
+.pc-code rect:nth-child(2) { animation-delay: .5s !important; } .pc-code rect:nth-child(3) { animation-delay: 1s !important; }
+.pc-code rect:nth-child(4) { animation-delay: 1.5s !important; } .pc-code rect:nth-child(5) { animation-delay: 2s !important; }
+.pc-bars rect { transform-box: fill-box; transform-origin: 50% 100%; }
+.k-desktop_pc.st-screen_on .pc-bars rect { animation: pc-bar 3.2s ease-in-out infinite alternate; }
+.pc-bars rect:nth-child(2) { animation-delay: .4s !important; } .pc-bars rect:nth-child(3) { animation-delay: .8s !important; } .pc-bars rect:nth-child(4) { animation-delay: 1.2s !important; }
+.pc-cursor { transform: translate(20px, 30px); }
+.k-desktop_pc.st-screen_on .pc-cursor { animation: pc-mouse 6s ease-in-out infinite; }
+.k-desktop_pc.st-screen_on .pc-keys rect { fill: #38d9ff; opacity: .5; animation: ac-glow 2.4s ease-in-out infinite; }
+@keyframes pc-rgb { 0% { stroke: #ff3b6b; color: #ff3b6b; } 33% { stroke: #3bff9a; color: #3bff9a; } 66% { stroke: #3b9cff; color: #3b9cff; } 100% { stroke: #ff3b6b; color: #ff3b6b; } }
+@keyframes pc-type { 0% { transform: scaleX(.1); } 30%, 80% { transform: scaleX(1); } 100% { transform: scaleX(.1); } }
+@keyframes pc-bar { from { transform: scaleY(.35); } to { transform: scaleY(1); } }
+@keyframes pc-mouse { 0%, 100% { transform: translate(20px, 30px); } 30% { transform: translate(52px, 34px); } 55% { transform: translate(60px, 48px); } 80% { transform: translate(28px, 42px); } }
+
+/* ---------- laptop ---------- */
+.lp-line { stroke-dasharray: 130; stroke-dashoffset: 130; }
+.k-laptop.st-screen_on .lp-line { animation: lp-draw 5s ease-in-out infinite; }
+.lp-dot { opacity: 0; }
+.k-laptop.st-screen_on .lp-dot { animation: ac-pulse 1.2s ease-in-out infinite; opacity: 1; }
+.lp-glow { opacity: 0; transition: opacity .6s; }
+.k-laptop.st-screen_on .lp-glow { opacity: 1; }
+.lp-keys { transition: fill .5s; }
+.k-laptop.st-screen_on .lp-keys { fill: #bfe9ff; }
+.lp-cam { fill: #3a424b; } .k-laptop.st-screen_on .lp-cam { fill: #43e08a; }
+.lp-led { fill: #5a636d; transition: fill .3s; }
+.k-laptop.st-screen_on .lp-led { fill: #43e08a; filter: drop-shadow(0 0 1.2px #43e08a); }
+.k-laptop.st-standby .lp-led { fill: #ffb020; animation: ac-pulse 2.4s ease-in-out infinite; }
+@keyframes lp-draw { 0% { stroke-dashoffset: 130; } 55%, 85% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: -130; } }
 .no-anim *, .no-anim { animation: none !important; }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
 `;
