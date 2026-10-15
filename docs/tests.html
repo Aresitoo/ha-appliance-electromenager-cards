@@ -16,9 +16,9 @@ function card(kind,cfg,states,lang){const el=document.createElement(`appliance-$
 const has=(c,cls)=>c.wrap.classList.contains(cls);
 
 // registration
-const tags=['washer','dryer','dishwasher','water-heater','oven','microwave','fridge','pellet-stove','pool-pump','printer-3d','chest-freezer','drawer-freezer','solar','vmc','hob','radiator','air-fryer','coffee-maker','tv','range-hood','ac-split','heat-pump','towel-dryer','server-rack','desktop-pc','laptop'];
+const tags=['washer','dryer','dishwasher','water-heater','oven','microwave','fridge','pellet-stove','pool-pump','printer-3d','chest-freezer','drawer-freezer','solar','vmc','hob','radiator','air-fryer','coffee-maker','tv','range-hood','ac-split','heat-pump','towel-dryer','server-rack','desktop-pc','laptop','wine-cooler'];
 tags.forEach(t=>ok(`registered ${t}`,customElements.get(`appliance-${t}-card`)));
-ok('customCards = 26',window.customCards.length===26,window.customCards.length);
+ok('customCards = 27',window.customCards.length===27,window.customCards.length);
 // config validation
 try{document.createElement('appliance-washer-card').setConfig({});ok('empty config throws',false)}catch(e){ok('empty config throws',/entity|power/.test(e.message),e.message)}
 
@@ -96,6 +96,29 @@ c=card('tv',{entity:'switch.tv',power:'sensor.p'},[mk('switch.tv','on'),mk('sens
 c=card('tv',{entity:'switch.tv',power:'sensor.p'},[mk('switch.tv','off'),mk('sensor.p',0,W)]); ok('tv off',has(c,'st-off'),c.wrap.className);
 c=card('tv',{entity:'media_player.tv'},[mk('media_player.tv','playing',{app_name:'Netflix'})]); ok('tv media_player playing + app',has(c,'st-screen_on')&&/Netflix/.test(c.txt()),c.txt());
 c=card('tv',{entity:'media_player.tv'},[mk('media_player.tv','off')]); ok('tv media_player off',has(c,'st-off'),c.wrap.className);
+// water heater: grid power + solar router power
+c=card('water-heater',{power:'sensor.g',power_solar:'sensor.s',energy:'sensor.eg',energy_solar:'sensor.es'},[mk('sensor.g',0,W),mk('sensor.s',1200,W),mk('sensor.eg',2,{unit_of_measurement:'kWh'}),mk('sensor.es',3,{unit_of_measurement:'kWh'})]); ok('water heater solar only -> heating + solar-heat',has(c,'st-heating')&&has(c,'solar-heat')&&/Surplus solaire/.test(c.txt()),c.wrap.className+' '+c.txt());
+ok('water heater dual tiles',/Réseau/.test(c.sr.getElementById('stats').textContent)&&/Énergie solaire/.test(c.sr.getElementById('stats').textContent),c.sr.getElementById('stats').textContent);
+c=card('water-heater',{power:'sensor.g',power_solar:'sensor.s'},[mk('sensor.g',2000,W),mk('sensor.s',0,W)]); ok('water heater grid only -> heating, no solar-heat',has(c,'st-heating')&&!has(c,'solar-heat'),c.wrap.className);
+c=card('water-heater',{power:'sensor.g',power_solar:'sensor.s'},[mk('sensor.g',0,W),mk('sensor.s',0,W)]); ok('water heater both 0 -> not heating',!has(c,'st-heating'),c.wrap.className);
+// modes: comfort / eco / frost / off (radiator + towel dryer)
+const SELM=(v)=>mk('select.mode',v,{options:['Confort','Eco','Hors-gel','Arrêt']});
+c=card('towel-dryer',{power:'sensor.p',mode:'select.mode'},[mk('sensor.p',500,W),SELM('Eco')]); ok('towel dryer mode eco',has(c,'mode-eco')&&/Éco/.test(c.txt()),c.wrap.className+' '+c.txt());
+ok('towel dryer 4 mode buttons, eco active',c.sr.querySelectorAll('.mode-btn').length===4&&c.sr.querySelector('.mode-btn.on')?.dataset.mode==='eco',c.sr.getElementById('modes').innerHTML.slice(0,200));
+c.sr.querySelector('.mode-btn[data-mode=frost]').click(); ok('click frost -> select_option Hors-gel',c.h.calls.some(x=>x[0]==='select'&&x[1]==='select_option'&&x[2].option==='Hors-gel'),JSON.stringify(c.h.calls));
+c=card('towel-dryer',{power:'sensor.p',mode:'select.mode'},[mk('sensor.p',0,W),SELM('Arrêt')]); ok('towel dryer mode off',has(c,'st-off'),c.wrap.className);
+c=card('towel-dryer',{power:'sensor.p',mode:'select.mode'},[mk('sensor.p',0,W),SELM('Hors-gel')]); ok('towel dryer frost lcd H-G',c.lcd()==='H-G',c.lcd());
+c=card('radiator',{power:'sensor.p',mode:'select.mode'},[mk('sensor.p',900,W),SELM('Confort')]); ok('radiator mode buttons',c.sr.querySelectorAll('.mode-btn').length===4&&c.sr.querySelector('.mode-btn.on')?.dataset.mode==='comfort',c.wrap.className);
+c.sr.querySelector('.mode-btn[data-mode=off]').click(); ok('radiator click off -> select_option Arrêt',c.h.calls.some(x=>x[2]&&x[2].option==='Arrêt'),JSON.stringify(c.h.calls));
+c=card('radiator',{entity:'climate.r'},[mk('climate.r','heat',{preset_modes:['comfort','eco','away'],hvac_modes:['off','heat'],preset_mode:'eco'})]); ok('radiator climate buttons from presets',c.sr.querySelectorAll('.mode-btn').length===4&&c.sr.querySelector('.mode-btn.on')?.dataset.mode==='eco',c.sr.getElementById('modes').innerHTML.slice(0,200));
+c.sr.querySelector('.mode-btn[data-mode=comfort]').click(); ok('climate click comfort -> set_preset_mode',c.h.calls.some(x=>x[1]==='set_preset_mode'&&x[2].preset_mode==='comfort'),JSON.stringify(c.h.calls));
+c=card('radiator',{power:'sensor.p',mode:'select.mode',show_modes:false},[mk('sensor.p',900,W),SELM('Confort')]); ok('show_modes:false hides buttons',c.sr.querySelectorAll('.mode-btn').length===0);
+// wine cooler
+c=card('wine-cooler',{power:'sensor.p',temperature:'sensor.t'},[mk('sensor.p',70,W),mk('sensor.t',12,T)]); ok('wine cooler cooling + lcd',has(c,'st-cooling')&&c.lcd()==='12°',c.wrap.className+' '+c.lcd());
+c=card('wine-cooler',{power:'sensor.p'},[mk('sensor.p',2,W)]); ok('wine cooler standby',has(c,'st-standby'),c.wrap.className);
+c=card('wine-cooler',{power:'sensor.p'},[mk('sensor.p',0,W)]); ok('wine cooler off/standby low',has(c,'st-standby')||has(c,'st-off'),c.wrap.className);
+c=card('wine-cooler',{power:'sensor.p',temperature:'sensor.t'},[mk('sensor.p',70,W),mk('sensor.t',21,T)]); ok('wine cooler too warm alert',has(c,'warm'),c.wrap.className);
+c=card('wine-cooler',{power:'sensor.p',door:'binary_sensor.d'},[mk('sensor.p',70,W),mk('binary_sensor.d','on')]); ok('wine cooler door open',has(c,'door-open')&&/Porte ouverte/.test(c.txt()),c.wrap.className+' '+c.txt());
 // towel dryer / server rack / desktop pc / laptop
 c=card('towel-dryer',{power:'sensor.p'},[mk('sensor.p',500,W)]); ok('towel dryer heating',has(c,'st-heating')&&has(c,'active'),c.wrap.className);
 c=card('towel-dryer',{switch:'switch.t',power:'sensor.p'},[mk('switch.t','on'),mk('sensor.p',1,W)]); ok('towel dryer at target',has(c,'st-at_target'),c.wrap.className);
