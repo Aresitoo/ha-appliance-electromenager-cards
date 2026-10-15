@@ -6,7 +6,7 @@
  */
 (() => {
 "use strict";
-const VERSION = "1.12.0";
+const VERSION = "1.12.1";
 
 /* ------------------------------------------------------------------ */
 /* i18n                                                                */
@@ -472,33 +472,57 @@ ${steam([44, 56], 19)}
   },
 
   tv: () => `
-<defs>${DEFS}<clipPath id="ID-scr"><rect x="9" y="33" width="102" height="57" rx="1.2"/></clipPath>
-<linearGradient id="ID-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a6fd6"/><stop offset=".55" stop-color="#7cc4ff"/><stop offset="1" stop-color="#ffd59a"/></linearGradient>
+<defs>${DEFS}<clipPath id="ID-scr"><rect x="4" y="38" width="112" height="63" rx="1"/></clipPath>
 <linearGradient id="ID-off" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1b2027"/><stop offset=".6" stop-color="#0a0c0f"/><stop offset="1" stop-color="#14181d"/></linearGradient>
-<radialGradient id="ID-amb" cx=".5" cy=".5" r=".6"><stop offset="0" stop-color="#5fa8ff" stop-opacity=".55"/><stop offset="1" stop-color="#5fa8ff" stop-opacity="0"/></radialGradient></defs>
-<ellipse class="tv-glow" cx="60" cy="61" rx="64" ry="42" fill="url(#ID-amb)"/>
-<ellipse cx="60" cy="126" rx="40" ry="4" fill="url(#ID-shadow)"/>
-<path d="M52 94h16l3 26h-22z" fill="url(#ID-dark)"/>
-<rect x="32" y="119" width="56" height="5" rx="2.5" fill="url(#ID-chrome)" stroke="#5c646d" stroke-width=".4"/>
-<rect x="5" y="29" width="110" height="65" rx="3" fill="#0d0f12" stroke="#2c3138" stroke-width=".8"/>
-<rect x="9" y="33" width="102" height="57" rx="1.2" fill="url(#ID-off)"/>
+<linearGradient id="ID-hero" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0f5a73"/><stop offset=".55" stop-color="#3b2a7a"/><stop offset="1" stop-color="#0f1420"/></linearGradient>
+<linearGradient id="ID-fade" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#0f1420" stop-opacity=".95"/><stop offset=".6" stop-color="#0f1420" stop-opacity="0"/></linearGradient>
+<linearGradient id="ID-logo" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#38e1ff"/><stop offset="1" stop-color="#8a5cff"/></linearGradient></defs>
+<rect x="2.5" y="36.5" width="115" height="66" rx="2" fill="#0b0d10" stroke="#2c3138" stroke-width=".7"/>
+<rect x="4" y="38" width="112" height="63" rx="1" fill="url(#ID-off)"/>
 <g clip-path="url(#ID-scr)">
   <g class="tv-content">
-    <rect x="9" y="33" width="102" height="57" fill="url(#ID-sky)"/>
-    <circle class="tv-sun" cx="84" cy="52" r="7" fill="#ffe27a"/>
-    <g class="tv-clouds" fill="#fff" opacity=".85"><ellipse cx="30" cy="44" rx="9" ry="3.2"/><ellipse cx="36" cy="42" rx="6" ry="3"/><ellipse cx="70" cy="40" rx="7" ry="2.6"/><ellipse cx="130" cy="44" rx="9" ry="3.2"/><ellipse cx="136" cy="42" rx="6" ry="3"/><ellipse cx="170" cy="40" rx="7" ry="2.6"/></g>
-    <path d="M9 78l16-14l12 9l18-17l20 18l12-8l24 14v10h-102z" fill="#2e7d4f"/>
-    <path d="M9 84l22-10l18 7l24-9l20 8l18-5v15h-102z" fill="#1f5f3a"/>
-    <g class="tv-bird" fill="none" stroke="#1d2a3a" stroke-width=".9" stroke-linecap="round"><path d="M20 48q2-2 4 0q2-2 4 0"/></g>
-    <rect x="13" y="85" width="94" height="1.6" rx=".8" fill="#fff" opacity=".35"/>
-    <rect class="tv-prog" x="13" y="85" width="94" height="1.6" rx=".8" fill="#e53935"/>
+    <rect x="4" y="38" width="112" height="63" fill="#0f1420"/>
+    <rect x="4" y="38" width="112" height="33" fill="url(#ID-hero)"/>
+    <circle cx="92" cy="50" r="9" fill="#ffb35c" opacity=".85"/>
+    <path d="M60 71l14-12l9 6l12-10l21 16z" fill="#1d1640" opacity=".9"/>
+    <rect x="4" y="38" width="112" height="33" fill="url(#ID-fade)"/>
+    <rect x="9" y="51" width="30" height="3.2" rx="1" fill="#fff"/>
+    <rect x="9" y="56" width="22" height="1.6" rx=".8" fill="#9aa3b8"/>
+    <rect x="9" y="61" width="11" height="4" rx="1" fill="#fff"/><path d="M12 61.9l2.4 1.1l-2.4 1.1z" fill="#0f1420"/>
+    <rect x="22" y="61" width="11" height="4" rx="1" fill="#59616b"/>
+    <rect x="9" y="74" width="16" height="1.6" rx=".8" fill="#c9d0db"/>
+    <g class="tv-row">
+      <rect x="9" y="77.5" width="17" height="11" rx="1.2" fill="#e85d75"/><rect x="28" y="77.5" width="17" height="11" rx="1.2" fill="#3fb6a8"/>
+      <rect x="47" y="77.5" width="17" height="11" rx="1.2" fill="#f2b84b"/><rect x="66" y="77.5" width="17" height="11" rx="1.2" fill="#5b7cfa"/>
+      <rect x="85" y="77.5" width="17" height="11" rx="1.2" fill="#a55cd6"/><rect x="104" y="77.5" width="17" height="11" rx="1.2" fill="#4fb36b"/>
+      <rect x="123" y="77.5" width="17" height="11" rx="1.2" fill="#e8834a"/><rect x="142" y="77.5" width="17" height="11" rx="1.2" fill="#3a8fd6"/>
+      <path d="M12 86h8M31 86h10M50 86h7M69 86h9M88 86h10M107 86h8M126 86h9M145 86h8" stroke="#fff" stroke-opacity=".75" stroke-width="1" stroke-linecap="round"/>
+    </g>
+    <rect class="tv-sel" x="8.4" y="76.9" width="18.2" height="12.2" rx="1.6" fill="none" stroke="#fff" stroke-width=".9"/>
+    <rect x="9" y="91.5" width="12" height="1.6" rx=".8" fill="#c9d0db"/>
+    <g class="tv-row2">
+      <rect x="9" y="95" width="24" height="9" rx="1.2" fill="#2f6f8f"/><rect x="35" y="95" width="24" height="9" rx="1.2" fill="#8f3f5f"/>
+      <rect x="61" y="95" width="24" height="9" rx="1.2" fill="#6f6f2f"/><rect x="87" y="95" width="24" height="9" rx="1.2" fill="#3f4f8f"/>
+      <rect x="113" y="95" width="24" height="9" rx="1.2" fill="#2f8f5f"/>
+    </g>
   </g>
-  <rect class="tv-flash" x="9" y="33" width="102" height="57" fill="#eef6ff"/>
+  <g class="tv-intro">
+    <rect x="4" y="38" width="112" height="63" fill="#05070c"/>
+    <g class="tv-streaks" stroke-linecap="round" fill="none">
+      <path d="M4 44L60 69.5" stroke="#38e1ff"/><path d="M116 44L60 69.5" stroke="#8a5cff"/>
+      <path d="M4 95L60 69.5" stroke="#8a5cff"/><path d="M116 95L60 69.5" stroke="#38e1ff"/>
+      <path d="M60 38v31.5" stroke="#5fd0ff"/><path d="M60 101v-31.5" stroke="#a07cff"/>
+    </g>
+    <g class="tv-logo">
+      <circle cx="60" cy="69.5" r="11" fill="none" stroke="url(#ID-logo)" stroke-width="2.2"/>
+      <path d="M56.5 63.5q0-1.6 1.4-.8l8.6 5.4q1.3.8 0 1.6l-8.6 5.4q-1.4.8-1.4-.8z" fill="url(#ID-logo)"/>
+    </g>
+  </g>
+  <rect class="tv-flash" x="4" y="38" width="112" height="63" fill="#eef6ff"/>
 </g>
-<path d="M9 33L47 33L9 70z" fill="#fff" opacity=".07"/>
-<rect x="9" y="33" width="102" height="57" rx="1.2" fill="none" stroke="#000" stroke-opacity=".5"/>
-<rect x="54" y="91" width="12" height="2" rx="1" fill="#1f242a"/>
-<circle class="tv-led" cx="60" cy="92" r=".9"/>`,
+<path d="M4 38L46 38L4 78z" fill="#fff" opacity=".06"/>
+<rect x="4" y="38" width="112" height="63" rx="1" fill="none" stroke="#000" stroke-opacity=".5"/>
+<circle class="tv-led" cx="60" cy="101.8" r=".7"/>`,
 
   range_hood: () => `
 <defs>${DEFS}
@@ -1474,7 +1498,7 @@ class ApplianceCardBase extends HTMLElement {
       if (prev !== undefined && scr && (prev === "screen_on") !== on) {
         const g = this.shadowRoot.querySelector("svg");
         g.classList.remove("tv-boot", "tv-shut"); void g.getBoundingClientRect(); g.classList.add(on ? "tv-boot" : "tv-shut");
-        clearTimeout(this._tvT); this._tvT = setTimeout(() => g.classList.remove("tv-boot", "tv-shut"), 1400);
+        clearTimeout(this._tvT); this._tvT = setTimeout(() => g.classList.remove("tv-boot", "tv-shut"), 3400);
       }
       this._tvPrev = m.status;
     }
@@ -2193,31 +2217,33 @@ svg { width: 100%; height: 100%; display: block; overflow: visible; }
 @keyframes cf-flow { to { stroke-dashoffset: -12; } }
 @keyframes cf-drop { 0% { opacity: 0; transform: translateY(0); } 15% { opacity: .95; } 100% { opacity: .9; transform: translateY(26px); } }
 
-/* ---------- TV ---------- */
+/* ---------- TV (wall-mounted) ---------- */
 .k-tv svg { overflow: visible; }
-.tv-glow { opacity: 0; transition: opacity 1s; }
-.k-tv.st-screen_on .tv-glow { opacity: 1; animation: tv-amb 6s ease-in-out infinite; }
-.tv-content { opacity: 0; transition: opacity .5s; transform-box: view-box; transform-origin: 60px 61.5px; }
+.tv-content { opacity: 0; transition: opacity .5s; }
 .k-tv.st-screen_on .tv-content { opacity: 1; }
-.tv-clouds { animation: tv-pan 14s linear infinite; animation-play-state: paused; }
-.tv-sun { transform-box: fill-box; transform-origin: center; }
-.tv-bird { animation: tv-bird 7s linear infinite; animation-play-state: paused; }
-.tv-prog { transform-box: fill-box; transform-origin: 0 50%; transform: scaleX(.3); animation: tv-prog 30s linear infinite; animation-play-state: paused; }
-.k-tv.st-screen_on .tv-clouds, .k-tv.st-screen_on .tv-bird, .k-tv.st-screen_on .tv-prog { animation-play-state: running; }
-.k-tv.st-screen_on .tv-sun { animation: ac-pulse 4s ease-in-out infinite; }
-.tv-flash { opacity: 0; transform-box: view-box; transform-origin: 60px 61.5px; }
-.tv-boot .tv-content { animation: tv-boot 1.1s cubic-bezier(.2,.8,.3,1) both; }
-.tv-boot .tv-flash { animation: tv-bflash 1.1s ease-out both; }
+.tv-row { animation: tv-row 12s ease-in-out infinite; animation-play-state: paused; }
+.tv-row2 { animation: tv-row2 16s ease-in-out infinite; animation-play-state: paused; }
+.tv-sel { animation: tv-sel 12s ease-in-out infinite; animation-play-state: paused; }
+.k-tv.st-screen_on .tv-row, .k-tv.st-screen_on .tv-row2, .k-tv.st-screen_on .tv-sel { animation-play-state: running; }
+.tv-intro { opacity: 0; transform-box: view-box; transform-origin: 60px 69.5px; pointer-events: none; }
+.tv-boot .tv-intro { animation: tv-intro 3.2s both; }
+.tv-streaks path { stroke-width: 1.4; stroke-dasharray: 70; stroke-dashoffset: 70; }
+.tv-boot .tv-streaks path { animation: tv-streak 3.2s ease-out both; }
+.tv-logo { transform-box: fill-box; transform-origin: center; opacity: 0; }
+.tv-boot .tv-logo { animation: tv-logo 3.2s cubic-bezier(.3,1.4,.5,1) both; }
+.tv-boot .tv-content { animation: tv-reveal 3.2s both; }
+.tv-flash { opacity: 0; transform-box: view-box; transform-origin: 60px 69.5px; }
 .tv-shut .tv-flash { animation: tv-shut .9s ease-in both; }
 .tv-led { fill: #3a2222; transition: fill .4s; }
 .k-tv.st-standby .tv-led { fill: #ff3b30; filter: drop-shadow(0 0 1.2px #ff3b30); }
-.k-tv.st-screen_on .tv-led { fill: #ffffff; opacity: .5; }
-@keyframes tv-amb { 0%,100% { opacity: .85; } 33% { opacity: 1; filter: hue-rotate(40deg); } 66% { opacity: .9; filter: hue-rotate(-50deg); } }
-@keyframes tv-pan { from { transform: translateX(0); } to { transform: translateX(-100px); } }
-@keyframes tv-bird { from { transform: translate(0, 0); } 50% { transform: translate(45px, -4px); } to { transform: translate(90px, 2px); } }
-@keyframes tv-prog { from { transform: scaleX(.05); } to { transform: scaleX(1); } }
-@keyframes tv-boot { 0% { transform: scale(.02, .015); filter: brightness(3); } 35% { transform: scale(1, .015); filter: brightness(3); } 70% { transform: scale(1, 1); filter: brightness(1.6); } 100% { transform: none; filter: none; } }
-@keyframes tv-bflash { 0% { opacity: .9; transform: scale(.02, .015); } 35% { opacity: .9; transform: scale(1, .015); } 70% { opacity: .35; transform: scale(1, 1); } 100% { opacity: 0; } }
+.k-tv.st-screen_on .tv-led { fill: #ffffff; opacity: .45; }
+@keyframes tv-row { 0%, 20% { transform: translateX(0); } 30%, 55% { transform: translateX(-19px); } 65%, 90% { transform: translateX(-38px); } 100% { transform: translateX(0); } }
+@keyframes tv-row2 { 0%, 40% { transform: translateX(0); } 55%, 90% { transform: translateX(-26px); } 100% { transform: translateX(0); } }
+@keyframes tv-sel { 0%, 8% { transform: translateX(0); } 12%, 20% { transform: translateX(19px); } 24%, 90% { transform: translateX(38px); } 95%, 100% { transform: translateX(0); } }
+@keyframes tv-intro { 0% { opacity: 1; transform: scale(.02, .015); filter: brightness(4); } 10% { opacity: 1; transform: scale(1, .015); filter: brightness(4); } 22% { opacity: 1; transform: none; filter: none; } 84% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes tv-streak { 0%, 18% { stroke-dashoffset: 70; opacity: 1; } 42% { stroke-dashoffset: 0; opacity: 1; } 55%, 100% { stroke-dashoffset: 0; opacity: 0; } }
+@keyframes tv-logo { 0%, 36% { opacity: 0; transform: scale(.3); } 50% { opacity: 1; transform: scale(1.12); } 58% { transform: scale(1); } 80% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(2.6); } }
+@keyframes tv-reveal { 0%, 84% { opacity: 0; } 100% { opacity: 1; } }
 @keyframes tv-shut { 0% { opacity: .85; transform: scale(1, 1); } 45% { opacity: 1; transform: scale(1, .015); } 75% { opacity: 1; transform: scale(.03, .015); } 100% { opacity: 0; transform: scale(0, 0); } }
 
 /* ---------- range hood ---------- */
