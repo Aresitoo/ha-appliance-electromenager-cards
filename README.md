@@ -3,7 +3,7 @@
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://hacs.xyz/docs/faq/custom_repositories)
 [![Validate](https://github.com/skyrotter/ha-appliance-electromenager-cards/actions/workflows/validate.yml/badge.svg)](https://github.com/skyrotter/ha-appliance-electromenager-cards/actions/workflows/validate.yml)
 
-Twenty Lovelace cards for household appliances, with **realistic animated illustrations** (tumbling drum, water and foam, spin with vibration, rotating spray arms, glowing oven element, turntable, opening fridge door, flickering pellet-stove flames, water flowing through a pool pump, a 3D printer building its part layer by layer, a chest freezer lid lifting, freezer drawers sliding out, a sun powering solar panels on their frame, a bathroom extractor fan drawing in steam, cooktop zones glowing under a steaming pot, an electric radiator sending heat waves, a dual-basket air fryer blowing hot air over fries, a coffee maker filling the carafe or the cup, a flat TV switching on like a real screen, a range hood sucking up the steam…), live status, power, energy and cost.
+Twenty-two Lovelace cards for household appliances, with **realistic animated illustrations** (tumbling drum, water and foam, spin with vibration, rotating spray arms, glowing oven element, turntable, opening fridge door, flickering pellet-stove flames, water flowing through a pool pump, a 3D printer building its part layer by layer, a chest freezer lid lifting, freezer drawers sliding out, a sun powering solar panels on their frame, a bathroom extractor fan drawing in steam, cooktop zones glowing under a steaming pot, an electric radiator sending heat waves, a dual-basket air fryer blowing hot air over fries, a coffee maker filling the carafe or the cup, a flat TV switching on like a real screen, a range hood sucking up the steam, an air-conditioning split and its outdoor heat pump…), live status, power, energy and cost.
 They follow your Home Assistant theme (light/dark) and switch between **French** and **English** automatically.
 
 **▶ [Try it online / Essayer en ligne](https://skyrotter.github.io/ha-appliance-electromenager-cards/docs/demo.html)** · [Automated tests](https://skyrotter.github.io/ha-appliance-electromenager-cards/docs/tests.html)
@@ -34,6 +34,8 @@ They follow your Home Assistant theme (light/dark) and switch between **French**
 | Coffee maker (drip, pods, espresso) | `custom:appliance-coffee-maker-card` |
 | Flat TV | `custom:appliance-tv-card` |
 | Range hood | `custom:appliance-range-hood-card` |
+| Air conditioner – indoor split | `custom:appliance-ac-split-card` |
+| Heat pump – outdoor unit | `custom:appliance-heat-pump-card` |
 
 Works with a simple smart plug (power sensor only) as well as with connected appliances (program, remaining time, progress, door…).
 
@@ -394,6 +396,30 @@ power: sensor.hood_power
 light: light.hood_light         # optional
 ```
 
+### Air conditioning pack (indoor split + outdoor heat pump)
+
+<p align="center"><img src="docs/air-conditioning.gif" width="560" alt="Air conditioning cards"></p>
+
+Two cards meant to sit side by side, both driven by the same `climate` entity (and/or a power sensor).
+
+**Indoor split** (`custom:appliance-ac-split-card`): the flap opens and swings, air blows down — blue when cooling, orange with a warm glow and rising heat waves when heating, grey in fan mode, droplets in dry mode; the display shows the target temperature with a mode icon. At target: the flap stays open with a gentle airflow.
+
+**Outdoor unit** (`custom:appliance-heat-pump-card`): the fan spins behind its grille, the unit vibrates while the compressor runs, warm air waves come out when cooling, cold air waves when heating, steam rises during defrost. At target: the fan turns slowly.
+
+- With a `climate` entity: `hvac_action` (cooling, heating, drying, fan, idle, defrosting) or, failing that, the HVAC mode.
+- With a power sensor only: running above `threshold` (60 W); set `hvac: cool` or `hvac: heat` (default `auto` = cooling May–September, heating otherwise).
+- `temperature` on the outdoor card can be an outdoor temperature sensor.
+
+```yaml
+type: custom:appliance-ac-split-card
+entity: climate.living_room
+power: sensor.ac_power
+---
+type: custom:appliance-heat-pump-card
+entity: climate.living_room
+temperature: sensor.outdoor_temperature
+```
+
 ### Power button safety
 
 The power button only appears when you set `switch:`. On the **washer, dryer, dishwasher and pellet stove**, cutting the plug **while a cycle is running (or the stove is burning)** takes **two clicks**: the first one turns the button red and shows "Cycle running – click again to cut power" for 4 seconds. Turning the plug on, or off while idle, stays a single click. Set `confirm_off: false` to turn this off.
@@ -443,7 +469,7 @@ appliance-illustration-size: 116px
 
 ## 🇫🇷 En français
 
-Vingt cartes Lovelace pour l'électroménager et l'énergie (lave-linge, sèche-linge, lave-vaisselle, ballon d'eau chaude, four, micro-ondes, réfrigérateur, poêle à granulés, pompe de piscine, imprimante 3D, congélateur coffre, congélateur à tiroirs, panneaux solaires, VMC, plaques de cuisson, radiateur électrique, airfryer, cafetière, téléviseur, hotte aspirante) : illustration animée, état en direct, puissance, énergie et coût. Elles suivent le thème de Home Assistant et s'affichent en français si Home Assistant est en français.
+Vingt-deux cartes Lovelace pour l'électroménager et l'énergie (lave-linge, sèche-linge, lave-vaisselle, ballon d'eau chaude, four, micro-ondes, réfrigérateur, poêle à granulés, pompe de piscine, imprimante 3D, congélateur coffre, congélateur à tiroirs, panneaux solaires, VMC, plaques de cuisson, radiateur électrique, airfryer, cafetière, téléviseur, hotte aspirante, climatiseur et pompe à chaleur) : illustration animée, état en direct, puissance, énergie et coût. Elles suivent le thème de Home Assistant et s'affichent en français si Home Assistant est en français.
 
 **Installation HACS** : HACS → ⋮ → *Dépôts personnalisés* → `https://github.com/skyrotter/ha-appliance-electromenager-cards`, catégorie **Dashboard** → installer → recharger le navigateur (Ctrl+F5).
 
@@ -482,6 +508,8 @@ cost: sensor.lave_linge_cout_jour
 **Téléviseur** : écran plat fixé au mur, sans pied. À l'allumage, une ligne lumineuse s'ouvre, des faisceaux convergent vers un logo de démarrage, puis l'écran d'accueil de streaming apparaît ; à l'extinction, l'image se replie en une ligne puis un point. Allumée : écran d'accueil animé (bannière, rangées de vignettes qui défilent) ; veille : écran noir et voyant rouge ; éteinte : rien. Avec une prise : allumée au-dessus de 25 W, veille entre 0,2 et 25 W. Avec un `media_player`, l'appli ou la source s'affiche (« Allumée · Netflix »). Type : `custom:appliance-tv-card`.
 
 **Hotte aspirante** : hotte cheminée au-dessus d'une plaque et d'une casserole qui fume. Moteur en marche : l'hélice tourne, la vapeur est aspirée, l'air monte (plus vite en grande vitesse). Éclairage : les spots éclairent la plaque (quelques watts sans moteur = « Éclairage », ou entité `light`). Vitesses : au-dessus de 40 W petite vitesse, au-dessus de 130 W grande vitesse (`high_threshold`), ou entité `speed`. Type : `custom:appliance-range-hood-card`.
+
+**Pack clim** : deux cartes à mettre côte à côte, pilotées par la même entité `climate` (et/ou une prise). **Split intérieur** (`custom:appliance-ac-split-card`) : le volet s'ouvre et balaie, l'air souffle (bleu en froid, orange en chaud, gris en ventilation, gouttes en déshumidification), l'écran affiche la consigne. **Unité extérieure** (`custom:appliance-heat-pump-card`) : l'hélice tourne, le groupe vibre quand le compresseur tourne, ondes d'air chaud en clim et d'air froid en chauffage, vapeur pendant le dégivrage. Consigne atteinte : hélice au ralenti. Sans entité `climate`, régler `hvac: cool` ou `hvac: heat` (par défaut : clim de mai à septembre, chauffage sinon).
 
 **Sécurité du bouton marche/arrêt** : sur le lave-linge, le sèche-linge, le lave-vaisselle et le poêle à granulés, couper la prise pendant un cycle (ou poêle allumé) demande deux clics (le bouton devient rouge et affiche « Cycle en cours – cliquer encore pour couper »). Option `confirm_off: false` pour désactiver. Conseil : sur un lave-linge, ne mets pas de `switch:` du tout.
 
