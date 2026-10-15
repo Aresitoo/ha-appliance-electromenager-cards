@@ -3,7 +3,7 @@
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://hacs.xyz/docs/faq/custom_repositories)
 [![Validate](https://github.com/skyrotter/ha-appliance-electromenager-cards/actions/workflows/validate.yml/badge.svg)](https://github.com/skyrotter/ha-appliance-electromenager-cards/actions/workflows/validate.yml)
 
-Twenty-two Lovelace cards for household appliances, with **realistic animated illustrations** (tumbling drum, water and foam, spin with vibration, rotating spray arms, glowing oven element, turntable, opening fridge door, flickering pellet-stove flames, water flowing through a pool pump, a 3D printer building its part layer by layer, a chest freezer lid lifting, freezer drawers sliding out, a sun powering solar panels on their frame, a bathroom extractor fan drawing in steam, cooktop zones glowing under a steaming pot, an electric radiator sending heat waves, a dual-basket air fryer blowing hot air over fries, a coffee maker filling the carafe or the cup, a flat TV switching on like a real screen, a range hood sucking up the steam, an air-conditioning split and its outdoor heat pump…), live status, power, energy and cost.
+Twenty-six Lovelace cards for household appliances, with **realistic animated illustrations** (tumbling drum, water and foam, spin with vibration, rotating spray arms, glowing oven element, turntable, opening fridge door, flickering pellet-stove flames, water flowing through a pool pump, a 3D printer building its part layer by layer, a chest freezer lid lifting, freezer drawers sliding out, a sun powering solar panels on their frame, a bathroom extractor fan drawing in steam, cooktop zones glowing under a steaming pot, an electric radiator sending heat waves, a dual-basket air fryer blowing hot air over fries, a coffee maker filling the carafe or the cup, a flat TV switching on like a real screen, a range hood sucking up the steam, an air-conditioning split and its outdoor heat pump, a heated towel rail glowing with warm towels, a homelab server rack with blinking LEDs and spinning fans, a desktop PC with RGB fans and a laptop with a live screen…), live status, power, energy and cost.
 They follow your Home Assistant theme (light/dark) and switch between **French** and **English** automatically.
 
 **▶ [Try it online / Essayer en ligne](https://skyrotter.github.io/ha-appliance-electromenager-cards/docs/demo.html)** · [Automated tests](https://skyrotter.github.io/ha-appliance-electromenager-cards/docs/tests.html)
@@ -36,6 +36,10 @@ They follow your Home Assistant theme (light/dark) and switch between **French**
 | Range hood | `custom:appliance-range-hood-card` |
 | Air conditioner – indoor split | `custom:appliance-ac-split-card` |
 | Heat pump – outdoor unit | `custom:appliance-heat-pump-card` |
+| Heated towel rail | `custom:appliance-towel-dryer-card` |
+| Server rack (homelab) | `custom:appliance-server-rack-card` |
+| Desktop PC | `custom:appliance-desktop-pc-card` |
+| Laptop | `custom:appliance-laptop-card` |
 
 Works with a simple smart plug (power sensor only) as well as with connected appliances (program, remaining time, progress, door…).
 
@@ -420,6 +424,31 @@ entity: climate.living_room
 temperature: sensor.outdoor_temperature
 ```
 
+### Heated towel rail, server rack, desktop PC and laptop
+
+Four cards driven by a smart plug (`power`), with an optional `entity` and `switch`.
+
+- **Heated towel rail** (`custom:appliance-towel-dryer-card`): above `threshold` (50 W) the rails glow orange, heat waves rise, towels sway and steam. Below it with the plug on: "At target" (rails barely warm). Optional `temperature` / `target_temperature` (the display shows the target).
+- **Server rack / homelab** (`custom:appliance-server-rack-card`): above `threshold` (30 W) the LEDs blink, the fans spin, drive bays glow blue and data flows along the cables. The blink rate follows the load (`max_power`, default 300 W). The UPS display shows the live power draw.
+- **Desktop PC** (`custom:appliance-desktop-pc-card`): above `threshold` (40 W) the screen lights up with a desktop (typing code, bars, moving cursor) and the case fans spin with RGB rings. Between 0.5 W and the threshold: sleep (amber LED).
+- **Laptop** (`custom:appliance-laptop-card`): above `threshold` (15 W) the screen shows a live dashboard and the keys are backlit; below it: sleep (amber LED).
+
+```yaml
+type: custom:appliance-towel-dryer-card
+power: sensor.towel_rail_power
+temperature: sensor.bathroom_temperature
+---
+type: custom:appliance-server-rack-card
+power: sensor.rack_power
+max_power: 250
+---
+type: custom:appliance-desktop-pc-card
+power: sensor.pc_power
+---
+type: custom:appliance-laptop-card
+power: sensor.laptop_power
+```
+
 ### Power button safety
 
 The power button only appears when you set `switch:`. On the **washer, dryer, dishwasher and pellet stove**, cutting the plug **while a cycle is running (or the stove is burning)** takes **two clicks**: the first one turns the button red and shows "Cycle running – click again to cut power" for 4 seconds. Turning the plug on, or off while idle, stays a single click. Set `confirm_off: false` to turn this off.
@@ -469,7 +498,7 @@ appliance-illustration-size: 116px
 
 ## 🇫🇷 En français
 
-Vingt-deux cartes Lovelace pour l'électroménager et l'énergie (lave-linge, sèche-linge, lave-vaisselle, ballon d'eau chaude, four, micro-ondes, réfrigérateur, poêle à granulés, pompe de piscine, imprimante 3D, congélateur coffre, congélateur à tiroirs, panneaux solaires, VMC, plaques de cuisson, radiateur électrique, airfryer, cafetière, téléviseur, hotte aspirante, climatiseur et pompe à chaleur) : illustration animée, état en direct, puissance, énergie et coût. Elles suivent le thème de Home Assistant et s'affichent en français si Home Assistant est en français.
+Vingt-six cartes Lovelace pour l'électroménager et l'énergie (lave-linge, sèche-linge, lave-vaisselle, ballon d'eau chaude, four, micro-ondes, réfrigérateur, poêle à granulés, pompe de piscine, imprimante 3D, congélateur coffre, congélateur à tiroirs, panneaux solaires, VMC, plaques de cuisson, radiateur électrique, airfryer, cafetière, téléviseur, hotte aspirante, climatiseur et pompe à chaleur) : illustration animée, état en direct, puissance, énergie et coût. Elles suivent le thème de Home Assistant et s'affichent en français si Home Assistant est en français.
 
 **Installation HACS** : HACS → ⋮ → *Dépôts personnalisés* → `https://github.com/skyrotter/ha-appliance-electromenager-cards`, catégorie **Dashboard** → installer → recharger le navigateur (Ctrl+F5).
 
@@ -512,6 +541,8 @@ cost: sensor.lave_linge_cout_jour
 **Pack clim** : deux cartes à mettre côte à côte, pilotées par la même entité `climate` (et/ou une prise). **Split intérieur** (`custom:appliance-ac-split-card`) : le volet s'ouvre et balaie, l'air souffle (bleu en froid, orange en chaud, gris en ventilation, gouttes en déshumidification), l'écran affiche la consigne. **Unité extérieure** (`custom:appliance-heat-pump-card`) : l'hélice tourne, le groupe vibre quand le compresseur tourne, ondes d'air chaud en clim et d'air froid en chauffage, vapeur pendant le dégivrage. Consigne atteinte : hélice au ralenti. Sans entité `climate`, régler `hvac: cool` ou `hvac: heat` (par défaut : clim de mai à septembre, chauffage sinon).
 
 **Sécurité du bouton marche/arrêt** : sur le lave-linge, le sèche-linge, le lave-vaisselle et le poêle à granulés, couper la prise pendant un cycle (ou poêle allumé) demande deux clics (le bouton devient rouge et affiche « Cycle en cours – cliquer encore pour couper »). Option `confirm_off: false` pour désactiver. Conseil : sur un lave-linge, ne mets pas de `switch:` du tout.
+
+**Sèche-serviettes, baie informatique, PC fixe, PC portable** : quatre cartes pilotées par une prise connectée (`power`). `custom:appliance-towel-dryer-card` : au-dessus de 50 W, les barres rougeoient, la chaleur monte, les serviettes se balancent et fument ; prise allumée sous le seuil : « Consigne atteinte ». `custom:appliance-server-rack-card` (homelab) : au-dessus de 30 W, les LED clignotent, les ventilateurs tournent, les baies de disques s'allument en bleu et les données circulent dans les câbles ; la vitesse suit la charge (`max_power`, 300 W par défaut) et l'onduleur affiche la puissance. `custom:appliance-desktop-pc-card` : au-dessus de 40 W, l'écran s'allume (code qui s'écrit, graphique, curseur) et les ventilateurs RGB tournent ; entre 0,5 W et le seuil : veille (voyant orange). `custom:appliance-laptop-card` : au-dessus de 15 W, l'écran affiche un tableau de bord animé et le clavier est rétroéclairé ; en dessous : veille.
 
 ## License
 
