@@ -3,14 +3,14 @@
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://hacs.xyz/docs/faq/custom_repositories)
 [![Validate](https://github.com/skyrotter/ha-appliance-electromenager-cards/actions/workflows/validate.yml/badge.svg)](https://github.com/skyrotter/ha-appliance-electromenager-cards/actions/workflows/validate.yml)
 
-Eighteen Lovelace cards for household appliances, with **realistic animated illustrations** (tumbling drum, water and foam, spin with vibration, rotating spray arms, glowing oven element, turntable, opening fridge door, flickering pellet-stove flames, water flowing through a pool pump, a 3D printer building its part layer by layer, a chest freezer lid lifting, freezer drawers sliding out, a sun powering solar panels on their frame, a bathroom extractor fan drawing in steam, cooktop zones glowing under a steaming pot, an electric radiator sending heat waves, a dual-basket air fryer blowing hot air over fries, a coffee maker filling the carafe or the cup…), live status, power, energy and cost.
+Twenty Lovelace cards for household appliances, with **realistic animated illustrations** (tumbling drum, water and foam, spin with vibration, rotating spray arms, glowing oven element, turntable, opening fridge door, flickering pellet-stove flames, water flowing through a pool pump, a 3D printer building its part layer by layer, a chest freezer lid lifting, freezer drawers sliding out, a sun powering solar panels on their frame, a bathroom extractor fan drawing in steam, cooktop zones glowing under a steaming pot, an electric radiator sending heat waves, a dual-basket air fryer blowing hot air over fries, a coffee maker filling the carafe or the cup, a flat TV switching on like a real screen, a range hood sucking up the steam…), live status, power, energy and cost.
 They follow your Home Assistant theme (light/dark) and switch between **French** and **English** automatically.
 
 **▶ [Try it online / Essayer en ligne](https://skyrotter.github.io/ha-appliance-electromenager-cards/docs/demo.html)** · [Automated tests](https://skyrotter.github.io/ha-appliance-electromenager-cards/docs/tests.html)
 
 *🇫🇷 Version française plus bas.*
 
-<p align="center"><img src="docs/hero.gif" width="560" alt="18 animated appliance cards for Home Assistant"></p>
+<p align="center"><img src="docs/hero.gif" width="560" alt="Animated appliance cards for Home Assistant"></p>
 
 | Card | Type |
 |---|---|
@@ -32,6 +32,8 @@ They follow your Home Assistant theme (light/dark) and switch between **French**
 | Electric radiator | `custom:appliance-radiator-card` |
 | Air fryer (dual basket) | `custom:appliance-air-fryer-card` |
 | Coffee maker (drip, pods, espresso) | `custom:appliance-coffee-maker-card` |
+| Flat TV | `custom:appliance-tv-card` |
+| Range hood | `custom:appliance-range-hood-card` |
 
 Works with a simple smart plug (power sensor only) as well as with connected appliances (program, remaining time, progress, door…).
 
@@ -362,6 +364,33 @@ power: sensor.coffee_power
 energy: sensor.coffee_energy_today
 ```
 
+### Flat TV and range hood
+
+<p align="center"><img src="docs/tv-range-hood.gif" width="560" alt="TV and range hood cards"></p>
+
+**TV** (`custom:appliance-tv-card`): a flat screen on its stand.
+- **Switching on**: a bright line opens up into the picture, like a real panel; **switching off**: the picture collapses into a line, then a dot.
+- **On**: a moving landscape plays with a progress bar and a soft ambient glow. **Standby**: black screen, red LED. **Off**: black screen, no LED.
+- With a smart plug: on above `threshold` (25 W), standby between `standby_threshold` (0.2 W) and 25 W, off below. With a `media_player`: `on` / `playing` / `paused` / `idle` = on, `standby` = standby, `off` = off, and the app or source is shown (« Allumée · Netflix »).
+
+```yaml
+type: custom:appliance-tv-card
+entity: switch.tv_plug          # or media_player.living_room_tv
+power: sensor.tv_plug_power
+energy: sensor.tv_plug_energy_today
+```
+
+**Range hood** (`custom:appliance-range-hood-card`): chimney hood above a cooktop and a steaming pot.
+- **Fan running**: the fan spins, steam from the pot is drawn up into the hood, air flows upwards; faster at high speed, with the speed LEDs.
+- **Lights**: the lamps light up the cooktop. With a power sensor alone, a few watts (above `light_threshold`, 3 W) without the motor = « Lights only »; or set a `light` entity.
+- Speeds from power (above `threshold` 40 W = low, above `high_threshold` 130 W = high) or from a `speed` entity.
+
+```yaml
+type: custom:appliance-range-hood-card
+power: sensor.hood_power
+light: light.hood_light         # optional
+```
+
 ### Power button safety
 
 The power button only appears when you set `switch:`. On the **washer, dryer, dishwasher and pellet stove**, cutting the plug **while a cycle is running (or the stove is burning)** takes **two clicks**: the first one turns the button red and shows "Cycle running – click again to cut power" for 4 seconds. Turning the plug on, or off while idle, stays a single click. Set `confirm_off: false` to turn this off.
@@ -411,7 +440,7 @@ appliance-illustration-size: 116px
 
 ## 🇫🇷 En français
 
-Dix-huit cartes Lovelace pour l'électroménager et l'énergie (lave-linge, sèche-linge, lave-vaisselle, ballon d'eau chaude, four, micro-ondes, réfrigérateur, poêle à granulés, pompe de piscine, imprimante 3D, congélateur coffre, congélateur à tiroirs, panneaux solaires, VMC, plaques de cuisson, radiateur électrique, airfryer, cafetière) : illustration animée, état en direct, puissance, énergie et coût. Elles suivent le thème de Home Assistant et s'affichent en français si Home Assistant est en français.
+Vingt cartes Lovelace pour l'électroménager et l'énergie (lave-linge, sèche-linge, lave-vaisselle, ballon d'eau chaude, four, micro-ondes, réfrigérateur, poêle à granulés, pompe de piscine, imprimante 3D, congélateur coffre, congélateur à tiroirs, panneaux solaires, VMC, plaques de cuisson, radiateur électrique, airfryer, cafetière, téléviseur, hotte aspirante) : illustration animée, état en direct, puissance, énergie et coût. Elles suivent le thème de Home Assistant et s'affichent en français si Home Assistant est en français.
 
 **Installation HACS** : HACS → ⋮ → *Dépôts personnalisés* → `https://github.com/skyrotter/ha-appliance-electromenager-cards`, catégorie **Dashboard** → installer → recharger le navigateur (Ctrl+F5).
 
@@ -446,6 +475,10 @@ cost: sensor.lave_linge_cout_jour
 **Airfryer** : airfryer noir double bac avec bandeau tactile et deux tiroirs inox à hublot (frites à gauche, nuggets à droite). En cuisson (au-dessus de 50 W sur la prise), les bacs s'éclairent, les résistances rougeoient, l'air chaud tourbillonne, les frites sautillent et de la vapeur sort du dessus. L'écran affiche le temps restant (`remaining`), sinon la température, sinon `ON` ; `End` en vert quand c'est terminé. Type : `custom:appliance-air-fryer-card`.
 
 **Cafetière** : trois dessins au choix avec `style` : `filtre` (verseuse en verre, par défaut), `dosette` (Senseo, Nespresso, Dolce Gusto…) ou `expresso` (machine à grains). Au-dessus de 300 W sur la prise, le café coule, la verseuse ou la tasse se remplit, le réservoir d'eau se vide et la vapeur monte (écran `CAFE`). Entre 5 et 300 W : « Maintien au chaud » (plaque rouge) pour une cafetière filtre, « Prêt » pour les autres. Type : `custom:appliance-coffee-maker-card`.
+
+**Téléviseur** : écran plat sur son pied. À l'allumage, une ligne lumineuse s'ouvre sur l'image ; à l'extinction, l'image se replie en une ligne puis un point. Allumée : paysage animé et halo lumineux ; veille : écran noir et voyant rouge ; éteinte : rien. Avec une prise : allumée au-dessus de 25 W, veille entre 0,2 et 25 W. Avec un `media_player`, l'appli ou la source s'affiche (« Allumée · Netflix »). Type : `custom:appliance-tv-card`.
+
+**Hotte aspirante** : hotte cheminée au-dessus d'une plaque et d'une casserole qui fume. Moteur en marche : l'hélice tourne, la vapeur est aspirée, l'air monte (plus vite en grande vitesse). Éclairage : les spots éclairent la plaque (quelques watts sans moteur = « Éclairage », ou entité `light`). Vitesses : au-dessus de 40 W petite vitesse, au-dessus de 130 W grande vitesse (`high_threshold`), ou entité `speed`. Type : `custom:appliance-range-hood-card`.
 
 **Sécurité du bouton marche/arrêt** : sur le lave-linge, le sèche-linge, le lave-vaisselle et le poêle à granulés, couper la prise pendant un cycle (ou poêle allumé) demande deux clics (le bouton devient rouge et affiche « Cycle en cours – cliquer encore pour couper »). Option `confirm_off: false` pour désactiver. Conseil : sur un lave-linge, ne mets pas de `switch:` du tout.
 
