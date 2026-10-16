@@ -2,12 +2,13 @@
  * HA Appliance Cards
  * Lovelace cards for household appliances: washer, dryer, dishwasher,
  * water heater, oven, microwave, refrigerator, air fryer, coffee maker, TV, range hood, air conditioning,
- * heated towel rail, server rack, desktop PC, laptop…
+ * heated towel rail, server rack, desktop PC, laptop, aquarium, Linky meter,
+ * home battery, EV charger, robot vacuum, robot mower…
  * MIT License
  */
 (() => {
 "use strict";
-const VERSION = "1.15.0";
+const VERSION = "1.16.0";
 
 /* ------------------------------------------------------------------ */
 /* i18n                                                                */
@@ -2895,4 +2896,1271 @@ for (const kind of Object.keys(DEF)) {
 console.info(`%c HA-APPLIANCE-CARDS %c v${VERSION} `,
   "color:#fff;background:#03a9f4;font-weight:700;border-radius:3px 0 0 3px",
   "color:#03a9f4;background:#fff;font-weight:700;border-radius:0 3px 3px 0");
+})();
+
+/* ================================================================== */
+/* appliance-aquarium-card.js                                       */
+/* ================================================================== */
+(() => {
+"use strict";
+const define = (tag, cls) => { if (!customElements.get(tag)) customElements.define(tag, cls); };
+window.customCards = window.customCards || [];
+/* appliance-aquarium-card — carte Lovelace aquarium animé (puissance, kWh, température, coût)
+ * type: custom:appliance-aquarium-card
+ */
+const I18N_AQUARIUM = {
+  fr: { power: 'Puissance', energy: 'Énergie', temp: 'Eau', cost: 'Coût', name: 'Aquarium', alert: 'Température hors plage', unavailable: 'Indisponible' },
+  en: { power: 'Power', energy: 'Energy', temp: 'Water', cost: 'Cost', name: 'Aquarium', alert: 'Temperature out of range', unavailable: 'Unavailable' },
+};
+
+class ApplianceAquariumCard extends HTMLElement {
+  static getStubConfig() {
+    return { entity_power: '', entity_energy: '', entity_temperature: '', entity_light: '', temp_min: 24, temp_max: 27, price_per_kwh: 0.2 };
+  }
+
+  // Éditeur visuel HA
+  static getConfigForm() {
+    return {
+      schema: [
+        { name: 'name', selector: { text: {} } },
+        { name: 'entity_power', selector: { entity: { domain: 'sensor', device_class: 'power' } } },
+        { name: 'entity_energy', selector: { entity: { domain: 'sensor', device_class: 'energy' } } },
+        { name: 'entity_temperature', selector: { entity: { domain: 'sensor', device_class: 'temperature' } } },
+        { name: 'entity_light', selector: { entity: { domain: ['light', 'switch', 'input_boolean'] } } },
+        { name: 'entity_cost', selector: { entity: { domain: 'sensor' } } },
+        { name: 'price_per_kwh', selector: { number: { min: 0, max: 2, step: 0.0001, mode: 'box' } } },
+        { type: 'grid', name: '', schema: [
+          { name: 'temp_min', selector: { number: { min: 0, max: 40, step: 0.5, mode: 'box' } } },
+          { name: 'temp_max', selector: { number: { min: 0, max: 40, step: 0.5, mode: 'box' } } },
+        ] },
+        { type: 'grid', name: '', schema: [
+          { name: 'show_power', selector: { boolean: {} } },
+          { name: 'show_energy', selector: { boolean: {} } },
+          { name: 'show_temperature', selector: { boolean: {} } },
+          { name: 'show_cost', selector: { boolean: {} } },
+        ] },
+        { name: 'language', selector: { select: { options: ['fr', 'en'] } } },
+      ],
+    };
+  }
+
+  setConfig(config) {
+    this._config = {
+      show_power: true, show_energy: true, show_temperature: true, show_cost: true,
+      temp_min: 24, temp_max: 27, price_per_kwh: 0.2, max_power: 200, language: 'fr',
+      ...config,
+    };
+    this._built = false;
+    this._build();
+  }
+
+  set hass(hass) {
+    this._hass = hass;
+    this._update();
+  }
+
+  getCardSize() { return 5; }
+
+  _t(k) { return (I18N_AQUARIUM[this._config.language] || I18N_AQUARIUM.fr)[k]; }
+
+  _build() {
+    const c = this._config;
+    // Poisson tourné vers la droite (tête à x=34), flip automatique au retour
+    const fish = (top, dur, delay, body, fin, scale, stripes) => `
+      <g class="fish" style="--top:${top}px;--dur:${dur}s;--delay:${delay}s;--s:${scale}">
+        <g style="transform:scale(${scale})">
+          <path class="tail" d="M2 0 L-12 -9 L-9 0 L-12 9 Z" fill="${fin}"/>
+          <path d="M0 0 C8 -10 26 -10 34 0 C26 10 8 10 0 0 Z" fill="${body}"/>
+          <path d="M14 -8 L22 -14 L26 -7 Z" fill="${fin}"/>
+          ${stripes ? '<path d="M10 -8 L12 8 M18 -9 L20 9 M26 -6 L27 6" stroke="#111" stroke-width="2.4" fill="none"/>' : ''}
+          <circle cx="28" cy="-2" r="2" fill="#fff"/><circle cx="28.6" cy="-2" r="1" fill="#111"/>
+        </g>
+      </g>`;
+    const bubbles = Array.from({ length: 10 }, (_, i) =>
+      `<circle class="bubble" cx="${262 + (i % 4) * 5}" cy="140" r="${1.5 + (i % 3)}" style="--d:${3 + (i % 4)}s;--dl:${(i * 0.6) % 3}s"/>`).join('');
+    const blade = (x, h, w, col, d, pd) => `<path class="plant" d="M${x} 146 q ${-w} ${-h / 3} 0 ${-h / 2} q ${w} ${-h / 3} 0 ${-h / 2}" stroke="${col}" style="--pd:${pd}s;transform-origin:${x}px 146px;stroke-width:${d}"/>`;
+    const plants = [
+      blade(30, 95, 8, '#3fbf4a', 6, 4), blade(42, 110, -9, '#58d65a', 5, 5), blade(54, 80, 7, '#35a842', 5, 6),
+      blade(78, 100, 9, '#6be06a', 4, 5), blade(90, 85, -7, '#3fbf4a', 4, 4), blade(100, 70, 6, '#7ae27a', 4, 6),
+      blade(195, 105, 8, '#4cc94c', 8, 4), blade(210, 85, -9, '#37ae3f', 7, 5), blade(280, 95, 7, '#4cc94c', 5, 5),
+    ].join('');
+    const feathers = [[135, 105], [148, 120], [160, 95], [170, 110]].map(([x, h], i) =>
+      `<path class="plant" d="M${x} 146 C ${x - 10} ${146 - h / 2}, ${x + 10} ${146 - h / 1.5}, ${x} ${146 - h}" stroke="#c0789a" style="--pd:${5 + i}s;transform-origin:${x}px 146px;stroke-width:12;opacity:.85"/>`).join('');
+    const urchin = Array.from({ length: 22 }, (_, i) => { const a = (i / 22) * Math.PI * 2; return `<line x1="232" y1="136" x2="${232 + Math.cos(a) * 13}" y2="${136 + Math.sin(a) * 11}"/>`; }).join('');
+    const speckles = Array.from({ length: 40 }, (_, i) => `<circle cx="${14 + (i * 37) % 292}" cy="${150 + (i * 13) % 12}" r="1" fill="#6f86d6" opacity=".6"/>`).join('');
+
+    if (!this.shadowRoot) this.attachShadow({ mode: 'open' });
+    this.shadowRoot.innerHTML = `
+    <style>
+      :host { display:block; }
+      ha-card { padding:12px; overflow:hidden; }
+      .title { font-weight:600; font-size:1.05em; margin:0 4px 8px; display:flex; justify-content:space-between; align-items:center; }
+      .badge { font-size:.75em; color:#fff; background:#e53935; border-radius:10px; padding:2px 8px; display:none; animation:blink 1s infinite; }
+      .alert .badge { display:inline-block; }
+      svg { width:100%; height:auto; display:block; border-radius:10px; }
+      .tint { fill:var(--water, #2a8fd6); opacity:.45; transition:fill 1.5s; }
+      .night-overlay { fill:#050b24; opacity:0; transition:opacity 1.2s; }
+      .night .night-overlay { opacity:.6; }
+      .lamp-glow { fill:#bfe6ff; opacity:0; transition:opacity 1s; }
+      .lit .lamp-glow { opacity:.22; } .lit .lamp-led { fill:#e8f6ff; } .lamp-led { fill:#444; }
+      .plant { fill:none; stroke-linecap:round; animation:sway var(--pd) ease-in-out infinite alternate; }
+      .bubble { fill:rgba(255,255,255,.35); stroke:rgba(255,255,255,.85); stroke-width:.6;
+        animation:rise calc(var(--d) / var(--speed,1)) linear infinite; animation-delay:var(--dl); }
+      .fish { animation:swim var(--dur) linear infinite; animation-delay:var(--delay); }
+      .tail { transform-origin:2px 0; animation:wag calc(.5s / var(--speed,1)) ease-in-out infinite alternate; }
+      .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(70px,1fr)); gap:8px; margin-top:10px; }
+      .stat { text-align:center; background:var(--secondary-background-color, rgba(127,127,127,.12)); border-radius:10px; padding:6px 4px; }
+      .stat .v { font-weight:700; font-size:1.05em; } .stat .l { font-size:.7em; opacity:.65; text-transform:uppercase; letter-spacing:.04em; }
+      .alert .stat.t .v { color:#e53935; animation:blink 1s infinite; }
+      @keyframes rise { from { transform:translateY(0); opacity:.9 } to { transform:translateY(-105px); opacity:0 } }
+      @keyframes sway { from { transform:rotate(-4deg) } to { transform:rotate(4deg) } }
+      /* aller vers la droite, demi-tour, retour vers la gauche */
+      @keyframes swim {
+        0% { transform:translate(0px,var(--top)) scaleX(1) } 49.9% { transform:translate(290px,var(--top)) scaleX(1) }
+        50% { transform:translate(290px,var(--top)) scaleX(-1) } 99.9% { transform:translate(0px,var(--top)) scaleX(-1) }
+        100% { transform:translate(0px,var(--top)) scaleX(1) } }
+      @keyframes wag { from { transform:scaleY(.7) } to { transform:scaleY(1.2) } }
+      @keyframes blink { 50% { opacity:.35 } }
+    </style>
+    <ha-card>
+      <div class="title"><span id="name">${c.name || this._t('name')}</span><span class="badge" id="badge">${this._t('alert')}</span></div>
+      <svg viewBox="0 0 320 200" id="tank">
+        <defs>
+          <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2d8cf0"/><stop offset="1" stop-color="#0b4fb8"/></linearGradient>
+          <linearGradient id="wood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d98534"/><stop offset="1" stop-color="#b8661e"/></linearGradient>
+          <clipPath id="glass"><rect x="10" y="24" width="300" height="140"/></clipPath>
+        </defs>
+        <rect width="320" height="200" fill="#efe6dc"/>
+        <rect x="4" y="170" width="312" height="30" fill="url(#wood)"/><line x1="160" y1="172" x2="160" y2="200" stroke="#8a4a14" stroke-width="1.5"/>
+        <rect x="10" y="24" width="300" height="140" fill="url(#bg)"/>
+        <g clip-path="url(#glass)">
+          <rect class="tint" x="10" y="24" width="300" height="140"/>
+          <rect x="10" y="24" width="300" height="5" fill="rgba(255,255,255,.35)"/>
+          <rect x="108" y="28" width="9" height="115" fill="#10244a" opacity=".85"/>
+          ${plants}${feathers}
+          <g stroke="#c62828" stroke-width="1.6" stroke-linecap="round">${urchin}</g><circle cx="232" cy="136" r="5" fill="#b71c1c"/>
+          <polygon points="95,146 112,120 140,112 160,128 165,146" fill="#555a60"/><polygon points="112,120 140,112 130,128" fill="#6b7076"/>
+          <polygon points="180,146 190,124 215,118 228,146" fill="#4a4e54"/><polygon points="270,146 280,128 300,126 306,146" fill="#5a5f66"/>
+          <polygon points="45,150 55,140 80,138 90,150" fill="#6a6f76"/>
+          <ellipse cx="82" cy="130" rx="9" ry="7" fill="#e8e8e8"/><ellipse cx="128" cy="144" rx="8" ry="5" fill="#dcdcdc"/>
+          <circle cx="205" cy="146" r="6" fill="#4caf50"/><circle cx="222" cy="148" r="5" fill="#5cc45c"/><circle cx="244" cy="147" r="6" fill="#4caf50"/><circle cx="258" cy="148" r="5" fill="#5cc45c"/>
+          <rect x="10" y="148" width="300" height="16" fill="#12245e"/>${speckles}
+          <g>${bubbles}</g>
+          ${fish(40, 16, 0, '#ff9a2e', '#ff7a00', 1, false)}
+          ${fish(65, 22, -9, '#ffb62e', '#ff9a00', 0.9, false)}
+          ${fish(85, 19, -4, '#d8dce6', '#555', 1.05, true)}
+          ${fish(105, 25, -14, '#e8c86a', '#c9a227', 0.8, true)}
+          ${fish(55, 28, -20, '#ff4d4d', '#d32f2f', 0.7, false)}
+          ${fish(120, 21, -6, '#ffc233', '#ff9a00', 0.95, false)}
+          <rect class="night-overlay" x="10" y="24" width="300" height="140"/>
+          <polygon class="lamp-glow" points="70,24 250,24 305,164 15,164"/>
+        </g>
+        <rect x="6" y="14" width="308" height="11" fill="#111"/><rect x="6" y="162" width="308" height="8" fill="#111"/>
+        <rect x="8" y="24" width="3" height="140" fill="rgba(180,220,255,.5)"/><rect x="309" y="24" width="3" height="140" fill="rgba(180,220,255,.5)"/>
+        <rect x="75" y="2" width="170" height="12" rx="3" fill="#1c1c1c"/><rect class="lamp-led" x="82" y="9" width="156" height="3" rx="1.5"/>
+      </svg>
+      <div class="stats" id="stats"></div>
+    </ha-card>`;
+    this._built = true;
+  }
+
+  _num(id) {
+    if (!id || !this._hass) return null;
+    const s = this._hass.states[id];
+    if (!s || s.state === 'unavailable' || s.state === 'unknown') return null;
+    const n = parseFloat(s.state);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  _update() {
+    if (!this._built || !this._hass) return;
+    const c = this._config, root = this.shadowRoot;
+    const power = this._num(c.entity_power), energy = this._num(c.entity_energy), temp = this._num(c.entity_temperature);
+    let cost = this._num(c.entity_cost);
+    if (cost === null && energy !== null && c.price_per_kwh) cost = energy * c.price_per_kwh;
+
+    // Vitesse des bulles/queues liée à la puissance (0.5× à 3×)
+    const ratio = power === null ? 0 : Math.min(power / (c.max_power || 200), 1);
+    root.querySelector('svg').style.setProperty('--speed', (0.5 + ratio * 2.5).toFixed(2));
+
+    // Couleur de l'eau selon la température : froid=bleu, idéal=turquoise, chaud=orange/rouge
+    let water = '#2a8fd6', alert = false;
+    if (temp !== null) {
+      if (temp < c.temp_min) { water = '#1e5fb5'; alert = true; }
+      else if (temp > c.temp_max) { water = temp > c.temp_max + 3 ? '#d64a2a' : '#d6962a'; alert = true; }
+      else water = '#2ab5c4';
+    }
+    root.querySelector('svg').style.setProperty('--water', water);
+    root.querySelector('ha-card').classList.toggle('alert', alert);
+
+    // Éclairage jour/nuit
+    const lightState = c.entity_light && this._hass.states[c.entity_light];
+    const lit = lightState ? lightState.state === 'on' : true;
+    const tank = root.getElementById('tank');
+    tank.classList.toggle('lit', lit);
+    tank.classList.toggle('night', !lit);
+
+    const fmt = (v, d, u) => v === null ? '—' : `${v.toFixed(d)} ${u}`;
+    const items = [];
+    if (c.show_power) items.push(['p', this._t('power'), fmt(power, 0, 'W')]);
+    if (c.show_energy) items.push(['e', this._t('energy'), fmt(energy, 2, 'kWh')]);
+    if (c.show_temperature) items.push(['t', this._t('temp'), fmt(temp, 1, '°C')]);
+    if (c.show_cost) items.push(['c', this._t('cost'), fmt(cost, 2, '€')]);
+    root.getElementById('stats').innerHTML = items.map(([k, l, v]) =>
+      `<div class="stat ${k}"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
+  }
+}
+
+define('appliance-aquarium-card', ApplianceAquariumCard);
+window.customCards = window.customCards || [];
+window.customCards.push({ type: 'appliance-aquarium-card', name: 'Aquarium Card', description: 'Aquarium animé : puissance, kWh, température, coût', preview: false });
+})();
+
+/* ================================================================== */
+/* appliance-linky-card.js                                          */
+/* ================================================================== */
+(() => {
+"use strict";
+const define = (tag, cls) => { if (!customElements.get(tag)) customElements.define(tag, cls); };
+window.customCards = window.customCards || [];
+/* appliance-linky-card — compteur Linky animé (écran LCD, jauge vs puissance souscrite, index HP/HC)
+ * type: custom:appliance-linky-card
+ */
+const I18N_LINKY = {
+  fr: { power: 'PUISSANCE', hp: 'INDEX HP', hc: 'INDEX HC', tariff: 'TARIF EN COURS', cost: 'COÛT JOUR', subscribed: 'Souscrite', name: 'Linky', conso: 'conso', alert: 'Dépassement' },
+  en: { power: 'POWER', hp: 'PEAK INDEX', hc: 'OFF-PEAK INDEX', tariff: 'CURRENT TARIFF', cost: 'COST TODAY', subscribed: 'Subscribed', name: 'Linky', conso: 'usage', alert: 'Overload' },
+};
+
+class ApplianceLinkyCard extends HTMLElement {
+  static getStubConfig() {
+    return { entity_power: '', entity_hp: '', entity_hc: '', subscribed_power: 9, hc_ranges: '01:00-07:00,12:30-14:30' };
+  }
+
+  static getConfigForm() {
+    return {
+      schema: [
+        { name: 'name', selector: { text: {} } },
+        { name: 'entity_power', selector: { entity: { domain: 'sensor' } } },
+        { name: 'entity_hp', selector: { entity: { domain: 'sensor', device_class: 'energy' } } },
+        { name: 'entity_hc', selector: { entity: { domain: 'sensor', device_class: 'energy' } } },
+        { name: 'entity_tariff', selector: { entity: { domain: ['sensor', 'select'] } } },
+        { name: 'entity_cost', selector: { entity: { domain: 'sensor' } } },
+        { name: 'subscribed_power', selector: { number: { min: 3, max: 36, step: 1, mode: 'box', unit_of_measurement: 'kVA' } } },
+        { name: 'hc_ranges', selector: { text: {} } },
+        { type: 'grid', name: '', schema: [
+          { name: 'show_gauge', selector: { boolean: {} } },
+          { name: 'show_index', selector: { boolean: {} } },
+          { name: 'show_tariff', selector: { boolean: {} } },
+          { name: 'show_cost', selector: { boolean: {} } },
+        ] },
+        { name: 'language', selector: { select: { options: ['fr', 'en'] } } },
+      ],
+    };
+  }
+
+  setConfig(config) {
+    this._config = {
+      show_gauge: true, show_index: true, show_tariff: true, show_cost: true,
+      subscribed_power: 9, hc_ranges: '', language: 'fr', ...config,
+    };
+    this._built = false;
+    this._build();
+  }
+
+  set hass(hass) { this._hass = hass; this._update(); }
+  getCardSize() { return 5; }
+  _t(k) { return (I18N_LINKY[this._config.language] || I18N_LINKY.fr)[k]; }
+
+  connectedCallback() {
+    // Défilement des pages de l'écran LCD toutes les 3 s
+    this._timer = setInterval(() => {
+      this._page = (this._page || 0) + 1; this._renderLcd();
+      const b = this.shadowRoot && this.shadowRoot.getElementById('b2');
+      if (b) { b.classList.add('press'); setTimeout(() => b.classList.remove('press'), 250); }
+    }, 3000);
+  }
+  disconnectedCallback() { clearInterval(this._timer); }
+
+  _build() {
+    if (!this.shadowRoot) this.attachShadow({ mode: 'open' });
+    const ticks = Array.from({ length: 21 }, (_, i) => {
+      const a = (-180 + i * 9) * Math.PI / 180, r1 = 78, r2 = i % 5 === 0 ? 68 : 72;
+      return `<line x1="${100 + r1 * Math.cos(a)}" y1="${100 + r1 * Math.sin(a)}" x2="${100 + r2 * Math.cos(a)}" y2="${100 + r2 * Math.sin(a)}" stroke="#8a99a8" stroke-width="1.5"/>`;
+    }).join('');
+    this.shadowRoot.innerHTML = `
+    <style>
+      :host { display:block; }
+      ha-card { padding:12px; }
+      .title { font-weight:600; margin:0 4px 10px; }
+      .wrap { display:flex; gap:14px; align-items:center; flex-wrap:wrap; justify-content:center; }
+      /* Boîtier : coque vert anis, cadre blanc, écran LCD vert sombre, 2 boutons, croix en bas */
+      .box { width:150px; background:linear-gradient(160deg,#d4ea35,#b5d11c); border-radius:10px; padding:16px 14px 14px;
+        box-shadow:0 3px 10px rgba(0,0,0,.35), inset 0 0 0 2px rgba(255,255,255,.35); position:relative; }
+      .eye { width:8px; height:8px; background:#1d2a05; border-radius:2px; margin:-6px auto 8px; }
+      .bezel { background:linear-gradient(#f7f7f7,#dcdcdc); border-radius:12px; padding:10px 9px 8px; box-shadow:inset 0 0 0 1px #c9c9c9; }
+      .lcd { background:#1f4d2a; border-radius:3px; padding:8px 6px; min-height:66px; text-align:center; position:relative; overflow:hidden;
+        box-shadow:inset 0 0 8px rgba(0,0,0,.7); font-family:'Courier New',monospace; color:#b9f08a; display:flex; flex-direction:column; justify-content:center; }
+      .lcd::after { content:''; position:absolute; inset:0; background:repeating-linear-gradient(0deg,rgba(0,0,0,.12) 0 1px,transparent 1px 3px); pointer-events:none; }
+      .lcd .lab { font-size:.58em; letter-spacing:.08em; opacity:.85; }
+      .lcd .val { font-size:1.25em; font-weight:700; text-shadow:0 0 6px rgba(185,240,138,.6); animation:fadein .5s; }
+      .btns { display:flex; gap:6px; margin-top:8px; justify-content:center; }
+      .btn { width:44px; height:12px; border-radius:3px; background:linear-gradient(#fff,#d2d2d2); border:1px solid #b0b0b0; cursor:pointer; padding:0; transition:transform .1s; }
+      .btn:active, .btn.press { transform:translateY(1px); background:#c8c8c8; }
+      .plus { text-align:center; font-size:20px; line-height:1; color:#3b4a08; margin-top:12px; font-weight:300; }
+      .leds { display:flex; justify-content:center; gap:14px; margin-top:8px; font-size:.55em; letter-spacing:.06em; color:#3b4a08; }
+      .led { width:9px; height:9px; border-radius:50%; background:#5a2a2a; margin:0 auto 2px; }
+      .led.conso { background:#ff3b30; box-shadow:0 0 8px #ff3b30; animation:pulse var(--pulse,2s) infinite; }
+      .led.hc { background:#ffb300; box-shadow:0 0 8px #ffb300; } .led.hp { background:#6b5a2a; }
+      .gauge { flex:1; min-width:170px; max-width:260px; }
+      .gauge svg { width:100%; display:block; }
+      .arc-bg { fill:none; stroke:rgba(127,127,127,.25); stroke-width:12; stroke-linecap:round; }
+      .arc { fill:none; stroke:var(--gc,#43a047); stroke-width:12; stroke-linecap:round; transition:stroke-dashoffset 1s ease, stroke .6s; }
+      .needle { transform-origin:100px 100px; transition:transform 1s cubic-bezier(.3,1.4,.5,1); stroke:var(--primary-text-color,#223); stroke-width:3; stroke-linecap:round; }
+      .gtxt { text-anchor:middle; font-size:15px; font-weight:700; fill:var(--primary-text-color,#223); }
+      .gsub { text-align:center; font-size:.7em; opacity:.65; }
+      .over .arc { animation:pulse .6s infinite; }
+      .badge { text-align:center; font-size:.8em; font-weight:700; margin-top:4px; color:#e53935; display:none; }
+      .over .badge { display:block; animation:pulse .6s infinite; }
+      @keyframes pulse { 50% { opacity:.25 } }
+      @keyframes fadein { from { opacity:0; transform:translateY(5px) } to { opacity:1; transform:none } }
+    </style>
+    <ha-card id="meter">
+      <div class="title" id="name">${this._config.name || this._t('name')}</div>
+      <div class="wrap">
+        <div class="box">
+          <div class="eye"></div>
+          <div class="bezel">
+            <div class="lcd"><div class="lab" id="lab"></div><div class="val" id="val"></div></div>
+            <div class="btns"><button class="btn" id="b1" aria-label="-"></button><button class="btn" id="b2" aria-label="+"></button></div>
+          </div>
+          <div class="plus">+</div>
+          <div class="leds"><div><div class="led conso" id="ledc"></div>${this._t('conso')}</div><div><div class="led hp" id="ledt"></div><span id="ledtl">HP</span></div></div>
+        </div>
+        <div class="gauge" id="gaugebox">
+          <svg viewBox="0 0 200 120">
+            <path class="arc-bg" d="M20 100 A80 80 0 0 1 180 100"/>
+            <path class="arc" id="arc" d="M20 100 A80 80 0 0 1 180 100" stroke-dasharray="251.3" stroke-dashoffset="251.3"/>
+            ${ticks}
+            <line class="needle" id="needle" x1="100" y1="100" x2="100" y2="32" style="transform:rotate(-90deg)"/>
+            <circle cx="100" cy="100" r="6" fill="var(--primary-text-color,#223)"/>
+            <text class="gtxt" x="100" y="118" id="gtxt"></text>
+          </svg>
+          <div class="gsub" id="gsub"></div>
+          <div class="badge">${this._t('alert')}</div>
+        </div>
+      </div>
+    </ha-card>`;
+    const flip = (d) => () => { this._page = (this._page || 0) + d; this._renderLcd(); };
+    this.shadowRoot.getElementById('b1').onclick = flip(-1);
+    this.shadowRoot.getElementById('b2').onclick = flip(1);
+    this._built = true;
+  }
+
+  _num(id) {
+    if (!id || !this._hass) return null;
+    const s = this._hass.states[id];
+    if (!s || ['unavailable', 'unknown'].includes(s.state)) return null;
+    const n = parseFloat(s.state);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  // Heures creuses : entité tarif si fournie, sinon plages "HH:MM-HH:MM,..."
+  _isHC() {
+    const c = this._config;
+    if (c.entity_tariff && this._hass.states[c.entity_tariff]) {
+      return /hc|creuse|off|low/i.test(this._hass.states[c.entity_tariff].state);
+    }
+    const now = new Date(), m = now.getHours() * 60 + now.getMinutes();
+    return String(c.hc_ranges).split(',').some((r) => {
+      const [a, b] = r.trim().split('-'); if (!a || !b) return false;
+      const f = (x) => { const [h, mi] = x.split(':').map(Number); return h * 60 + (mi || 0); };
+      const s = f(a), e = f(b);
+      return s <= e ? m >= s && m < e : m >= s || m < e;
+    });
+  }
+
+  _renderLcd() {
+    if (!this._built || !this._data) return;
+    const d = this._data, c = this._config, pages = [];
+    pages.push([this._t('power'), d.power === null ? '—' : `${Math.round(d.power)} ${d.unit}`]);
+    if (c.show_index) {
+      pages.push([this._t('hp'), d.hp === null ? '—' : `${Math.round(d.hp)} kWh`]);
+      pages.push([this._t('hc'), d.hc === null ? '—' : `${Math.round(d.hc)} kWh`]);
+    }
+    if (c.show_tariff) pages.push([this._t('tariff'), d.hcNow ? 'HEURES CREUSES' : 'HEURES PLEINES']);
+    if (c.show_cost && d.cost !== null) pages.push([this._t('cost'), `${d.cost.toFixed(2)} €`]);
+    const p = pages[(this._page || 0) % pages.length];
+    const lab = this.shadowRoot.getElementById('lab'), val = this.shadowRoot.getElementById('val');
+    lab.textContent = p[0];
+    // On ne relance le fondu que si la page affichée change (pas à chaque mise à jour d'état)
+    const key = p[0];
+    val.textContent = p[1];
+    if (this._lastKey !== key) { this._lastKey = key; val.style.animation = 'none'; void val.offsetWidth; val.style.animation = ''; }
+  }
+
+  _update() {
+    if (!this._built || !this._hass) return;
+    const c = this._config, root = this.shadowRoot;
+    const pState = c.entity_power && this._hass.states[c.entity_power];
+    const unit = (pState && pState.attributes.unit_of_measurement) || 'W';
+    let power = this._num(c.entity_power);
+    const hp = this._num(c.entity_hp), hc = this._num(c.entity_hc);
+    const hcNow = this._isHC();
+    let cost = this._num(c.entity_cost);
+    this._data = { power, unit, hp, hc, hcNow, cost };
+
+    // Jauge : puissance (W ou VA) / puissance souscrite (kVA × 1000)
+    const max = c.subscribed_power * 1000;
+    const watts = power === null ? 0 : (unit === 'kW' ? power * 1000 : power);
+    const ratio = Math.min(watts / max, 1);
+    root.getElementById('arc').style.strokeDashoffset = 251.3 * (1 - ratio);
+    root.getElementById('needle').style.transform = `rotate(${-90 + ratio * 180}deg)`;
+    const color = ratio > 0.9 ? '#e53935' : ratio > 0.65 ? '#fb8c00' : '#43a047';
+    root.getElementById('gaugebox').style.setProperty('--gc', color);
+    root.getElementById('gtxt').textContent = power === null ? '—' : `${Math.round(watts)} W`;
+    root.getElementById('gsub').textContent = `${this._t('subscribed')} : ${c.subscribed_power} kVA`;
+    root.getElementById('gaugebox').style.display = c.show_gauge ? '' : 'none';
+    root.getElementById('meter').classList.toggle('over', ratio > 0.95);
+
+    // LED conso : clignote plus vite quand la puissance monte (2 s → 0.25 s)
+    root.getElementById('ledc').style.setProperty('--pulse', `${(2 - ratio * 1.75).toFixed(2)}s`);
+    const ledt = root.getElementById('ledt');
+    ledt.className = `led ${hcNow ? 'hc' : 'hp'}`;
+    root.getElementById('ledtl').textContent = hcNow ? 'HC' : 'HP';
+    this._renderLcd();
+  }
+}
+
+define('appliance-linky-card', ApplianceLinkyCard);
+window.customCards = window.customCards || [];
+window.customCards.push({ type: 'appliance-linky-card', name: 'Linky Card', description: 'Compteur Linky animé : LCD, jauge, index HP/HC', preview: false });
+})();
+
+/* ================================================================== */
+/* appliance-battery-card.js                                        */
+/* ================================================================== */
+(() => {
+"use strict";
+const define = (tag, cls) => { if (!customElements.get(tag)) customElements.define(tag, cls); };
+window.customCards = window.customCards || [];
+/* appliance-battery-card — batterie de stockage solaire animée (niveau liquide, flux charge/décharge)
+ * type: custom:appliance-battery-card
+ */
+const I18N_BAT = {
+  fr: { name: 'Batterie solaire', soc: 'Charge', power: 'Puissance', energy: 'Énergie', temp: 'Température', charging: 'En charge', discharging: 'En décharge', idle: 'Repos', full: 'Plein dans', empty: 'Vide dans', low: 'Batterie faible' },
+  en: { name: 'Solar battery', soc: 'Charge', power: 'Power', energy: 'Energy', temp: 'Temperature', charging: 'Charging', discharging: 'Discharging', idle: 'Idle', full: 'Full in', empty: 'Empty in', low: 'Low battery' },
+};
+
+class ApplianceBatteryCard extends HTMLElement {
+  static getStubConfig() { return { entity_soc: '', entity_power: '', entity_energy: '', entity_temperature: '', capacity_kwh: 10, max_power: 5000 }; }
+
+  static getConfigForm() {
+    return {
+      schema: [
+        { name: 'name', selector: { text: {} } },
+        { name: 'entity_soc', selector: { entity: { domain: 'sensor', device_class: 'battery' } } },
+        { name: 'entity_power', selector: { entity: { domain: 'sensor', device_class: 'power' } } },
+        { name: 'invert_power', selector: { boolean: {} } },
+        { name: 'entity_energy', selector: { entity: { domain: 'sensor', device_class: 'energy' } } },
+        { name: 'entity_temperature', selector: { entity: { domain: 'sensor', device_class: 'temperature' } } },
+        { type: 'grid', name: '', schema: [
+          { name: 'capacity_kwh', selector: { number: { min: 1, max: 100, step: 0.1, mode: 'box', unit_of_measurement: 'kWh' } } },
+          { name: 'max_power', selector: { number: { min: 500, max: 20000, step: 100, mode: 'box', unit_of_measurement: 'W' } } },
+          { name: 'low_threshold', selector: { number: { min: 0, max: 50, step: 1, mode: 'box', unit_of_measurement: '%' } } },
+        ] },
+        { type: 'grid', name: '', schema: [
+          { name: 'show_power', selector: { boolean: {} } },
+          { name: 'show_energy', selector: { boolean: {} } },
+          { name: 'show_temperature', selector: { boolean: {} } },
+          { name: 'show_time', selector: { boolean: {} } },
+        ] },
+        { name: 'language', selector: { select: { options: ['fr', 'en'] } } },
+      ],
+    };
+  }
+
+  setConfig(config) {
+    // Convention : puissance > 0 = charge (inverser avec invert_power si ton capteur est l'inverse)
+    this._config = { show_power: true, show_energy: true, show_temperature: true, show_time: true,
+      capacity_kwh: 10, max_power: 5000, low_threshold: 15, invert_power: false, language: 'fr', ...config };
+    this._built = false; this._build();
+  }
+  set hass(h) { this._hass = h; this._update(); }
+  getCardSize() { return 5; }
+  _t(k) { return (I18N_BAT[this._config.language] || I18N_BAT.fr)[k]; }
+
+  _build() {
+    if (!this.shadowRoot) this.attachShadow({ mode: 'open' });
+    // 3 modules façon photo : corps blanc nervuré, couvercle noir, étiquette, câbles orange
+    const X = [24, 112, 200], TOP = 40, LID = 22, BODY = 98, W = 80, D = 14;
+    const mod = (x0, i) => {
+      const ribs = Array.from({ length: 9 }, (_, k) => `<line x1="${x0 + 44 + k * 4}" y1="${TOP + LID + 4}" x2="${x0 + 44 + k * 4}" y2="${TOP + LID + BODY - 4}" stroke="#d9dde1" stroke-width="1"/>`).join('');
+      return `
+      <g class="mod">
+        <polygon points="${x0 + W},${TOP + LID} ${x0 + W + D},${TOP + LID - D} ${x0 + W + D},${TOP + LID + BODY - D} ${x0 + W},${TOP + LID + BODY}" fill="#c9ced3"/>
+        <polygon points="${x0 + W},${TOP} ${x0 + W + D},${TOP - D} ${x0 + W + D},${TOP + LID - D} ${x0 + W},${TOP + LID}" fill="#0d0d0d"/>
+        <polygon points="${x0},${TOP} ${x0 + D},${TOP - D} ${x0 + W + D},${TOP - D} ${x0 + W},${TOP}" fill="#2a2a2a"/>
+        <polygon points="${x0 + 36},${TOP - 4} ${x0 + 42},${TOP - 10} ${x0 + 72},${TOP - 10} ${x0 + 66},${TOP - 4}" fill="#f2f2f2"/>
+        <rect x="${x0}" y="${TOP}" width="${W}" height="${LID}" rx="3" fill="#161616"/>
+        <rect x="${x0 + 8}" y="${TOP + 7}" width="20" height="6" rx="3" fill="#000"/>
+        <circle class="led" cx="${x0 + W - 10}" cy="${TOP + 11}" r="3" style="animation-delay:${i * 0.3}s"/>
+        <rect x="${x0}" y="${TOP + LID}" width="${W}" height="${BODY}" fill="url(#body)"/>
+        ${ribs}
+        <g clip-path="url(#c${i})">
+          <rect class="liquid" id="liq${i}" x="${x0}" y="${TOP + LID + BODY}" width="${W}" height="0"/>
+          <path class="wave" id="wave${i}" d="M${x0 - 20} 0 q 10 -6 20 0 t 20 0 t 20 0 t 20 0 t 20 0 t 20 0 v 10 h-120z" style="animation-delay:${-i * 0.7}s"/>
+        </g>
+        <circle cx="${x0 + 6}" cy="${TOP + LID + BODY - 6}" r="2" fill="#9aa3ad"/>
+      </g>`;
+    };
+    const clips = X.map((x, i) => `<clipPath id="c${i}"><rect x="${x}" y="${TOP + LID}" width="${W}" height="${BODY}"/></clipPath>`).join('');
+    // Câbles orange entre bornes (dessus des couvercles) + câble de sortie
+    const cab = (x1, x2) => `M${x1} ${TOP - 6} C ${x1} ${TOP - 30}, ${x2} ${TOP - 30}, ${x2} ${TOP - 6}`;
+    const cables = [cab(46, 128), cab(134, 216), `M${X[2] + W + 8} ${TOP - 6} C ${X[2] + W + 30} ${TOP - 20}, ${X[2] + W + 26} ${TOP + 60}, ${X[2] + W + 22} ${TOP + 110}`];
+    this.shadowRoot.innerHTML = `
+    <style>
+      :host { display:block; }
+      ha-card { padding:12px; overflow:hidden; }
+      .title { font-weight:600; margin:0 4px 4px; display:flex; justify-content:space-between; align-items:center; }
+      .badge { font-size:.75em; color:#fff; background:#e53935; border-radius:10px; padding:2px 8px; display:none; animation:blink 1s infinite; }
+      .low .badge { display:inline-block; }
+      svg { width:100%; height:auto; display:block; overflow:visible; }
+      .liquid { fill:var(--lc,#43a047); opacity:.35; transition:y 1.2s ease, height 1.2s ease, fill .8s; }
+      .wave { fill:var(--lc,#43a047); opacity:.45; animation:wave 2.6s ease-in-out infinite alternate; transition:fill .8s; }
+      .led { fill:var(--lc,#43a047); animation:blink var(--bl,2s) infinite; filter:drop-shadow(0 0 3px var(--lc,#43a047)); }
+      .cable { fill:none; stroke:#ff7a1a; stroke-width:5; stroke-linecap:round; }
+      .cable-b { fill:none; stroke:#111; stroke-width:8; stroke-linecap:round; }
+      .flow { fill:none; stroke-width:2.5; stroke-linecap:round; stroke-dasharray:2 9; opacity:0; }
+      .charging .flow { stroke:#fff6a0; opacity:1; animation:dash var(--fs,1s) linear infinite reverse; }
+      .discharging .flow { stroke:#b3f5ff; opacity:1; animation:dash var(--fs,1s) linear infinite; }
+      .soc { fill:#1d2733; font:800 26px system-ui,sans-serif; text-anchor:middle; }
+      .state { fill:#4b5563; font:700 7.5px system-ui,sans-serif; text-anchor:middle; letter-spacing:.12em; }
+      .bolt { fill:#ffb300; opacity:0; } .charging .bolt { opacity:1; animation:blink 1.2s infinite; }
+      .arrow { fill:#00acc1; opacity:0; } .discharging .arrow { opacity:1; animation:blink 1.2s infinite; }
+      .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(78px,1fr)); gap:8px; margin-top:6px; }
+      .stat { text-align:center; background:var(--secondary-background-color, rgba(127,127,127,.12)); border-radius:10px; padding:6px 4px; }
+      .stat .v { font-weight:700; font-size:1.05em; } .stat .l { font-size:.7em; opacity:.65; text-transform:uppercase; letter-spacing:.04em; }
+      @keyframes dash { to { stroke-dashoffset:-11; } } @keyframes blink { 50% { opacity:.35; } }
+      @keyframes wave { from { transform:translate(-12px, var(--wy,0px)); } to { transform:translate(8px, var(--wy,0px)); } }
+    </style>
+    <ha-card id="card">
+      <div class="title"><span>${this._config.name || this._t('name')}</span><span class="badge">${this._t('low')}</span></div>
+      <svg viewBox="0 -6 320 176" id="svg">
+        <defs>
+          <linearGradient id="body" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#f7f8f9"/><stop offset="1" stop-color="#e3e6e9"/></linearGradient>
+          ${clips}
+        </defs>
+        ${[2, 1, 0].map((i) => mod(X[i], i)).join('')}
+        ${cables.map((d) => `<path class="cable-b" d="${d}"/><path class="cable" d="${d}"/><path class="flow" d="${d}"/>`).join('')}
+        <text class="state" id="state" x="${X[1] + W / 2}" y="${TOP + LID + 20}"></text>
+        <text class="soc" id="soc" x="${X[1] + W / 2}" y="${TOP + LID + 52}"></text>
+        <path class="bolt" d="M${X[1] + 44} ${TOP + LID + 60} l-9 13 h6 l-3 11 l9 -13 h-6 z"/>
+        <path class="arrow" d="M${X[1] + 40} ${TOP + LID + 84} l-7 -9 h4 v-9 h6 v9 h4 z"/>
+      </svg>
+      <div class="stats" id="stats"></div>
+    </ha-card>`;
+    this._built = true;
+  }
+
+  _num(id) {
+    if (!id || !this._hass) return null;
+    const s = this._hass.states[id];
+    if (!s || ['unavailable', 'unknown'].includes(s.state)) return null;
+    const n = parseFloat(s.state); return Number.isFinite(n) ? n : null;
+  }
+
+  _update() {
+    if (!this._built || !this._hass) return;
+    const c = this._config, r = this.shadowRoot;
+    const soc = this._num(c.entity_soc), energy = this._num(c.entity_energy), temp = this._num(c.entity_temperature);
+    let p = this._num(c.entity_power); if (p !== null && c.invert_power) p = -p;
+    const pct = soc === null ? 0 : Math.max(0, Math.min(100, soc));
+    // Remplissage des 3 modules (corps : y 62 → 160)
+    const h = 98 * pct / 100;
+    [0, 1, 2].forEach((i) => {
+      const liq = r.getElementById(`liq${i}`); liq.setAttribute('y', 160 - h); liq.setAttribute('height', h);
+      r.getElementById(`wave${i}`).style.setProperty('--wy', `${160 - h - 5}px`);
+    });
+    r.getElementById('soc').textContent = soc === null ? '—' : `${Math.round(pct)}%`;
+    const color = pct <= c.low_threshold ? '#e53935' : pct <= 40 ? '#fb8c00' : '#43a047';
+    const svg = r.getElementById('svg'); svg.style.setProperty('--lc', color);
+    const mode = p === null || Math.abs(p) < 10 ? 'idle' : p > 0 ? 'charging' : 'discharging';
+    svg.classList.remove('charging', 'discharging', 'idle'); svg.classList.add(mode);
+    r.getElementById('state').textContent = this._t(mode).toUpperCase();
+    const ratio = Math.min(Math.abs(p || 0) / c.max_power, 1);
+    svg.style.setProperty('--fs', `${(1.4 - ratio * 1.1).toFixed(2)}s`);
+    svg.style.setProperty('--bl', mode === 'idle' ? '3s' : '1s');
+    r.getElementById('card').classList.toggle('low', soc !== null && pct <= c.low_threshold);
+
+    // Temps restant avant plein / vide
+    let time = null;
+    if (c.show_time && p !== null && Math.abs(p) >= 10 && c.capacity_kwh) {
+      const kwh = p > 0 ? c.capacity_kwh * (100 - pct) / 100 : c.capacity_kwh * pct / 100;
+      const hrs = kwh * 1000 / Math.abs(p);
+      time = `${p > 0 ? this._t('full') : this._t('empty')} ${Math.floor(hrs)}h${String(Math.round((hrs % 1) * 60)).padStart(2, '0')}`;
+    }
+    const f = (v, d, u) => (v === null ? '—' : `${v.toFixed(d)} ${u}`);
+    const it = [];
+    if (c.show_power) it.push([this._t('power'), f(p === null ? null : Math.abs(p), 0, 'W')]);
+    if (c.show_energy) it.push([this._t('energy'), f(energy !== null ? energy : (soc === null ? null : c.capacity_kwh * pct / 100), 1, 'kWh')]);
+    if (c.show_temperature) it.push([this._t('temp'), f(temp, 0, '°C')]);
+    if (time) it.push(['⏱', time]);
+    r.getElementById('stats').innerHTML = it.map(([l, v]) => `<div class="stat"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
+  }
+}
+define('appliance-battery-card', ApplianceBatteryCard);
+window.customCards = window.customCards || [];
+window.customCards.push({ type: 'appliance-battery-card', name: 'Solar Battery Card', description: 'Batterie de stockage solaire animée', preview: false });
+})();
+
+/* ================================================================== */
+/* appliance-ev-charger-card.js                                     */
+/* ================================================================== */
+(() => {
+"use strict";
+const define = (tag, cls) => { if (!customElements.get(tag)) customElements.define(tag, cls); };
+window.customCards = window.customCards || [];
+/* appliance-ev-charger-card — wallbox murale + voiture branchée, animée
+ * type: custom:appliance-ev-charger-card
+ */
+const I18N_EV = {
+  fr: { name: 'Borne de recharge', power: 'Puissance', energy: 'Session', soc: 'Batterie', status: 'Statut', duration: 'Durée', cost: 'Coût',
+    charging: 'En charge', plugged: 'Branchée', done: 'Terminée', disconnected: 'Débranchée' },
+  en: { name: 'EV charger', power: 'Power', energy: 'Session', soc: 'Battery', status: 'Status', duration: 'Duration', cost: 'Cost',
+    charging: 'Charging', plugged: 'Plugged in', done: 'Complete', disconnected: 'Unplugged' },
+};
+
+class ApplianceEvChargerCard extends HTMLElement {
+  static getStubConfig() { return { entity_power: '', entity_session_energy: '', entity_car_soc: '', entity_status: '', max_power: 7400, price_per_kwh: 0.2 }; }
+
+  static getConfigForm() {
+    return {
+      schema: [
+        { name: 'name', selector: { text: {} } },
+        { name: 'entity_power', selector: { entity: { domain: 'sensor', device_class: 'power' } } },
+        { name: 'entity_session_energy', selector: { entity: { domain: 'sensor', device_class: 'energy' } } },
+        { name: 'entity_car_soc', selector: { entity: { domain: 'sensor' } } },
+        { name: 'entity_status', selector: { entity: { domain: ['sensor', 'binary_sensor', 'select'] } } },
+        { name: 'entity_cost', selector: { entity: { domain: 'sensor' } } },
+        { type: 'grid', name: '', schema: [
+          { name: 'max_power', selector: { number: { min: 1000, max: 22000, step: 100, mode: 'box', unit_of_measurement: 'W' } } },
+          { name: 'price_per_kwh', selector: { number: { min: 0, max: 2, step: 0.0001, mode: 'box' } } },
+          { name: 'car_color', selector: { text: {} } },
+        ] },
+        { type: 'grid', name: '', schema: [
+          { name: 'show_power', selector: { boolean: {} } },
+          { name: 'show_energy', selector: { boolean: {} } },
+          { name: 'show_soc', selector: { boolean: {} } },
+          { name: 'show_status', selector: { boolean: {} } },
+          { name: 'show_duration', selector: { boolean: {} } },
+          { name: 'show_cost', selector: { boolean: {} } },
+        ] },
+        { name: 'language', selector: { select: { options: ['fr', 'en'] } } },
+      ],
+    };
+  }
+
+  setConfig(config) {
+    this._config = { show_power: true, show_energy: true, show_soc: true, show_status: true, show_duration: true, show_cost: true,
+      max_power: 7400, price_per_kwh: 0.2, car_color: '#3d6fb6', language: 'fr', ...config };
+    this._built = false; this._build();
+  }
+  set hass(h) { this._hass = h; this._update(); }
+  getCardSize() { return 5; }
+  connectedCallback() { this._timer = setInterval(() => this._update(), 30000); } // rafraîchit la durée
+  disconnectedCallback() { clearInterval(this._timer); }
+  _t(k) { return (I18N_EV[this._config.language] || I18N_EV.fr)[k]; }
+
+  _build() {
+    if (!this.shadowRoot) this.attachShadow({ mode: 'open' });
+    const car = this._config.car_color;
+    const cable = 'M44 112 C 44 168, 112 170, 134 118';
+    this.shadowRoot.innerHTML = `
+    <style>
+      :host { display:block; }
+      ha-card { padding:12px; overflow:hidden; }
+      .title { font-weight:600; margin:0 4px 4px; }
+      svg { width:100%; height:auto; display:block; overflow:visible; }
+      .ledbar { fill:var(--st,#9e9e9e); filter:drop-shadow(0 0 4px var(--st,#9e9e9e)); transition:fill .6s; }
+      .charging .ledbar { animation:breathe var(--sp,2s) ease-in-out infinite; }
+      .scr { fill:#0c1a24; } .scrtxt { fill:#7fe0ff; font:700 8px 'Courier New',monospace; text-anchor:middle; }
+      .cable { fill:none; stroke:#1b1b1b; stroke-width:6; stroke-linecap:round; }
+      .flow { fill:none; stroke:#7cff9b; stroke-width:2.6; stroke-linecap:round; stroke-dasharray:2 9; opacity:0; }
+      .charging .flow { opacity:1; animation:dash var(--sp,1s) linear infinite; }
+      .plugged-cable { transition:opacity .6s; } .disconnected .plugged-cable { opacity:0; }
+      .hang { opacity:0; transition:opacity .6s; } .disconnected .hang { opacity:1; }
+      .spark { fill:#fff59d; opacity:0; } .charging .spark { animation:spark 1.2s ease-in-out infinite; }
+      .gfill { fill:var(--gc,#43a047); transition:width 1.2s ease, fill .6s; }
+      .charging .gfill { animation:breathe 2s ease-in-out infinite; }
+      .gtxt { fill:#fff; font:800 10px system-ui,sans-serif; text-anchor:middle; text-shadow:0 1px 2px rgba(0,0,0,.6); }
+      .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(78px,1fr)); gap:8px; margin-top:6px; }
+      .stat { text-align:center; background:var(--secondary-background-color, rgba(127,127,127,.12)); border-radius:10px; padding:6px 4px; }
+      .stat .v { font-weight:700; font-size:1.05em; } .stat .l { font-size:.7em; opacity:.65; text-transform:uppercase; letter-spacing:.04em; }
+      @keyframes dash { to { stroke-dashoffset:-11; } }
+      @keyframes breathe { 50% { opacity:.45; } }
+      @keyframes spark { 0%,100% { opacity:0; transform:scale(.6); } 50% { opacity:1; transform:scale(1.1); } }
+    </style>
+    <ha-card>
+      <div class="title">${this._config.name || this._t('name')}</div>
+      <svg viewBox="0 0 340 172" id="svg">
+        <defs>
+          <linearGradient id="wb" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#40454d"/><stop offset="1" stop-color="#16191d"/></linearGradient>
+          <linearGradient id="carb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${car}"/><stop offset="1" stop-color="${car}" stop-opacity=".75"/></linearGradient>
+          <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9fc3dc"/><stop offset="1" stop-color="#2d4456"/></linearGradient>
+        </defs>
+
+        <!-- Wallbox -->
+        <rect x="12" y="6" width="64" height="106" rx="14" fill="url(#wb)"/>
+        <rect x="18" y="12" width="52" height="94" rx="10" fill="#2c3036" stroke="rgba(255,255,255,.08)"/>
+        <rect class="ledbar" x="41" y="22" width="6" height="44" rx="3"/>
+        <rect class="scr" x="25" y="76" width="38" height="16" rx="3"/>
+        <text class="scrtxt" x="44" y="87" id="scr"></text>
+        <rect x="36" y="104" width="16" height="10" rx="3" fill="#111"/>
+        <!-- Câble rangé (débranché) -->
+        <path class="hang cable" d="M44 112 C 44 150, 92 150, 84 110"/>
+        <rect class="hang" x="78" y="96" width="12" height="16" rx="3" fill="#2a2a2a"/>
+
+        <!-- Voiture de profil (avant à droite) -->
+        <ellipse cx="228" cy="160" rx="108" ry="5" fill="rgba(0,0,0,.18)"/>
+        <path d="M122 142 L122 120 Q124 108 142 104 L180 99 Q200 78 236 75 L272 75 Q300 77 318 98 L328 102 Q338 106 338 122 L338 142 Z" fill="url(#carb)"/>
+        <path d="M188 99 Q206 82 236 80 L250 80 L250 99 Z" fill="url(#glass)"/>
+        <path d="M256 80 L272 80 Q294 82 308 99 L256 99 Z" fill="url(#glass)"/>
+        <rect x="251" y="80" width="4" height="20" fill="${car}"/>
+        <path d="M200 104 V138 M256 104 V138" stroke="rgba(0,0,0,.25)" stroke-width="1"/>
+        <rect x="236" y="108" width="10" height="2.5" rx="1" fill="rgba(0,0,0,.35)"/><rect x="292" y="108" width="10" height="2.5" rx="1" fill="rgba(0,0,0,.35)"/>
+        <path d="M330 106 l6 2 v6 l-7 -1 z" fill="#fff6c2"/><rect x="122" y="108" width="5" height="8" rx="1" fill="#e53935"/>
+        <rect x="122" y="132" width="216" height="6" fill="rgba(0,0,0,.25)"/>
+        ${[160, 300].map((x) => `<g><circle cx="${x}" cy="142" r="17" fill="#141414"/><circle cx="${x}" cy="142" r="9" fill="#9aa3ad"/><circle cx="${x}" cy="142" r="3" fill="#555"/></g>`).join('')}
+        <!-- Trappe de recharge -->
+        <rect x="130" y="112" width="10" height="10" rx="2" fill="#1d1d1d"/>
+        <!-- Jauge batterie voiture sur la portière -->
+        <g id="gauge">
+          <rect x="205" y="110" width="80" height="20" rx="5" fill="rgba(0,0,0,.45)" stroke="rgba(255,255,255,.85)" stroke-width="1.5"/>
+          <rect x="285" y="116" width="4" height="8" rx="1.5" fill="rgba(255,255,255,.85)"/>
+          <rect class="gfill" id="gfill" x="208" y="113" width="0" height="14" rx="3"/>
+          <text class="gtxt" x="245" y="124" id="gtxt"></text>
+        </g>
+
+        <!-- Câble branché + flux -->
+        <g class="plugged-cable">
+          <path class="cable" d="${cable}"/>
+          <path class="flow" d="${cable}"/>
+          <rect x="128" y="111" width="12" height="12" rx="3" fill="#2a2a2a"/>
+          <g transform="translate(134 117)"><path class="spark" d="M0 -9 L2 -2 L9 0 L2 2 L0 9 L-2 2 L-9 0 L-2 -2 Z" style="transform-box:fill-box;transform-origin:center"/></g>
+        </g>
+      </svg>
+      <div class="stats" id="stats"></div>
+    </ha-card>`;
+    this._built = true;
+  }
+
+  _num(id) {
+    if (!id || !this._hass) return null;
+    const s = this._hass.states[id];
+    if (!s || ['unavailable', 'unknown'].includes(s.state)) return null;
+    const n = parseFloat(s.state); return Number.isFinite(n) ? n : null;
+  }
+
+  // Statut : depuis l'entité si fournie (mots-clés FR/EN), sinon déduit de la puissance
+  _status(watts) {
+    const c = this._config, s = c.entity_status && this._hass.states[c.entity_status];
+    if (s) {
+      const v = String(s.state).toLowerCase();
+      if (/charg(ing|e)\b|en charge|charging/.test(v) && !/dis|termin|complete/.test(v)) return 'charging';
+      if (/complete|finish|termin|full|plein|done/.test(v)) return 'done';
+      if (/connect|plug|branch|on|wait|attente|ready|prêt/.test(v) && !/disconnect|déconnect|débranch|unplug/.test(v)) return watts > 50 ? 'charging' : 'plugged';
+      return 'disconnected';
+    }
+    return watts > 50 ? 'charging' : 'plugged';
+  }
+
+  _update() {
+    if (!this._built || !this._hass) return;
+    const c = this._config, r = this.shadowRoot;
+    const ps = c.entity_power && this._hass.states[c.entity_power];
+    let w = this._num(c.entity_power);
+    if (w !== null && ps && /kw/i.test(ps.attributes.unit_of_measurement || '')) w *= 1000;
+    const energy = this._num(c.entity_session_energy), soc = this._num(c.entity_car_soc);
+    let cost = this._num(c.entity_cost);
+    if (cost === null && energy !== null && c.price_per_kwh) cost = energy * c.price_per_kwh;
+    const st = this._status(w || 0);
+
+    const svg = r.getElementById('svg');
+    svg.classList.remove('charging', 'plugged', 'done', 'disconnected'); svg.classList.add(st);
+    const colors = { charging: '#43ff64', plugged: '#3fa9ff', done: '#43a047', disconnected: '#d0d0d0' };
+    svg.style.setProperty('--st', colors[st]);
+    const ratio = Math.min((w || 0) / c.max_power, 1);
+    svg.style.setProperty('--sp', `${(1.6 - ratio * 1.2).toFixed(2)}s`);
+    r.getElementById('scr').textContent = st === 'charging' ? `${((w || 0) / 1000).toFixed(1)} kW` : this._t(st).toUpperCase().slice(0, 9);
+
+    // Jauge voiture
+    const pct = soc === null ? 0 : Math.max(0, Math.min(100, soc));
+    r.getElementById('gfill').setAttribute('width', (74 * pct / 100).toFixed(1));
+    r.getElementById('gauge').style.display = soc === null ? 'none' : '';
+    svg.style.setProperty('--gc', pct < 20 ? '#e53935' : pct < 50 ? '#fb8c00' : '#43a047');
+    r.getElementById('gtxt').textContent = soc === null ? '' : `${Math.round(pct)}%`;
+
+    // Durée depuis le dernier changement d'état (statut, sinon puissance)
+    let dur = null;
+    const ref = (c.entity_status && this._hass.states[c.entity_status]) || ps;
+    if (st === 'charging' && ref && ref.last_changed) {
+      const m = Math.max(0, Math.round((Date.now() - new Date(ref.last_changed).getTime()) / 60000));
+      dur = `${Math.floor(m / 60)}h${String(m % 60).padStart(2, '0')}`;
+    }
+
+    const f = (v, d, u) => (v === null ? '—' : `${v.toFixed(d)} ${u}`);
+    const it = [];
+    if (c.show_power) it.push([this._t('power'), w === null ? '—' : w >= 1000 ? `${(w / 1000).toFixed(1)} kW` : `${Math.round(w)} W`]);
+    if (c.show_energy) it.push([this._t('energy'), f(energy, 1, 'kWh')]);
+    if (c.show_soc && soc !== null) it.push([this._t('soc'), f(soc, 0, '%')]);
+    if (c.show_status) it.push([this._t('status'), this._t(st)]);
+    if (c.show_duration) it.push([this._t('duration'), dur || '—']);
+    if (c.show_cost) it.push([this._t('cost'), f(cost, 2, '€')]);
+    // 5-6 valeurs → 2 lignes équilibrées
+    r.getElementById('stats').style.gridTemplateColumns = `repeat(${it.length > 4 ? Math.ceil(it.length / 2) : it.length}, 1fr)`;
+    r.getElementById('stats').innerHTML = it.map(([l, v]) => `<div class="stat"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
+  }
+}
+define('appliance-ev-charger-card', ApplianceEvChargerCard);
+window.customCards = window.customCards || [];
+window.customCards.push({ type: 'appliance-ev-charger-card', name: 'EV Charger Card', description: 'Wallbox murale animée avec voiture branchée', preview: false });
+})();
+
+/* ================================================================== */
+/* appliance-robot-vacuum-card.js                                   */
+/* ================================================================== */
+(() => {
+"use strict";
+const define = (tag, cls) => { if (!customElements.get(tag)) customElements.define(tag, cls); };
+window.customCards = window.customCards || [];
+/* appliance-robot-vacuum-card — robot aspirateur + station de vidage, animé, avec commandes
+ * type: custom:appliance-robot-vacuum-card
+ */
+const I18N_VAC = {
+  fr: { name: 'Robot aspirateur', battery: 'Batterie', area: 'Surface', time: 'Durée', fan: 'Aspiration', status: 'Statut', filter: 'Filtre', brush: 'Brosse',
+    start: 'Démarrer', pause: 'Pause', dock: 'Base',
+    cleaning: 'Nettoyage', docked: 'À la base', charging: 'En charge', returning: 'Retour base', paused: 'En pause', idle: 'Inactif', error: 'Erreur', emptying: 'Vidage' },
+  en: { name: 'Robot vacuum', battery: 'Battery', area: 'Area', time: 'Time', fan: 'Suction', status: 'Status', filter: 'Filter', brush: 'Brush',
+    start: 'Start', pause: 'Pause', dock: 'Dock',
+    cleaning: 'Cleaning', docked: 'Docked', charging: 'Charging', returning: 'Returning', paused: 'Paused', idle: 'Idle', error: 'Error', emptying: 'Emptying' },
+};
+const ICONS_VAC = {
+  start: '<path d="M8 5v14l11-7z"/>',
+  pause: '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>',
+  dock: '<path d="M12 3 2 12h3v8h5v-6h4v6h5v-8h3z"/>',
+};
+
+// Logique commune (états, services, stats) — le dessin est dans la carte « seule » ci-dessous
+class ApplianceRobotVacuumCard extends HTMLElement {
+  static getStubConfig() { return { entity: '' }; }
+
+  static getConfigForm() {
+    return {
+      schema: [
+        { name: 'entity', required: true, selector: { entity: { domain: 'vacuum' } } },
+        { name: 'name', selector: { text: {} } },
+        { name: 'entity_battery', selector: { entity: { domain: 'sensor', device_class: 'battery' } } },
+        { name: 'entity_area', selector: { entity: { domain: 'sensor' } } },
+        { name: 'entity_time', selector: { entity: { domain: 'sensor' } } },
+        { name: 'entity_status', selector: { entity: { domain: 'sensor' } } },
+        { name: 'entity_filter', selector: { entity: { domain: 'sensor' } } },
+        { name: 'entity_brush', selector: { entity: { domain: 'sensor' } } },
+        { type: 'grid', name: '', schema: [
+          { name: 'show_battery', selector: { boolean: {} } },
+          { name: 'show_area', selector: { boolean: {} } },
+          { name: 'show_time', selector: { boolean: {} } },
+          { name: 'show_fan', selector: { boolean: {} } },
+          { name: 'show_status', selector: { boolean: {} } },
+          { name: 'show_consumables', selector: { boolean: {} } },
+          { name: 'show_buttons', selector: { boolean: {} } },
+        ] },
+        { name: 'language', selector: { select: { options: ['fr', 'en'] } } },
+      ],
+    };
+  }
+
+  setConfig(config) {
+    if (!config.entity) throw new Error('entity (vacuum.xxx) requise');
+    this._config = { show_battery: true, show_area: true, show_time: true, show_fan: true, show_status: true,
+      show_consumables: true, show_buttons: true, language: 'fr', ...config };
+    this._built = false; this._build();
+  }
+  set hass(h) { this._hass = h; this._update(); }
+  getCardSize() { return 6; }
+  _t(k) { return (I18N_VAC[this._config.language] || I18N_VAC.fr)[k] || k; }
+
+  _call(action) {
+    if (!this._hass) return;
+    const svc = { start: 'start', pause: 'pause', dock: 'return_to_base' }[action];
+    this._hass.callService('vacuum', svc, { entity_id: this._config.entity });
+  }
+
+  _st(id) { return id && this._hass && this._hass.states[id]; }
+  _num(id) {
+    const s = this._st(id); if (!s || ['unavailable', 'unknown'].includes(s.state)) return null;
+    const n = parseFloat(s.state); return Number.isFinite(n) ? n : null;
+  }
+
+  _update() {
+    if (!this._built || !this._hass) return;
+    const c = this._config, r = this.shadowRoot, e = this._st(c.entity);
+    if (!e) return;
+    const a = e.attributes || {};
+    const status = String((this._st(c.entity_status) || {}).state || a.status || '').toLowerCase();
+    let st = ['cleaning', 'docked', 'returning', 'paused', 'idle', 'error'].includes(e.state) ? e.state : 'idle';
+    if (st === 'docked' && /charg/.test(status)) st = 'charging';
+    const emptying = /empt|vidage|evacu|self.?clean/.test(status);
+
+    const svg = r.getElementById('svg');
+    const prev = this._lastSt;
+    svg.setAttribute('class', `${st}${emptying ? ' emptying' : ''}${st === 'charging' ? ' docked' : ''}`);
+    r.getElementById('card').classList.toggle('error', st === 'error');
+    r.getElementById('err').textContent = st === 'error' ? (a.error || this._t('error')) : '';
+    this._lastSt = st;
+
+    // Boutons : met en évidence l'action correspondant à l'état
+    const active = { cleaning: 'start', paused: 'pause', returning: 'dock', docked: 'dock', charging: 'dock' }[st];
+    r.querySelectorAll('.btn').forEach((b) => b.classList.toggle('on', b.dataset.a === active));
+    r.getElementById('btns').style.display = c.show_buttons ? '' : 'none';
+
+    const batt = this._num(c.entity_battery) ?? (a.battery_level ?? null);
+    const area = this._num(c.entity_area), time = this._num(c.entity_time);
+    const it = [];
+    if (c.show_battery) it.push([this._t('battery'), batt === null ? '—' : `${Math.round(batt)} %`]);
+    if (c.show_status) it.push([this._t('status'), this._t(emptying ? 'emptying' : st)]);
+    if (c.show_area) it.push([this._t('area'), area === null ? '—' : `${Math.round(area)} m²`]);
+    if (c.show_time) it.push([this._t('time'), time === null ? '—' : `${Math.round(time)} min`]);
+    if (c.show_fan && a.fan_speed) it.push([this._t('fan'), String(a.fan_speed)]);
+    if (c.show_consumables) {
+      const fl = this._num(c.entity_filter), br = this._num(c.entity_brush);
+      if (fl !== null) it.push([this._t('filter'), `${Math.round(fl)} %`]);
+      if (br !== null) it.push([this._t('brush'), `${Math.round(br)} %`]);
+    }
+    const stats = r.getElementById('stats');
+    stats.style.gridTemplateColumns = `repeat(${it.length > 4 ? Math.ceil(it.length / 2) : it.length}, 1fr)`;
+    stats.innerHTML = it.map(([l, v]) => `<div class="stat"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
+  }
+}
+window.customCards = window.customCards || [];
+
+/* ───────────────────────────────────────────────────────────────
+ * Variante « robot seul » : pas de fond, pas de station, animation sur place
+ * type: custom:appliance-robot-vacuum-solo-card  (mêmes options que la carte complète)
+ * ─────────────────────────────────────────────────────────────── */
+const COMMON_CSS_VAC = `
+  :host { display:block; }
+  ha-card { padding:12px; overflow:hidden; }
+  .title { font-weight:600; margin:0 4px 4px; display:flex; justify-content:space-between; align-items:center; }
+  .badge { font-size:.75em; color:#fff; background:#e53935; border-radius:10px; padding:2px 8px; display:none; animation:blink 1s infinite; }
+  .error .badge { display:inline-block; }
+  svg { width:100%; height:auto; display:block; overflow:visible; }
+  .btns { display:flex; gap:8px; margin-top:8px; }
+  .btn { flex:1; display:flex; align-items:center; justify-content:center; gap:6px; border:none; cursor:pointer; border-radius:999px; padding:8px 6px;
+    background:var(--secondary-background-color, rgba(127,127,127,.15)); color:var(--primary-text-color,#222); font:600 .85em system-ui,sans-serif; transition:transform .1s, background .2s; }
+  .btn:active { transform:scale(.95); } .btn svg { width:18px; height:18px; fill:currentColor; }
+  .btn.on { background:var(--primary-color,#03a9f4); color:#fff; }
+  .stats { display:grid; gap:8px; margin-top:8px; }
+  .stat { text-align:center; background:var(--secondary-background-color, rgba(127,127,127,.12)); border-radius:10px; padding:6px 4px; }
+  .stat .v { font-weight:700; font-size:1.02em; } .stat .l { font-size:.7em; opacity:.65; text-transform:uppercase; letter-spacing:.04em; }
+  @keyframes blink { 50% { opacity:.3 } } @keyframes breathe { 50% { opacity:.4 } }`;
+
+class ApplianceRobotVacuumSoloCard extends ApplianceRobotVacuumCard {
+  _build() {
+    if (!this.shadowRoot) this.attachShadow({ mode: 'open' });
+    const brush = (x) => `<g transform="translate(${x} 113)"><g class="brush">
+      ${[0, 120, 240].map((a) => `<line x1="0" y1="0" x2="17" y2="0" transform="rotate(${a}) scale(1 .35)" stroke="#6b7178" stroke-width="2.4" stroke-linecap="round"/>`).join('')}
+      <circle r="3" fill="#30343a"/></g></g>`;
+    const dust = Array.from({ length: 12 }, (_, i) =>
+      `<circle class="dust" cx="${70 + (i * 37) % 100}" cy="${132 + (i % 3) * 3}" r="${1.2 + (i % 3) * .5}" style="animation-delay:${(i * .17) % 1.4}s"/>`).join('');
+    this.shadowRoot.innerHTML = `
+    <style>${COMMON_CSS_VAC}
+      .bot { transform-origin:120px 100px; }
+      .cleaning .bot { animation:wiggle 2.4s ease-in-out infinite; }
+      .returning .bot { animation:wiggle 1.6s ease-in-out infinite; }
+      .error .bot { animation:shake .4s ease-in-out infinite; }
+      .brush { transform:rotate(0); } .cleaning .brush { animation:spin .3s linear infinite; } .returning .brush { animation:spin 1s linear infinite; }
+      .dust { fill:#9a9a9a; opacity:0; } .cleaning .dust { animation:suck 1.4s ease-in infinite; }
+      .scan { fill:#7fe0ff; opacity:.0; } .cleaning .scan, .returning .scan { opacity:.9; animation:scan 1.2s linear infinite; }
+      .track { fill:none; stroke:rgba(0,0,0,.12); stroke-width:3.5; }
+      .ring { fill:none; stroke:var(--rc,#43a047); stroke-width:3.5; stroke-linecap:round; transition:stroke-dasharray 1s ease, stroke .6s;
+        filter:drop-shadow(0 0 3px var(--rc,#43a047)); }
+      .charging .ring, .docked .ring { animation:breathe 2.4s ease-in-out infinite; }
+      .paused .ring { stroke:#ffb300; animation:blink 1s infinite; } .error .ring { stroke:#ff3b30; animation:blink .5s infinite; }
+      .ico { opacity:0; transition:opacity .4s; }
+      .charging .bolt, .docked .bolt { opacity:1; animation:breathe 1.6s ease-in-out infinite; }
+      .returning .home { opacity:1; animation:hop 1s ease-in-out infinite; }
+      .paused .pz { opacity:1; }
+      @keyframes wiggle { 0%,100% { transform:translateX(0) rotate(0) } 25% { transform:translateX(-6px) rotate(-1.5deg) } 75% { transform:translateX(6px) rotate(1.5deg) } }
+      @keyframes shake { 0%,100% { transform:rotate(0) } 25% { transform:rotate(-2deg) } 75% { transform:rotate(2deg) } }
+      @keyframes spin { to { transform:rotate(360deg) } }
+      @keyframes suck { 0% { opacity:0; transform:translateY(0) } 30% { opacity:.9 } 100% { opacity:0; transform:translateY(-20px) scale(.4) } }
+      @keyframes scan { from { transform:translateX(0) } to { transform:translateX(18px) } }
+      @keyframes hop { 50% { transform:translateY(-4px) } }
+    </style>
+    <ha-card id="card">
+      <div class="title"><span>${this._config.name || this._t('name')}</span><span class="badge" id="err"></span></div>
+      <svg viewBox="0 0 240 142" id="svg">
+        <defs>
+          <linearGradient id="top" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#d3d8dd"/></linearGradient>
+          <linearGradient id="side" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b9bfc5"/><stop offset="1" stop-color="#868d94"/></linearGradient>
+        </defs>
+        ${dust}
+        <g class="bot">
+          <ellipse cx="120" cy="122" rx="96" ry="11" fill="rgba(0,0,0,.25)"/>
+          ${brush(64)}${brush(176)}
+          <path d="M30 78 V96 Q30 120 120 120 Q210 120 210 96 V78 Z" fill="url(#side)"/>
+          <path d="M34 92 Q40 116 120 117 Q200 116 206 92 V100 Q200 121 120 121 Q40 121 34 100 Z" fill="#2b2f35"/>
+          <ellipse cx="120" cy="78" rx="90" ry="30" fill="url(#top)"/>
+          <ellipse class="track" cx="120" cy="80" rx="74" ry="23"/>
+          <ellipse class="ring" id="ring" cx="120" cy="80" rx="74" ry="23" pathLength="100" stroke-dasharray="0 100" transform="rotate(180 120 80)"/>
+          <circle cx="104" cy="94" r="3.5" fill="#cfd4d9" stroke="#b5bbc1"/><circle cx="136" cy="94" r="3.5" fill="#cfd4d9" stroke="#b5bbc1"/>
+          <rect x="102" y="54" width="36" height="18" rx="9" fill="#2b2f35"/>
+          <ellipse cx="120" cy="55" rx="18" ry="5.5" fill="#4a4f56"/>
+          <rect x="108" y="62" width="24" height="4" rx="2" fill="#111"/>
+          <rect class="scan" x="108" y="62" width="6" height="4" rx="2"/>
+        </g>
+        <path class="ico bolt" d="M206 8 l-10 16 h7 l-3 13 l11 -17 h-7 z" fill="#ffd43b"/>
+        <path class="ico home" d="M206 10 l-12 11 h4 v10 h6 v-7 h4 v7 h6 v-10 h4 z" fill="#3fa9ff"/>
+        <path class="ico pz" d="M198 12 h5 v18 h-5z M208 12 h5 v18 h-5z" fill="#ffb300"/>
+      </svg>
+      <div class="btns" id="btns">
+        ${['start', 'pause', 'dock'].map((a) => `<button class="btn" data-a="${a}"><svg viewBox="0 0 24 24">${ICONS_VAC[a]}</svg>${this._t(a)}</button>`).join('')}
+      </div>
+      <div class="stats" id="stats"></div>
+    </ha-card>`;
+    this.shadowRoot.querySelectorAll('.btn').forEach((b) => { b.onclick = () => this._call(b.dataset.a); });
+    this._built = true;
+  }
+
+  _update() {
+    super._update();
+    if (!this._built || !this._hass) return;
+    const e = this._st(this._config.entity); if (!e) return;
+    // Anneau lumineux = niveau de batterie
+    const b = this._num(this._config.entity_battery) ?? (e.attributes.battery_level ?? null);
+    const pct = b === null ? 100 : Math.max(0, Math.min(100, b));
+    const ring = this.shadowRoot.getElementById('ring');
+    ring.setAttribute('stroke-dasharray', `${pct} 100`);
+    this.shadowRoot.getElementById('svg').style.setProperty('--rc', pct < 20 ? '#e53935' : pct < 50 ? '#fb8c00' : '#43a047');
+  }
+}
+define('appliance-robot-vacuum-solo-card', ApplianceRobotVacuumSoloCard);
+window.customCards.push({ type: 'appliance-robot-vacuum-solo-card', name: 'Robot Vacuum Solo Card', description: 'Robot aspirateur seul (sans fond ni station), animé, avec commandes', preview: false });
+})();
+
+/* ================================================================== */
+/* appliance-robot-mower-card.js                                    */
+/* ================================================================== */
+(() => {
+"use strict";
+const define = (tag, cls) => { if (!customElements.get(tag)) customElements.define(tag, cls); };
+window.customCards = window.customCards || [];
+/* appliance-robot-mower-card — robot tondeuse + station sur bande de pelouse, animé, avec commandes
+ * type: custom:appliance-robot-mower-card
+ * Compatible lawn_mower.* (recommandé) et vacuum.* (certaines intégrations de tondeuses)
+ */
+const I18N_MOW = {
+  fr: { name: 'Robot tondeuse', battery: 'Batterie', area: 'Surface', time: 'Tonte', next: 'Prochain départ', status: 'Statut', blade: 'Lame', rain: 'Pluie',
+    start: 'Tondre', pause: 'Pause', dock: 'Base',
+    mowing: 'Tonte', docked: 'À la base', charging: 'En charge', returning: 'Retour base', paused: 'En pause', idle: 'Inactif', error: 'Erreur' },
+  en: { name: 'Robot mower', battery: 'Battery', area: 'Area', time: 'Mowing', next: 'Next start', status: 'Status', blade: 'Blade', rain: 'Rain',
+    start: 'Mow', pause: 'Pause', dock: 'Dock',
+    mowing: 'Mowing', docked: 'Docked', charging: 'Charging', returning: 'Returning', paused: 'Paused', idle: 'Idle', error: 'Error' },
+};
+const ICONS_MOW = {
+  start: '<path d="M8 5v14l11-7z"/>',
+  pause: '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>',
+  dock: '<path d="M12 3 2 12h3v8h5v-6h4v6h5v-8h3z"/>',
+};
+
+// Logique commune (états, services, stats) — le dessin est dans la carte « seule » ci-dessous
+class ApplianceRobotMowerCard extends HTMLElement {
+  static getStubConfig() { return { entity: '' }; }
+
+  static getConfigForm() {
+    return {
+      schema: [
+        { name: 'entity', required: true, selector: { entity: { domain: ['lawn_mower', 'vacuum'] } } },
+        { name: 'name', selector: { text: {} } },
+        { name: 'entity_battery', selector: { entity: { domain: 'sensor', device_class: 'battery' } } },
+        { name: 'entity_area', selector: { entity: { domain: 'sensor' } } },
+        { name: 'entity_time', selector: { entity: { domain: 'sensor' } } },
+        { name: 'entity_next_start', selector: { entity: { domain: 'sensor' } } },
+        { name: 'entity_blade', selector: { entity: { domain: 'sensor' } } },
+        { name: 'entity_rain', selector: { entity: { domain: ['binary_sensor', 'sensor'] } } },
+        { name: 'entity_status', selector: { entity: { domain: 'sensor' } } },
+        { type: 'grid', name: '', schema: [
+          { name: 'show_battery', selector: { boolean: {} } },
+          { name: 'show_area', selector: { boolean: {} } },
+          { name: 'show_time', selector: { boolean: {} } },
+          { name: 'show_next', selector: { boolean: {} } },
+          { name: 'show_status', selector: { boolean: {} } },
+          { name: 'show_blade', selector: { boolean: {} } },
+          { name: 'show_buttons', selector: { boolean: {} } },
+        ] },
+        { name: 'language', selector: { select: { options: ['fr', 'en'] } } },
+      ],
+    };
+  }
+
+  setConfig(config) {
+    if (!config.entity) throw new Error('entity (lawn_mower.xxx) requise');
+    this._config = { show_battery: true, show_area: true, show_time: true, show_next: true, show_status: true,
+      show_blade: true, show_buttons: true, language: 'fr', ...config };
+    this._built = false; this._build();
+  }
+  set hass(h) { this._hass = h; this._update(); }
+  getCardSize() { return 6; }
+  _t(k) { return (I18N_MOW[this._config.language] || I18N_MOW.fr)[k] || k; }
+
+  _call(action) {
+    if (!this._hass) return;
+    const domain = this._config.entity.split('.')[0];
+    const map = domain === 'vacuum'
+      ? { start: 'start', pause: 'pause', dock: 'return_to_base' }
+      : { start: 'start_mowing', pause: 'pause', dock: 'dock' };
+    this._hass.callService(domain, map[action], { entity_id: this._config.entity });
+  }
+
+  _st(id) { return id && this._hass && this._hass.states[id]; }
+  _num(id) {
+    const s = this._st(id); if (!s || ['unavailable', 'unknown'].includes(s.state)) return null;
+    const n = parseFloat(s.state); return Number.isFinite(n) ? n : null;
+  }
+
+  _update() {
+    if (!this._built || !this._hass) return;
+    const c = this._config, r = this.shadowRoot, e = this._st(c.entity);
+    if (!e) return;
+    const a = e.attributes || {};
+    const status = String((this._st(c.entity_status) || {}).state || a.status || '').toLowerCase();
+    let st = e.state === 'cleaning' ? 'mowing' : e.state;
+    if (!['mowing', 'docked', 'returning', 'paused', 'idle', 'error'].includes(st)) st = 'idle';
+    if (st === 'docked' && /charg/.test(status)) st = 'charging';
+    const rainS = this._st(c.entity_rain);
+    const raining = !!rainS && (rainS.state === 'on' || /rain|pluie|wet/i.test(rainS.state));
+
+    r.getElementById('svg').setAttribute('class', `${st}${st === 'charging' ? ' docked' : ''}${raining ? ' raining' : ''}`);
+    r.getElementById('card').classList.toggle('error', st === 'error');
+    r.getElementById('err').textContent = st === 'error' ? (a.error || this._t('error')) : '';
+
+    const active = { mowing: 'start', paused: 'pause', returning: 'dock', docked: 'dock', charging: 'dock' }[st];
+    r.querySelectorAll('.btn').forEach((b) => b.classList.toggle('on', b.dataset.a === active));
+    r.getElementById('btns').style.display = c.show_buttons ? '' : 'none';
+
+    const batt = this._num(c.entity_battery) ?? (a.battery_level ?? null);
+    const area = this._num(c.entity_area), time = this._num(c.entity_time), blade = this._num(c.entity_blade);
+    // Prochain départ : timestamp → "ven. 14:30", sinon texte brut
+    let next = null; const ns = this._st(c.entity_next_start);
+    if (ns && !['unavailable', 'unknown'].includes(ns.state)) {
+      const d = new Date(ns.state);
+      next = isNaN(d) ? ns.state : d.toLocaleString(c.language === 'en' ? 'en-GB' : 'fr-FR', { weekday: 'short', hour: '2-digit', minute: '2-digit' });
+    }
+    const it = [];
+    if (c.show_battery) it.push([this._t('battery'), batt === null ? '—' : `${Math.round(batt)} %`]);
+    if (c.show_status) it.push([this._t('status'), raining && st !== 'mowing' ? `${this._t(st)} · ${this._t('rain')}` : this._t(st)]);
+    if (c.show_area && area !== null) it.push([this._t('area'), `${Math.round(area)} m²`]);
+    if (c.show_time && time !== null) it.push([this._t('time'), time >= 60 ? `${Math.floor(time / 60)}h${String(Math.round(time % 60)).padStart(2, '0')}` : `${Math.round(time)} min`]);
+    if (c.show_next && next) it.push([this._t('next'), next]);
+    if (c.show_blade && blade !== null) it.push([this._t('blade'), `${Math.round(blade)} %`]);
+    const stats = r.getElementById('stats');
+    stats.style.gridTemplateColumns = `repeat(${it.length > 4 ? Math.ceil(it.length / 2) : it.length}, 1fr)`;
+    stats.innerHTML = it.map(([l, v]) => `<div class="stat"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
+  }
+}
+window.customCards = window.customCards || [];
+
+/* ───────────────────────────────────────────────────────────────
+ * Variante « tondeuse seule » : pas de fond, pas de station, pas de pelouse
+ * type: custom:appliance-robot-mower-solo-card  (mêmes options que la carte complète)
+ * ─────────────────────────────────────────────────────────────── */
+class ApplianceRobotMowerSoloCard extends ApplianceRobotMowerCard {
+  _build() {
+    if (!this.shadowRoot) this.attachShadow({ mode: 'open' });
+    const wheel = (x, y, rr) => `<g transform="translate(${x} ${y})"><circle r="${rr}" fill="#1b1b1b"/>
+      <g class="spin">${[0, 45, 90, 135].map((a) => `<rect x="${-rr}" y="-.7" width="${rr * 2}" height="1.4" fill="#2e2e2e" transform="rotate(${a})"/>`).join('')}
+      <circle r="${rr * .55}" fill="#8d959c"/><path d="M${-rr * .55} 0 H${rr * .55} M0 ${-rr * .55} V${rr * .55}" stroke="#4a4f55" stroke-width="1.2"/></g></g>`;
+    const clips = Array.from({ length: 10 }, (_, i) =>
+      `<path class="clip" d="M${36 + (i % 4) * 2} ${-3 - (i % 3) * 2} l2 -3" stroke="${i % 2 ? '#6cc457' : '#3f9d35'}" style="animation-delay:${i * .11}s"/>`).join('');
+    const rain = Array.from({ length: 18 }, (_, i) =>
+      `<line class="drop" x1="${14 + (i * 13) % 212}" y1="${-10 - (i * 9) % 30}" x2="${12 + (i * 13) % 212}" y2="${-2 - (i * 9) % 30}" style="animation-delay:${(i * .13) % 1}s"/>`).join('');
+    this.shadowRoot.innerHTML = `
+    <style>${COMMON_CSS_MOW}
+      .body { animation:none; } .mowing .body { animation:bounce .35s ease-in-out infinite alternate; }
+      .error .body { animation:shake .4s ease-in-out infinite; transform-origin:0 -10px; }
+      .spin { transform:rotate(0); } .mowing .spin, .returning .spin { animation:spin .6s linear infinite; }
+      .blade { fill:none; stroke:#9aa1a8; stroke-width:.8; stroke-dasharray:2 2; opacity:.35; }
+      .mowing .blade { opacity:.9; animation:bladespin .12s linear infinite; }
+      .clip { fill:none; stroke-width:1.4; stroke-linecap:round; opacity:0; transform-box:fill-box; transform-origin:center; } .mowing .clip { animation:fly .8s ease-out infinite; }
+      .speed { stroke:var(--primary-text-color,#888); stroke-width:1; stroke-linecap:round; opacity:0; }
+      .mowing .speed, .returning .speed { animation:streak .7s linear infinite; }
+      .led { fill:#9e9e9e; } .mowing .led { fill:#43ff64; animation:blink 1.4s infinite; }
+      .docked .led, .charging .led { fill:#43ff64; animation:breathe 2.4s ease-in-out infinite; }
+      .returning .led { fill:#3fa9ff; } .paused .led { fill:#ffb300; animation:blink 1s infinite; } .error .led { fill:#ff3b30; animation:blink .5s infinite; }
+      .rain { display:none; } .raining .rain { display:inline; }
+      .drop { stroke:#7fb8ff; stroke-width:1.4; stroke-linecap:round; animation:fall 1s linear infinite; }
+      .ico { opacity:0; transition:opacity .4s; }
+      .charging .bolt, .docked .bolt { opacity:1; animation:breathe 1.6s ease-in-out infinite; }
+      .returning .home { opacity:1; animation:hop 1s ease-in-out infinite; } .paused .pz { opacity:1; }
+      @keyframes bounce { to { transform:translateY(-.6px) } }
+      @keyframes shake { 0%,100% { transform:rotate(0) } 25% { transform:rotate(-2deg) } 75% { transform:rotate(2deg) } }
+      @keyframes spin { to { transform:rotate(-360deg) } }
+      @keyframes bladespin { to { stroke-dashoffset:6 } }
+      @keyframes fly { 0% { opacity:0; transform:translate(0,0) } 25% { opacity:1 } 100% { opacity:0; transform:translate(14px,-10px) rotate(160deg) } }
+      @keyframes streak { 0% { opacity:0; transform:translateX(0) } 30% { opacity:.5 } 100% { opacity:0; transform:translateX(14px) } }
+      @keyframes fall { from { transform:translateY(0) } to { transform:translateY(140px) } }
+      @keyframes hop { 50% { transform:translateY(-4px) } }
+    </style>
+    <ha-card id="card">
+      <div class="title"><span>${this._config.name || this._t('name')}</span><span class="badge" id="err"></span></div>
+      <svg viewBox="0 0 240 132" id="svg">
+        <defs><linearGradient id="shell" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6f7f8"/><stop offset="1" stop-color="#b8bec4"/></linearGradient></defs>
+        <g class="rain">${rain}</g>
+        <g transform="translate(112 120) scale(2.05)">
+          <ellipse cx="2" cy="1" rx="40" ry="3" fill="rgba(0,0,0,.25)"/>
+          <g>${[[42, -14], [46, -8], [40, -20]].map(([x, y], i) => `<line class="speed" x1="${x}" y1="${y}" x2="${x + 8}" y2="${y}" style="animation-delay:${i * .2}s"/>`).join('')}</g>
+          ${clips}
+          <g class="body">
+            <ellipse class="blade" cx="0" cy="-4" rx="14" ry="1.2"/>
+            <path d="M-34 -6 Q-36 -22 -16 -27 L16 -28 Q34 -27 37 -12 L37 -6 Z" fill="url(#shell)"/>
+            <path d="M-30 -18 Q-26 -26 -12 -27 L14 -28 Q28 -27 32 -18 Z" fill="#8bc34a"/>
+            <path d="M-30 -18 H32" stroke="rgba(0,0,0,.12)" stroke-width=".6"/>
+            <rect x="-36" y="-10" width="10" height="5" rx="2" fill="#30343a"/>
+            <rect x="-6" y="-31" width="16" height="4" rx="2" fill="#30343a"/><circle cx="12" cy="-29" r="1.6" fill="#e53935"/>
+            <path d="M8 -31 V-42" stroke="#30343a" stroke-width="1.6"/><circle cx="8" cy="-43" r="2.4" fill="#30343a"/>
+            <circle class="led" cx="-14" cy="-23" r="1.8"/>
+          </g>
+          ${wheel(22, -9, 10)}${wheel(-24, -5, 5.5)}
+        </g>
+        <path class="ico bolt" d="M214 6 l-10 16 h7 l-3 13 l11 -17 h-7 z" fill="#ffd43b"/>
+        <path class="ico home" d="M214 8 l-12 11 h4 v10 h6 v-7 h4 v7 h6 v-10 h4 z" fill="#3fa9ff"/>
+        <path class="ico pz" d="M206 10 h5 v18 h-5z M216 10 h5 v18 h-5z" fill="#ffb300"/>
+      </svg>
+      <div class="btns" id="btns">
+        ${['start', 'pause', 'dock'].map((a) => `<button class="btn" data-a="${a}"><svg viewBox="0 0 24 24">${ICONS_MOW[a]}</svg>${this._t(a)}</button>`).join('')}
+      </div>
+      <div class="stats" id="stats"></div>
+    </ha-card>`;
+    this.shadowRoot.querySelectorAll('.btn').forEach((b) => { b.onclick = () => this._call(b.dataset.a); });
+    this._built = true;
+  }
+}
+const COMMON_CSS_MOW = `
+  :host { display:block; }
+  ha-card { padding:12px; overflow:hidden; }
+  .title { font-weight:600; margin:0 4px 4px; display:flex; justify-content:space-between; align-items:center; }
+  .badge { font-size:.75em; color:#fff; background:#e53935; border-radius:10px; padding:2px 8px; display:none; animation:blink 1s infinite; }
+  .error .badge { display:inline-block; }
+  svg { width:100%; height:auto; display:block; overflow:visible; }
+  .btns { display:flex; gap:8px; margin-top:8px; }
+  .btn { flex:1; display:flex; align-items:center; justify-content:center; gap:6px; border:none; cursor:pointer; border-radius:999px; padding:8px 6px;
+    background:var(--secondary-background-color, rgba(127,127,127,.15)); color:var(--primary-text-color,#222); font:600 .85em system-ui,sans-serif; transition:transform .1s, background .2s; }
+  .btn:active { transform:scale(.95); } .btn svg { width:18px; height:18px; fill:currentColor; }
+  .btn.on { background:var(--primary-color,#43a047); color:#fff; }
+  .stats { display:grid; gap:8px; margin-top:8px; }
+  .stat { text-align:center; background:var(--secondary-background-color, rgba(127,127,127,.12)); border-radius:10px; padding:6px 4px; }
+  .stat .v { font-weight:700; font-size:1.02em; } .stat .l { font-size:.7em; opacity:.65; text-transform:uppercase; letter-spacing:.04em; }
+  @keyframes blink { 50% { opacity:.3 } } @keyframes breathe { 50% { opacity:.4 } }`;
+define('appliance-robot-mower-solo-card', ApplianceRobotMowerSoloCard);
+window.customCards.push({ type: 'appliance-robot-mower-solo-card', name: 'Robot Mower Solo Card', description: 'Robot tondeuse seule (sans fond ni station), animée, avec commandes', preview: false });
 })();
