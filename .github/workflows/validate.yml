@@ -24,4 +24,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+      - run: node --check src/ha-appliance-electromenager-cards.js
+      - run: node build.js --check
       - run: node --check dist/ha-appliance-electromenager-cards.js
