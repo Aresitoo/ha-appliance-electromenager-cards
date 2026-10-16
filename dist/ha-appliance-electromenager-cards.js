@@ -505,7 +505,8 @@ const STRINGS = {
   }
 };
 const lang = (hass) => {
-  const l = ((hass && (hass.locale?.language || hass.language)) || document.documentElement.lang || "en").toLowerCase().slice(0, 2);
+  let l = ((hass && (hass.locale?.language || hass.language)) || document.documentElement.lang || "en").toLowerCase().slice(0, 2);
+  if (l === "no" || l === "nn") l = "nb"; // norvégien : no / nn → nb (bokmål)
   return STRINGS[l] ? l : "en";
 };
 const tr = (hass, key) => STRINGS[lang(hass)][key] ?? STRINGS.en[key] ?? key;
