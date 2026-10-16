@@ -1,0 +1,12 @@
+/* ---------- oven / microwave ---------- */
+.ilight { opacity: 0; transition: opacity .8s; }
+.active .ilight { opacity: .95; }
+.element { fill: none; stroke: #5b3d33; stroke-width: 1.6; stroke-linejoin: round; transition: stroke .6s; }
+.k-oven.active .element { stroke: #ff5a1f; filter: drop-shadow(0 0 2px #ff7a2e); animation: ac-pulse 1.8s ease-in-out infinite; }
+.haze path { fill: none; stroke: #ffd9a8; stroke-width: 1.2; stroke-linecap: round; opacity: 0; }
+.k-oven.active .haze path { animation: ac-steam 2.4s ease-out infinite; }
+.haze path:nth-child(1) { animation-delay: .4s !important; }
+.bowl { transform-origin: 46px 86px; }
+.k-microwave.active .bowl { animation: ac-turn 5s linear infinite; }
+.start { fill: #c9ced4; stroke: #8f979f; stroke-width: .4; transition: fill .3s; }
+.k-microwave.active .start { fill: #3ddc84; }

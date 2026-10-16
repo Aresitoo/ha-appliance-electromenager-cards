@@ -1,0 +1,22 @@
+/* ---------- range hood ---------- */
+.hd-fan { transform-box: view-box; transform-origin: 60px 60px; }
+.k-range_hood.st-speed1 .hd-fan { animation: ac-rot .9s linear infinite; }
+.k-range_hood.st-speed2 .hd-fan { animation: ac-rot .28s linear infinite; }
+.hd-air path { fill: none; stroke: #cfe6ff; stroke-width: 1.3; stroke-linecap: round; stroke-dasharray: 3 5; opacity: 0; transition: opacity .6s; }
+.k-range_hood.st-speed1 .hd-air path { opacity: .55; animation: hd-up 1.4s linear infinite; }
+.k-range_hood.st-speed2 .hd-air path { opacity: .8; animation: hd-up .6s linear infinite; }
+.hd-steam path { transform-box: fill-box; transform-origin: 50% 100%; fill: none; stroke: #e3e8ed; stroke-width: 2.2; stroke-linecap: round; opacity: 0; }
+.k-range_hood.st-speed1 .hd-steam path, .k-range_hood.st-speed2 .hd-steam path { animation: hd-suck 2s ease-in infinite; }
+.k-range_hood.st-speed2 .hd-steam path { animation-duration: 1.2s; }
+.hd-steam path:nth-child(2) { animation-delay: .5s !important; } .hd-steam path:nth-child(3) { animation-delay: 1s !important; }
+.hd-led { fill: #59616b; transition: fill .3s; }
+.k-range_hood.st-speed1 .s1, .k-range_hood.st-speed2 .s1, .k-range_hood.st-speed2 .s2, .k-range_hood.st-speed2 .s3 { fill: #38d9ff; }
+.k-range_hood.lights-on .lt { fill: #ffd76a; }
+.hd-lamp { fill: #6b737c; transition: fill .4s; }
+.k-range_hood.lights-on .hd-lamp { fill: #fff6d5; filter: drop-shadow(0 0 2px #ffe9a0); }
+.hd-beam { opacity: 0; transition: opacity .6s; }
+.k-range_hood.lights-on .hd-beam { opacity: 1; }
+.hd-zone { fill: none; stroke: #ff5a1f; stroke-width: 1; opacity: 0; transition: opacity .6s; }
+.k-range_hood.st-speed1 .hd-zone, .k-range_hood.st-speed2 .hd-zone { opacity: .85; filter: drop-shadow(0 0 1.5px #ff7a2e); }
+@keyframes hd-up { to { stroke-dashoffset: -16; } }
+@keyframes hd-suck { 0% { opacity: 0; transform: translateY(2px) scaleX(1); } 30% { opacity: .7; } 100% { opacity: 0; transform: translateY(-14px) scaleX(.5); } }

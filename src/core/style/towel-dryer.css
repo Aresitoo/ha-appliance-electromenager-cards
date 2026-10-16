@@ -1,0 +1,20 @@
+/* ---------- towel dryer ---------- */
+.td-glow { opacity: 0; transition: opacity .8s; }
+.td-glow2 { mix-blend-mode: multiply; }
+.k-towel_dryer.st-heating .td-glow { opacity: .85; animation: ac-glow 2.6s ease-in-out infinite; }
+.k-towel_dryer.st-at_target .td-glow { opacity: .22; }
+.td-heat path { fill: none; stroke: #ff9a52; stroke-width: 1.6; stroke-linecap: round; stroke-dasharray: 2 7; opacity: 0; transition: opacity .6s; }
+.k-towel_dryer.st-heating .td-heat path { opacity: .6; animation: hd-up 1.8s linear infinite; }
+.td-heat path:nth-child(2) { animation-duration: 1.4s !important; } .td-heat path:nth-child(3) { animation-duration: 2.2s !important; }
+.td-towel { transform-box: fill-box; transform-origin: 50% 0; }
+.k-towel_dryer.st-heating .td-towel { animation: td-sway 3.2s ease-in-out infinite; }
+.k-towel_dryer.st-heating .td-towel2 { animation-duration: 2.6s; animation-delay: .4s; }
+.td-steam path { transform-box: fill-box; transform-origin: 50% 100%; fill: none; stroke: #e3e8ed; stroke-width: 2; stroke-linecap: round; opacity: 0; }
+.k-towel_dryer.st-heating .td-steam path { animation: hd-suck 2.6s ease-out infinite; }
+.td-steam path:nth-child(2) { animation-delay: .8s !important; } .td-steam path:nth-child(3) { animation-delay: 1.6s !important; }
+.td-led { fill: #5a636d; transition: fill .3s; }
+.k-towel_dryer.st-heating .td-led { fill: #ff7a2e; filter: drop-shadow(0 0 1.5px #ff7a2e); }
+.k-towel_dryer.st-at_target .td-led { fill: #43c07a; }
+.k-towel_dryer .lcd { fill: #6fd8ff; }
+.k-towel_dryer.st-off .lcd { fill: #24404f; }
+@keyframes td-sway { 0%, 100% { transform: skewX(0deg); } 50% { transform: skewX(1.6deg); } }

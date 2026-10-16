@@ -1,0 +1,18 @@
+/* ---------- air fryer ---------- */
+.k-air_fryer .lcd { fill: #3b2c22; }
+.k-air_fryer.active .lcd { fill: #ff9a4a; }
+.k-air_fryer.st-finished .lcd { fill: #3ddc84; }
+.k-air_fryer.active .l1 { fill: #ff9a4a; animation: ac-pulse 1.6s ease-in-out infinite; }
+.af-coil { fill: none; stroke: #4a3a33; stroke-width: 1.1; stroke-linejoin: round; transition: stroke .6s; }
+.k-air_fryer.active .af-coil { stroke: #ff5a1f; filter: drop-shadow(0 0 1.5px #ff7a2e); animation: ac-pulse 1.6s ease-in-out infinite; }
+.af-air path { fill: none; stroke: #ffe2b8; stroke-width: 1; stroke-linecap: round; stroke-dasharray: 3 5; opacity: 0; transition: opacity .6s; }
+.k-air_fryer.active .af-air path { opacity: .75; animation: ac-flow .7s linear infinite; }
+.k-air_fryer.active .af-air path:nth-child(2) { animation-duration: .9s; animation-direction: reverse; }
+.fries, .nuggets { transform-box: fill-box; transform-origin: 50% 100%; transition: filter 1s; }
+.k-air_fryer.active .fries { animation: af-toss 1.3s ease-in-out infinite; }
+.k-air_fryer.active .nuggets { animation: af-toss 1.3s ease-in-out infinite; animation-delay: -.65s; }
+.k-air_fryer.st-finished .fries, .k-air_fryer.st-finished .nuggets { filter: saturate(1.25) brightness(.88); }
+.af-steam path { fill: none; stroke: #cfd6dd; stroke-width: 2; stroke-linecap: round; opacity: 0; }
+.k-air_fryer.active .af-steam path { animation: ac-steam 2.4s ease-out infinite; }
+.af-steam path:nth-child(2) { animation-delay: .8s !important; } .af-steam path:nth-child(3) { animation-delay: 1.6s !important; }
+@keyframes af-toss { 0%, 100% { transform: translateY(0) rotate(0); } 30% { transform: translateY(-2.2px) rotate(-2deg); } 60% { transform: translateY(-.6px) rotate(1.5deg); } }

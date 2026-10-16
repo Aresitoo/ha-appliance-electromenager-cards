@@ -581,7 +581,21 @@ node build.js           # writes dist/
 node build.js --check   # fails if dist/ is out of date (run by CI)
 ```
 
-- Code: `src/ha-appliance-electromenager-cards.js`.
+HACS installs a single file, so `build.js` concatenates the files of `src/` in the order it lists (like `<script>` tags in a page):
+
+```
+src/
+  header.js            licence banner
+  core/                the 26 core cards, sharing one scope (order matters)
+    version.js  i18n.js  illustrations.js  definitions.js  helpers.js
+    base.js  editor.js  style.js  register.js
+    svg/<kind>.js      one illustration per kind: SVG.washer = () => `…`
+    style/*.css        card styles, concatenated into STYLE (order listed in build.js)
+  cards/*.js           self-contained cards (aquarium, linky, battery, …), one IIFE each
+  i18n/<lang>.json     texts, one file per language
+```
+
+- New core card: add its `DEF` entry (`core/definitions.js`), `core/svg/<kind>.js` (picked up automatically), a CSS file listed in `CSS_FILES` and its strings. New self-contained card: add `cards/<name>.js` and list it in `CARD_FILES`. The build warns about any `src/` file it does not list.
 - Texts: one file per language in `src/i18n/` (`en.json`, `fr.json`). Each file has a `common` section for the 26 core cards and one section per extra card (`aquarium`, `linky`, …). The build inlines them where the source says `/*@i18n <section>*/{}`.
 - English is the reference: a key missing in another language falls back to English, and the build prints a warning.
 - To add a language, copy `en.json` to e.g. `de.json`, translate it and rebuild: the cards follow the Home Assistant language, and the extra cards list it in their `language` option.
@@ -639,7 +653,7 @@ cost: sensor.lave_linge_cout_jour
 
 **Aquarium, Linky, batterie, borne de recharge, robots, chaudière à granulés** : sept cartes avec leurs propres options (`entity_…`, voir le tableau en anglais) et l'éditeur visuel. Chaque tuile se masque avec son option `show_…`. `custom:appliance-aquarium-card` : poissons qui nagent, bulles et queues plus rapides selon la puissance, eau qui change de couleur selon la température (alerte hors plage), éclairage jour/nuit. `custom:appliance-linky-card` : compteur vert anis avec écran LCD qui défile (puissance, index HP/HC, tarif, coût — les boutons changent de page), jauge par rapport à la puissance souscrite (alerte au-delà de 95 %), voyant conso qui clignote plus vite quand ça consomme. `custom:appliance-battery-card` : trois modules reliés par des câbles orange, sans fond ; le niveau monte dans les modules, l'énergie circule dans un sens en charge et dans l'autre en décharge, avec le temps restant avant plein ou vide. `custom:appliance-ev-charger-card` : wallbox murale et voiture de profil ; voyant selon le statut, énergie qui circule dans le câble, jauge de batterie sur la portière, durée et coût de la session. `custom:appliance-robot-vacuum-solo-card` et `custom:appliance-robot-mower-solo-card` : le robot seul, sans fond ; brosses, lidar et anneau de batterie pour l'aspirateur, roues, lame, herbe projetée et pluie pour la tondeuse, avec les boutons **Démarrer / Pause / Base**. `custom:appliance-pellet-boiler-card` : chaudière à granulés sans fond, avec trémie, hublot de niveau et vis sans fin ; à l'allumage la résistance rougit, en chauffe la flamme danse, les granulés montent dans la vis et l'eau circule dans les tuyaux départ/retour qui rougissent avec la température ; alerte « Granulés bas » sous `pellet_alert` (15 %).
 
-**Développement et traductions** : `dist/` est généré, on modifie `src/` puis on lance `node build.js`. Les textes sont dans un fichier par langue, `src/i18n/en.json` et `src/i18n/fr.json` (voir *Development and translations* plus haut).
+**Développement et traductions** : `dist/` est généré, on modifie `src/` puis on lance `node build.js` (sans dépendance). Le code est découpé en petits fichiers : `src/core/` pour les 26 cartes de base (un dessin par appareil dans `svg/`, un fichier CSS par appareil dans `style/`), `src/cards/` pour les cartes autonomes, et les textes dans un fichier par langue (`src/i18n/en.json`, `src/i18n/fr.json`). Voir *Development and translations* plus haut.
 
 ## License
 

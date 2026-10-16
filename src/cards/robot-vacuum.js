@@ -1,0 +1,214 @@
+/* ================================================================== */
+/* appliance-robot-vacuum-card.js                                   */
+/* ================================================================== */
+(() => {
+"use strict";
+const define = (tag, cls) => { if (!customElements.get(tag)) customElements.define(tag, cls); };
+window.customCards = window.customCards || [];
+/* appliance-robot-vacuum-card — robot aspirateur + station de vidage, animé, avec commandes
+ * type: custom:appliance-robot-vacuum-card
+ */
+const I18N_VAC = /*@i18n robot_vacuum*/{};
+const ICONS_VAC = {
+  start: '<path d="M8 5v14l11-7z"/>',
+  pause: '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>',
+  dock: '<path d="M12 3 2 12h3v8h5v-6h4v6h5v-8h3z"/>',
+};
+
+// Logique commune (états, services, stats) — le dessin est dans la carte « seule » ci-dessous
+class ApplianceRobotVacuumCard extends HTMLElement {
+  static getStubConfig() { return { entity: '' }; }
+
+  static getConfigForm() {
+    return {
+      schema: [
+        { name: 'entity', required: true, selector: { entity: { domain: 'vacuum' } } },
+        { name: 'name', selector: { text: {} } },
+        { name: 'entity_battery', selector: { entity: { domain: 'sensor', device_class: 'battery' } } },
+        { name: 'entity_area', selector: { entity: { domain: 'sensor' } } },
+        { name: 'entity_time', selector: { entity: { domain: 'sensor' } } },
+        { name: 'entity_status', selector: { entity: { domain: 'sensor' } } },
+        { name: 'entity_filter', selector: { entity: { domain: 'sensor' } } },
+        { name: 'entity_brush', selector: { entity: { domain: 'sensor' } } },
+        { type: 'grid', name: '', schema: [
+          { name: 'show_battery', selector: { boolean: {} } },
+          { name: 'show_area', selector: { boolean: {} } },
+          { name: 'show_time', selector: { boolean: {} } },
+          { name: 'show_fan', selector: { boolean: {} } },
+          { name: 'show_status', selector: { boolean: {} } },
+          { name: 'show_consumables', selector: { boolean: {} } },
+          { name: 'show_buttons', selector: { boolean: {} } },
+        ] },
+        { name: 'language', selector: { select: { options: Object.keys(I18N_VAC) } } },
+      ],
+    };
+  }
+
+  setConfig(config) {
+    if (!config.entity) throw new Error('entity (vacuum.xxx) requise');
+    this._config = { show_battery: true, show_area: true, show_time: true, show_fan: true, show_status: true,
+      show_consumables: true, show_buttons: true, language: 'fr', ...config };
+    this._built = false; this._build();
+  }
+  set hass(h) { this._hass = h; this._update(); }
+  getCardSize() { return 6; }
+  _t(k) { return (I18N_VAC[this._config.language] || I18N_VAC.en)[k] ?? I18N_VAC.en[k] ?? k; }
+
+  _call(action) {
+    if (!this._hass) return;
+    const svc = { start: 'start', pause: 'pause', dock: 'return_to_base' }[action];
+    this._hass.callService('vacuum', svc, { entity_id: this._config.entity });
+  }
+
+  _st(id) { return id && this._hass && this._hass.states[id]; }
+  _num(id) {
+    const s = this._st(id); if (!s || ['unavailable', 'unknown'].includes(s.state)) return null;
+    const n = parseFloat(s.state); return Number.isFinite(n) ? n : null;
+  }
+
+  _update() {
+    if (!this._built || !this._hass) return;
+    const c = this._config, r = this.shadowRoot, e = this._st(c.entity);
+    if (!e) return;
+    const a = e.attributes || {};
+    const status = String((this._st(c.entity_status) || {}).state || a.status || '').toLowerCase();
+    let st = ['cleaning', 'docked', 'returning', 'paused', 'idle', 'error'].includes(e.state) ? e.state : 'idle';
+    if (st === 'docked' && /charg/.test(status)) st = 'charging';
+    const emptying = /empt|vidage|evacu|self.?clean/.test(status);
+
+    const svg = r.getElementById('svg');
+    const prev = this._lastSt;
+    svg.setAttribute('class', `${st}${emptying ? ' emptying' : ''}${st === 'charging' ? ' docked' : ''}`);
+    r.getElementById('card').classList.toggle('error', st === 'error');
+    r.getElementById('err').textContent = st === 'error' ? (a.error || this._t('error')) : '';
+    this._lastSt = st;
+
+    // Boutons : met en évidence l'action correspondant à l'état
+    const active = { cleaning: 'start', paused: 'pause', returning: 'dock', docked: 'dock', charging: 'dock' }[st];
+    r.querySelectorAll('.btn').forEach((b) => b.classList.toggle('on', b.dataset.a === active));
+    r.getElementById('btns').style.display = c.show_buttons ? '' : 'none';
+
+    const batt = this._num(c.entity_battery) ?? (a.battery_level ?? null);
+    const area = this._num(c.entity_area), time = this._num(c.entity_time);
+    const it = [];
+    if (c.show_battery) it.push([this._t('battery'), batt === null ? '—' : `${Math.round(batt)} %`]);
+    if (c.show_status) it.push([this._t('status'), this._t(emptying ? 'emptying' : st)]);
+    if (c.show_area) it.push([this._t('area'), area === null ? '—' : `${Math.round(area)} m²`]);
+    if (c.show_time) it.push([this._t('time'), time === null ? '—' : `${Math.round(time)} min`]);
+    if (c.show_fan && a.fan_speed) it.push([this._t('fan'), String(a.fan_speed)]);
+    if (c.show_consumables) {
+      const fl = this._num(c.entity_filter), br = this._num(c.entity_brush);
+      if (fl !== null) it.push([this._t('filter'), `${Math.round(fl)} %`]);
+      if (br !== null) it.push([this._t('brush'), `${Math.round(br)} %`]);
+    }
+    const stats = r.getElementById('stats');
+    stats.style.gridTemplateColumns = `repeat(${it.length > 4 ? Math.ceil(it.length / 2) : it.length}, 1fr)`;
+    stats.innerHTML = it.map(([l, v]) => `<div class="stat"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
+  }
+}
+window.customCards = window.customCards || [];
+
+/* ───────────────────────────────────────────────────────────────
+ * Variante « robot seul » : pas de fond, pas de station, animation sur place
+ * type: custom:appliance-robot-vacuum-solo-card  (mêmes options que la carte complète)
+ * ─────────────────────────────────────────────────────────────── */
+const COMMON_CSS_VAC = `
+  :host { display:block; }
+  ha-card { padding:12px; overflow:hidden; }
+  .title { font-weight:600; margin:0 4px 4px; display:flex; justify-content:space-between; align-items:center; }
+  .badge { font-size:.75em; color:#fff; background:#e53935; border-radius:10px; padding:2px 8px; display:none; animation:blink 1s infinite; }
+  .error .badge { display:inline-block; }
+  svg { width:100%; height:auto; display:block; overflow:visible; }
+  .btns { display:flex; gap:8px; margin-top:8px; }
+  .btn { flex:1; display:flex; align-items:center; justify-content:center; gap:6px; border:none; cursor:pointer; border-radius:999px; padding:8px 6px;
+    background:var(--secondary-background-color, rgba(127,127,127,.15)); color:var(--primary-text-color,#222); font:600 .85em system-ui,sans-serif; transition:transform .1s, background .2s; }
+  .btn:active { transform:scale(.95); } .btn svg { width:18px; height:18px; fill:currentColor; }
+  .btn.on { background:var(--primary-color,#03a9f4); color:#fff; }
+  .stats { display:grid; gap:8px; margin-top:8px; }
+  .stat { text-align:center; background:var(--secondary-background-color, rgba(127,127,127,.12)); border-radius:10px; padding:6px 4px; }
+  .stat .v { font-weight:700; font-size:1.02em; } .stat .l { font-size:.7em; opacity:.65; text-transform:uppercase; letter-spacing:.04em; }
+  @keyframes blink { 50% { opacity:.3 } } @keyframes breathe { 50% { opacity:.4 } }`;
+
+class ApplianceRobotVacuumSoloCard extends ApplianceRobotVacuumCard {
+  _build() {
+    if (!this.shadowRoot) this.attachShadow({ mode: 'open' });
+    const brush = (x) => `<g transform="translate(${x} 113)"><g class="brush">
+      ${[0, 120, 240].map((a) => `<line x1="0" y1="0" x2="17" y2="0" transform="rotate(${a}) scale(1 .35)" stroke="#6b7178" stroke-width="2.4" stroke-linecap="round"/>`).join('')}
+      <circle r="3" fill="#30343a"/></g></g>`;
+    const dust = Array.from({ length: 12 }, (_, i) =>
+      `<circle class="dust" cx="${70 + (i * 37) % 100}" cy="${132 + (i % 3) * 3}" r="${1.2 + (i % 3) * .5}" style="animation-delay:${(i * .17) % 1.4}s"/>`).join('');
+    this.shadowRoot.innerHTML = `
+    <style>${COMMON_CSS_VAC}
+      .bot { transform-origin:120px 100px; }
+      .cleaning .bot { animation:wiggle 2.4s ease-in-out infinite; }
+      .returning .bot { animation:wiggle 1.6s ease-in-out infinite; }
+      .error .bot { animation:shake .4s ease-in-out infinite; }
+      .brush { transform:rotate(0); } .cleaning .brush { animation:spin .3s linear infinite; } .returning .brush { animation:spin 1s linear infinite; }
+      .dust { fill:#9a9a9a; opacity:0; } .cleaning .dust { animation:suck 1.4s ease-in infinite; }
+      .scan { fill:#7fe0ff; opacity:.0; } .cleaning .scan, .returning .scan { opacity:.9; animation:scan 1.2s linear infinite; }
+      .track { fill:none; stroke:rgba(0,0,0,.12); stroke-width:3.5; }
+      .ring { fill:none; stroke:var(--rc,#43a047); stroke-width:3.5; stroke-linecap:round; transition:stroke-dasharray 1s ease, stroke .6s;
+        filter:drop-shadow(0 0 3px var(--rc,#43a047)); }
+      .charging .ring, .docked .ring { animation:breathe 2.4s ease-in-out infinite; }
+      .paused .ring { stroke:#ffb300; animation:blink 1s infinite; } .error .ring { stroke:#ff3b30; animation:blink .5s infinite; }
+      .ico { opacity:0; transition:opacity .4s; }
+      .charging .bolt, .docked .bolt { opacity:1; animation:breathe 1.6s ease-in-out infinite; }
+      .returning .home { opacity:1; animation:hop 1s ease-in-out infinite; }
+      .paused .pz { opacity:1; }
+      @keyframes wiggle { 0%,100% { transform:translateX(0) rotate(0) } 25% { transform:translateX(-6px) rotate(-1.5deg) } 75% { transform:translateX(6px) rotate(1.5deg) } }
+      @keyframes shake { 0%,100% { transform:rotate(0) } 25% { transform:rotate(-2deg) } 75% { transform:rotate(2deg) } }
+      @keyframes spin { to { transform:rotate(360deg) } }
+      @keyframes suck { 0% { opacity:0; transform:translateY(0) } 30% { opacity:.9 } 100% { opacity:0; transform:translateY(-20px) scale(.4) } }
+      @keyframes scan { from { transform:translateX(0) } to { transform:translateX(18px) } }
+      @keyframes hop { 50% { transform:translateY(-4px) } }
+    </style>
+    <ha-card id="card">
+      <div class="title"><span>${this._config.name || this._t('name')}</span><span class="badge" id="err"></span></div>
+      <svg viewBox="0 0 240 142" id="svg">
+        <defs>
+          <linearGradient id="top" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#d3d8dd"/></linearGradient>
+          <linearGradient id="side" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b9bfc5"/><stop offset="1" stop-color="#868d94"/></linearGradient>
+        </defs>
+        ${dust}
+        <g class="bot">
+          <ellipse cx="120" cy="122" rx="96" ry="11" fill="rgba(0,0,0,.25)"/>
+          ${brush(64)}${brush(176)}
+          <path d="M30 78 V96 Q30 120 120 120 Q210 120 210 96 V78 Z" fill="url(#side)"/>
+          <path d="M34 92 Q40 116 120 117 Q200 116 206 92 V100 Q200 121 120 121 Q40 121 34 100 Z" fill="#2b2f35"/>
+          <ellipse cx="120" cy="78" rx="90" ry="30" fill="url(#top)"/>
+          <ellipse class="track" cx="120" cy="80" rx="74" ry="23"/>
+          <ellipse class="ring" id="ring" cx="120" cy="80" rx="74" ry="23" pathLength="100" stroke-dasharray="0 100" transform="rotate(180 120 80)"/>
+          <circle cx="104" cy="94" r="3.5" fill="#cfd4d9" stroke="#b5bbc1"/><circle cx="136" cy="94" r="3.5" fill="#cfd4d9" stroke="#b5bbc1"/>
+          <rect x="102" y="54" width="36" height="18" rx="9" fill="#2b2f35"/>
+          <ellipse cx="120" cy="55" rx="18" ry="5.5" fill="#4a4f56"/>
+          <rect x="108" y="62" width="24" height="4" rx="2" fill="#111"/>
+          <rect class="scan" x="108" y="62" width="6" height="4" rx="2"/>
+        </g>
+        <path class="ico bolt" d="M206 8 l-10 16 h7 l-3 13 l11 -17 h-7 z" fill="#ffd43b"/>
+        <path class="ico home" d="M206 10 l-12 11 h4 v10 h6 v-7 h4 v7 h6 v-10 h4 z" fill="#3fa9ff"/>
+        <path class="ico pz" d="M198 12 h5 v18 h-5z M208 12 h5 v18 h-5z" fill="#ffb300"/>
+      </svg>
+      <div class="btns" id="btns">
+        ${['start', 'pause', 'dock'].map((a) => `<button class="btn" data-a="${a}"><svg viewBox="0 0 24 24">${ICONS_VAC[a]}</svg>${this._t(a)}</button>`).join('')}
+      </div>
+      <div class="stats" id="stats"></div>
+    </ha-card>`;
+    this.shadowRoot.querySelectorAll('.btn').forEach((b) => { b.onclick = () => this._call(b.dataset.a); });
+    this._built = true;
+  }
+
+  _update() {
+    super._update();
+    if (!this._built || !this._hass) return;
+    const e = this._st(this._config.entity); if (!e) return;
+    // Anneau lumineux = niveau de batterie
+    const b = this._num(this._config.entity_battery) ?? (e.attributes.battery_level ?? null);
+    const pct = b === null ? 100 : Math.max(0, Math.min(100, b));
+    const ring = this.shadowRoot.getElementById('ring');
+    ring.setAttribute('stroke-dasharray', `${pct} 100`);
+    this.shadowRoot.getElementById('svg').style.setProperty('--rc', pct < 20 ? '#e53935' : pct < 50 ? '#fb8c00' : '#43a047');
+  }
+}
+define('appliance-robot-vacuum-solo-card', ApplianceRobotVacuumSoloCard);
+window.customCards.push({ type: 'appliance-robot-vacuum-solo-card', name: 'Robot Vacuum Solo Card', description: 'Robot aspirateur seul (sans fond ni station), animé, avec commandes', preview: false });
+})();

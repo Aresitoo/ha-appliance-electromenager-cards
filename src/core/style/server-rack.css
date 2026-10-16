@@ -1,0 +1,17 @@
+/* ---------- server rack (homelab) ---------- */
+.rk-led { fill: #2d3640; transition: fill .4s; }
+.rk-fan { transform-box: fill-box; transform-origin: 50% 50%; }
+.k-server_rack.st-online .rk-fan { animation: ac-rot calc(.9s - var(--load, .4) * .6s) linear infinite; }
+.k-server_rack.st-online .rk-g { fill: #34d27a; animation: rk-blink calc(1.8s - var(--load, .4) * 1.3s) steps(1, end) infinite; }
+.k-server_rack.st-online .rk-b { fill: #3b9cff; filter: drop-shadow(0 0 1.2px #3b9cff); animation: rk-blink calc(1.3s - var(--load, .4) * .9s) steps(1, end) infinite; }
+.k-server_rack.st-online .rk-r { fill: #ffb020; }
+.k-server_rack.st-standby .rk-g { fill: #34d27a; opacity: .6; }
+.k-server_rack.st-standby .rk-r { fill: #ffb020; }
+.rk-glow { opacity: 0; transition: opacity .8s; }
+.k-server_rack.st-online .rk-glow { opacity: 1; animation: ac-glow 3s ease-in-out infinite; }
+.rk-flow path { stroke: #fff; stroke-dasharray: 1.4 9; opacity: 0; transition: opacity .6s; }
+.k-server_rack.st-online .rk-flow path { opacity: .85; animation: ac-flow calc(1.8s - var(--load, .4) * 1.2s) linear infinite; }
+.k-server_rack:not(.st-online) .rk-cables { opacity: .55; }
+.k-server_rack .lcd { font-size: 5.6px; fill: #24404f; }
+.k-server_rack.active .lcd { fill: var(--ac-lcd); }
+@keyframes rk-blink { 0% { opacity: 1; } 20% { opacity: .25; } 35% { opacity: 1; } 62% { opacity: .35; } 78% { opacity: 1; } 100% { opacity: 1; } }
