@@ -11,71 +11,339 @@
 const VERSION = "1.17.0";
 
 /* ------------------------------------------------------------------ */
-/* i18n                                                                */
+/* i18n — strings live in src/i18n/<lang>.json, inlined by build.js    */
 /* ------------------------------------------------------------------ */
 const STRINGS = {
-  en: {
-    washer: "Washing machine", dryer: "Dryer", dishwasher: "Dishwasher",
-    water_heater: "Water heater", oven: "Oven", microwave: "Microwave", air_fryer: "Air fryer", coffee_maker: "Coffee maker", tv: "TV", range_hood: "Range hood", towel_dryer: "Heated towel rail", server_rack: "Server rack (homelab)", desktop_pc: "Desktop PC", laptop: "Laptop", online: "Online", f_max_power_rack: "Max load (W)", f_power_solar: "Solar surplus power sensor (W)", f_energy_solar: "Solar surplus energy sensor (kWh)", solar_surplus: "Solar surplus", mode_off: "Off", wine_cooler: "Wine cooler", f_max_temperature_wine: "Alert above (°C)", f_show_modes: "Show mode buttons", grid: "Grid", energy_grid: "Grid energy", energy_solar: "Solar energy", ac_split: "Air conditioner (indoor)", heat_pump: "Heat pump (outdoor unit)", ac_dry: "Drying", ac_fan: "Fan only", at_target: "At target", defrost: "Defrosting", f_hvac: "Mode without climate entity", screen_on: "On", lights: "Lights only", f_light: "Light entity (optional)", brewing: "Brewing", keep_warm: "Keeping warm", f_style: "Coffee maker type", f_warm_threshold: "Keep-warm / ready above (W)", fridge: "Refrigerator", pellet_stove: "Pellet stove", pool_pump: "Pool pump", printer_3d: "3D printer", chest_freezer: "Chest freezer", drawer_freezer: "Upright freezer", solar: "Solar panels", vmc: "Extractor fan", hob: "Cooktop", radiator: "Electric radiator",
-    comfort: "Comfort", eco: "Eco", frost: "Frost protection", window_open: "Window open", f_mode: "Mode entity (pilot wire, select…)", f_window: "Window sensor", f_max_power_rad: "Radiator power (W)",
-    cooking: "Cooking", residual: "Residual heat", zones: "Active zones", f_zone_power: "Power of one zone (W)", f_zone_1: "Front-left zone (level or W)", f_zone_2: "Front-right zone", f_zone_3: "Back-left zone", f_zone_4: "Back-right zone", f_residual_minutes: "Residual heat display (min)",
-    speed1: "Low speed", speed2: "High speed", humid: "High humidity", humidity: "Humidity", f_humidity: "Humidity sensor (%)", f_high_threshold: "High speed above (W)", f_humidity_max: "Humidity alert above (%)",
-    producing: "Producing", low: "Low production", night: "Night", production: "Production", savings: "Savings", f_sun_entity: "Sun entity", f_max_power_solar: "Peak power (Wp)",
-    printing: "Printing", paused: "Paused", failed: "Failed", progress: "Progress", nozzle: "Nozzle", bed: "Bed",
-    f_bed_temperature: "Bed temperature sensor", f_filament_color: "Filament color (CSS)",
-    filtering: "Filtering", water: "Water", today: "Today", speed: "Speed",
-    f_runtime: "Filtration time today sensor", f_speed: "Speed sensor (rpm or %)", f_max_power: "Max power at full speed (W)",
-    ignition: "Igniting", extinguishing: "Shutting down", alarm: "Alarm", pellets: "Pellets", pellets_low: "Low pellets", level: "Level",
-    f_power_level: "Heat level sensor (1-5)", f_pellet_level: "Pellet level sensor (%)", f_ignition_threshold: "Ignition above (W)", f_pellet_alert: "Low pellet alert below (%)",
-    off: "Off", idle: "Idle", standby: "Standby", running: "Running", finished: "Finished",
-    heating: "Heating", ready: "Ready", preheating: "Preheating", cooling: "Cooling",
-    door_open: "Door open", unavailable: "Unavailable", too_warm: "Too warm",
-    ph_wash: "Washing", ph_rinse: "Rinsing", ph_spin: "Spinning", ph_dry: "Drying", ph_cool: "Cooling down",
-    power: "Power", energy: "Energy", cost: "Cost", remaining: "Remaining", program: "Program",
-    temperature: "Temperature", target: "Target", fridge_temp: "Fridge", freezer_temp: "Freezer",
-    ends_at: "Ends at", toggle: "Turn on/off", confirm_off: "Cycle running – click again to cut power",
-    f_name: "Name", f_entity: "Status entity (switch, sensor, input_select…)",
-    f_power: "Power sensor (W)", f_energy: "Energy sensor (kWh)", f_cost: "Cost sensor",
-    f_remaining: "Remaining time sensor", f_progress: "Progress sensor (%)", f_program: "Program / phase sensor",
-    f_door: "Door sensor", f_switch: "Switch to toggle (optional)", f_threshold: "Running threshold (W)",
-    f_temperature: "Temperature sensor", f_target_temperature: "Target temperature sensor",
-    f_freezer_temperature: "Freezer temperature sensor", f_freezer_door: "Freezer door sensor",
-    f_max_temperature: "Fridge alert above (°C)", f_freezer_max_temperature: "Freezer alert above (°C)",
-    f_color: "Accent color (CSS)", f_animations: "Animations", f_confirm_off: "Confirm before cutting power during a cycle",
+  "en": {
+    "washer": "Washing machine",
+    "dryer": "Dryer",
+    "dishwasher": "Dishwasher",
+    "water_heater": "Water heater",
+    "oven": "Oven",
+    "microwave": "Microwave",
+    "air_fryer": "Air fryer",
+    "coffee_maker": "Coffee maker",
+    "tv": "TV",
+    "range_hood": "Range hood",
+    "towel_dryer": "Heated towel rail",
+    "server_rack": "Server rack (homelab)",
+    "desktop_pc": "Desktop PC",
+    "laptop": "Laptop",
+    "online": "Online",
+    "f_max_power_rack": "Max load (W)",
+    "f_power_solar": "Solar surplus power sensor (W)",
+    "f_energy_solar": "Solar surplus energy sensor (kWh)",
+    "solar_surplus": "Solar surplus",
+    "mode_off": "Off",
+    "wine_cooler": "Wine cooler",
+    "f_max_temperature_wine": "Alert above (°C)",
+    "f_show_modes": "Show mode buttons",
+    "grid": "Grid",
+    "energy_grid": "Grid energy",
+    "energy_solar": "Solar energy",
+    "ac_split": "Air conditioner (indoor)",
+    "heat_pump": "Heat pump (outdoor unit)",
+    "ac_dry": "Drying",
+    "ac_fan": "Fan only",
+    "at_target": "At target",
+    "defrost": "Defrosting",
+    "f_hvac": "Mode without climate entity",
+    "screen_on": "On",
+    "lights": "Lights only",
+    "f_light": "Light entity (optional)",
+    "brewing": "Brewing",
+    "keep_warm": "Keeping warm",
+    "f_style": "Coffee maker type",
+    "f_warm_threshold": "Keep-warm / ready above (W)",
+    "fridge": "Refrigerator",
+    "pellet_stove": "Pellet stove",
+    "pool_pump": "Pool pump",
+    "printer_3d": "3D printer",
+    "chest_freezer": "Chest freezer",
+    "drawer_freezer": "Upright freezer",
+    "solar": "Solar panels",
+    "vmc": "Extractor fan",
+    "hob": "Cooktop",
+    "radiator": "Electric radiator",
+    "comfort": "Comfort",
+    "eco": "Eco",
+    "frost": "Frost protection",
+    "window_open": "Window open",
+    "f_mode": "Mode entity (pilot wire, select…)",
+    "f_window": "Window sensor",
+    "f_max_power_rad": "Radiator power (W)",
+    "cooking": "Cooking",
+    "residual": "Residual heat",
+    "zones": "Active zones",
+    "f_zone_power": "Power of one zone (W)",
+    "f_zone_1": "Front-left zone (level or W)",
+    "f_zone_2": "Front-right zone",
+    "f_zone_3": "Back-left zone",
+    "f_zone_4": "Back-right zone",
+    "f_residual_minutes": "Residual heat display (min)",
+    "speed1": "Low speed",
+    "speed2": "High speed",
+    "humid": "High humidity",
+    "humidity": "Humidity",
+    "f_humidity": "Humidity sensor (%)",
+    "f_high_threshold": "High speed above (W)",
+    "f_humidity_max": "Humidity alert above (%)",
+    "producing": "Producing",
+    "low": "Low production",
+    "night": "Night",
+    "production": "Production",
+    "savings": "Savings",
+    "f_sun_entity": "Sun entity",
+    "f_max_power_solar": "Peak power (Wp)",
+    "printing": "Printing",
+    "paused": "Paused",
+    "failed": "Failed",
+    "progress": "Progress",
+    "nozzle": "Nozzle",
+    "bed": "Bed",
+    "f_bed_temperature": "Bed temperature sensor",
+    "f_filament_color": "Filament color (CSS)",
+    "filtering": "Filtering",
+    "water": "Water",
+    "today": "Today",
+    "speed": "Speed",
+    "f_runtime": "Filtration time today sensor",
+    "f_speed": "Speed sensor (rpm or %)",
+    "f_max_power": "Max power at full speed (W)",
+    "ignition": "Igniting",
+    "extinguishing": "Shutting down",
+    "alarm": "Alarm",
+    "pellets": "Pellets",
+    "pellets_low": "Low pellets",
+    "level": "Level",
+    "f_power_level": "Heat level sensor (1-5)",
+    "f_pellet_level": "Pellet level sensor (%)",
+    "f_ignition_threshold": "Ignition above (W)",
+    "f_pellet_alert": "Low pellet alert below (%)",
+    "off": "Off",
+    "idle": "Idle",
+    "standby": "Standby",
+    "running": "Running",
+    "finished": "Finished",
+    "heating": "Heating",
+    "ready": "Ready",
+    "preheating": "Preheating",
+    "cooling": "Cooling",
+    "door_open": "Door open",
+    "unavailable": "Unavailable",
+    "too_warm": "Too warm",
+    "ph_wash": "Washing",
+    "ph_rinse": "Rinsing",
+    "ph_spin": "Spinning",
+    "ph_dry": "Drying",
+    "ph_cool": "Cooling down",
+    "power": "Power",
+    "energy": "Energy",
+    "cost": "Cost",
+    "remaining": "Remaining",
+    "program": "Program",
+    "temperature": "Temperature",
+    "target": "Target",
+    "fridge_temp": "Fridge",
+    "freezer_temp": "Freezer",
+    "ends_at": "Ends at",
+    "toggle": "Turn on/off",
+    "confirm_off": "Cycle running – click again to cut power",
+    "f_name": "Name",
+    "f_entity": "Status entity (switch, sensor, input_select…)",
+    "f_power": "Power sensor (W)",
+    "f_energy": "Energy sensor (kWh)",
+    "f_cost": "Cost sensor",
+    "f_remaining": "Remaining time sensor",
+    "f_progress": "Progress sensor (%)",
+    "f_program": "Program / phase sensor",
+    "f_door": "Door sensor",
+    "f_switch": "Switch to toggle (optional)",
+    "f_threshold": "Running threshold (W)",
+    "f_temperature": "Temperature sensor",
+    "f_target_temperature": "Target temperature sensor",
+    "f_freezer_temperature": "Freezer temperature sensor",
+    "f_freezer_door": "Freezer door sensor",
+    "f_max_temperature": "Fridge alert above (°C)",
+    "f_freezer_max_temperature": "Freezer alert above (°C)",
+    "f_color": "Accent color (CSS)",
+    "f_animations": "Animations",
+    "f_confirm_off": "Confirm before cutting power during a cycle",
+    "err_need_entity": "Set at least one of `entity`, `power`, `switch` or `temperature`.",
+    "of_peak": "of peak",
+    "lcd_night": "NIGHT",
+    "lcd_ignition": "IGNIT",
+    "lcd_extinguishing": "COOL",
+    "lcd_brewing": "BREW",
+    "lcd_ready": "READY"
   },
-  fr: {
-    washer: "Lave-linge", dryer: "Sèche-linge", dishwasher: "Lave-vaisselle",
-    water_heater: "Ballon d'eau chaude", oven: "Four", microwave: "Micro-ondes", air_fryer: "Airfryer", coffee_maker: "Cafetière", tv: "Téléviseur", range_hood: "Hotte aspirante", towel_dryer: "Sèche-serviettes", server_rack: "Baie informatique (homelab)", desktop_pc: "PC fixe", laptop: "PC portable", online: "En ligne", f_max_power_rack: "Charge max (W)", f_power_solar: "Capteur de puissance surplus solaire (W)", f_energy_solar: "Capteur d'énergie surplus solaire (kWh)", solar_surplus: "Surplus solaire", mode_off: "Arrêt", wine_cooler: "Cave à vin", f_max_temperature_wine: "Alerte au-dessus de (°C)", f_show_modes: "Afficher les boutons de mode", grid: "Réseau", energy_grid: "Énergie réseau", energy_solar: "Énergie solaire", ac_split: "Climatiseur (split)", heat_pump: "Pompe à chaleur (ext.)", ac_dry: "Déshumidification", ac_fan: "Ventilation", at_target: "Consigne atteinte", defrost: "Dégivrage", f_hvac: "Mode sans entité climate", screen_on: "Allumée", lights: "Éclairage", f_light: "Entité d'éclairage (optionnel)", brewing: "Préparation du café", keep_warm: "Maintien au chaud", f_style: "Type de cafetière", f_warm_threshold: "Maintien au chaud / prête au-dessus de (W)", fridge: "Réfrigérateur", pellet_stove: "Poêle à granulés", pool_pump: "Pompe de piscine", printer_3d: "Imprimante 3D", chest_freezer: "Congélateur coffre", drawer_freezer: "Congélateur à tiroirs", solar: "Panneaux solaires", vmc: "VMC", hob: "Plaques de cuisson", radiator: "Radiateur",
-    comfort: "Confort", eco: "Éco", frost: "Hors-gel", window_open: "Fenêtre ouverte", f_mode: "Entité de mode (fil pilote, liste…)", f_window: "Capteur de fenêtre", f_max_power_rad: "Puissance du radiateur (W)",
-    cooking: "Cuisson", residual: "Chaleur résiduelle", zones: "Foyers actifs", f_zone_power: "Puissance d'un foyer (W)", f_zone_1: "Foyer avant gauche (niveau ou W)", f_zone_2: "Foyer avant droit", f_zone_3: "Foyer arrière gauche", f_zone_4: "Foyer arrière droit", f_residual_minutes: "Affichage chaleur résiduelle (min)",
-    speed1: "Petite vitesse", speed2: "Grande vitesse", humid: "Humidité élevée", humidity: "Humidité", f_humidity: "Capteur d'humidité (%)", f_high_threshold: "Grande vitesse au-dessus de (W)", f_humidity_max: "Alerte humidité au-dessus de (%)",
-    producing: "Production", low: "Production faible", night: "Nuit", production: "Production", savings: "Économies", f_sun_entity: "Entité soleil", f_max_power_solar: "Puissance crête (Wc)",
-    printing: "Impression", paused: "En pause", failed: "Échec", progress: "Progression", nozzle: "Buse", bed: "Plateau",
-    f_bed_temperature: "Capteur de température du plateau", f_filament_color: "Couleur du filament (CSS)",
-    filtering: "Filtration", water: "Eau", today: "Aujourd'hui", speed: "Vitesse",
-    f_runtime: "Capteur de durée de filtration du jour", f_speed: "Capteur de vitesse (tr/min ou %)", f_max_power: "Puissance max à pleine vitesse (W)",
-    ignition: "Allumage", extinguishing: "Extinction", alarm: "Alarme", pellets: "Granulés", pellets_low: "Granulés bas", level: "Niveau",
-    f_power_level: "Capteur de puissance de chauffe (1-5)", f_pellet_level: "Capteur de niveau de granulés (%)", f_ignition_threshold: "Allumage au-dessus de (W)", f_pellet_alert: "Alerte granulés sous (%)",
-    off: "Éteint", idle: "Inactif", standby: "Veille", running: "En cours", finished: "Terminé",
-    heating: "En chauffe", ready: "Prêt", preheating: "Préchauffage", cooling: "Refroidit",
-    door_open: "Porte ouverte", unavailable: "Indisponible", too_warm: "Trop chaud",
-    ph_wash: "Lavage", ph_rinse: "Rinçage", ph_spin: "Essorage", ph_dry: "Séchage", ph_cool: "Refroidissement",
-    power: "Puissance", energy: "Énergie", cost: "Coût", remaining: "Restant", program: "Programme",
-    temperature: "Température", target: "Consigne", fridge_temp: "Frigo", freezer_temp: "Congélateur",
-    ends_at: "Fin à", toggle: "Allumer/éteindre", confirm_off: "Cycle en cours – cliquer encore pour couper",
-    f_name: "Nom", f_entity: "Entité d'état (switch, sensor, input_select…)",
-    f_power: "Capteur de puissance (W)", f_energy: "Capteur d'énergie (kWh)", f_cost: "Capteur de coût",
-    f_remaining: "Capteur de temps restant", f_progress: "Capteur de progression (%)", f_program: "Capteur de programme / phase",
-    f_door: "Capteur de porte", f_switch: "Interrupteur à piloter (optionnel)", f_threshold: "Seuil de fonctionnement (W)",
-    f_temperature: "Capteur de température", f_target_temperature: "Capteur de consigne",
-    f_freezer_temperature: "Capteur température congélateur", f_freezer_door: "Capteur porte congélateur",
-    f_max_temperature: "Alerte frigo au-dessus de (°C)", f_freezer_max_temperature: "Alerte congélateur au-dessus de (°C)",
-    f_color: "Couleur d'accent (CSS)", f_animations: "Animations", f_confirm_off: "Confirmer avant de couper pendant un cycle",
-  },
+  "fr": {
+    "washer": "Lave-linge",
+    "dryer": "Sèche-linge",
+    "dishwasher": "Lave-vaisselle",
+    "water_heater": "Ballon d'eau chaude",
+    "oven": "Four",
+    "microwave": "Micro-ondes",
+    "air_fryer": "Airfryer",
+    "coffee_maker": "Cafetière",
+    "tv": "Téléviseur",
+    "range_hood": "Hotte aspirante",
+    "towel_dryer": "Sèche-serviettes",
+    "server_rack": "Baie informatique (homelab)",
+    "desktop_pc": "PC fixe",
+    "laptop": "PC portable",
+    "online": "En ligne",
+    "f_max_power_rack": "Charge max (W)",
+    "f_power_solar": "Capteur de puissance surplus solaire (W)",
+    "f_energy_solar": "Capteur d'énergie surplus solaire (kWh)",
+    "solar_surplus": "Surplus solaire",
+    "mode_off": "Arrêt",
+    "wine_cooler": "Cave à vin",
+    "f_max_temperature_wine": "Alerte au-dessus de (°C)",
+    "f_show_modes": "Afficher les boutons de mode",
+    "grid": "Réseau",
+    "energy_grid": "Énergie réseau",
+    "energy_solar": "Énergie solaire",
+    "ac_split": "Climatiseur (split)",
+    "heat_pump": "Pompe à chaleur (ext.)",
+    "ac_dry": "Déshumidification",
+    "ac_fan": "Ventilation",
+    "at_target": "Consigne atteinte",
+    "defrost": "Dégivrage",
+    "f_hvac": "Mode sans entité climate",
+    "screen_on": "Allumée",
+    "lights": "Éclairage",
+    "f_light": "Entité d'éclairage (optionnel)",
+    "brewing": "Préparation du café",
+    "keep_warm": "Maintien au chaud",
+    "f_style": "Type de cafetière",
+    "f_warm_threshold": "Maintien au chaud / prête au-dessus de (W)",
+    "fridge": "Réfrigérateur",
+    "pellet_stove": "Poêle à granulés",
+    "pool_pump": "Pompe de piscine",
+    "printer_3d": "Imprimante 3D",
+    "chest_freezer": "Congélateur coffre",
+    "drawer_freezer": "Congélateur à tiroirs",
+    "solar": "Panneaux solaires",
+    "vmc": "VMC",
+    "hob": "Plaques de cuisson",
+    "radiator": "Radiateur",
+    "comfort": "Confort",
+    "eco": "Éco",
+    "frost": "Hors-gel",
+    "window_open": "Fenêtre ouverte",
+    "f_mode": "Entité de mode (fil pilote, liste…)",
+    "f_window": "Capteur de fenêtre",
+    "f_max_power_rad": "Puissance du radiateur (W)",
+    "cooking": "Cuisson",
+    "residual": "Chaleur résiduelle",
+    "zones": "Foyers actifs",
+    "f_zone_power": "Puissance d'un foyer (W)",
+    "f_zone_1": "Foyer avant gauche (niveau ou W)",
+    "f_zone_2": "Foyer avant droit",
+    "f_zone_3": "Foyer arrière gauche",
+    "f_zone_4": "Foyer arrière droit",
+    "f_residual_minutes": "Affichage chaleur résiduelle (min)",
+    "speed1": "Petite vitesse",
+    "speed2": "Grande vitesse",
+    "humid": "Humidité élevée",
+    "humidity": "Humidité",
+    "f_humidity": "Capteur d'humidité (%)",
+    "f_high_threshold": "Grande vitesse au-dessus de (W)",
+    "f_humidity_max": "Alerte humidité au-dessus de (%)",
+    "producing": "Production",
+    "low": "Production faible",
+    "night": "Nuit",
+    "production": "Production",
+    "savings": "Économies",
+    "f_sun_entity": "Entité soleil",
+    "f_max_power_solar": "Puissance crête (Wc)",
+    "printing": "Impression",
+    "paused": "En pause",
+    "failed": "Échec",
+    "progress": "Progression",
+    "nozzle": "Buse",
+    "bed": "Plateau",
+    "f_bed_temperature": "Capteur de température du plateau",
+    "f_filament_color": "Couleur du filament (CSS)",
+    "filtering": "Filtration",
+    "water": "Eau",
+    "today": "Aujourd'hui",
+    "speed": "Vitesse",
+    "f_runtime": "Capteur de durée de filtration du jour",
+    "f_speed": "Capteur de vitesse (tr/min ou %)",
+    "f_max_power": "Puissance max à pleine vitesse (W)",
+    "ignition": "Allumage",
+    "extinguishing": "Extinction",
+    "alarm": "Alarme",
+    "pellets": "Granulés",
+    "pellets_low": "Granulés bas",
+    "level": "Niveau",
+    "f_power_level": "Capteur de puissance de chauffe (1-5)",
+    "f_pellet_level": "Capteur de niveau de granulés (%)",
+    "f_ignition_threshold": "Allumage au-dessus de (W)",
+    "f_pellet_alert": "Alerte granulés sous (%)",
+    "off": "Éteint",
+    "idle": "Inactif",
+    "standby": "Veille",
+    "running": "En cours",
+    "finished": "Terminé",
+    "heating": "En chauffe",
+    "ready": "Prêt",
+    "preheating": "Préchauffage",
+    "cooling": "Refroidit",
+    "door_open": "Porte ouverte",
+    "unavailable": "Indisponible",
+    "too_warm": "Trop chaud",
+    "ph_wash": "Lavage",
+    "ph_rinse": "Rinçage",
+    "ph_spin": "Essorage",
+    "ph_dry": "Séchage",
+    "ph_cool": "Refroidissement",
+    "power": "Puissance",
+    "energy": "Énergie",
+    "cost": "Coût",
+    "remaining": "Restant",
+    "program": "Programme",
+    "temperature": "Température",
+    "target": "Consigne",
+    "fridge_temp": "Frigo",
+    "freezer_temp": "Congélateur",
+    "ends_at": "Fin à",
+    "toggle": "Allumer/éteindre",
+    "confirm_off": "Cycle en cours – cliquer encore pour couper",
+    "f_name": "Nom",
+    "f_entity": "Entité d'état (switch, sensor, input_select…)",
+    "f_power": "Capteur de puissance (W)",
+    "f_energy": "Capteur d'énergie (kWh)",
+    "f_cost": "Capteur de coût",
+    "f_remaining": "Capteur de temps restant",
+    "f_progress": "Capteur de progression (%)",
+    "f_program": "Capteur de programme / phase",
+    "f_door": "Capteur de porte",
+    "f_switch": "Interrupteur à piloter (optionnel)",
+    "f_threshold": "Seuil de fonctionnement (W)",
+    "f_temperature": "Capteur de température",
+    "f_target_temperature": "Capteur de consigne",
+    "f_freezer_temperature": "Capteur température congélateur",
+    "f_freezer_door": "Capteur porte congélateur",
+    "f_max_temperature": "Alerte frigo au-dessus de (°C)",
+    "f_freezer_max_temperature": "Alerte congélateur au-dessus de (°C)",
+    "f_color": "Couleur d'accent (CSS)",
+    "f_animations": "Animations",
+    "f_confirm_off": "Confirmer avant de couper pendant un cycle",
+    "err_need_entity": "Indique au moins `entity`, `power`, `switch` ou `temperature`.",
+    "of_peak": "de la crête",
+    "lcd_night": "NUIT",
+    "lcd_ignition": "ALLUM",
+    "lcd_extinguishing": "EXTIN",
+    "lcd_brewing": "CAFE",
+    "lcd_ready": "PRET"
+  }
 };
 const lang = (hass) => {
-  const l = (hass && (hass.locale?.language || hass.language)) || document.documentElement.lang || "en";
-  return l.toLowerCase().startsWith("fr") ? "fr" : "en";
+  const l = ((hass && (hass.locale?.language || hass.language)) || document.documentElement.lang || "en").toLowerCase().slice(0, 2);
+  return STRINGS[l] ? l : "en";
 };
 const tr = (hass, key) => STRINGS[lang(hass)][key] ?? STRINGS.en[key] ?? key;
 
@@ -1460,9 +1728,7 @@ class ApplianceCardBase extends HTMLElement {
   setConfig(config) {
     if (!config) throw new Error("Invalid configuration");
     if (!["entity", "power", "power_solar", "switch", "temperature", "zone_1"].some((f) => config[f])) {
-      throw new Error(lang() === "fr"
-        ? "Indique au moins `entity`, `power`, `switch` ou `temperature`."
-        : "Set at least one of `entity`, `power`, `switch` or `temperature`.");
+      throw new Error(tr(undefined, "err_need_entity"));
     }
     this._config = { ...config };
     this._kind = this.constructor.kind;
@@ -1829,7 +2095,7 @@ class ApplianceCardBase extends HTMLElement {
       return v != null ? `${Math.round(v)}°` : "ON";
     }
     if (kind === "solar") {
-      if (m.status === "night") return lang(hass) === "fr" ? "NUIT" : "NIGHT";
+      if (m.status === "night") return tr(hass, "lcd_night");
       if (m.watts == null) return "--";
       return m.watts >= 1000 ? `${(m.watts / 1000).toFixed(m.watts >= 10000 ? 0 : 1)}kW` : `${Math.round(m.watts)}W`;
     }
@@ -1852,10 +2118,9 @@ class ApplianceCardBase extends HTMLElement {
       return m.status === "standby" ? "STBY" : "OFF";
     }
     if (kind === "pellet_stove") {
-      const fr = lang(hass) === "fr";
-      if (m.status === "ignition") return fr ? "ALLUM" : "IGNIT";
-      if (m.status === "extinguishing") return fr ? "EXTIN" : "COOL";
-      if (m.status === "alarm") return fr ? "ALARM" : "ALARM";
+      if (m.status === "ignition") return tr(hass, "lcd_ignition");
+      if (m.status === "extinguishing") return tr(hass, "lcd_extinguishing");
+      if (m.status === "alarm") return "ALARM";
       if (m.status === "standby") return "ECO";
       if (m.status === "heating") return m.tempVal != null ? `${Math.round(m.tempVal)}°` : m.level != null ? `P${Math.round(m.level)}` : "ON";
       return fmtClock(hass, new Date());
@@ -1870,9 +2135,8 @@ class ApplianceCardBase extends HTMLElement {
       return m.targetVal != null ? `${Math.round(m.targetVal)}°` : m.tempVal != null ? `${Math.round(m.tempVal)}°` : "ON";
     }
     if (kind === "coffee_maker") {
-      const fr = lang(hass) === "fr";
-      if (m.status === "brewing") return fr ? "CAFE" : "BREW";
-      if (m.status === "ready") return fr ? "PRET" : "READY";
+      if (m.status === "brewing") return tr(hass, "lcd_brewing");
+      if (m.status === "ready") return tr(hass, "lcd_ready");
       if (m.status === "off") return "OFF";
       return fmtClock(hass, new Date());
     }
@@ -2096,7 +2360,7 @@ class ApplianceCardBase extends HTMLElement {
     if (m.energy) tile("mdi:lightning-bolt-circle", fmtUnit(hass, m.energy, 2) ?? "—", tr(hass, solar ? "today" : dual ? "energy_grid" : "energy"), c.energy);
     if (m.energyS) tile("mdi:solar-power-variant", fmtUnit(hass, m.energyS, 2) ?? "—", tr(hass, "energy_solar"), c.energy_solar);
     if (m.cost) tile(solar ? "mdi:piggy-bank-outline" : "mdi:cash", fmtUnit(hass, m.cost, 2, 2) ?? "—", tr(hass, solar ? "savings" : "cost"), c.cost);
-    if (solar && m.status !== "night" && m.frac != null && m.pw && !BAD.includes(String(m.pw.state).toLowerCase())) tile("mdi:white-balance-sunny", `${Math.round(m.frac * 100)} %`, lang(hass) === "fr" ? "de la crête" : "of peak", c.power);
+    if (solar && m.status !== "night" && m.frac != null && m.pw && !BAD.includes(String(m.pw.state).toLowerCase())) tile("mdi:white-balance-sunny", `${Math.round(m.frac * 100)} %`, tr(hass, "of_peak"), c.power);
     $("stats").innerHTML = tiles.join("");
     $("stats").style.display = tiles.length ? "" : "none";
   }
@@ -2909,8 +3173,24 @@ window.customCards = window.customCards || [];
  * type: custom:appliance-aquarium-card
  */
 const I18N_AQUARIUM = {
-  fr: { power: 'Puissance', energy: 'Énergie', temp: 'Eau', cost: 'Coût', name: 'Aquarium', alert: 'Température hors plage', unavailable: 'Indisponible' },
-  en: { power: 'Power', energy: 'Energy', temp: 'Water', cost: 'Cost', name: 'Aquarium', alert: 'Temperature out of range', unavailable: 'Unavailable' },
+  "en": {
+    "power": "Power",
+    "energy": "Energy",
+    "temp": "Water",
+    "cost": "Cost",
+    "name": "Aquarium",
+    "alert": "Temperature out of range",
+    "unavailable": "Unavailable"
+  },
+  "fr": {
+    "power": "Puissance",
+    "energy": "Énergie",
+    "temp": "Eau",
+    "cost": "Coût",
+    "name": "Aquarium",
+    "alert": "Température hors plage",
+    "unavailable": "Indisponible"
+  }
 };
 
 class ApplianceAquariumCard extends HTMLElement {
@@ -2939,7 +3219,7 @@ class ApplianceAquariumCard extends HTMLElement {
           { name: 'show_temperature', selector: { boolean: {} } },
           { name: 'show_cost', selector: { boolean: {} } },
         ] },
-        { name: 'language', selector: { select: { options: ['fr', 'en'] } } },
+        { name: 'language', selector: { select: { options: Object.keys(I18N_AQUARIUM) } } },
       ],
     };
   }
@@ -2961,7 +3241,7 @@ class ApplianceAquariumCard extends HTMLElement {
 
   getCardSize() { return 5; }
 
-  _t(k) { return (I18N_AQUARIUM[this._config.language] || I18N_AQUARIUM.fr)[k]; }
+  _t(k) { return (I18N_AQUARIUM[this._config.language] || I18N_AQUARIUM.en)[k] ?? I18N_AQUARIUM.en[k] ?? k; }
 
   _build() {
     const c = this._config;
@@ -3127,8 +3407,28 @@ window.customCards = window.customCards || [];
  * type: custom:appliance-linky-card
  */
 const I18N_LINKY = {
-  fr: { power: 'PUISSANCE', hp: 'INDEX HP', hc: 'INDEX HC', tariff: 'TARIF EN COURS', cost: 'COÛT JOUR', subscribed: 'Souscrite', name: 'Linky', conso: 'conso', alert: 'Dépassement' },
-  en: { power: 'POWER', hp: 'PEAK INDEX', hc: 'OFF-PEAK INDEX', tariff: 'CURRENT TARIFF', cost: 'COST TODAY', subscribed: 'Subscribed', name: 'Linky', conso: 'usage', alert: 'Overload' },
+  "en": {
+    "power": "POWER",
+    "hp": "PEAK INDEX",
+    "hc": "OFF-PEAK INDEX",
+    "tariff": "CURRENT TARIFF",
+    "cost": "COST TODAY",
+    "subscribed": "Subscribed",
+    "name": "Linky",
+    "conso": "usage",
+    "alert": "Overload"
+  },
+  "fr": {
+    "power": "PUISSANCE",
+    "hp": "INDEX HP",
+    "hc": "INDEX HC",
+    "tariff": "TARIF EN COURS",
+    "cost": "COÛT JOUR",
+    "subscribed": "Souscrite",
+    "name": "Linky",
+    "conso": "conso",
+    "alert": "Dépassement"
+  }
 };
 
 class ApplianceLinkyCard extends HTMLElement {
@@ -3153,7 +3453,7 @@ class ApplianceLinkyCard extends HTMLElement {
           { name: 'show_tariff', selector: { boolean: {} } },
           { name: 'show_cost', selector: { boolean: {} } },
         ] },
-        { name: 'language', selector: { select: { options: ['fr', 'en'] } } },
+        { name: 'language', selector: { select: { options: Object.keys(I18N_LINKY) } } },
       ],
     };
   }
@@ -3169,7 +3469,7 @@ class ApplianceLinkyCard extends HTMLElement {
 
   set hass(hass) { this._hass = hass; this._update(); }
   getCardSize() { return 5; }
-  _t(k) { return (I18N_LINKY[this._config.language] || I18N_LINKY.fr)[k]; }
+  _t(k) { return (I18N_LINKY[this._config.language] || I18N_LINKY.en)[k] ?? I18N_LINKY.en[k] ?? k; }
 
   connectedCallback() {
     // Défilement des pages de l'écran LCD toutes les 3 s
@@ -3347,8 +3647,32 @@ window.customCards = window.customCards || [];
  * type: custom:appliance-battery-card
  */
 const I18N_BAT = {
-  fr: { name: 'Batterie solaire', soc: 'Charge', power: 'Puissance', energy: 'Énergie', temp: 'Température', charging: 'En charge', discharging: 'En décharge', idle: 'Repos', full: 'Plein dans', empty: 'Vide dans', low: 'Batterie faible' },
-  en: { name: 'Solar battery', soc: 'Charge', power: 'Power', energy: 'Energy', temp: 'Temperature', charging: 'Charging', discharging: 'Discharging', idle: 'Idle', full: 'Full in', empty: 'Empty in', low: 'Low battery' },
+  "en": {
+    "name": "Solar battery",
+    "soc": "Charge",
+    "power": "Power",
+    "energy": "Energy",
+    "temp": "Temperature",
+    "charging": "Charging",
+    "discharging": "Discharging",
+    "idle": "Idle",
+    "full": "Full in",
+    "empty": "Empty in",
+    "low": "Low battery"
+  },
+  "fr": {
+    "name": "Batterie solaire",
+    "soc": "Charge",
+    "power": "Puissance",
+    "energy": "Énergie",
+    "temp": "Température",
+    "charging": "En charge",
+    "discharging": "En décharge",
+    "idle": "Repos",
+    "full": "Plein dans",
+    "empty": "Vide dans",
+    "low": "Batterie faible"
+  }
 };
 
 class ApplianceBatteryCard extends HTMLElement {
@@ -3374,7 +3698,7 @@ class ApplianceBatteryCard extends HTMLElement {
           { name: 'show_temperature', selector: { boolean: {} } },
           { name: 'show_time', selector: { boolean: {} } },
         ] },
-        { name: 'language', selector: { select: { options: ['fr', 'en'] } } },
+        { name: 'language', selector: { select: { options: Object.keys(I18N_BAT) } } },
       ],
     };
   }
@@ -3387,7 +3711,7 @@ class ApplianceBatteryCard extends HTMLElement {
   }
   set hass(h) { this._hass = h; this._update(); }
   getCardSize() { return 5; }
-  _t(k) { return (I18N_BAT[this._config.language] || I18N_BAT.fr)[k]; }
+  _t(k) { return (I18N_BAT[this._config.language] || I18N_BAT.en)[k] ?? I18N_BAT.en[k] ?? k; }
 
   _build() {
     if (!this.shadowRoot) this.attachShadow({ mode: 'open' });
@@ -3524,10 +3848,32 @@ window.customCards = window.customCards || [];
  * type: custom:appliance-ev-charger-card
  */
 const I18N_EV = {
-  fr: { name: 'Borne de recharge', power: 'Puissance', energy: 'Session', soc: 'Batterie', status: 'Statut', duration: 'Durée', cost: 'Coût',
-    charging: 'En charge', plugged: 'Branchée', done: 'Terminée', disconnected: 'Débranchée' },
-  en: { name: 'EV charger', power: 'Power', energy: 'Session', soc: 'Battery', status: 'Status', duration: 'Duration', cost: 'Cost',
-    charging: 'Charging', plugged: 'Plugged in', done: 'Complete', disconnected: 'Unplugged' },
+  "en": {
+    "name": "EV charger",
+    "power": "Power",
+    "energy": "Session",
+    "soc": "Battery",
+    "status": "Status",
+    "duration": "Duration",
+    "cost": "Cost",
+    "charging": "Charging",
+    "plugged": "Plugged in",
+    "done": "Complete",
+    "disconnected": "Unplugged"
+  },
+  "fr": {
+    "name": "Borne de recharge",
+    "power": "Puissance",
+    "energy": "Session",
+    "soc": "Batterie",
+    "status": "Statut",
+    "duration": "Durée",
+    "cost": "Coût",
+    "charging": "En charge",
+    "plugged": "Branchée",
+    "done": "Terminée",
+    "disconnected": "Débranchée"
+  }
 };
 
 class ApplianceEvChargerCard extends HTMLElement {
@@ -3555,7 +3901,7 @@ class ApplianceEvChargerCard extends HTMLElement {
           { name: 'show_duration', selector: { boolean: {} } },
           { name: 'show_cost', selector: { boolean: {} } },
         ] },
-        { name: 'language', selector: { select: { options: ['fr', 'en'] } } },
+        { name: 'language', selector: { select: { options: Object.keys(I18N_EV) } } },
       ],
     };
   }
@@ -3569,7 +3915,7 @@ class ApplianceEvChargerCard extends HTMLElement {
   getCardSize() { return 5; }
   connectedCallback() { this._timer = setInterval(() => this._update(), 30000); } // rafraîchit la durée
   disconnectedCallback() { clearInterval(this._timer); }
-  _t(k) { return (I18N_EV[this._config.language] || I18N_EV.fr)[k]; }
+  _t(k) { return (I18N_EV[this._config.language] || I18N_EV.en)[k] ?? I18N_EV.en[k] ?? k; }
 
   _build() {
     if (!this.shadowRoot) this.attachShadow({ mode: 'open' });
@@ -3737,12 +4083,48 @@ window.customCards = window.customCards || [];
  * type: custom:appliance-robot-vacuum-card
  */
 const I18N_VAC = {
-  fr: { name: 'Robot aspirateur', battery: 'Batterie', area: 'Surface', time: 'Durée', fan: 'Aspiration', status: 'Statut', filter: 'Filtre', brush: 'Brosse',
-    start: 'Démarrer', pause: 'Pause', dock: 'Base',
-    cleaning: 'Nettoyage', docked: 'À la base', charging: 'En charge', returning: 'Retour base', paused: 'En pause', idle: 'Inactif', error: 'Erreur', emptying: 'Vidage' },
-  en: { name: 'Robot vacuum', battery: 'Battery', area: 'Area', time: 'Time', fan: 'Suction', status: 'Status', filter: 'Filter', brush: 'Brush',
-    start: 'Start', pause: 'Pause', dock: 'Dock',
-    cleaning: 'Cleaning', docked: 'Docked', charging: 'Charging', returning: 'Returning', paused: 'Paused', idle: 'Idle', error: 'Error', emptying: 'Emptying' },
+  "en": {
+    "name": "Robot vacuum",
+    "battery": "Battery",
+    "area": "Area",
+    "time": "Time",
+    "fan": "Suction",
+    "status": "Status",
+    "filter": "Filter",
+    "brush": "Brush",
+    "start": "Start",
+    "pause": "Pause",
+    "dock": "Dock",
+    "cleaning": "Cleaning",
+    "docked": "Docked",
+    "charging": "Charging",
+    "returning": "Returning",
+    "paused": "Paused",
+    "idle": "Idle",
+    "error": "Error",
+    "emptying": "Emptying"
+  },
+  "fr": {
+    "name": "Robot aspirateur",
+    "battery": "Batterie",
+    "area": "Surface",
+    "time": "Durée",
+    "fan": "Aspiration",
+    "status": "Statut",
+    "filter": "Filtre",
+    "brush": "Brosse",
+    "start": "Démarrer",
+    "pause": "Pause",
+    "dock": "Base",
+    "cleaning": "Nettoyage",
+    "docked": "À la base",
+    "charging": "En charge",
+    "returning": "Retour base",
+    "paused": "En pause",
+    "idle": "Inactif",
+    "error": "Erreur",
+    "emptying": "Vidage"
+  }
 };
 const ICONS_VAC = {
   start: '<path d="M8 5v14l11-7z"/>',
@@ -3774,7 +4156,7 @@ class ApplianceRobotVacuumCard extends HTMLElement {
           { name: 'show_consumables', selector: { boolean: {} } },
           { name: 'show_buttons', selector: { boolean: {} } },
         ] },
-        { name: 'language', selector: { select: { options: ['fr', 'en'] } } },
+        { name: 'language', selector: { select: { options: Object.keys(I18N_VAC) } } },
       ],
     };
   }
@@ -3787,7 +4169,7 @@ class ApplianceRobotVacuumCard extends HTMLElement {
   }
   set hass(h) { this._hass = h; this._update(); }
   getCardSize() { return 6; }
-  _t(k) { return (I18N_VAC[this._config.language] || I18N_VAC.fr)[k] || k; }
+  _t(k) { return (I18N_VAC[this._config.language] || I18N_VAC.en)[k] ?? I18N_VAC.en[k] ?? k; }
 
   _call(action) {
     if (!this._hass) return;
@@ -3960,12 +4342,46 @@ window.customCards = window.customCards || [];
  * Compatible lawn_mower.* (recommandé) et vacuum.* (certaines intégrations de tondeuses)
  */
 const I18N_MOW = {
-  fr: { name: 'Robot tondeuse', battery: 'Batterie', area: 'Surface', time: 'Tonte', next: 'Prochain départ', status: 'Statut', blade: 'Lame', rain: 'Pluie',
-    start: 'Tondre', pause: 'Pause', dock: 'Base',
-    mowing: 'Tonte', docked: 'À la base', charging: 'En charge', returning: 'Retour base', paused: 'En pause', idle: 'Inactif', error: 'Erreur' },
-  en: { name: 'Robot mower', battery: 'Battery', area: 'Area', time: 'Mowing', next: 'Next start', status: 'Status', blade: 'Blade', rain: 'Rain',
-    start: 'Mow', pause: 'Pause', dock: 'Dock',
-    mowing: 'Mowing', docked: 'Docked', charging: 'Charging', returning: 'Returning', paused: 'Paused', idle: 'Idle', error: 'Error' },
+  "en": {
+    "name": "Robot mower",
+    "battery": "Battery",
+    "area": "Area",
+    "time": "Mowing",
+    "next": "Next start",
+    "status": "Status",
+    "blade": "Blade",
+    "rain": "Rain",
+    "start": "Mow",
+    "pause": "Pause",
+    "dock": "Dock",
+    "mowing": "Mowing",
+    "docked": "Docked",
+    "charging": "Charging",
+    "returning": "Returning",
+    "paused": "Paused",
+    "idle": "Idle",
+    "error": "Error"
+  },
+  "fr": {
+    "name": "Robot tondeuse",
+    "battery": "Batterie",
+    "area": "Surface",
+    "time": "Tonte",
+    "next": "Prochain départ",
+    "status": "Statut",
+    "blade": "Lame",
+    "rain": "Pluie",
+    "start": "Tondre",
+    "pause": "Pause",
+    "dock": "Base",
+    "mowing": "Tonte",
+    "docked": "À la base",
+    "charging": "En charge",
+    "returning": "Retour base",
+    "paused": "En pause",
+    "idle": "Inactif",
+    "error": "Erreur"
+  }
 };
 const ICONS_MOW = {
   start: '<path d="M8 5v14l11-7z"/>',
@@ -3998,7 +4414,7 @@ class ApplianceRobotMowerCard extends HTMLElement {
           { name: 'show_blade', selector: { boolean: {} } },
           { name: 'show_buttons', selector: { boolean: {} } },
         ] },
-        { name: 'language', selector: { select: { options: ['fr', 'en'] } } },
+        { name: 'language', selector: { select: { options: Object.keys(I18N_MOW) } } },
       ],
     };
   }
@@ -4011,7 +4427,7 @@ class ApplianceRobotMowerCard extends HTMLElement {
   }
   set hass(h) { this._hass = h; this._update(); }
   getCardSize() { return 6; }
-  _t(k) { return (I18N_MOW[this._config.language] || I18N_MOW.fr)[k] || k; }
+  _t(k) { return (I18N_MOW[this._config.language] || I18N_MOW.en)[k] ?? I18N_MOW.en[k] ?? k; }
 
   _call(action) {
     if (!this._hass) return;
@@ -4176,10 +4592,38 @@ window.customCards = window.customCards || [];
  * type: custom:appliance-pellet-boiler-card
  */
 const I18N_PB = {
-  fr: { name: 'Chaudière à granulés', power: 'Puissance', energy: 'Énergie', cost: 'Coût', flow: 'Départ', ret: 'Retour', pellets: 'Granulés', status: 'Statut',
-    off: 'Arrêt', ignition: 'Allumage', heating: 'Chauffe', extinguishing: 'Extinction', alarm: 'Alarme', low: 'Granulés bas' },
-  en: { name: 'Pellet boiler', power: 'Power', energy: 'Energy', cost: 'Cost', flow: 'Flow', ret: 'Return', pellets: 'Pellets', status: 'Status',
-    off: 'Off', ignition: 'Igniting', heating: 'Heating', extinguishing: 'Shutting down', alarm: 'Alarm', low: 'Low pellets' },
+  "en": {
+    "name": "Pellet boiler",
+    "power": "Power",
+    "energy": "Energy",
+    "cost": "Cost",
+    "flow": "Flow",
+    "ret": "Return",
+    "pellets": "Pellets",
+    "status": "Status",
+    "off": "Off",
+    "ignition": "Igniting",
+    "heating": "Heating",
+    "extinguishing": "Shutting down",
+    "alarm": "Alarm",
+    "low": "Low pellets"
+  },
+  "fr": {
+    "name": "Chaudière à granulés",
+    "power": "Puissance",
+    "energy": "Énergie",
+    "cost": "Coût",
+    "flow": "Départ",
+    "ret": "Retour",
+    "pellets": "Granulés",
+    "status": "Statut",
+    "off": "Arrêt",
+    "ignition": "Allumage",
+    "heating": "Chauffe",
+    "extinguishing": "Extinction",
+    "alarm": "Alarme",
+    "low": "Granulés bas"
+  }
 };
 
 class AppliancePelletBoilerCard extends HTMLElement {
@@ -4211,7 +4655,7 @@ class AppliancePelletBoilerCard extends HTMLElement {
           { name: 'show_pellets', selector: { boolean: {} } },
           { name: 'show_status', selector: { boolean: {} } },
         ] },
-        { name: 'language', selector: { select: { options: ['fr', 'en'] } } },
+        { name: 'language', selector: { select: { options: Object.keys(I18N_PB) } } },
       ],
     };
   }
@@ -4223,7 +4667,7 @@ class AppliancePelletBoilerCard extends HTMLElement {
   }
   set hass(h) { this._hass = h; this._update(); }
   getCardSize() { return 6; }
-  _t(k) { return (I18N_PB[this._config.language] || I18N_PB.fr)[k] || k; }
+  _t(k) { return (I18N_PB[this._config.language] || I18N_PB.en)[k] ?? I18N_PB.en[k] ?? k; }
 
   _build() {
     if (!this.shadowRoot) this.attachShadow({ mode: 'open' });
@@ -4438,18 +4882,46 @@ window.customCards.push({ type: 'appliance-pellet-boiler-card', name: 'Pellet Bo
   if (customElements.get(TAG)) return;
 
   const T = {
-    fr: {
-      name: 'Chaudière gaz', off: 'Éteinte', standby: 'Veille', heating: 'Chauffage', dhw: 'Eau chaude',
-      alarm: 'Défaut', power: 'Électrique', energy: 'Énergie élec.', gas: 'Gaz', cost: 'Coût',
-      flow: 'Départ', ret: 'Retour', pressure: 'Pression', mod: 'Modulation', delta: 'ΔT',
-      lowp: 'Pression basse', highp: 'Pression haute', hotf: 'Départ trop chaud',
+    "en": {
+      "name": "Gas boiler",
+      "off": "Off",
+      "standby": "Standby",
+      "heating": "Heating",
+      "dhw": "Hot water",
+      "alarm": "Fault",
+      "power": "Electric",
+      "energy": "Elec. energy",
+      "gas": "Gas",
+      "cost": "Cost",
+      "flow": "Flow",
+      "ret": "Return",
+      "pressure": "Pressure",
+      "mod": "Modulation",
+      "delta": "ΔT",
+      "lowp": "Low pressure",
+      "highp": "High pressure",
+      "hotf": "Flow too hot"
     },
-    en: {
-      name: 'Gas boiler', off: 'Off', standby: 'Standby', heating: 'Heating', dhw: 'Hot water',
-      alarm: 'Fault', power: 'Electric', energy: 'Elec. energy', gas: 'Gas', cost: 'Cost',
-      flow: 'Flow', ret: 'Return', pressure: 'Pressure', mod: 'Modulation', delta: 'ΔT',
-      lowp: 'Low pressure', highp: 'High pressure', hotf: 'Flow too hot',
-    },
+    "fr": {
+      "name": "Chaudière gaz",
+      "off": "Éteinte",
+      "standby": "Veille",
+      "heating": "Chauffage",
+      "dhw": "Eau chaude",
+      "alarm": "Défaut",
+      "power": "Électrique",
+      "energy": "Énergie élec.",
+      "gas": "Gaz",
+      "cost": "Coût",
+      "flow": "Départ",
+      "ret": "Retour",
+      "pressure": "Pression",
+      "mod": "Modulation",
+      "delta": "ΔT",
+      "lowp": "Pression basse",
+      "highp": "Pression haute",
+      "hotf": "Départ trop chaud"
+    }
   };
 
   const CSS = `
@@ -4597,8 +5069,8 @@ svg{display:block;width:100%;max-width:170px;height:var(--appliance-illustration
     getCardSize() { return 5; }
     getGridOptions() { return { columns: 12, min_columns: 6, rows: 'auto' }; }
 
-    _t(k) { const l = (this._c.language || (this._hass && this._hass.language) || 'en').slice(0, 2) === 'fr' ? 'fr' : 'en'; return T[l][k]; }
-    _lang() { return ((this._c.language || (this._hass && this._hass.language) || 'en').slice(0, 2) === 'fr') ? 'fr' : 'en'; }
+    _t(k) { return T[this._lang()][k] ?? T.en[k] ?? k; }
+    _lang() { const l = (this._c.language || (this._hass && this._hass.language) || 'en').slice(0, 2); return T[l] ? l : 'en'; }
     _st(id) { return id && this._hass.states[id]; }
     _num(id) {
       const s = this._st(id); if (!s) return NaN;
@@ -4738,7 +5210,7 @@ svg{display:block;width:100%;max-width:170px;height:var(--appliance-illustration
         ent('entity_status'), ent('entity_flame', 'binary_sensor'), ent('entity_power', 'sensor'), ent('entity_energy', 'sensor'),
         ent('entity_gas', 'sensor'), ent('entity_cost', 'sensor'), { name: 'price_per_unit', selector: { number: { min: 0, step: 0.0001, mode: 'box' } } },
         ent('entity_flow_temp', 'sensor'), ent('entity_return_temp', 'sensor'), ent('entity_pressure', 'sensor'), ent('entity_modulation', 'sensor'),
-        { name: 'language', selector: { select: { options: [{ value: 'fr', label: 'Français' }, { value: 'en', label: 'English' }] } } },
+        { name: 'language', selector: { select: { options: Object.keys(T).map((value) => ({ value, label: { fr: 'Français', en: 'English' }[value] || value })) } } },
         { type: 'grid', name: '', schema: [
           { name: 'show_status', selector: { boolean: {} } }, { name: 'show_power', selector: { boolean: {} } },
           { name: 'show_energy', selector: { boolean: {} } }, { name: 'show_gas', selector: { boolean: {} } },
