@@ -1,0 +1,209 @@
+/* ================================================================== */
+/* appliance-robot-mower-card.js                                    */
+/* ================================================================== */
+(() => {
+"use strict";
+const define = (tag, cls) => { if (!customElements.get(tag)) customElements.define(tag, cls); };
+window.customCards = window.customCards || [];
+/* appliance-robot-mower-card — robot tondeuse + station sur bande de pelouse, animé, avec commandes
+ * type: custom:appliance-robot-mower-card
+ * Compatible lawn_mower.* (recommandé) et vacuum.* (certaines intégrations de tondeuses)
+ */
+const I18N_MOW = /*@i18n robot_mower*/{};
+const ICONS_MOW = {
+  start: '<path d="M8 5v14l11-7z"/>',
+  pause: '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>',
+  dock: '<path d="M12 3 2 12h3v8h5v-6h4v6h5v-8h3z"/>',
+};
+
+// Logique commune (états, services, stats) — le dessin est dans la carte « seule » ci-dessous
+class ApplianceRobotMowerCard extends HTMLElement {
+  static getStubConfig() { return { entity: '' }; }
+
+  static getConfigForm() {
+    return {
+      schema: [
+        { name: 'entity', required: true, selector: { entity: { domain: ['lawn_mower', 'vacuum'] } } },
+        { name: 'name', selector: { text: {} } },
+        { name: 'entity_battery', selector: { entity: { domain: 'sensor', device_class: 'battery' } } },
+        { name: 'entity_area', selector: { entity: { domain: 'sensor' } } },
+        { name: 'entity_time', selector: { entity: { domain: 'sensor' } } },
+        { name: 'entity_next_start', selector: { entity: { domain: 'sensor' } } },
+        { name: 'entity_blade', selector: { entity: { domain: 'sensor' } } },
+        { name: 'entity_rain', selector: { entity: { domain: ['binary_sensor', 'sensor'] } } },
+        { name: 'entity_status', selector: { entity: { domain: 'sensor' } } },
+        { type: 'grid', name: '', schema: [
+          { name: 'show_battery', selector: { boolean: {} } },
+          { name: 'show_area', selector: { boolean: {} } },
+          { name: 'show_time', selector: { boolean: {} } },
+          { name: 'show_next', selector: { boolean: {} } },
+          { name: 'show_status', selector: { boolean: {} } },
+          { name: 'show_blade', selector: { boolean: {} } },
+          { name: 'show_buttons', selector: { boolean: {} } },
+        ] },
+        { name: 'language', selector: { select: { options: Object.keys(I18N_MOW) } } },
+      ],
+    };
+  }
+
+  setConfig(config) {
+    if (!config.entity) throw new Error('entity (lawn_mower.xxx) requise');
+    this._config = { show_battery: true, show_area: true, show_time: true, show_next: true, show_status: true,
+      show_blade: true, show_buttons: true, language: 'fr', ...config };
+    this._built = false; this._build();
+  }
+  set hass(h) { this._hass = h; this._update(); }
+  getCardSize() { return 6; }
+  _t(k) { return (I18N_MOW[this._config.language] || I18N_MOW.en)[k] ?? I18N_MOW.en[k] ?? k; }
+
+  _call(action) {
+    if (!this._hass) return;
+    const domain = this._config.entity.split('.')[0];
+    const map = domain === 'vacuum'
+      ? { start: 'start', pause: 'pause', dock: 'return_to_base' }
+      : { start: 'start_mowing', pause: 'pause', dock: 'dock' };
+    this._hass.callService(domain, map[action], { entity_id: this._config.entity });
+  }
+
+  _st(id) { return id && this._hass && this._hass.states[id]; }
+  _num(id) {
+    const s = this._st(id); if (!s || ['unavailable', 'unknown'].includes(s.state)) return null;
+    const n = parseFloat(s.state); return Number.isFinite(n) ? n : null;
+  }
+
+  _update() {
+    if (!this._built || !this._hass) return;
+    const c = this._config, r = this.shadowRoot, e = this._st(c.entity);
+    if (!e) return;
+    const a = e.attributes || {};
+    const status = String((this._st(c.entity_status) || {}).state || a.status || '').toLowerCase();
+    let st = e.state === 'cleaning' ? 'mowing' : e.state;
+    if (!['mowing', 'docked', 'returning', 'paused', 'idle', 'error'].includes(st)) st = 'idle';
+    if (st === 'docked' && /charg/.test(status)) st = 'charging';
+    const rainS = this._st(c.entity_rain);
+    const raining = !!rainS && (rainS.state === 'on' || /rain|pluie|wet/i.test(rainS.state));
+
+    r.getElementById('svg').setAttribute('class', `${st}${st === 'charging' ? ' docked' : ''}${raining ? ' raining' : ''}`);
+    r.getElementById('card').classList.toggle('error', st === 'error');
+    r.getElementById('err').textContent = st === 'error' ? (a.error || this._t('error')) : '';
+
+    const active = { mowing: 'start', paused: 'pause', returning: 'dock', docked: 'dock', charging: 'dock' }[st];
+    r.querySelectorAll('.btn').forEach((b) => b.classList.toggle('on', b.dataset.a === active));
+    r.getElementById('btns').style.display = c.show_buttons ? '' : 'none';
+
+    const batt = this._num(c.entity_battery) ?? (a.battery_level ?? null);
+    const area = this._num(c.entity_area), time = this._num(c.entity_time), blade = this._num(c.entity_blade);
+    // Prochain départ : timestamp → "ven. 14:30", sinon texte brut
+    let next = null; const ns = this._st(c.entity_next_start);
+    if (ns && !['unavailable', 'unknown'].includes(ns.state)) {
+      const d = new Date(ns.state);
+      next = isNaN(d) ? ns.state : d.toLocaleString(c.language === 'en' ? 'en-GB' : 'fr-FR', { weekday: 'short', hour: '2-digit', minute: '2-digit' });
+    }
+    const it = [];
+    if (c.show_battery) it.push([this._t('battery'), batt === null ? '—' : `${Math.round(batt)} %`]);
+    if (c.show_status) it.push([this._t('status'), raining && st !== 'mowing' ? `${this._t(st)} · ${this._t('rain')}` : this._t(st)]);
+    if (c.show_area && area !== null) it.push([this._t('area'), `${Math.round(area)} m²`]);
+    if (c.show_time && time !== null) it.push([this._t('time'), time >= 60 ? `${Math.floor(time / 60)}h${String(Math.round(time % 60)).padStart(2, '0')}` : `${Math.round(time)} min`]);
+    if (c.show_next && next) it.push([this._t('next'), next]);
+    if (c.show_blade && blade !== null) it.push([this._t('blade'), `${Math.round(blade)} %`]);
+    const stats = r.getElementById('stats');
+    stats.style.gridTemplateColumns = `repeat(${it.length > 4 ? Math.ceil(it.length / 2) : it.length}, 1fr)`;
+    stats.innerHTML = it.map(([l, v]) => `<div class="stat"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
+  }
+}
+window.customCards = window.customCards || [];
+
+/* ───────────────────────────────────────────────────────────────
+ * Variante « tondeuse seule » : pas de fond, pas de station, pas de pelouse
+ * type: custom:appliance-robot-mower-solo-card  (mêmes options que la carte complète)
+ * ─────────────────────────────────────────────────────────────── */
+class ApplianceRobotMowerSoloCard extends ApplianceRobotMowerCard {
+  _build() {
+    if (!this.shadowRoot) this.attachShadow({ mode: 'open' });
+    const wheel = (x, y, rr) => `<g transform="translate(${x} ${y})"><circle r="${rr}" fill="#1b1b1b"/>
+      <g class="spin">${[0, 45, 90, 135].map((a) => `<rect x="${-rr}" y="-.7" width="${rr * 2}" height="1.4" fill="#2e2e2e" transform="rotate(${a})"/>`).join('')}
+      <circle r="${rr * .55}" fill="#8d959c"/><path d="M${-rr * .55} 0 H${rr * .55} M0 ${-rr * .55} V${rr * .55}" stroke="#4a4f55" stroke-width="1.2"/></g></g>`;
+    const clips = Array.from({ length: 10 }, (_, i) =>
+      `<path class="clip" d="M${36 + (i % 4) * 2} ${-3 - (i % 3) * 2} l2 -3" stroke="${i % 2 ? '#6cc457' : '#3f9d35'}" style="animation-delay:${i * .11}s"/>`).join('');
+    const rain = Array.from({ length: 18 }, (_, i) =>
+      `<line class="drop" x1="${14 + (i * 13) % 212}" y1="${-10 - (i * 9) % 30}" x2="${12 + (i * 13) % 212}" y2="${-2 - (i * 9) % 30}" style="animation-delay:${(i * .13) % 1}s"/>`).join('');
+    this.shadowRoot.innerHTML = `
+    <style>${COMMON_CSS_MOW}
+      .body { animation:none; } .mowing .body { animation:bounce .35s ease-in-out infinite alternate; }
+      .error .body { animation:shake .4s ease-in-out infinite; transform-origin:0 -10px; }
+      .spin { transform:rotate(0); } .mowing .spin, .returning .spin { animation:spin .6s linear infinite; }
+      .blade { fill:none; stroke:#9aa1a8; stroke-width:.8; stroke-dasharray:2 2; opacity:.35; }
+      .mowing .blade { opacity:.9; animation:bladespin .12s linear infinite; }
+      .clip { fill:none; stroke-width:1.4; stroke-linecap:round; opacity:0; transform-box:fill-box; transform-origin:center; } .mowing .clip { animation:fly .8s ease-out infinite; }
+      .speed { stroke:var(--primary-text-color,#888); stroke-width:1; stroke-linecap:round; opacity:0; }
+      .mowing .speed, .returning .speed { animation:streak .7s linear infinite; }
+      .led { fill:#9e9e9e; } .mowing .led { fill:#43ff64; animation:blink 1.4s infinite; }
+      .docked .led, .charging .led { fill:#43ff64; animation:breathe 2.4s ease-in-out infinite; }
+      .returning .led { fill:#3fa9ff; } .paused .led { fill:#ffb300; animation:blink 1s infinite; } .error .led { fill:#ff3b30; animation:blink .5s infinite; }
+      .rain { display:none; } .raining .rain { display:inline; }
+      .drop { stroke:#7fb8ff; stroke-width:1.4; stroke-linecap:round; animation:fall 1s linear infinite; }
+      .ico { opacity:0; transition:opacity .4s; }
+      .charging .bolt, .docked .bolt { opacity:1; animation:breathe 1.6s ease-in-out infinite; }
+      .returning .home { opacity:1; animation:hop 1s ease-in-out infinite; } .paused .pz { opacity:1; }
+      @keyframes bounce { to { transform:translateY(-.6px) } }
+      @keyframes shake { 0%,100% { transform:rotate(0) } 25% { transform:rotate(-2deg) } 75% { transform:rotate(2deg) } }
+      @keyframes spin { to { transform:rotate(-360deg) } }
+      @keyframes bladespin { to { stroke-dashoffset:6 } }
+      @keyframes fly { 0% { opacity:0; transform:translate(0,0) } 25% { opacity:1 } 100% { opacity:0; transform:translate(14px,-10px) rotate(160deg) } }
+      @keyframes streak { 0% { opacity:0; transform:translateX(0) } 30% { opacity:.5 } 100% { opacity:0; transform:translateX(14px) } }
+      @keyframes fall { from { transform:translateY(0) } to { transform:translateY(140px) } }
+      @keyframes hop { 50% { transform:translateY(-4px) } }
+    </style>
+    <ha-card id="card">
+      <div class="title"><span>${this._config.name || this._t('name')}</span><span class="badge" id="err"></span></div>
+      <svg viewBox="0 0 240 132" id="svg">
+        <defs><linearGradient id="shell" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6f7f8"/><stop offset="1" stop-color="#b8bec4"/></linearGradient></defs>
+        <g class="rain">${rain}</g>
+        <g transform="translate(112 120) scale(2.05)">
+          <ellipse cx="2" cy="1" rx="40" ry="3" fill="rgba(0,0,0,.25)"/>
+          <g>${[[42, -14], [46, -8], [40, -20]].map(([x, y], i) => `<line class="speed" x1="${x}" y1="${y}" x2="${x + 8}" y2="${y}" style="animation-delay:${i * .2}s"/>`).join('')}</g>
+          ${clips}
+          <g class="body">
+            <ellipse class="blade" cx="0" cy="-4" rx="14" ry="1.2"/>
+            <path d="M-34 -6 Q-36 -22 -16 -27 L16 -28 Q34 -27 37 -12 L37 -6 Z" fill="url(#shell)"/>
+            <path d="M-30 -18 Q-26 -26 -12 -27 L14 -28 Q28 -27 32 -18 Z" fill="#8bc34a"/>
+            <path d="M-30 -18 H32" stroke="rgba(0,0,0,.12)" stroke-width=".6"/>
+            <rect x="-36" y="-10" width="10" height="5" rx="2" fill="#30343a"/>
+            <rect x="-6" y="-31" width="16" height="4" rx="2" fill="#30343a"/><circle cx="12" cy="-29" r="1.6" fill="#e53935"/>
+            <path d="M8 -31 V-42" stroke="#30343a" stroke-width="1.6"/><circle cx="8" cy="-43" r="2.4" fill="#30343a"/>
+            <circle class="led" cx="-14" cy="-23" r="1.8"/>
+          </g>
+          ${wheel(22, -9, 10)}${wheel(-24, -5, 5.5)}
+        </g>
+        <path class="ico bolt" d="M214 6 l-10 16 h7 l-3 13 l11 -17 h-7 z" fill="#ffd43b"/>
+        <path class="ico home" d="M214 8 l-12 11 h4 v10 h6 v-7 h4 v7 h6 v-10 h4 z" fill="#3fa9ff"/>
+        <path class="ico pz" d="M206 10 h5 v18 h-5z M216 10 h5 v18 h-5z" fill="#ffb300"/>
+      </svg>
+      <div class="btns" id="btns">
+        ${['start', 'pause', 'dock'].map((a) => `<button class="btn" data-a="${a}"><svg viewBox="0 0 24 24">${ICONS_MOW[a]}</svg>${this._t(a)}</button>`).join('')}
+      </div>
+      <div class="stats" id="stats"></div>
+    </ha-card>`;
+    this.shadowRoot.querySelectorAll('.btn').forEach((b) => { b.onclick = () => this._call(b.dataset.a); });
+    this._built = true;
+  }
+}
+const COMMON_CSS_MOW = `
+  :host { display:block; }
+  ha-card { padding:12px; overflow:hidden; }
+  .title { font-weight:600; margin:0 4px 4px; display:flex; justify-content:space-between; align-items:center; }
+  .badge { font-size:.75em; color:#fff; background:#e53935; border-radius:10px; padding:2px 8px; display:none; animation:blink 1s infinite; }
+  .error .badge { display:inline-block; }
+  svg { width:100%; height:auto; display:block; overflow:visible; }
+  .btns { display:flex; gap:8px; margin-top:8px; }
+  .btn { flex:1; display:flex; align-items:center; justify-content:center; gap:6px; border:none; cursor:pointer; border-radius:999px; padding:8px 6px;
+    background:var(--secondary-background-color, rgba(127,127,127,.15)); color:var(--primary-text-color,#222); font:600 .85em system-ui,sans-serif; transition:transform .1s, background .2s; }
+  .btn:active { transform:scale(.95); } .btn svg { width:18px; height:18px; fill:currentColor; }
+  .btn.on { background:var(--primary-color,#43a047); color:#fff; }
+  .stats { display:grid; gap:8px; margin-top:8px; }
+  .stat { text-align:center; background:var(--secondary-background-color, rgba(127,127,127,.12)); border-radius:10px; padding:6px 4px; }
+  .stat .v { font-weight:700; font-size:1.02em; } .stat .l { font-size:.7em; opacity:.65; text-transform:uppercase; letter-spacing:.04em; }
+  @keyframes blink { 50% { opacity:.3 } } @keyframes breathe { 50% { opacity:.4 } }`;
+define('appliance-robot-mower-solo-card', ApplianceRobotMowerSoloCard);
+window.customCards.push({ type: 'appliance-robot-mower-solo-card', name: 'Robot Mower Solo Card', description: 'Robot tondeuse seule (sans fond ni station), animée, avec commandes', preview: false });
+})();

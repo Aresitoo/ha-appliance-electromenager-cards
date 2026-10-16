@@ -1,0 +1,21 @@
+/* ---------- cooktop ---------- */
+.zone { --lvl: 0; }
+.k-hob.st-residual .dot { background: var(--ac-heat); opacity: .6; }
+.zglow { opacity: var(--lvl); transition: opacity .8s; }
+.zone.on .zglow { animation: ac-hob 2.2s ease-in-out infinite; }
+.coil { opacity: 0; transition: opacity .8s; }
+.zone.on .coil { opacity: calc(var(--lvl) * .9); }
+.zone.res .coil { opacity: .12; }
+.zd { font: 700 5.5px "Courier New", ui-monospace, monospace; fill: #4a1d14; }
+.zd.on { fill: #ff4a1f; filter: drop-shadow(0 0 1px #ff5a1f); }
+.steam-pot path { fill: none; stroke: #ffffff; stroke-width: 2.2; stroke-linecap: round; opacity: 0; }
+.pot-on .steam-pot path { animation: ac-steam 2.6s ease-out infinite; }
+.pot-boil .steam-pot path { animation-duration: 1.4s; }
+.steam-pot path:nth-child(2) { animation-delay: .8s !important; } .steam-pot path:nth-child(3) { animation-delay: 1.6s !important; }
+.lid { transform-box: view-box; transform-origin: 40px 80px; }
+.pot-boil .lid { animation: ac-lid .35s steps(2) infinite; }
+.sizzle path { fill: none; stroke: #f2c94c; stroke-width: .8; stroke-linecap: round; opacity: 0; }
+.pan-on .sizzle path { animation: ac-pulse .5s steps(2) infinite; }
+.sizzle path:nth-child(2n) { animation-delay: -.25s !important; }
+@keyframes ac-hob { 0%, 100% { opacity: var(--lvl); } 50% { opacity: calc(var(--lvl) * .78); } }
+@keyframes ac-lid { 0% { transform: translateY(0) rotate(0); } 100% { transform: translateY(-.8px) rotate(-1.5deg); } }

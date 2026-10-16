@@ -1,0 +1,32 @@
+/* ---------- freezers ---------- */
+.k-chest_freezer .flake, .k-drawer_freezer .flake { transform-box: view-box; }
+.k-chest_freezer .flake { transform-origin: 72px 84.5px; }
+.k-drawer_freezer .flake { transform-origin: 39.5px 18px; }
+.k-chest_freezer .lcd, .k-drawer_freezer .lcd { fill: #6fd8ff; }
+.warm.k-chest_freezer .lcd, .warm.k-drawer_freezer .lcd { fill: var(--ac-alert); }
+.k-chest_freezer.st-cooling .l1, .k-drawer_freezer.st-cooling .l1 { fill: #3ddc84; }
+.warm.k-chest_freezer .l2, .warm.k-drawer_freezer .l2 { fill: var(--ac-alert); }
+.lid path { transition: d .9s cubic-bezier(.3,.7,.3,1), fill .4s; }
+.lid-top { d: path("M8 66L100 66L112 54L20 54Z"); }
+.lid-front { d: path("M8 66L100 66L100 73L8 73Z"); }
+.lid-side { d: path("M100 66L112 54L112 61L100 73Z"); }
+.lid-under { d: path("M20 54L112 54L112 54L20 54Z"); opacity: 0; transition: d .9s cubic-bezier(.3,.7,.3,1), opacity .3s; }
+.door-open .lid-top { d: path("M22 61L110 61L110 61L22 61Z"); }
+.door-open .lid-front { d: path("M16 6L108 6L108 1L16 1Z"); }
+.door-open .lid-side { d: path("M110 61L108 6L114 3L116 58Z"); }
+.door-open .lid-under { d: path("M22 61L110 61L108 6L16 6Z"); opacity: 1; }
+.lid-handle { transition: opacity .3s; }
+.door-open .lid-handle { opacity: 0; }
+.cavity { opacity: 0; transition: opacity .5s .2s; }
+.door-open .cavity { opacity: 1; }
+.clight { opacity: 0; }
+.door-open .clight { opacity: .3; }
+.cold-out circle, .drawer-mist circle { fill: #dff3ff; opacity: 0; }
+.door-open .cold-out circle, .door-open .drawer-mist circle { animation: ac-steam 2.6s ease-out infinite; }
+.cold-out circle:nth-child(2), .drawer-mist circle:nth-child(2) { animation-delay: .7s !important; }
+.cold-out circle:nth-child(3), .drawer-mist circle:nth-child(3) { animation-delay: 1.4s !important; }
+.cold-out circle:nth-child(4) { animation-delay: 2s !important; }
+.dz-door { transform-box: view-box; transform-origin: 26px 0; transition: transform .6s cubic-bezier(.3,.7,.3,1); }
+.door-open .dz-door { transform: scaleX(.16) skewY(-6deg); }
+.drawer { transform-box: view-box; transform-origin: 60px 56px; transition: transform .6s ease; }
+.door-open .pull { transform: translateY(3px) scale(1.09); transition-delay: .35s; filter: drop-shadow(0 3px 3px rgba(0,0,0,.25)); }

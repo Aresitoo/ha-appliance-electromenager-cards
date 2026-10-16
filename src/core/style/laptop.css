@@ -1,0 +1,25 @@
+/* ---------- laptop ---------- */
+.lp-line { stroke-dasharray: 130; stroke-dashoffset: 130; }
+.k-laptop.st-screen_on .lp-line { animation: lp-draw 5s ease-in-out infinite; }
+.lp-dot { opacity: 0; }
+.k-laptop.st-screen_on .lp-dot { animation: ac-pulse 1.2s ease-in-out infinite; opacity: 1; }
+.lp-glow { opacity: 0; transition: opacity .6s; }
+.k-laptop.st-screen_on .lp-glow { opacity: 1; }
+.lp-keys { transition: fill .5s; }
+.k-laptop.st-screen_on .lp-keys { fill: #bfe9ff; }
+.lp-cam { fill: #3a424b; } .k-laptop.st-screen_on .lp-cam { fill: #43e08a; }
+.lp-led { fill: #5a636d; transition: fill .3s; }
+.k-laptop.st-screen_on .lp-led { fill: #43e08a; filter: drop-shadow(0 0 1.2px #43e08a); }
+.k-laptop.st-standby .lp-led { fill: #ffb020; animation: ac-pulse 2.4s ease-in-out infinite; }
+@keyframes lp-draw { 0% { stroke-dashoffset: 130; } 55%, 85% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: -130; } }
+.modes:empty { display: none; }
+.modes { display: grid; grid-template-columns: repeat(auto-fit, minmax(78px, 1fr)); gap: 6px; }
+.mode-btn { white-space: nowrap; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; padding: 7px 6px; border-radius: 10px; font: inherit; font-size: 12.5px; color: var(--secondary-text-color); background: rgba(127,127,127,.12); transition: background .2s, color .2s; }
+.mode-btn:hover { background: rgba(127,127,127,.22); }
+.mode-btn ha-icon { --mdc-icon-size: 16px; }
+.mode-btn.on { color: #fff; background: var(--mc, var(--c)); }
+.mode-btn[data-mode="comfort"] { --mc: #f5a300; } .mode-btn[data-mode="eco"] { --mc: #5b7bd5; } .mode-btn[data-mode="frost"] { --mc: #2b9af9; } .mode-btn[data-mode="off"] { --mc: #6b737c; }
+.mode-btn:focus-visible { outline: 2px solid var(--c); outline-offset: 2px; }
+.k-towel_dryer.mode-eco.st-heating .td-glow { opacity: .55; } .k-towel_dryer.mode-frost.st-heating .td-glow { opacity: .3; }
+.k-towel_dryer.mode-frost .lcd { fill: #6fd8ff; }
+.wrap.solar-heat { --c: var(--ac-accent, #f5b301); }

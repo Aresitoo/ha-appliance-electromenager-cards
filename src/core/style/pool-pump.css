@@ -1,0 +1,19 @@
+/* ---------- pool pump ---------- */
+.k-pool_pump { --spd: 1; }
+.flow { fill: none; stroke: #36b4f5; stroke-width: 2.2; stroke-linecap: round; stroke-dasharray: 3 5; opacity: 0; transition: opacity .6s; }
+.k-pool_pump.st-filtering .flow { opacity: .95; animation: ac-flow calc(.7s / var(--spd)) linear infinite; }
+.fan { transform-box: view-box; transform-origin: 104px 74px; }
+.k-pool_pump.st-filtering .fan { animation: ac-rot calc(.22s / var(--spd)) linear infinite; }
+.swirl { transform-box: view-box; transform-origin: 30px 68px; }
+.k-pool_pump.st-filtering .swirl { animation: ac-rot calc(2.4s / var(--spd)) linear infinite; }
+.ripple { animation: ac-ripple 6s linear infinite; }
+.k-pool_pump.st-filtering .ripple { animation-duration: 3s; }
+.bubbles circle { fill: #fff; opacity: 0; }
+.k-pool_pump.st-filtering .bubbles circle { animation: ac-jetbub calc(1.4s / var(--spd)) ease-out infinite; }
+.bubbles circle:nth-child(2) { animation-delay: -.35s !important; } .bubbles circle:nth-child(3) { animation-delay: -.7s !important; } .bubbles circle:nth-child(4) { animation-delay: -1.05s !important; }
+.k-pool_pump.st-filtering .hum { animation: ac-shake-soft .18s linear infinite; }
+.k-pool_pump.st-filtering .l1 { fill: #3ddc84; }
+.k-pool_pump .lcd { font-size: 6.4px; }
+@keyframes ac-flow { to { stroke-dashoffset: -16; } }
+@keyframes ac-ripple { from { transform: translateX(0); } to { transform: translateX(20px); } }
+@keyframes ac-jetbub { 0% { opacity: 0; transform: translate(0, 0); } 25% { opacity: .9; } 100% { opacity: 0; transform: translate(-14px, -6px); } }

@@ -1,0 +1,20 @@
+/* ---------- solar ---------- */
+.k-solar { --sun: 0; }
+.sunwrap { transform-box: view-box; transform-origin: 98px 20px; transform: scale(calc(.7 + var(--sun) * .45)); transition: transform 1s, opacity 1s, filter 1s; }
+.k-solar:not(.st-producing):not(.st-low) .sunwrap { filter: grayscale(1) brightness(.85); opacity: .45; transform: scale(.75); }
+.k-solar:not(.st-producing):not(.st-low) .sunwrap > circle:first-child { opacity: 0; }
+.rays { transform-box: view-box; transform-origin: 98px 20px; }
+.k-solar.st-producing .rays { animation: ac-rot 18s linear infinite; }
+.k-solar.st-low .rays { animation: ac-rot 40s linear infinite; }
+.panshade { opacity: 0; transition: opacity 1s; }
+.k-solar:not(.st-producing):not(.st-low) .panshade { opacity: .35; }
+.sweep { transform-box: view-box; opacity: 0; }
+.k-solar.st-producing .sweep { opacity: 1; animation: ac-sweep 3.2s ease-in-out infinite; }
+.panglow { opacity: 0; transition: opacity 1s; }
+.k-solar.st-producing .panglow { opacity: calc(var(--sun) * .22); }
+.sflow { fill: none; stroke: #ffd23f; stroke-width: 1.6; stroke-linecap: round; stroke-dasharray: 2 3; opacity: 0; }
+.k-solar.st-producing .sflow, .k-solar.st-low .sflow { opacity: 1; animation: ac-flow calc(1.4s / (var(--sun) + .35)) linear infinite; }
+.k-solar.st-producing .l1, .k-solar.st-low .l1 { fill: #3ddc84; }
+.k-solar .lcd { font-size: 5.4px; }
+.k-solar:not(.st-producing):not(.st-low) .lcd { fill: #24404f; }
+@keyframes ac-sweep { 0% { transform: skewX(-18deg) translateX(0); } 60%, 100% { transform: skewX(-18deg) translateX(130px); } }

@@ -1,0 +1,9 @@
+/* ---------- water heater ---------- */
+.needle { transition: transform 1s ease; }
+.gauge-txt { font: 700 5px system-ui, sans-serif; fill: #4b545e; }
+.hw-led { fill: #9aa2ab; transition: fill .3s; }
+.k-water_heater.st-ready .hw-led { fill: #3ddc84; }
+.k-water_heater.st-heating .hw-led { fill: #ff8a3d; animation: ac-pulse 1.4s ease-in-out infinite; }
+.hw-waves path { fill: none; stroke: var(--ac-heat); stroke-width: 2; stroke-linecap: round; opacity: 0; }
+.k-water_heater.st-heating .hw-waves path { animation: ac-steam 2s ease-out infinite; }
+.hw-waves path:nth-child(2) { animation-delay: .6s !important; } .hw-waves path:nth-child(3) { animation-delay: 1.2s !important; }

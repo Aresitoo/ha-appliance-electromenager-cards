@@ -1,0 +1,19 @@
+/* ---------- radiator ---------- */
+.k-radiator { --heat: 0; }
+.rglow { opacity: 0; transition: opacity 1.2s; }
+.k-radiator.st-heating .rglow { opacity: calc(var(--heat) * .55); animation: ac-hob 3s ease-in-out infinite; --lvl: calc(var(--heat) * .55); }
+.rwaves path { fill: none; stroke: var(--ac-heat); stroke-width: 1.8; stroke-linecap: round; opacity: 0; }
+.k-radiator.st-heating .rwaves path { animation: ac-steam calc(2.6s - var(--heat) * 1.2s) ease-out infinite; }
+.rwaves path:nth-child(2) { animation-delay: .5s !important; } .rwaves path:nth-child(3) { animation-delay: 1s !important; } .rwaves path:nth-child(4) { animation-delay: 1.5s !important; }
+.micon { fill: #c3c9cf; stroke: #c3c9cf; transition: fill .4s, stroke .4s; }
+.micon.m-comfort circle { stroke: none; }
+.mode-comfort .m-comfort { fill: #ffb400; stroke: #ffb400; }
+.mode-eco .m-eco { fill: #5b7bd5; stroke: #5b7bd5; }
+.mode-frost .m-frost { fill: #2b9af9; stroke: #2b9af9; }
+.k-radiator .lcd { fill: #ff9a4a; }
+.k-radiator.st-off .lcd, .k-radiator.mode-frost .lcd { fill: #6fd8ff; }
+.k-radiator.st-heating .l1 { fill: #ff8a3d; } .k-radiator.st-standby .l1 { fill: #3ddc84; }
+.cold-air path { fill: none; stroke: #6fbfff; stroke-width: 1.8; stroke-linecap: round; opacity: 0; }
+.win-open .cold-air path { animation: ac-wind 1.8s ease-in-out infinite; }
+.cold-air path:nth-child(2) { animation-delay: -.6s !important; } .cold-air path:nth-child(3) { animation-delay: -1.2s !important; }
+@keyframes ac-wind { 0% { opacity: 0; transform: translateX(-6px); } 40% { opacity: .9; } 100% { opacity: 0; transform: translateX(14px); } }

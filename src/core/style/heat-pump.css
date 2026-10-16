@@ -1,0 +1,16 @@
+/* ---------- air conditioning: outdoor heat pump ---------- */
+.hp-fan { transform-box: view-box; transform-origin: 46px 75px; }
+.k-heat_pump.st-cooling .hp-fan, .k-heat_pump.st-heating .hp-fan, .k-heat_pump.st-ac_dry .hp-fan { animation: ac-rot .45s linear infinite; }
+.k-heat_pump.st-ac_fan .hp-fan, .k-heat_pump.st-at_target .hp-fan { animation: ac-rot 2.5s linear infinite; }
+.hp-out circle { fill: none; stroke-width: 2.2; opacity: 0; transform-box: view-box; transform-origin: 46px 75px; }
+.k-heat_pump.st-cooling .hp-out circle { stroke: #ff8a3d; animation: hp-wave 1.8s ease-out infinite; }
+.k-heat_pump.st-heating .hp-out circle, .k-heat_pump.st-ac_dry .hp-out circle { stroke: #4fc3f7; animation: hp-wave 1.8s ease-out infinite; }
+.hp-out circle:nth-child(2) { animation-delay: .6s !important; } .hp-out circle:nth-child(3) { animation-delay: 1.2s !important; }
+.hp-steam path { fill: none; stroke: #e3e8ed; stroke-width: 2.2; stroke-linecap: round; opacity: 0; }
+.k-heat_pump.st-defrost .hp-steam path { animation: ac-steam 2s ease-out infinite; }
+.hp-steam path:nth-child(2) { animation-delay: .6s !important; } .hp-steam path:nth-child(3) { animation-delay: 1.2s !important; }
+.k-heat_pump.st-cooling .hp-body, .k-heat_pump.st-heating .hp-body { animation: ac-shake-soft .25s linear infinite; }
+.hp-led { fill: #9aa2ab; transition: fill .3s; }
+.k-heat_pump.st-cooling .hp-led, .k-heat_pump.st-heating .hp-led, .k-heat_pump.st-ac_dry .hp-led, .k-heat_pump.st-defrost .hp-led { fill: #3ddc84; }
+.k-heat_pump.st-at_target .hp-led, .k-heat_pump.st-ac_fan .hp-led { fill: #ffd76a; }
+@keyframes hp-wave { 0% { opacity: .8; transform: scale(1); } 100% { opacity: 0; transform: scale(1.55); } }
