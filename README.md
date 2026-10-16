@@ -3,7 +3,7 @@
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://hacs.xyz/docs/faq/custom_repositories)
 [![Validate](https://github.com/skyrotter/ha-appliance-electromenager-cards/actions/workflows/validate.yml/badge.svg)](https://github.com/skyrotter/ha-appliance-electromenager-cards/actions/workflows/validate.yml)
 
-Twenty-seven Lovelace cards for household appliances, with **realistic animated illustrations** (tumbling drum, water and foam, spin with vibration, rotating spray arms, glowing oven element, turntable, opening fridge door, flickering pellet-stove flames, water flowing through a pool pump, a 3D printer building its part layer by layer, a chest freezer lid lifting, freezer drawers sliding out, a sun powering solar panels on their frame, a bathroom extractor fan drawing in steam, cooktop zones glowing under a steaming pot, an electric radiator sending heat waves, a dual-basket air fryer blowing hot air over fries, a coffee maker filling the carafe or the cup, a flat TV switching on like a real screen, a range hood sucking up the steam, an air-conditioning split and its outdoor heat pump, a heated towel rail glowing with warm towels, a homelab server rack with blinking LEDs and spinning fans, a desktop PC with RGB fans, a laptop with a live screen and a wine cooler with cold air flowing between the bottles…), live status, power, energy and cost.
+Thirty-three Lovelace cards for household appliances, with **realistic animated illustrations** (tumbling drum, water and foam, spin with vibration, rotating spray arms, glowing oven element, turntable, opening fridge door, flickering pellet-stove flames, water flowing through a pool pump, a 3D printer building its part layer by layer, a chest freezer lid lifting, freezer drawers sliding out, a sun powering solar panels on their frame, a bathroom extractor fan drawing in steam, cooktop zones glowing under a steaming pot, an electric radiator sending heat waves, a dual-basket air fryer blowing hot air over fries, a coffee maker filling the carafe or the cup, a flat TV switching on like a real screen, a range hood sucking up the steam, an air-conditioning split and its outdoor heat pump, a heated towel rail glowing with warm towels, a homelab server rack with blinking LEDs and spinning fans, a desktop PC with RGB fans, a laptop with a live screen, a wine cooler with cold air flowing between the bottles, an aquarium with swimming fish, a Linky electricity meter, a home battery bank, an EV wallbox charging a car, a robot vacuum and a robot mower…), live status, power, energy and cost.
 They follow your Home Assistant theme (light/dark) and switch between **French** and **English** automatically.
 
 **▶ [Try it online / Essayer en ligne](https://skyrotter.github.io/ha-appliance-electromenager-cards/docs/demo.html)** · [Automated tests](https://skyrotter.github.io/ha-appliance-electromenager-cards/docs/tests.html)
@@ -41,6 +41,12 @@ They follow your Home Assistant theme (light/dark) and switch between **French**
 | Desktop PC | `custom:appliance-desktop-pc-card` |
 | Laptop | `custom:appliance-laptop-card` |
 | Wine cooler | `custom:appliance-wine-cooler-card` |
+| Aquarium | `custom:appliance-aquarium-card` |
+| Linky electricity meter | `custom:appliance-linky-card` |
+| Home battery (solar storage) | `custom:appliance-battery-card` |
+| EV charger (wallbox + car) | `custom:appliance-ev-charger-card` |
+| Robot vacuum | `custom:appliance-robot-vacuum-solo-card` |
+| Robot mower | `custom:appliance-robot-mower-solo-card` |
 
 Works with a simple smart plug (power sensor only) as well as with connected appliances (program, remaining time, progress, door…).
 
@@ -483,6 +489,37 @@ energy: sensor.contacteur_energy
 energy_solar: sensor.routeur_solaire_energy
 ```
 
+### Aquarium, Linky meter, home battery, EV charger and robots
+
+These six cards have their own options (prefixed `entity_…`) and a full visual editor. Every value tile can be hidden with its `show_…` option, and `language: fr|en` forces the language.
+
+<p align="center">
+<img src="docs/aquarium.gif" width="260" alt="Aquarium card"> <img src="docs/linky.gif" width="260" alt="Linky card"> <img src="docs/battery.gif" width="260" alt="Home battery card">
+<img src="docs/ev-charger.gif" width="260" alt="EV charger card"> <img src="docs/robot-vacuum.gif" width="260" alt="Robot vacuum card"> <img src="docs/robot-mower.gif" width="260" alt="Robot mower card">
+</p>
+
+| Card | Options |
+|---|---|
+| Aquarium | `entity_power`, `entity_energy`, `entity_temperature`, `entity_light` (day/night), `entity_cost` or `price_per_kwh`, `temp_min` / `temp_max` (default 24–27 °C), `max_power` (default 200 W), `show_power`, `show_energy`, `show_temperature`, `show_cost` |
+| Linky | `entity_power` (W, VA or kW), `entity_hp`, `entity_hc` (indexes, kWh), `entity_tariff` (HP/HC) or `hc_ranges` (e.g. `01:00-07:00,12:30-14:30`), `entity_cost`, `subscribed_power` (kVA, default 9), `show_gauge`, `show_index`, `show_tariff`, `show_cost` |
+| Home battery | `entity_soc` (%), `entity_power` (positive = charging, `invert_power: true` if yours is reversed), `entity_energy`, `entity_temperature`, `capacity_kwh` (default 10), `max_power`, `low_threshold` (default 15 %), `show_power`, `show_energy`, `show_temperature`, `show_time` |
+| EV charger | `entity_power`, `entity_session_energy`, `entity_car_soc`, `entity_status` (charging / connected / complete…), `entity_cost` or `price_per_kwh`, `max_power` (default 7400 W), `car_color`, `show_power`, `show_energy`, `show_soc`, `show_status`, `show_duration`, `show_cost` |
+| Robot vacuum | `entity` (`vacuum.*`, required), `entity_battery`, `entity_area` (m²), `entity_time` (min), `entity_status`, `entity_filter`, `entity_brush` (%), `show_battery`, `show_area`, `show_time`, `show_fan`, `show_status`, `show_consumables`, `show_buttons` |
+| Robot mower | `entity` (`lawn_mower.*` or `vacuum.*`, required), `entity_battery`, `entity_area`, `entity_time`, `entity_next_start`, `entity_blade` (%), `entity_rain`, `entity_status`, `show_battery`, `show_area`, `show_time`, `show_next`, `show_status`, `show_blade`, `show_buttons` |
+
+- **Aquarium**: fish swim back and forth, bubbles and tails speed up with power, the water turns blue / turquoise / orange / red with temperature (alert badge outside `temp_min`–`temp_max`), the lamp follows `entity_light`.
+- **Linky**: lime-green meter with a scrolling LCD (power, HP/HC indexes, tariff, cost — the two buttons switch pages), a gauge against the subscribed power (overload alert above 95 %) and a consumption LED blinking faster as the load rises.
+- **Home battery**: three modules wired with orange cables, no background. The charge level rises in the modules (green → orange → red), energy flows along the cables in one direction when charging and the other when discharging, with time to full / empty.
+- **EV charger**: wall box with a status light (grey unplugged, blue plugged, pulsing green charging, steady green complete), energy flowing through the cable to the car and a battery gauge on the car door.
+- **Robot vacuum / robot mower**: the robot alone, no background. Vacuum: side brushes spin, dust is sucked in, lidar scans, a light ring shows the battery level. Mower: wheels and blade spin, grass clippings fly, rain when `entity_rain` is on. Both have **Start / Pause / Dock** buttons (`vacuum.start` / `pause` / `return_to_base`, `lawn_mower.start_mowing` / `pause` / `dock`).
+
+```yaml
+type: custom:appliance-robot-vacuum-solo-card
+entity: vacuum.robot
+entity_area: sensor.robot_cleaned_area
+entity_time: sensor.robot_cleaning_time
+```
+
 ### Power button safety
 
 The power button only appears when you set `switch:`. On the **washer, dryer, dishwasher and pellet stove**, cutting the plug **while a cycle is running (or the stove is burning)** takes **two clicks**: the first one turns the button red and shows "Cycle running – click again to cut power" for 4 seconds. Turning the plug on, or off while idle, stays a single click. Set `confirm_off: false` to turn this off.
@@ -577,6 +614,8 @@ cost: sensor.lave_linge_cout_jour
 **Sécurité du bouton marche/arrêt** : sur le lave-linge, le sèche-linge, le lave-vaisselle et le poêle à granulés, couper la prise pendant un cycle (ou poêle allumé) demande deux clics (le bouton devient rouge et affiche « Cycle en cours – cliquer encore pour couper »). Option `confirm_off: false` pour désactiver. Conseil : sur un lave-linge, ne mets pas de `switch:` du tout.
 
 **Sèche-serviettes, baie informatique, PC fixe, PC portable, cave à vin** : cinq cartes pilotées par une prise connectée (`power`). `custom:appliance-towel-dryer-card` : au-dessus de 50 W, les barres rougeoient, la chaleur monte, les serviettes se balancent et fument ; prise allumée sous le seuil : « Consigne atteinte ». `custom:appliance-server-rack-card` (homelab) : au-dessus de 30 W, les LED clignotent, les ventilateurs tournent, les baies de disques s'allument en bleu et les données circulent dans les câbles ; la vitesse suit la charge (`max_power`, 300 W par défaut) et l'onduleur affiche la puissance. `custom:appliance-desktop-pc-card` : au-dessus de 40 W, l'écran s'allume (code qui s'écrit, graphique, curseur) et les ventilateurs RGB tournent ; entre 0,5 W et le seuil : veille (voyant orange). `custom:appliance-laptop-card` : au-dessus de 15 W, l'écran affiche un tableau de bord animé et le clavier est rétroéclairé ; en dessous : veille. `custom:appliance-wine-cooler-card` : cave vitrée ; quand le compresseur tourne (au-dessus de 15 W), l'intérieur s'éclaire, l'air froid circule entre les bouteilles et la condensation coule ; la porte s'ouvre avec un capteur `door` ; alerte au-dessus de `max_temperature` (18 °C).
+
+**Aquarium, Linky, batterie, borne de recharge, robots** : six cartes avec leurs propres options (`entity_…`, voir le tableau en anglais) et l'éditeur visuel. Chaque tuile se masque avec son option `show_…`. `custom:appliance-aquarium-card` : poissons qui nagent, bulles et queues plus rapides selon la puissance, eau qui change de couleur selon la température (alerte hors plage), éclairage jour/nuit. `custom:appliance-linky-card` : compteur vert anis avec écran LCD qui défile (puissance, index HP/HC, tarif, coût — les boutons changent de page), jauge par rapport à la puissance souscrite (alerte au-delà de 95 %), voyant conso qui clignote plus vite quand ça consomme. `custom:appliance-battery-card` : trois modules reliés par des câbles orange, sans fond ; le niveau monte dans les modules, l'énergie circule dans un sens en charge et dans l'autre en décharge, avec le temps restant avant plein ou vide. `custom:appliance-ev-charger-card` : wallbox murale et voiture de profil ; voyant selon le statut, énergie qui circule dans le câble, jauge de batterie sur la portière, durée et coût de la session. `custom:appliance-robot-vacuum-solo-card` et `custom:appliance-robot-mower-solo-card` : le robot seul, sans fond ; brosses, lidar et anneau de batterie pour l'aspirateur, roues, lame, herbe projetée et pluie pour la tondeuse, avec les boutons **Démarrer / Pause / Base**.
 
 ## License
 
