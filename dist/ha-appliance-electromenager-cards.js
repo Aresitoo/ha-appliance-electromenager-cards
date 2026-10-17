@@ -6146,6 +6146,7 @@ svg{display:block;width:100%;max-width:200px;height:var(--appliance-illustration
           { type: 'grid', name: '', schema: [
             { name: 'threshold', selector: { number: { min: 0, max: 2000, step: 5, mode: 'box', unit_of_measurement: 'W' } } },
             { name: 'off_threshold', selector: { number: { min: 0, max: 500, step: 0.1, mode: 'box', unit_of_measurement: 'W' } } },
+            { name: 'compressor_threshold', selector: { number: { min: 0, max: 5000, step: 5, mode: 'box', unit_of_measurement: 'W' } } },
             { name: 'heating_delay', selector: { number: { min: 0, max: 600, step: 1, mode: 'box', unit_of_measurement: 's' } } },
           ] },
           { type: 'grid', name: '', schema: SHOW.map((name) => ({ name, selector: { boolean: {} }, default: true })) },
@@ -6223,9 +6224,12 @@ svg{display:block;width:100%;max-width:200px;height:var(--appliance-illustration
       else if (!isNaN(heat)) st = heat > 0 ? 'heating' : 'standby';
       else st = 'standby';
       const active = st === 'heating' || st === 'dhw' || st === 'cooling';
-      const run = active && (isNaN(pw) || pw > c.threshold);
+      // compresseur : compressor_threshold (sinon threshold) ; une PAC tout-ou-rien peut chauffer
+      // avec le seul circulateur du primaire (~40 W) et le compresseur à l'arrêt
+      const pump = active && (isNaN(pw) || pw > c.threshold);
+      const run = active && (isNaN(pw) || pw > (c.compressor_threshold ?? c.threshold));
       const rate = this._num(c.entity_flow_rate);
-      const circ = c.entity_flow_rate ? rate > 0 : run || heat > 0;
+      const circ = c.entity_flow_rate ? rate > 0 : pump || heat > 0;
       return { st, run, circ, pw, heat, rate };
     }
 
