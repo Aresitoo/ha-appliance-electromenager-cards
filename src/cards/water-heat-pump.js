@@ -34,7 +34,7 @@ svg{display:block;width:100%;max-width:200px;height:var(--appliance-illustration
 .run .comp{animation:vib .11s linear infinite alternate}
 @keyframes vib{0%{transform:translate(-.5px,0)}100%{transform:translate(.5px,-.4px)}}
 .dash{stroke-dasharray:3 8;opacity:0}
-.run .dash.src,.run .dash.ref,.circ .dash.ch{opacity:.9;animation:flow 1s linear infinite}
+.src .dash.src,.run .dash.ref,.circ .dash.ch{opacity:.9;animation:flow 1s linear infinite}
 .run .dash.ref{opacity:.55;animation-duration:1.6s}
 @keyframes flow{to{stroke-dashoffset:-11}}
 .rad{fill:#e9edf1;transition:fill .8s}
@@ -142,6 +142,7 @@ svg{display:block;width:100%;max-width:200px;height:var(--appliance-illustration
     }
     static getConfigForm() {
       const ent = (name, domain, extra = {}) => ({ name, selector: { entity: { domain, ...extra } } });
+      const RELAY = ['binary_sensor', 'switch', 'input_boolean', 'sensor'];
       return {
         schema: [
           { name: 'name', selector: { text: {} } },
@@ -150,9 +151,11 @@ svg{display:block;width:100%;max-width:200px;height:var(--appliance-illustration
           { type: 'grid', name: '', schema: [ent('entity_flow_temp', 'sensor'), ent('entity_return_temp', 'sensor'), ent('entity_flow_rate', 'sensor')] },
           { type: 'grid', name: '', schema: [ent('entity_source_in_temp', 'sensor'), ent('entity_source_out_temp', 'sensor')] },
           { type: 'grid', name: '', schema: [ent('entity_energy', 'sensor'), ent('entity_heat_energy', 'sensor'), ent('entity_scop', 'sensor')] },
+          { type: 'grid', name: '', schema: [ent('entity_compressor', RELAY), ent('entity_source_pump', RELAY)] },
           { type: 'grid', name: '', schema: [
             { name: 'threshold', selector: { number: { min: 0, max: 2000, step: 5, mode: 'box', unit_of_measurement: 'W' } } },
             { name: 'off_threshold', selector: { number: { min: 0, max: 500, step: 0.1, mode: 'box', unit_of_measurement: 'W' } } },
+            { name: 'source_threshold', selector: { number: { min: 0, max: 5000, step: 5, mode: 'box', unit_of_measurement: 'W' } } },
             { name: 'compressor_threshold', selector: { number: { min: 0, max: 5000, step: 5, mode: 'box', unit_of_measurement: 'W' } } },
             { name: 'heating_delay', selector: { number: { min: 0, max: 600, step: 1, mode: 'box', unit_of_measurement: 's' } } },
           ] },
@@ -198,6 +201,12 @@ svg{display:block;width:100%;max-width:200px;height:var(--appliance-illustration
       const u = ((this._st(id).attributes || {}).unit_of_measurement || '').toLowerCase();
       return u === 'kw' ? v * 1000 : u === 'mw' ? v * 1e6 : v;
     }
+    // relais (binary_sensor, switch…) : on / off ; capteur numérique : marche au-dessus de 0
+    _on(id) {
+      const s = this._st(id); if (!s) return false;
+      const v = this._num(id);
+      return isNaN(v) ? /^(on|true|running|marche|heat|cool)/i.test(String(s.state)) : v > 0;
+    }
     _unit(id, d) { const s = this._st(id); return (s && s.attributes && s.attributes.unit_of_measurement) || d; }
     _fmt(v, d = 0) { return isNaN(v) ? '--' : v.toLocaleString(this._lang() === 'en' ? 'en-US' : this._lang(), { maximumFractionDigits: d, minimumFractionDigits: 0 }); }
     _kw(w) { return isNaN(w) ? ['--', ''] : w >= 1000 ? [this._fmt(w / 1000, 2), 'kW'] : [this._fmt(w, 0), 'W']; }
@@ -231,21 +240,27 @@ svg{display:block;width:100%;max-width:200px;height:var(--appliance-illustration
       else if (!isNaN(heat)) st = heat > 0 ? 'heating' : 'standby';
       else st = 'standby';
       const active = st === 'heating' || st === 'dhw' || st === 'cooling';
-      // compresseur : compressor_threshold (sinon threshold) ; une PAC tout-ou-rien peut chauffer
-      // avec le seul circulateur du primaire (~40 W) et le compresseur à l'arrêt
+      // Trois animations séparées, par paliers de puissance ou par entité (relais) :
+      // - circuit de chauffage au-dessus de threshold (une PAC tout-ou-rien chauffe souvent
+      //   avec le seul circulateur, ~40 W, compresseur à l'arrêt) ;
+      // - captage (pompes de puits / primaire) au-dessus de source_threshold : elles démarrent
+      //   avant le compresseur et s'arrêtent après ; sans réglage, captage = compresseur ;
+      // - compresseur et circuit frigorifique au-dessus de compressor_threshold (sinon threshold).
       const pump = active && (isNaN(pw) || pw > c.threshold);
-      const run = active && (isNaN(pw) || pw > (c.compressor_threshold ?? c.threshold));
+      const run = c.entity_compressor ? this._on(c.entity_compressor) : active && (isNaN(pw) || pw > (c.compressor_threshold ?? c.threshold));
+      const src = c.entity_source_pump ? this._on(c.entity_source_pump)
+        : c.source_threshold != null && !isNaN(pw) ? pw > c.source_threshold || run : run;
       const rate = this._num(c.entity_flow_rate);
       const circ = c.entity_flow_rate ? rate > 0 : pump || heat > 0;
-      return { st, run, circ, pw, heat, rate };
+      return { st, run, src, circ, pw, heat, rate };
     }
 
     _render() {
       if (!this._built) this._build();
       const c = this._c, card = this._card, r = this._root;
-      const { st, run, circ, pw, heat, rate } = this._compute();
+      const { st, run, src, circ, pw, heat, rate } = this._compute();
       const flow = this._num(c.entity_flow_temp), ret = this._num(c.entity_return_temp);
-      card.className = `${st} ${run ? 'run' : ''} ${circ ? 'circ' : ''} ${c.animations === false ? 'noanim' : ''}`;
+      card.className = `${st} ${run ? 'run' : ''} ${src ? 'src' : ''} ${circ ? 'circ' : ''} ${c.animations === false ? 'noanim' : ''}`;
       // départ / retour : bleu à 20 °C, rouge à 55 °C (températures de PAC, plus basses qu'une chaudière)
       const tc = (t, d) => isNaN(t) ? d : `color-mix(in srgb, #e5392b ${Math.round(Math.max(0, Math.min(1, (t - 20) / 35)) * 100)}%, #3b8fe8)`;
       card.style.setProperty('--wp-flowc', tc(flow, '#e5533d'));
