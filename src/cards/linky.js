@@ -34,7 +34,7 @@ class ApplianceLinkyCard extends HTMLElement {
         { name: 'hc_ranges', selector: { text: {} } },
         { type: 'grid', name: '', schema: [
           { name: 'show_gauge', selector: { boolean: {} } },
-          { name: 'show_phases', selector: { boolean: {} } },
+          { name: 'show_phases', selector: { boolean: {} }, default: true },
           { name: 'show_index', selector: { boolean: {} } },
           { name: 'show_tariff', selector: { boolean: {} } },
           { name: 'show_cost', selector: { boolean: {} } },
