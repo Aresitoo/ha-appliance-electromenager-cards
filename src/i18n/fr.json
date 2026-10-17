@@ -180,7 +180,10 @@
     "subscribed": "Souscrite",
     "name": "Linky",
     "conso": "conso",
-    "alert": "Dépassement"
+    "alert": "Dépassement",
+    "active": "PUISS. ACTIVE",
+    "active_short": "Active",
+    "per_phase": "par phase"
   },
   "battery": {
     "name": "Batterie solaire",
