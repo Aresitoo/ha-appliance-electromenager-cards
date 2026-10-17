@@ -330,6 +330,14 @@ c=rd({power:'sensor.p',window:'binary_sensor.w'},[mk('sensor.p',1200,W),mk('bina
 c=rd({power:'sensor.p'},[mk('sensor.p',1400,W)],'en'); ok('radiator English',/Electric radiator/.test(c.txt())&&/Heating/.test(c.txt()),c.txt());
 const s7=customElements.get('appliance-radiator-card').getStubConfig(hassOf([mk('climate.radiateur_salon','heat'),mk('sensor.radiateur_salon_power',0,W)]));
 ok('stub radiator uses climate',s7.entity==='climate.radiateur_salon'&&s7.power==='sensor.radiateur_salon_power',JSON.stringify(s7));
+// linky gauge: unit of the power sensor (W/VA, kW/kVA)
+const lk=(st,cfg={})=>card('linky',{entity_power:'sensor.p',...cfg},st);
+const gt=(c)=>c.sr.getElementById('gtxt').textContent, needle=(c)=>c.sr.getElementById('needle').style.transform;
+c=lk([mk('sensor.p',1220,{unit_of_measurement:'VA',device_class:'apparent_power'})]); ok('linky gauge VA keeps VA',gt(c)==='1220 VA',gt(c));
+c=lk([mk('sensor.p',4.5,{unit_of_measurement:'kVA',device_class:'apparent_power'})],{subscribed_power:9}); ok('linky gauge kVA converted to VA',gt(c)==='4500 VA'&&needle(c)==='rotate(0deg)',gt(c)+' '+needle(c));
+c=lk([mk('sensor.p',1.2,{unit_of_measurement:'kW',device_class:'power'})]); ok('linky gauge kW converted to W',gt(c)==='1200 W',gt(c));
+c=lk([mk('sensor.p',600,W)]); ok('linky gauge W',gt(c)==='600 W',gt(c));
+document.querySelectorAll('appliance-linky-card').forEach((e)=>e.remove()); // keep the SVG id check about the core cards
 // live update
 c=card('washer',{entity:'input_boolean.w'},[mk('input_boolean.w','off')]); c.el.hass=hassOf([mk('input_boolean.w','on')]); ok('live update off->running',has(c,'st-running'),c.wrap.className);
 

@@ -3804,15 +3804,17 @@ class ApplianceLinkyCard extends HTMLElement {
     let cost = this._num(c.entity_cost);
     this._data = { power, unit, hp, hc, hcNow, cost };
 
-    // Jauge : puissance (W ou VA) / puissance souscrite (kVA × 1000)
+    // Jauge : puissance (W ou VA, kW ou kVA) / puissance souscrite (kVA × 1000).
+    // Le Linky donne la puissance apparente en VA : on garde l'unité du capteur.
     const max = c.subscribed_power * 1000;
-    const watts = power === null ? 0 : (unit === 'kW' ? power * 1000 : power);
-    const ratio = Math.min(watts / max, 1);
+    const gaugeUnit = /va/i.test(unit) ? 'VA' : 'W';
+    const base = power === null ? 0 : (/^k/i.test(unit) ? power * 1000 : power);
+    const ratio = Math.min(base / max, 1);
     root.getElementById('arc').style.strokeDashoffset = 251.3 * (1 - ratio);
     root.getElementById('needle').style.transform = `rotate(${-90 + ratio * 180}deg)`;
     const color = ratio > 0.9 ? '#e53935' : ratio > 0.65 ? '#fb8c00' : '#43a047';
     root.getElementById('gaugebox').style.setProperty('--gc', color);
-    root.getElementById('gtxt').textContent = power === null ? '—' : `${Math.round(watts)} W`;
+    root.getElementById('gtxt').textContent = power === null ? '—' : `${Math.round(base)} ${gaugeUnit}`;
     root.getElementById('gsub').textContent = `${this._t('subscribed')} : ${c.subscribed_power} kVA`;
     root.getElementById('gaugebox').style.display = c.show_gauge ? '' : 'none';
     root.getElementById('meter').classList.toggle('over', ratio > 0.95);
