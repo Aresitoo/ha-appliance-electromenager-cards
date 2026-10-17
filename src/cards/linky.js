@@ -9,6 +9,8 @@ window.customCards = window.customCards || [];
  * type: custom:appliance-linky-card
  */
 const I18N_LINKY = /*@i18n linky*/{};
+// Aiguilles L1 / L2 / L3 (mode « needles ») : couleurs distinctes du vert / orange / rouge de la jauge
+const PHASE_COLORS = ['#1e88e5', '#8e24aa', '#00897b'];
 
 class ApplianceLinkyCard extends HTMLElement {
   static getStubConfig() {
@@ -20,6 +22,13 @@ class ApplianceLinkyCard extends HTMLElement {
       schema: [
         { name: 'name', selector: { text: {} } },
         { name: 'entity_power', selector: { entity: { domain: 'sensor' } } },
+        { name: 'entity_active_power', selector: { entity: { domain: 'sensor', device_class: 'power' } } },
+        { type: 'grid', name: '', schema: [
+          { name: 'entity_power_l1', selector: { entity: { domain: 'sensor' } } },
+          { name: 'entity_power_l2', selector: { entity: { domain: 'sensor' } } },
+          { name: 'entity_power_l3', selector: { entity: { domain: 'sensor' } } },
+        ] },
+        { name: 'phase_gauge', selector: { select: { mode: 'dropdown', options: ['needles', 'cycle', 'max'] } }, default: 'needles' },
         { name: 'entity_hp', selector: { entity: { domain: 'sensor', device_class: 'energy' } } },
         { name: 'entity_hc', selector: { entity: { domain: 'sensor', device_class: 'energy' } } },
         { name: 'entity_tariff', selector: { entity: { domain: ['sensor', 'select'] } } },
@@ -28,6 +37,7 @@ class ApplianceLinkyCard extends HTMLElement {
         { name: 'hc_ranges', selector: { text: {} } },
         { type: 'grid', name: '', schema: [
           { name: 'show_gauge', selector: { boolean: {} }, default: true },
+          { name: 'show_phases', selector: { boolean: {} }, default: true },
           { name: 'show_index', selector: { boolean: {} }, default: true },
           { name: 'show_tariff', selector: { boolean: {} }, default: true },
           { name: 'show_cost', selector: { boolean: {} }, default: true },
@@ -39,8 +49,8 @@ class ApplianceLinkyCard extends HTMLElement {
 
   setConfig(config) {
     this._config = {
-      show_gauge: true, show_index: true, show_tariff: true, show_cost: true,
-      subscribed_power: 9, hc_ranges: '', language: 'fr', ...config,
+      show_gauge: true, show_phases: true, show_index: true, show_tariff: true, show_cost: true,
+      phase_gauge: 'needles', subscribed_power: 9, hc_ranges: '', language: 'fr', ...config,
     };
     this._built = false;
     this._build();
@@ -51,9 +61,11 @@ class ApplianceLinkyCard extends HTMLElement {
   _t(k) { return (I18N_LINKY[this._config.language] || I18N_LINKY.en)[k] ?? I18N_LINKY.en[k] ?? k; }
 
   connectedCallback() {
-    // Défilement des pages de l'écran LCD toutes les 3 s
+    // Défilement des pages de l'écran LCD toutes les 3 s (et des phases, en mode jauge « cycle »)
     this._timer = setInterval(() => {
       this._page = (this._page || 0) + 1; this._renderLcd();
+      this._cycle = (this._cycle || 0) + 1;
+      if (this._tri && this._config.phase_gauge === 'cycle') this._update();
       const b = this.shadowRoot && this.shadowRoot.getElementById('b2');
       if (b) { b.classList.add('press'); setTimeout(() => b.classList.remove('press'), 250); }
     }, 3000);
@@ -97,6 +109,14 @@ class ApplianceLinkyCard extends HTMLElement {
       .needle { transform-origin:100px 100px; transition:transform 1s cubic-bezier(.3,1.4,.5,1); stroke:var(--primary-text-color,#223); stroke-width:3; stroke-linecap:round; }
       .gtxt { text-anchor:middle; font-size:15px; font-weight:700; fill:var(--primary-text-color,#223); }
       .gsub { text-align:center; font-size:.7em; opacity:.65; }
+      .gact { text-align:center; font-size:.8em; font-weight:600; margin-top:2px; }
+      /* Triphasé : une barre par phase, pleine à 1/3 de la puissance souscrite */
+      .phases { margin-top:6px; display:grid; grid-template-columns:auto 1fr auto; gap:3px 6px; align-items:center; font-size:.7em; }
+      .phases .bar { height:6px; border-radius:3px; background:rgba(127,127,127,.25); overflow:hidden; }
+      .phases .bar i { display:block; height:100%; width:0; border-radius:3px; background:#43a047; transition:width 1s ease, background .6s; }
+      .phases .pv { text-align:right; font-variant-numeric:tabular-nums; opacity:.8; }
+      .phases .cur { font-weight:700; }
+      .needle.pn { stroke-width:2.5; }
       .over .arc { animation:pulse .6s infinite; }
       .badge { text-align:center; font-size:.8em; font-weight:700; margin-top:4px; color:#e53935; display:none; }
       .over .badge { display:block; animation:pulse .6s infinite; }
@@ -121,10 +141,14 @@ class ApplianceLinkyCard extends HTMLElement {
             <path class="arc" id="arc" d="M20 100 A80 80 0 0 1 180 100" stroke-dasharray="251.3" stroke-dashoffset="251.3"/>
             ${ticks}
             <line class="needle" id="needle" x1="100" y1="100" x2="100" y2="32" style="transform:rotate(-90deg)"/>
+            ${PHASE_COLORS.map((col, i) => `<line class="needle pn" id="n${i + 1}" x1="100" y1="100" x2="100" y2="${32 + i * 8}" style="stroke:${col};transform:rotate(-90deg);display:none"/>`).join('')}
             <circle cx="100" cy="100" r="6" fill="var(--primary-text-color,#223)"/>
             <text class="gtxt" x="100" y="118" id="gtxt"></text>
           </svg>
           <div class="gsub" id="gsub"></div>
+          <div class="gact" id="gact"></div>
+          <div class="phases" id="phases">${[1, 2, 3].map((i) =>
+            `<span id="phl${i}">L${i}</span><div class="bar"><i id="ph${i}"></i></div><span class="pv" id="phv${i}"></span>`).join('')}</div>
           <div class="badge">${this._t('alert')}</div>
         </div>
       </div>
@@ -141,6 +165,14 @@ class ApplianceLinkyCard extends HTMLElement {
     if (!s || ['unavailable', 'unknown'].includes(s.state)) return null;
     const n = parseFloat(s.state);
     return Number.isFinite(n) ? n : null;
+  }
+
+  // Puissance en W ou VA (kW / kVA convertis), avec l'unité du capteur
+  _power(id) {
+    const v = this._num(id);
+    if (v === null) return null;
+    const u = this._hass.states[id].attributes.unit_of_measurement || 'W';
+    return { v: /^k/i.test(u) ? v * 1000 : v, unit: /va/i.test(u) ? 'VA' : 'W' };
   }
 
   // Heures creuses : entité tarif si fournie, sinon plages "HH:MM-HH:MM,..."
@@ -162,6 +194,7 @@ class ApplianceLinkyCard extends HTMLElement {
     if (!this._built || !this._data) return;
     const d = this._data, c = this._config, pages = [];
     pages.push([this._t('power'), d.power === null ? '—' : `${Math.round(d.power)} ${d.unit}`]);
+    if (c.entity_active_power) pages.push([this._t('active'), d.active === null ? '—' : `${Math.round(d.active.v)} ${d.active.unit}`]);
     if (c.show_index) {
       pages.push([this._t('hp'), d.hp === null ? '—' : `${Math.round(d.hp)} kWh`]);
       pages.push([this._t('hc'), d.hc === null ? '—' : `${Math.round(d.hc)} kWh`]);
@@ -181,30 +214,70 @@ class ApplianceLinkyCard extends HTMLElement {
     if (!this._built || !this._hass) return;
     const c = this._config, root = this.shadowRoot;
     const pState = c.entity_power && this._hass.states[c.entity_power];
-    const unit = (pState && pState.attributes.unit_of_measurement) || 'W';
+    let unit = (pState && pState.attributes.unit_of_measurement) || 'W';
     let power = this._num(c.entity_power);
     const hp = this._num(c.entity_hp), hc = this._num(c.entity_hc);
     const hcNow = this._isHC();
     let cost = this._num(c.entity_cost);
-    this._data = { power, unit, hp, hc, hcNow, cost };
+    const active = this._power(c.entity_active_power);
 
     // Jauge : puissance (W ou VA, kW ou kVA) / puissance souscrite (kVA × 1000).
     // Le Linky donne la puissance apparente en VA : on garde l'unité du capteur.
-    const max = c.subscribed_power * 1000;
-    const gaugeUnit = /va/i.test(unit) ? 'VA' : 'W';
-    const base = power === null ? 0 : (/^k/i.test(unit) ? power * 1000 : power);
-    const ratio = Math.min(base / max, 1);
+    // En triphasé, il coupe phase par phase à 1/3 de la souscription. Selon phase_gauge :
+    // « needles » une aiguille par phase, « cycle » L1 → L2 → L3 toutes les 3 s,
+    // « max » la phase la plus chargée. L'alerte suit toujours la phase la plus chargée.
+    const max = c.subscribed_power * 1000, phaseMax = max / 3;
+    const phases = [c.entity_power_l1, c.entity_power_l2, c.entity_power_l3].map((id) => this._power(id));
+    const tri = phases.some(Boolean), mode = ['cycle', 'max'].includes(c.phase_gauge) ? c.phase_gauge : 'needles';
+    const pr = (p) => (p ? Math.min(p.v / phaseMax, 1) : 0);
+    this._tri = tri;
+    let ratio, alertRatio, gtxt, shown = -1;
+    if (tri) {
+      const worst = phases.reduce((w, p, i) => (p && (w < 0 || p.v > phases[w].v) ? i : w), -1);
+      const avail = phases.map((p, i) => (p ? i : -1)).filter((i) => i >= 0);
+      shown = mode === 'cycle' ? avail[(this._cycle || 0) % avail.length] : worst;
+      ratio = pr(phases[shown]); alertRatio = pr(phases[worst]);
+      gtxt = `L${shown + 1} · ${Math.round(phases[shown].v)} ${phases[shown].unit}`;
+      if (power === null) { power = phases.reduce((s, p) => s + (p ? p.v : 0), 0); unit = phases[worst].unit; }
+    } else {
+      const gaugeUnit = /va/i.test(unit) ? 'VA' : 'W';
+      const base = power === null ? 0 : (/^k/i.test(unit) ? power * 1000 : power);
+      ratio = alertRatio = Math.min(base / max, 1);
+      gtxt = power === null ? '—' : `${Math.round(base)} ${gaugeUnit}`;
+    }
+    this._data = { power, unit, active, hp, hc, hcNow, cost };
+    const colorOf = (r) => (r > 0.9 ? '#e53935' : r > 0.65 ? '#fb8c00' : '#43a047');
+    const needles = tri && mode === 'needles';
     root.getElementById('arc').style.strokeDashoffset = 251.3 * (1 - ratio);
     root.getElementById('needle').style.transform = `rotate(${-90 + ratio * 180}deg)`;
-    const color = ratio > 0.9 ? '#e53935' : ratio > 0.65 ? '#fb8c00' : '#43a047';
-    root.getElementById('gaugebox').style.setProperty('--gc', color);
-    root.getElementById('gtxt').textContent = power === null ? '—' : `${Math.round(base)} ${gaugeUnit}`;
-    root.getElementById('gsub').textContent = `${this._t('subscribed')} : ${c.subscribed_power} kVA`;
+    root.getElementById('needle').style.display = needles ? 'none' : '';
+    phases.forEach((p, i) => {
+      const n = root.getElementById(`n${i + 1}`);
+      n.style.display = needles && p ? '' : 'none';
+      n.style.transform = `rotate(${-90 + pr(p) * 180}deg)`;
+      const lab = root.getElementById(`phl${i + 1}`);
+      lab.style.color = needles ? PHASE_COLORS[i] : '';
+      lab.classList.toggle('cur', tri && mode === 'cycle' && i === shown);
+    });
+    root.getElementById('gaugebox').style.setProperty('--gc', colorOf(ratio));
+    root.getElementById('gtxt').textContent = gtxt;
+    root.getElementById('gsub').textContent = `${this._t('subscribed')} : ${c.subscribed_power} kVA`
+      + (tri ? ` · ${+(c.subscribed_power / 3).toFixed(1)} kVA ${this._t('per_phase')}` : '');
+    const gact = root.getElementById('gact');
+    gact.textContent = active ? `${this._t('active_short')} : ${Math.round(active.v)} ${active.unit}` : '';
+    gact.style.display = active ? '' : 'none';
+    root.getElementById('phases').style.display = tri && c.show_phases ? '' : 'none';
+    phases.forEach((p, i) => {
+      const r = p ? Math.min(p.v / phaseMax, 1) : 0, bar = root.getElementById(`ph${i + 1}`);
+      bar.style.width = `${(r * 100).toFixed(1)}%`;
+      bar.style.background = colorOf(r);
+      root.getElementById(`phv${i + 1}`).textContent = p ? `${Math.round(p.v)} ${p.unit}` : '—';
+    });
     root.getElementById('gaugebox').style.display = c.show_gauge ? '' : 'none';
-    root.getElementById('meter').classList.toggle('over', ratio > 0.95);
+    root.getElementById('meter').classList.toggle('over', alertRatio > 0.95);
 
     // LED conso : clignote plus vite quand la puissance monte (2 s → 0.25 s)
-    root.getElementById('ledc').style.setProperty('--pulse', `${(2 - ratio * 1.75).toFixed(2)}s`);
+    root.getElementById('ledc').style.setProperty('--pulse', `${(2 - alertRatio * 1.75).toFixed(2)}s`);
     const ledt = root.getElementById('ledt');
     ledt.className = `led ${hcNow ? 'hc' : 'hp'}`;
     root.getElementById('ledtl').textContent = hcNow ? 'HC' : 'HP';

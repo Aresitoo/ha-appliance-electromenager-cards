@@ -180,7 +180,10 @@
     "subscribed": "Subscribed",
     "name": "Linky",
     "conso": "usage",
-    "alert": "Overload"
+    "alert": "Overload",
+    "active": "ACTIVE POWER",
+    "active_short": "Active",
+    "per_phase": "per phase"
   },
   "battery": {
     "name": "Solar battery",

@@ -337,6 +337,41 @@ c=lk([mk('sensor.p',1220,{unit_of_measurement:'VA',device_class:'apparent_power'
 c=lk([mk('sensor.p',4.5,{unit_of_measurement:'kVA',device_class:'apparent_power'})],{subscribed_power:9}); ok('linky gauge kVA converted to VA',gt(c)==='4500 VA'&&needle(c)==='rotate(0deg)',gt(c)+' '+needle(c));
 c=lk([mk('sensor.p',1.2,{unit_of_measurement:'kW',device_class:'power'})]); ok('linky gauge kW converted to W',gt(c)==='1200 W',gt(c));
 c=lk([mk('sensor.p',600,W)]); ok('linky gauge W',gt(c)==='600 W',gt(c));
+// linky three-phase: cut-off per phase at subscribed/3, gauge follows the most loaded phase
+const VA={unit_of_measurement:'VA',device_class:'apparent_power'}, L3={entity_power_l1:'sensor.l1',entity_power_l2:'sensor.l2',entity_power_l3:'sensor.l3',subscribed_power:15};
+const byId=(c,id)=>c.sr.getElementById(id), deg=(c)=>parseFloat(needle(c).slice(7));
+const ph=(a,b,d)=>[mk('sensor.l1',a,VA),mk('sensor.l2',b,VA),mk('sensor.l3',d,VA)];
+ok('linky single-phase: no phase bars, no active line',(c=lk([mk('sensor.p',600,W)]),byId(c,'phases').style.display==='none'&&byId(c,'gact').style.display==='none'),byId(c,'phases').style.display);
+c=lk([mk('sensor.p',1450,VA),...ph(250,500,700)],L3);
+ok('linky 3-phase gauge follows most loaded phase',gt(c)==='L3 · 700 VA'&&Math.abs(deg(c)+64.8)<0.01,gt(c)+' '+needle(c));
+ok('linky 3-phase bars',byId(c,'phases').style.display===''&&parseFloat(byId(c,'ph3').style.width)===14&&byId(c,'phv2').textContent==='500 VA',byId(c,'ph3').style.width+' '+byId(c,'phv2').textContent);
+ok('linky 3-phase subscribed per phase',/15 kVA · 5 kVA par phase/.test(byId(c,'gsub').textContent),byId(c,'gsub').textContent);
+c=lk([mk('sensor.p',5600,VA),...ph(300,4900,400)],L3);
+ok('linky 3-phase alert on one phase while total is low',byId(c,'meter').classList.contains('over')&&gt(c)==='L2 · 4900 VA',byId(c,'meter').className+' '+gt(c));
+c=lk([...ph(1.2,0.5,0.25).map((s)=>({...s,attributes:{unit_of_measurement:'kVA'}}))],{...L3,entity_power:''});
+ok('linky 3-phase kVA converted, total from phases',byId(c,'phv1').textContent==='1200 VA'&&byId(c,'val').textContent==='1950 VA',byId(c,'phv1').textContent+' '+byId(c,'val').textContent);
+c=lk([...ph(250,500,700)],{...L3,show_phases:false}); ok('linky show_phases:false hides the bars',byId(c,'phases').style.display==='none'&&gt(c)==='L3 · 700 VA',byId(c,'phases').style.display);
+// linky phase_gauge: needles (default) / cycle / max
+const ndeg=(c,i)=>parseFloat(byId(c,`n${i}`).style.transform.slice(7)), vis=(c,id)=>byId(c,id).style.display!=='none';
+c=lk([...ph(1250,2500,3750)],L3);
+ok('linky needles (default): one needle per phase',!vis(c,'needle')&&[1,2,3].every((i)=>vis(c,`n${i}`))&&Math.abs(ndeg(c,1)+45)<0.01&&Math.abs(ndeg(c,2))<0.01&&Math.abs(ndeg(c,3)-45)<0.01,[1,2,3].map((i)=>ndeg(c,i)).join(' '));
+ok('linky needles: bar labels in needle colours',byId(c,'phl1').style.color!==''&&byId(c,'phl1').style.color!==byId(c,'phl2').style.color,byId(c,'phl1').style.color);
+c=lk([...ph(4350,4350,4350)],{...L3,phase_gauge:'cycle'});
+const seen=[0,1,2,3].map((k)=>{c.el._cycle=k;c.el.hass=c.h;return gt(c).slice(0,2);});
+ok('linky cycle: L1 → L2 → L3 → L1 even when tied',seen.join(',')==='L1,L2,L3,L1'&&vis(c,'needle')&&!vis(c,'n1'),seen.join(','));
+ok('linky cycle: current phase label in bold',byId(c,'phl1').classList.contains('cur')&&!byId(c,'phl2').classList.contains('cur'),byId(c,'phl1').className);
+c=lk([mk('sensor.l1',800,VA),mk('sensor.l3',600,VA)],{...L3,phase_gauge:'cycle'}); c.el._cycle=1; c.el.hass=c.h;
+ok('linky cycle skips a missing phase',gt(c)==='L3 · 600 VA',gt(c));
+c=lk([...ph(300,4900,400)],{...L3,phase_gauge:'cycle'}); c.el._cycle=0; c.el.hass=c.h;
+ok('linky cycle: alert follows the most loaded phase',gt(c)==='L1 · 300 VA'&&byId(c,'meter').classList.contains('over'),gt(c)+' '+byId(c,'meter').className);
+c=lk([...ph(250,500,700)],{...L3,phase_gauge:'max'});
+ok('linky max: single needle on the most loaded phase',vis(c,'needle')&&!vis(c,'n3')&&gt(c)==='L3 · 700 VA'&&Math.abs(deg(c)+64.8)<0.01,gt(c)+' '+needle(c));
+// linky active power from a W sensor: line under the gauge + LCD page, gauge stays in VA
+c=lk([mk('sensor.p',1220,VA),mk('sensor.w',506,W)],{entity_active_power:'sensor.w'});
+byId(c,'b2').click();
+ok('linky active power line and LCD page',byId(c,'gact').textContent==='Active : 506 W'&&byId(c,'lab').textContent==='PUISS. ACTIVE'&&byId(c,'val').textContent==='506 W'&&gt(c)==='1220 VA',byId(c,'gact').textContent+' | '+byId(c,'lab').textContent+' '+byId(c,'val').textContent+' | '+gt(c));
+c=lk([mk('sensor.p',1220,VA),mk('sensor.w',0.506,{unit_of_measurement:'kW',device_class:'power'})],{entity_active_power:'sensor.w',language:'en'});
+ok('linky active power kW converted (en)',byId(c,'gact').textContent==='Active : 506 W',byId(c,'gact').textContent);
 document.querySelectorAll('appliance-linky-card').forEach((e)=>e.remove()); // keep the SVG id check about the core cards
 // live update
 c=card('washer',{entity:'input_boolean.w'},[mk('input_boolean.w','off')]); c.el.hass=hassOf([mk('input_boolean.w','on')]); ok('live update off->running',has(c,'st-running'),c.wrap.className);

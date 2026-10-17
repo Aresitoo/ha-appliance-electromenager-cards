@@ -180,7 +180,10 @@
 "subscribed": "Abonnert",
 "name": "Linky",
 "conso": "forbruk",
-"alert": "Overbelastning"
+"alert": "Overbelastning",
+"active": "AKTIV EFFEKT",
+"active_short": "Aktiv",
+"per_phase": "per fase"
 },
 "battery": {
 "name": "Solbatteri",
