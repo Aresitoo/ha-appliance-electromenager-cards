@@ -150,7 +150,10 @@ svg{display:block;width:100%;max-width:200px;height:var(--appliance-illustration
           { type: 'grid', name: '', schema: [ent('entity_flow_temp', 'sensor'), ent('entity_return_temp', 'sensor'), ent('entity_flow_rate', 'sensor')] },
           { type: 'grid', name: '', schema: [ent('entity_source_in_temp', 'sensor'), ent('entity_source_out_temp', 'sensor')] },
           { type: 'grid', name: '', schema: [ent('entity_energy', 'sensor'), ent('entity_heat_energy', 'sensor'), ent('entity_scop', 'sensor')] },
-          { name: 'threshold', selector: { number: { min: 0, max: 2000, step: 5, mode: 'box', unit_of_measurement: 'W' } } },
+          { type: 'grid', name: '', schema: [
+            { name: 'threshold', selector: { number: { min: 0, max: 2000, step: 5, mode: 'box', unit_of_measurement: 'W' } } },
+            { name: 'off_threshold', selector: { number: { min: 0, max: 500, step: 0.1, mode: 'box', unit_of_measurement: 'W' } } },
+          ] },
           { type: 'grid', name: '', schema: SHOW.map((name) => ({ name, selector: { boolean: {} }, default: true })) },
           { name: 'language', selector: { select: { options: Object.keys(T) } } },
         ],
@@ -158,7 +161,7 @@ svg{display:block;width:100%;max-width:200px;height:var(--appliance-illustration
     }
     setConfig(c) {
       if (!c || typeof c !== 'object') throw new Error('Invalid configuration');
-      this._c = { ...Object.fromEntries(SHOW.map((k) => [k, true])), threshold: 100, ...c };
+      this._c = { ...Object.fromEntries(SHOW.map((k) => [k, true])), threshold: 100, off_threshold: 0.5, ...c };
       this._built = false;
       if (this._hass) this._render();
     }
@@ -208,7 +211,7 @@ svg{display:block;width:100%;max-width:200px;height:var(--appliance-illustration
       else if (/cool|rafra|froid/.test(key) && key !== 'heat_cool') st = 'cooling';
       else if (/heat|chauff|compress|running|marche|^on/.test(key)) st = 'heating';
       else if (s) st = 'standby';
-      else if (!isNaN(pw)) st = pw > c.threshold ? 'heating' : pw > 0.5 ? 'standby' : 'off';
+      else if (!isNaN(pw)) st = pw > c.threshold ? 'heating' : pw > c.off_threshold ? 'standby' : 'off';
       else if (!isNaN(heat)) st = heat > 0 ? 'heating' : 'standby';
       else st = 'standby';
       const active = st === 'heating' || st === 'dhw' || st === 'cooling';

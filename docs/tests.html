@@ -389,6 +389,9 @@ const KW={unit_of_measurement:'kW',device_class:'power'}, P={entity_power:'senso
 ok('registered water-heat-pump',customElements.get('appliance-water-heat-pump-card'));
 c=wp([mk('sensor.p',1200,W)],{entity_power:'sensor.p'}); ok('water heat pump running from power',/\bheating\b/.test(hc(c))&&/\brun\b/.test(hc(c))&&badge(c)==='Chauffage',hc(c)+' '+badge(c));
 c=wp([mk('sensor.p',3,W)],{entity_power:'sensor.p'}); ok('water heat pump standby under threshold',/\bstandby\b/.test(hc(c))&&!/\brun\b/.test(hc(c)),hc(c));
+c=wp([mk('sensor.p',0.3,W)],{entity_power:'sensor.p'}); ok('water heat pump off under off_threshold (default 0.5 W)',/\boff\b/.test(hc(c)),hc(c));
+c=wp([mk('sensor.p',3,W)],{entity_power:'sensor.p',off_threshold:4.5}); ok('water heat pump off_threshold (float) sets off vs standby',/\boff\b/.test(hc(c)),hc(c));
+c=wp([mk('sensor.p',5,W)],{entity_power:'sensor.p',off_threshold:4.5}); ok('water heat pump standby above off_threshold',/\bstandby\b/.test(hc(c)),hc(c));
 c=wp([mk('sensor.p',1500,W),mk('sensor.h',5.25,KW)],P); ok('water heat pump COP computed (heat / electric)',tv(c,'cop')==='3,5'&&tv(c,'heat')==='5,25kW',tv(c,'cop')+' '+tv(c,'heat'));
 c=wp([mk('sensor.p',1500,W),mk('sensor.h',5.25,KW),mk('sensor.cop',4.2)],{...P,entity_cop:'sensor.cop'}); ok('water heat pump COP sensor wins',tv(c,'cop')==='4,2',tv(c,'cop'));
 c=wp([mk('sensor.p',1500,W)],{entity_power:'sensor.p'}); ok('water heat pump: no COP tile without heat power',!shown(c,'cop')&&!shown(c,'src_in')&&shown(c,'power'));

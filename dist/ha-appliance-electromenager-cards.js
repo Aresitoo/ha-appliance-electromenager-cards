@@ -5731,7 +5731,7 @@ svg{display:block;width:100%;max-width:170px;height:var(--appliance-illustration
     setConfig(c) {
       if (!c || typeof c !== 'object') throw new Error('Invalid configuration');
       this._c = { show_power: true, show_energy: true, show_gas: true, show_cost: true, show_temps: true,
-        show_pressure: true, show_modulation: true, show_status: true, threshold: 15,
+        show_pressure: true, show_modulation: true, show_status: true, threshold: 15, off_threshold: 0.5,
         pressure_min: 1, pressure_max: 2.5, flow_temp_max: 80, ...c };
       this._built = false;
       if (this._hass) this._render();
@@ -5795,7 +5795,7 @@ svg{display:block;width:100%;max-width:170px;height:var(--appliance-illustration
       else if (/heat|chauff|ignit|allum|burn|brûl|brul|running|^on/.test(txt) || flame === true) st = 'heating';
       else if (txt) st = 'standby';
       else if (flame === false) st = 'standby';
-      else if (!isNaN(pw)) st = pw > c.threshold ? 'heating' : (pw > 0.5 ? 'standby' : 'off');
+      else if (!isNaN(pw)) st = pw > c.threshold ? 'heating' : (pw > c.off_threshold ? 'standby' : 'off');
       else st = 'standby';
       if (flame === false && (st === 'heating' || st === 'dhw') && /standby|idle|veille/.test(txt)) st = 'standby';
       const burning = st === 'heating' || st === 'dhw';
@@ -5881,6 +5881,10 @@ svg{display:block;width:100%;max-width:170px;height:var(--appliance-illustration
         ent('entity_status'), ent('entity_flame', 'binary_sensor'), ent('entity_power', 'sensor'), ent('entity_energy', 'sensor'),
         ent('entity_gas', 'sensor'), ent('entity_cost', 'sensor'), { name: 'price_per_unit', selector: { number: { min: 0, step: 0.0001, mode: 'box' } } },
         ent('entity_flow_temp', 'sensor'), ent('entity_return_temp', 'sensor'), ent('entity_pressure', 'sensor'), ent('entity_modulation', 'sensor'),
+        { type: 'grid', name: '', schema: [
+          { name: 'threshold', selector: { number: { min: 0, max: 2000, step: 1, mode: 'box', unit_of_measurement: 'W' } } },
+          { name: 'off_threshold', selector: { number: { min: 0, max: 500, step: 0.1, mode: 'box', unit_of_measurement: 'W' } } },
+        ] },
         { name: 'language', selector: { select: { options: Object.keys(T).map((value) => ({ value, label: { fr: 'Français', en: 'English', de: 'Deutsch', nb: 'Norsk bokmål' }[value] || value })) } } },
         { type: 'grid', name: '', schema: [
           { name: 'show_status', selector: { boolean: {} }, default: true }, { name: 'show_power', selector: { boolean: {} }, default: true },
@@ -6139,7 +6143,10 @@ svg{display:block;width:100%;max-width:200px;height:var(--appliance-illustration
           { type: 'grid', name: '', schema: [ent('entity_flow_temp', 'sensor'), ent('entity_return_temp', 'sensor'), ent('entity_flow_rate', 'sensor')] },
           { type: 'grid', name: '', schema: [ent('entity_source_in_temp', 'sensor'), ent('entity_source_out_temp', 'sensor')] },
           { type: 'grid', name: '', schema: [ent('entity_energy', 'sensor'), ent('entity_heat_energy', 'sensor'), ent('entity_scop', 'sensor')] },
-          { name: 'threshold', selector: { number: { min: 0, max: 2000, step: 5, mode: 'box', unit_of_measurement: 'W' } } },
+          { type: 'grid', name: '', schema: [
+            { name: 'threshold', selector: { number: { min: 0, max: 2000, step: 5, mode: 'box', unit_of_measurement: 'W' } } },
+            { name: 'off_threshold', selector: { number: { min: 0, max: 500, step: 0.1, mode: 'box', unit_of_measurement: 'W' } } },
+          ] },
           { type: 'grid', name: '', schema: SHOW.map((name) => ({ name, selector: { boolean: {} }, default: true })) },
           { name: 'language', selector: { select: { options: Object.keys(T) } } },
         ],
@@ -6147,7 +6154,7 @@ svg{display:block;width:100%;max-width:200px;height:var(--appliance-illustration
     }
     setConfig(c) {
       if (!c || typeof c !== 'object') throw new Error('Invalid configuration');
-      this._c = { ...Object.fromEntries(SHOW.map((k) => [k, true])), threshold: 100, ...c };
+      this._c = { ...Object.fromEntries(SHOW.map((k) => [k, true])), threshold: 100, off_threshold: 0.5, ...c };
       this._built = false;
       if (this._hass) this._render();
     }
@@ -6197,7 +6204,7 @@ svg{display:block;width:100%;max-width:200px;height:var(--appliance-illustration
       else if (/cool|rafra|froid/.test(key) && key !== 'heat_cool') st = 'cooling';
       else if (/heat|chauff|compress|running|marche|^on/.test(key)) st = 'heating';
       else if (s) st = 'standby';
-      else if (!isNaN(pw)) st = pw > c.threshold ? 'heating' : pw > 0.5 ? 'standby' : 'off';
+      else if (!isNaN(pw)) st = pw > c.threshold ? 'heating' : pw > c.off_threshold ? 'standby' : 'off';
       else if (!isNaN(heat)) st = heat > 0 ? 'heating' : 'standby';
       else st = 'standby';
       const active = st === 'heating' || st === 'dhw' || st === 'cooling';
