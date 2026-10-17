@@ -19,7 +19,7 @@ const has=(c,cls)=>c.wrap.classList.contains(cls);
 const tags=['washer','dryer','dishwasher','water-heater','oven','microwave','fridge','pellet-stove','pool-pump','printer-3d','chest-freezer','drawer-freezer','solar','vmc','hob','radiator','air-fryer','coffee-maker','tv','range-hood','ac-split','heat-pump','towel-dryer','server-rack','desktop-pc','laptop','wine-cooler'];
 tags.forEach(t=>ok(`registered ${t}`,customElements.get(`appliance-${t}-card`)));
 // card picker: every core card and every self-contained card listed exactly once
-const solo=['aquarium','linky','battery','ev-charger','robot-vacuum-solo','robot-mower-solo','pellet-boiler','gas-boiler'];
+const solo=['aquarium','linky','battery','ev-charger','robot-vacuum-solo','robot-mower-solo','pellet-boiler','gas-boiler','water-heat-pump'];
 solo.forEach(t=>ok(`registered ${t}`,customElements.get(`appliance-${t}-card`)));
 const picked=window.customCards.map(c=>c.type), wanted=[...tags,...solo].map(t=>`appliance-${t}-card`);
 ok(`customCards = ${wanted.length}`,picked.length===wanted.length&&wanted.every(t=>picked.filter(p=>p===t).length===1),
