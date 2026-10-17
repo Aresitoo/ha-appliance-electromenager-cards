@@ -18,7 +18,12 @@ const has=(c,cls)=>c.wrap.classList.contains(cls);
 // registration
 const tags=['washer','dryer','dishwasher','water-heater','oven','microwave','fridge','pellet-stove','pool-pump','printer-3d','chest-freezer','drawer-freezer','solar','vmc','hob','radiator','air-fryer','coffee-maker','tv','range-hood','ac-split','heat-pump','towel-dryer','server-rack','desktop-pc','laptop','wine-cooler'];
 tags.forEach(t=>ok(`registered ${t}`,customElements.get(`appliance-${t}-card`)));
-ok('customCards = 27',window.customCards.length===27,window.customCards.length);
+// card picker: every core card and every self-contained card listed exactly once
+const solo=['aquarium','linky','battery','ev-charger','robot-vacuum-solo','robot-mower-solo','pellet-boiler','gas-boiler'];
+solo.forEach(t=>ok(`registered ${t}`,customElements.get(`appliance-${t}-card`)));
+const picked=window.customCards.map(c=>c.type), wanted=[...tags,...solo].map(t=>`appliance-${t}-card`);
+ok(`customCards = ${wanted.length}`,picked.length===wanted.length&&wanted.every(t=>picked.filter(p=>p===t).length===1),
+  [...wanted.filter(t=>!picked.includes(t)).map(t=>`missing ${t}`),...picked.filter(t=>!wanted.includes(t)).map(t=>`extra ${t}`),`${picked.length} entries`].join(', '));
 // config validation
 try{document.createElement('appliance-washer-card').setConfig({});ok('empty config throws',false)}catch(e){ok('empty config throws',/entity|power/.test(e.message),e.message)}
 
