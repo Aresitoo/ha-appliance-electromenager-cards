@@ -296,11 +296,11 @@ svg{display:block;width:100%;max-width:170px;height:var(--appliance-illustration
         ent('entity_flow_temp', 'sensor'), ent('entity_return_temp', 'sensor'), ent('entity_pressure', 'sensor'), ent('entity_modulation', 'sensor'),
         { name: 'language', selector: { select: { options: Object.keys(T).map((value) => ({ value, label: { fr: 'Français', en: 'English' }[value] || value })) } } },
         { type: 'grid', name: '', schema: [
-          { name: 'show_status', selector: { boolean: {} } }, { name: 'show_power', selector: { boolean: {} } },
-          { name: 'show_energy', selector: { boolean: {} } }, { name: 'show_gas', selector: { boolean: {} } },
-          { name: 'show_cost', selector: { boolean: {} } }, { name: 'show_temps', selector: { boolean: {} } },
-          { name: 'show_pressure', selector: { boolean: {} } }, { name: 'show_modulation', selector: { boolean: {} } },
-          { name: 'animations', selector: { boolean: {} } },
+          { name: 'show_status', selector: { boolean: {} }, default: true }, { name: 'show_power', selector: { boolean: {} }, default: true },
+          { name: 'show_energy', selector: { boolean: {} }, default: true }, { name: 'show_gas', selector: { boolean: {} }, default: true },
+          { name: 'show_cost', selector: { boolean: {} }, default: true }, { name: 'show_temps', selector: { boolean: {} }, default: true },
+          { name: 'show_pressure', selector: { boolean: {} }, default: true }, { name: 'show_modulation', selector: { boolean: {} }, default: true },
+          { name: 'animations', selector: { boolean: {} }, default: true },
         ] },
       ];
       this._form.computeLabel = (s) => s.name;

@@ -287,5 +287,26 @@
 "lowp": "Lavt trykk",
 "highp": "Høyt trykk",
 "hotf": "For varm tur"
+},
+"water_heat_pump": {
+"name": "Vann-til-vann-varmepumpe",
+"off": "Av",
+"standby": "Hvilemodus",
+"heating": "Varmer",
+"dhw": "Varmtvann",
+"cooling": "Kjøler",
+"alarm": "Feil",
+"power": "Elektrisk",
+"heat": "Varmeeffekt",
+"cop": "COP",
+"flow": "Tur",
+"ret": "Retur",
+"delta": "ΔT",
+"src_in": "Kilde inn",
+"src_out": "Kilde ut",
+"rate": "Gjennomstrømning",
+"energy": "Elektr. energi",
+"heat_energy": "Varmeenergi",
+"scop": "SCOP"
 }
 }

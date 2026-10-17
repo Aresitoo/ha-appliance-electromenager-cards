@@ -287,5 +287,26 @@
     "lowp": "Low pressure",
     "highp": "High pressure",
     "hotf": "Flow too hot"
+  },
+  "water_heat_pump": {
+    "name": "Water heat pump",
+    "off": "Off",
+    "standby": "Standby",
+    "heating": "Heating",
+    "dhw": "Hot water",
+    "cooling": "Cooling",
+    "alarm": "Fault",
+    "power": "Electric",
+    "heat": "Heat output",
+    "cop": "COP",
+    "flow": "Flow",
+    "ret": "Return",
+    "delta": "ΔT",
+    "src_in": "Source in",
+    "src_out": "Source out",
+    "rate": "Flow rate",
+    "energy": "Elec. energy",
+    "heat_energy": "Heat energy",
+    "scop": "SCOP"
   }
 }

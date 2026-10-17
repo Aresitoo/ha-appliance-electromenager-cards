@@ -287,5 +287,26 @@
     "lowp": "Pression basse",
     "highp": "Pression haute",
     "hotf": "Départ trop chaud"
+  },
+  "water_heat_pump": {
+    "name": "PAC eau/eau",
+    "off": "Arrêt",
+    "standby": "Veille",
+    "heating": "Chauffage",
+    "dhw": "Eau chaude",
+    "cooling": "Rafraîchissement",
+    "alarm": "Défaut",
+    "power": "Électrique",
+    "heat": "Thermique",
+    "cop": "COP",
+    "flow": "Départ",
+    "ret": "Retour",
+    "delta": "ΔT",
+    "src_in": "Captage entrée",
+    "src_out": "Captage sortie",
+    "rate": "Débit",
+    "energy": "Énergie élec.",
+    "heat_energy": "Énergie chaleur",
+    "scop": "SCOP"
   }
 }
