@@ -6146,6 +6146,7 @@ svg{display:block;width:100%;max-width:200px;height:var(--appliance-illustration
           { type: 'grid', name: '', schema: [
             { name: 'threshold', selector: { number: { min: 0, max: 2000, step: 5, mode: 'box', unit_of_measurement: 'W' } } },
             { name: 'off_threshold', selector: { number: { min: 0, max: 500, step: 0.1, mode: 'box', unit_of_measurement: 'W' } } },
+            { name: 'heating_delay', selector: { number: { min: 0, max: 600, step: 1, mode: 'box', unit_of_measurement: 's' } } },
           ] },
           { type: 'grid', name: '', schema: SHOW.map((name) => ({ name, selector: { boolean: {} }, default: true })) },
           { name: 'language', selector: { select: { options: Object.keys(T) } } },
@@ -6160,6 +6161,20 @@ svg{display:block;width:100%;max-width:200px;height:var(--appliance-illustration
     }
     set hass(h) { this._hass = h; if (this._c) this._render(); }
     getCardSize() { return 5; }
+    disconnectedCallback() { clearTimeout(this._dt); this._dt = null; }
+    // Chauffage seulement si la puissance reste au-dessus du seuil pendant heating_delay secondes
+    // (ex. pompes de puits et du primaire qui tournent ~20 s par jour pendant la veille).
+    _sustained(above) {
+      const d = (+this._c.heating_delay || 0) * 1000;
+      if (!above) { this._since = null; clearTimeout(this._dt); this._dt = null; return false; }
+      if (!d) return true;
+      const now = Date.now();
+      if (this._since == null) this._since = Math.min(now, Date.parse((this._st(this._c.entity_power) || {}).last_changed) || now);
+      const left = this._since + d - now;
+      if (left <= 0) return true;
+      if (!this._dt) this._dt = setTimeout(() => { this._dt = null; if (this._hass) this._render(); }, left + 50);
+      return false;
+    }
     getGridOptions() { return { columns: 12, min_columns: 6, rows: 'auto' }; }
 
     _t(k) { return T[this._lang()][k] ?? T.en[k] ?? k; }
@@ -6204,7 +6219,7 @@ svg{display:block;width:100%;max-width:200px;height:var(--appliance-illustration
       else if (/cool|rafra|froid/.test(key) && key !== 'heat_cool') st = 'cooling';
       else if (/heat|chauff|compress|running|marche|^on/.test(key)) st = 'heating';
       else if (s) st = 'standby';
-      else if (!isNaN(pw)) st = pw > c.threshold ? 'heating' : pw > c.off_threshold ? 'standby' : 'off';
+      else if (!isNaN(pw)) st = this._sustained(pw > c.threshold) ? 'heating' : pw > c.off_threshold ? 'standby' : 'off';
       else if (!isNaN(heat)) st = heat > 0 ? 'heating' : 'standby';
       else st = 'standby';
       const active = st === 'heating' || st === 'dhw' || st === 'cooling';
