@@ -300,7 +300,7 @@ svg{display:block;width:100%;max-width:170px;height:var(--appliance-illustration
           { name: 'show_energy', selector: { boolean: {} }, default: true }, { name: 'show_gas', selector: { boolean: {} }, default: true },
           { name: 'show_cost', selector: { boolean: {} }, default: true }, { name: 'show_temps', selector: { boolean: {} }, default: true },
           { name: 'show_pressure', selector: { boolean: {} }, default: true }, { name: 'show_modulation', selector: { boolean: {} }, default: true },
-          { name: 'animations', selector: { boolean: {} } },
+          { name: 'animations', selector: { boolean: {} }, default: true },
         ] },
       ];
       this._form.computeLabel = (s) => s.name;
