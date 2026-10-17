@@ -333,6 +333,28 @@ c=card('washer',{entity:'sensor.s'},[mk('sensor.s','spin')]); ok('spin drum anim
 c=card('washer',{entity:'sensor.s',animations:false},[mk('sensor.s','spin')]); ok('animations:false disables',getComputedStyle(c.sr.querySelector('.drum')).animationName==='none',getComputedStyle(c.sr.querySelector('.drum')).animationName);
 c=card('washer',{entity:'input_boolean.w'},[mk('input_boolean.w','off')]); ok('idle drum static',getComputedStyle(c.sr.querySelector('.drum')).animationName==='none');
 
+// water heat pump (self-contained card)
+{
+const wp=(st,cfg={})=>card('water-heat-pump',cfg,st), hc=(c)=>c.sr.querySelector('ha-card').className, badge=(c)=>c.sr.getElementById('badge').textContent;
+const tile=(c,k)=>c.sr.querySelector(`.tile[data-k="${k}"]`), tv=(c,k)=>tile(c,k).querySelector('.v').textContent, shown=(c,k)=>!tile(c,k).classList.contains('hide');
+const KW={unit_of_measurement:'kW',device_class:'power'}, P={entity_power:'sensor.p',entity_heat_power:'sensor.h'};
+ok('registered water-heat-pump',customElements.get('appliance-water-heat-pump-card'));
+c=wp([mk('sensor.p',1200,W)],{entity_power:'sensor.p'}); ok('water heat pump running from power',/\bheating\b/.test(hc(c))&&/\brun\b/.test(hc(c))&&badge(c)==='Chauffage',hc(c)+' '+badge(c));
+c=wp([mk('sensor.p',3,W)],{entity_power:'sensor.p'}); ok('water heat pump standby under threshold',/\bstandby\b/.test(hc(c))&&!/\brun\b/.test(hc(c)),hc(c));
+c=wp([mk('sensor.p',1500,W),mk('sensor.h',5.25,KW)],P); ok('water heat pump COP computed (heat / electric)',tv(c,'cop')==='3,5'&&tv(c,'heat')==='5,25kW',tv(c,'cop')+' '+tv(c,'heat'));
+c=wp([mk('sensor.p',1500,W),mk('sensor.h',5.25,KW),mk('sensor.cop',4.2)],{...P,entity_cop:'sensor.cop'}); ok('water heat pump COP sensor wins',tv(c,'cop')==='4,2',tv(c,'cop'));
+c=wp([mk('sensor.p',1500,W)],{entity_power:'sensor.p'}); ok('water heat pump: no COP tile without heat power',!shown(c,'cop')&&!shown(c,'src_in')&&shown(c,'power'));
+c=wp([mk('climate.pac','heat',{hvac_action:'idle'}),mk('sensor.p',40,W)],{entity_status:'climate.pac',entity_power:'sensor.p'}); ok('water heat pump climate idle -> standby',/\bstandby\b/.test(hc(c)),hc(c));
+c=wp([mk('climate.pac','cool',{hvac_action:'cooling'}),mk('sensor.p',900,W)],{entity_status:'climate.pac',entity_power:'sensor.p',language:'en'}); ok('water heat pump cooling (en)',/\bcooling\b/.test(hc(c))&&badge(c)==='Cooling',hc(c)+' '+badge(c));
+c=wp([mk('water_heater.pac','heat_pump'),mk('sensor.p',900,W)],{entity_status:'water_heater.pac',entity_power:'sensor.p'}); ok('water heat pump water_heater -> hot water',/\bdhw\b/.test(hc(c)),hc(c));
+c=wp([mk('sensor.p',900,W),mk('sensor.f',35,T),mk('sensor.r',30,T),mk('sensor.q',0,{unit_of_measurement:'m³/h'})],{entity_power:'sensor.p',entity_flow_temp:'sensor.f',entity_return_temp:'sensor.r',entity_flow_rate:'sensor.q'});
+ok('water heat pump ΔT and no circulation at zero flow',tv(c,'delta')==='5K'&&!/\bcirc\b/.test(hc(c))&&c.sr.getElementById('dsp').textContent==='35°',tv(c,'delta')+' '+hc(c));
+c.el.hass=hassOf([mk('sensor.p',900,W),mk('sensor.f',35,T),mk('sensor.r',30,T),mk('sensor.q',1.2,{unit_of_measurement:'m³/h'})]); ok('water heat pump circulation when flow > 0',/\bcirc\b/.test(hc(c))&&tv(c,'rate')==='1,2m³/h',hc(c)+' '+tv(c,'rate'));
+const wf=[], walk=(s)=>s.forEach((i)=>i.schema?walk(i.schema):(i.selector?.boolean&&i.default!==true&&wf.push(i.name)));
+walk(customElements.get('appliance-water-heat-pump-card').getConfigForm().schema); ok('water heat pump editor switches shown on by default',wf.length===0,wf.join(', '));
+document.querySelectorAll('appliance-water-heat-pump-card').forEach((e)=>e.remove()); // keep the SVG id check about the core cards
+}
+
 // unique SVG ids (no clashes between cards)
 const ids=[...document.querySelectorAll('*')].filter(e=>e.shadowRoot).flatMap(e=>[...e.shadowRoot.querySelectorAll('[id]')].filter(x=>x.closest('svg')).map(x=>x.id));
 ok('SVG ids unique across cards',new Set(ids).size===ids.length,ids.length-new Set(ids).size+' dupes');
