@@ -90,6 +90,9 @@ const hass = () => ({
     const cur = states[data.entity_id];
     if (cur && service === 'toggle') { set(data.entity_id, cur.state === 'on' ? 'off' : 'on'); refresh(); }
     if (cur && service === 'select_option') { const at = cur.attributes; set(data.entity_id, data.option); states[data.entity_id].attributes = at; if (cur._input) cur._input.value = data.option; refresh(); }
+    // robots : les boutons Démarrer / Pause / Base changent l'état simulé
+    const robot = { start: 'cleaning', start_mowing: 'mowing', pause: 'paused', return_to_base: 'returning', dock: 'returning' }[service];
+    if (cur && robot && (domain === 'vacuum' || domain === 'lawn_mower')) { set(data.entity_id, robot); if (ROBOT_SEL[data.entity_id]) ROBOT_SEL[data.entity_id].value = robot; refresh(); }
   },
 });
 const refresh = () => { const h = hass(); cards.forEach((c) => (c.hass = h)); };
@@ -361,8 +364,80 @@ const SCEN = [
       set('sensor.fridge_energy', 1.1, KWH);
       checks(ctl, [['Porte frigo', 'binary_sensor.fridge_door', false], ['Porte congélateur', 'binary_sensor.freezer_door', false]]);
     } },
+  /* ---------- cartes autonomes (options entity_…, langue via `language`) ---------- */
+  { kind: 'aquarium', title: 'Aquarium', lang: true,
+    cfg: { entity_power: 'sensor.aquarium_power', entity_energy: 'sensor.aquarium_energy', entity_temperature: 'sensor.aquarium_temp', entity_light: 'light.aquarium', temp_min: 24, temp_max: 27, price_per_kwh: 0.2 },
+    build(ctl) {
+      range(ctl, 'Puissance', 'sensor.aquarium_power', 0, 300, 5, 120, 'W', W);
+      range(ctl, 'Température eau', 'sensor.aquarium_temp', 18, 32, 0.5, 25.5, '°C', T);
+      set('sensor.aquarium_energy', 0.8, KWH);
+      checks(ctl, [['Éclairage', 'light.aquarium', true]]);
+    } },
+  { kind: 'linky', title: 'Compteur Linky', lang: true,
+    cfg: { entity_power: 'sensor.linky_sinsts', entity_hp: 'sensor.linky_hp', entity_hc: 'sensor.linky_hc', entity_cost: 'sensor.linky_cost', subscribed_power: 9, hc_ranges: '01:00-07:00,12:30-14:30' },
+    build(ctl) {
+      range(ctl, 'Puissance apparente', 'sensor.linky_sinsts', 0, 9500, 50, 2300, 'VA', { unit_of_measurement: 'VA', device_class: 'apparent_power' });
+      set('sensor.linky_hp', 12543, KWH); set('sensor.linky_hc', 8321, KWH); set('sensor.linky_cost', 2.47, EUR);
+    } },
+  { kind: 'battery', title: 'Batterie domestique', lang: true,
+    cfg: { entity_soc: 'sensor.battery_soc', entity_power: 'sensor.battery_power', entity_temperature: 'sensor.battery_temp', capacity_kwh: 10, max_power: 5000 },
+    build(ctl) {
+      range(ctl, 'Charge', 'sensor.battery_soc', 0, 100, 1, 62, '%', { unit_of_measurement: '%', device_class: 'battery' });
+      range(ctl, 'Puissance (+ charge)', 'sensor.battery_power', -5000, 5000, 50, 1800, 'W', W);
+      range(ctl, 'Température', 'sensor.battery_temp', 0, 50, 1, 24, '°C', T);
+    } },
+  { kind: 'ev-charger', title: 'Borne de recharge', lang: true,
+    cfg: { entity_status: 'sensor.ev_status', entity_power: 'sensor.ev_power', entity_session_energy: 'sensor.ev_energy', entity_car_soc: 'sensor.car_soc', price_per_kwh: 0.2 },
+    build(ctl) {
+      select(ctl, 'État', 'sensor.ev_status', [['charging', 'En charge / Charging'], ['connected', 'Branchée / Plugged in'], ['complete', 'Terminée / Complete'], ['disconnected', 'Débranchée / Unplugged']], 'charging');
+      range(ctl, 'Puissance', 'sensor.ev_power', 0, 11000, 100, 7200, 'W', W);
+      range(ctl, 'Batterie voiture', 'sensor.car_soc', 0, 100, 1, 58, '%', { unit_of_measurement: '%', device_class: 'battery' });
+      range(ctl, 'Énergie session', 'sensor.ev_energy', 0, 60, 0.5, 12.5, 'kWh', KWH);
+    } },
+  { kind: 'robot-vacuum-solo', title: 'Robot aspirateur', lang: true,
+    cfg: { entity: 'vacuum.robot', entity_battery: 'sensor.robot_battery', entity_area: 'sensor.robot_area', entity_time: 'sensor.robot_time' },
+    build(ctl) {
+      set('vacuum.robot', 'cleaning', { fan_speed: 'Turbo', friendly_name: 'Robot' });
+      ROBOT_SEL['vacuum.robot'] = select(ctl, 'État', 'vacuum.robot', [['cleaning', 'Nettoyage / Cleaning'], ['returning', 'Retour base / Returning'], ['docked', 'À la base / Docked'], ['paused', 'En pause / Paused'], ['error', 'Erreur / Error']], 'cleaning');
+      range(ctl, 'Batterie', 'sensor.robot_battery', 0, 100, 1, 76, '%', { unit_of_measurement: '%', device_class: 'battery' });
+      set('sensor.robot_area', 34, { unit_of_measurement: 'm²' }); set('sensor.robot_time', 41, { unit_of_measurement: 'min' });
+      ctl.append(document.createElement('span'), Object.assign(document.createElement('span'), { textContent: 'Boutons Démarrer / Pause / Base de la carte = changent l’état', style: 'color:var(--secondary-text-color);font-size:12px' }), document.createElement('span'));
+    } },
+  { kind: 'robot-mower-solo', title: 'Robot tondeuse', lang: true,
+    cfg: { entity: 'lawn_mower.mower', entity_battery: 'sensor.mower_battery', entity_area: 'sensor.mower_area', entity_time: 'sensor.mower_time', entity_rain: 'binary_sensor.rain' },
+    build(ctl) {
+      set('lawn_mower.mower', 'mowing', { friendly_name: 'Tondeuse' });
+      ROBOT_SEL['lawn_mower.mower'] = select(ctl, 'État', 'lawn_mower.mower', [['mowing', 'Tonte / Mowing'], ['returning', 'Retour base / Returning'], ['docked', 'À la base / Docked'], ['paused', 'En pause / Paused'], ['error', 'Erreur / Error']], 'mowing');
+      range(ctl, 'Batterie', 'sensor.mower_battery', 0, 100, 1, 64, '%', { unit_of_measurement: '%', device_class: 'battery' });
+      set('sensor.mower_area', 420, { unit_of_measurement: 'm²' }); set('sensor.mower_time', 95, { unit_of_measurement: 'min' });
+      checks(ctl, [['Pluie', 'binary_sensor.rain', false]]);
+    } },
+  { kind: 'pellet-boiler', title: 'Chaudière à granulés', lang: true,
+    cfg: { entity_status: 'sensor.pellet_boiler_status', entity_power: 'sensor.pellet_boiler_power', entity_flow_temp: 'sensor.pellet_boiler_flow', entity_return_temp: 'sensor.pellet_boiler_return', entity_pellet_level: 'sensor.pellet_level', entity_energy: 'sensor.pellet_boiler_energy' },
+    build(ctl) {
+      select(ctl, 'État', 'sensor.pellet_boiler_status', [['Chauffe', 'Chauffe / Heating'], ['Allumage', 'Allumage / Igniting'], ['Extinction', 'Extinction / Shutting down'], ['Arrêt', 'Arrêt / Off'], ['Alarme', 'Alarme / Alarm']], 'Chauffe');
+      range(ctl, 'Puissance', 'sensor.pellet_boiler_power', 0, 600, 5, 120, 'W', W);
+      range(ctl, 'Départ', 'sensor.pellet_boiler_flow', 20, 85, 1, 68, '°C', T);
+      range(ctl, 'Retour', 'sensor.pellet_boiler_return', 20, 85, 1, 55, '°C', T);
+      range(ctl, 'Granulés', 'sensor.pellet_level', 0, 100, 1, 45, '%', { unit_of_measurement: '%' });
+      set('sensor.pellet_boiler_energy', 3.4, KWH);
+    } },
+  { kind: 'gas-boiler', title: 'Chaudière gaz', lang: true,
+    cfg: { entity_status: 'sensor.gas_boiler_status', entity_power: 'sensor.gas_boiler_power', entity_flow_temp: 'sensor.gas_boiler_flow', entity_return_temp: 'sensor.gas_boiler_return', entity_pressure: 'sensor.gas_boiler_pressure', entity_modulation: 'sensor.gas_boiler_modulation', entity_gas: 'sensor.gas_boiler_gas' },
+    build(ctl) {
+      select(ctl, 'État', 'sensor.gas_boiler_status', [['heating', 'Chauffage / Heating'], ['dhw', 'Eau chaude / Hot water'], ['standby', 'Veille / Standby'], ['off', 'Arrêt / Off'], ['fault', 'Défaut / Fault']], 'heating');
+      range(ctl, 'Puissance élec.', 'sensor.gas_boiler_power', 0, 200, 1, 85, 'W', W);
+      range(ctl, 'Départ', 'sensor.gas_boiler_flow', 20, 85, 1, 62, '°C', T);
+      range(ctl, 'Retour', 'sensor.gas_boiler_return', 20, 85, 1, 48, '°C', T);
+      range(ctl, 'Pression', 'sensor.gas_boiler_pressure', 0, 4, 0.1, 1.6, 'bar', { unit_of_measurement: 'bar' });
+      range(ctl, 'Modulation', 'sensor.gas_boiler_modulation', 0, 100, 1, 60, '%', { unit_of_measurement: '%' });
+      set('sensor.gas_boiler_gas', 3.2, { unit_of_measurement: 'm³' });
+    } },
 ];
+const ROBOT_SEL = {};
 
+// les cartes autonomes prennent leur langue dans l'option `language`, pas dans Home Assistant
+const scenCfg = (s) => ({ ...s.cfg, ...(s.lang ? { language: lang } : {}), ...(animations ? {} : { animations: false }) });
 const toYaml = (kind, cfg) => [`type: custom:appliance-${kind}-card`, ...Object.entries(cfg).map(([k, v]) => `${k}: ${v}`)].join('\n');
 
 function buildAll() {
@@ -373,12 +448,12 @@ function buildAll() {
     const ctl = document.createElement('div'); ctl.className = 'ctl';
     ctl.innerHTML = `<h3>${s.title} — commandes simulées</h3>`;
     s.build(ctl);
-    const cfg = { ...s.cfg, ...(animations ? {} : { animations: false }) };
+    const cfg = scenCfg(s);
     const yaml = document.createElement('details'); yaml.className = 'yaml';
     yaml.innerHTML = `<summary>Voir le YAML</summary><pre>${toYaml(s.kind, cfg)}</pre>`;
     ctl.append(yaml);
     const el = document.createElement(`appliance-${s.kind}-card`);
-    el.setConfig(cfg);
+    el.setConfig(cfg); el._scen = s;
     el.addEventListener('hass-more-info', (e) => log(`more-info ${e.detail.entityId}`));
     cards.push(el);
     cell.append(el, ctl); main.append(cell);
@@ -395,7 +470,7 @@ function seg(id, cb) {
   });
 }
 seg('theme', (v) => document.body.classList.toggle('light', v === 'light'));
-seg('lang', (v) => { lang = v; document.documentElement.lang = v; refresh(); });
+seg('lang', (v) => { lang = v; document.documentElement.lang = v; cards.forEach((el) => el._scen.lang && el.setConfig(scenCfg(el._scen))); refresh(); });
 seg('anim', (v) => { animations = v === '1'; buildAll(); });
 buildAll();
 const ver = window.customCards ? `${window.customCards.length} cartes chargées` : 'erreur de chargement';
