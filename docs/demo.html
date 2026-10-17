@@ -48,7 +48,7 @@ footer { text-align:center; color:var(--secondary-text-color); font-size:12px; p
 <header>
   <h1>Appliance Cards — page de test <small id="ver">Données simulées · aucune installation Home Assistant nécessaire</small></h1>
   <div class="seg" id="theme"><button data-v="dark" class="on">Sombre</button><button data-v="light">Clair</button></div>
-  <div class="seg" id="lang"><button data-v="fr" class="on">FR</button><button data-v="en">EN</button></div>
+  <div class="seg" id="lang"></div>
   <div class="seg" id="anim"><button data-v="1" class="on">Animations</button><button data-v="0">Off</button></div>
   <a href="tests.html">Tests automatiques →</a>
   <a href="https://github.com/skyrotter/ha-appliance-electromenager-cards">GitHub</a>
@@ -469,6 +469,17 @@ function seg(id, cb) {
     cb(b.dataset.v);
   });
 }
+// Langues disponibles = fichiers src/i18n/<lang>.json, lus dans l'option `language` de l'éditeur d'une carte autonome
+const LANGS = (() => {
+  const form = customElements.get('appliance-linky-card')?.getConfigForm?.();
+  const opt = form && form.schema.find((i) => i.name === 'language');
+  return opt ? opt.selector.select.options.map((o) => o.value || o) : ['fr', 'en'];
+})();
+const langName = (l) => { try { return new Intl.DisplayNames([l], { type: 'language' }).of(l); } catch (e) { return l; } };
+LANGS.forEach((l) => {
+  const b = Object.assign(document.createElement('button'), { textContent: l.toUpperCase(), title: langName(l), className: l === lang ? 'on' : '' });
+  b.dataset.v = l; document.getElementById('lang').append(b);
+});
 seg('theme', (v) => document.body.classList.toggle('light', v === 'light'));
 seg('lang', (v) => { lang = v; document.documentElement.lang = v; cards.forEach((el) => el._scen.lang && el.setConfig(scenCfg(el._scen))); refresh(); });
 seg('anim', (v) => { animations = v === '1'; buildAll(); });
