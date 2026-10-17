@@ -5935,7 +5935,8 @@ svg{display:block;width:100%;max-width:170px;height:var(--appliance-illustration
       "rate": "Flow rate",
       "energy": "Elec. energy",
       "heat_energy": "Heat energy",
-      "scop": "SCOP"
+      "scop": "SCOP",
+      "buffer": "Buffer tank"
     },
     "de": {
       "name": "Wasser/Wasser-Wärmepumpe",
@@ -5956,7 +5957,8 @@ svg{display:block;width:100%;max-width:170px;height:var(--appliance-illustration
       "rate": "Durchfluss",
       "energy": "Elektr. Energie",
       "heat_energy": "Wärmeenergie",
-      "scop": "SCOP"
+      "scop": "SCOP",
+      "buffer": "Pufferspeicher"
     },
     "fr": {
       "name": "PAC eau/eau",
@@ -5977,7 +5979,8 @@ svg{display:block;width:100%;max-width:170px;height:var(--appliance-illustration
       "rate": "Débit",
       "energy": "Énergie élec.",
       "heat_energy": "Énergie chaleur",
-      "scop": "SCOP"
+      "scop": "SCOP",
+      "buffer": "Ballon tampon"
     },
     "nb": {
       "name": "Vann-til-vann-varmepumpe",
@@ -5998,7 +6001,8 @@ svg{display:block;width:100%;max-width:170px;height:var(--appliance-illustration
       "rate": "Gjennomstrømning",
       "energy": "Elektr. energi",
       "heat_energy": "Varmeenergi",
-      "scop": "SCOP"
+      "scop": "SCOP",
+      "buffer": "Buffertank"
     }
   };
 
@@ -6027,7 +6031,7 @@ svg{display:block;width:100%;max-width:200px;height:var(--appliance-illustration
 .run .comp{animation:vib .11s linear infinite alternate}
 @keyframes vib{0%{transform:translate(-.5px,0)}100%{transform:translate(.5px,-.4px)}}
 .dash{stroke-dasharray:3 8;opacity:0}
-.src .dash.src,.run .dash.ref,.circ .dash.ch{opacity:.9;animation:flow 1s linear infinite}
+.src .dash.src,.run .dash.ref,.circ .dash.ch,.chg .dash.chg{opacity:.9;animation:flow 1s linear infinite}
 .run .dash.ref{opacity:.55;animation-duration:1.6s}
 @keyframes flow{to{stroke-dashoffset:-11}}
 .rad{fill:#e9edf1;transition:fill .8s}
@@ -6039,6 +6043,7 @@ svg{display:block;width:100%;max-width:200px;height:var(--appliance-illustration
 .dsp{fill:#7fe3ff;font:700 13px/1 var(--paper-font-body1_-_font-family,Roboto,sans-serif);text-anchor:middle}
 .alarm .dsp{fill:#ffb74d}.off .dsp{fill:#3b4a5c}
 .off .body-shade{opacity:.55}
+.buf{display:none}.buffer .buf{display:inline}.buffer .direct{display:none}
 .noanim *{animation:none!important}
 `;
 
@@ -6047,6 +6052,7 @@ svg{display:block;width:100%;max-width:200px;height:var(--appliance-illustration
  <defs>
   <linearGradient id="wp-body" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#d9dfe6"/></linearGradient>
   <linearGradient id="wp-comp" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5b6570"/><stop offset=".45" stop-color="#3a434d"/><stop offset="1" stop-color="#22292f"/></linearGradient>
+  <linearGradient id="wp-tank" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--wp-tankc,#e5533d)"/><stop offset="1" style="stop-color:var(--wp-retc,#3b8fe8)"/></linearGradient>
   <linearGradient id="wp-soil" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a1856a"/><stop offset="1" stop-color="#6f5641"/></linearGradient>
  </defs>
  <!-- sol et sonde de captage -->
@@ -6073,9 +6079,21 @@ svg{display:block;width:100%;max-width:200px;height:var(--appliance-illustration
   <path d="M30 188 Q38 199 46 188" stroke="#3d8fd0"/>
   <path d="M46 188 V104 H92" stroke="#2b6cb0"/>
  </g>
- <g fill="none" stroke-width="6" stroke-linecap="round">
+ <g class="direct" fill="none" stroke-width="6" stroke-linecap="round">
   <path d="M148 80 H196 V64" style="stroke:var(--wp-flowc,#e5533d)"/>
   <path d="M224 64 V104 H148" style="stroke:var(--wp-retc,#3b8fe8)"/>
+ </g>
+ <!-- ballon tampon : boucle de charge (PAC ↔ ballon) et boucle de distribution (ballon ↔ émetteurs) -->
+ <g class="buf">
+  <g fill="none" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+   <path d="M148 80 H180 V128 H192" style="stroke:var(--wp-flowc,#e5533d)"/>
+   <path d="M192 186 H172 V104 H148" style="stroke:var(--wp-retc,#3b8fe8)"/>
+   <path d="M211 118 V84 H196 V64" style="stroke:var(--wp-tankc,#e5533d)"/>
+   <path d="M224 64 V96 H235 V180 H230" style="stroke:var(--wp-retc,#3b8fe8)"/>
+  </g>
+  <rect x="194" y="120" width="38" height="78" rx="12" fill="#000" opacity=".12"/>
+  <rect x="192" y="118" width="38" height="78" rx="12" fill="url(#wp-tank)" stroke="#8f99a4" stroke-width="1.2"/>
+  <rect x="197" y="124" width="6" height="66" rx="3" fill="#fff" opacity=".28"/>
  </g>
  <!-- évaporateur (captage) et condenseur (chauffage) : échangeurs à plaques -->
  <g fill="#5fa8e8" stroke="#2f6ea8" stroke-width=".5">
@@ -6103,7 +6121,9 @@ svg{display:block;width:100%;max-width:200px;height:var(--appliance-illustration
  <!-- circulation de l'eau -->
  <g stroke="#fff" stroke-width="2.4" stroke-linecap="round" fill="none">
   <path class="dash src" d="M30 188 V80 H72"/><path class="dash src" d="M72 104 H46 V188"/>
-  <path class="dash ch" d="M172 80 H196 V64"/><path class="dash ch" d="M224 64 V104 H172"/>
+  <g class="direct"><path class="dash ch" d="M172 80 H196 V64"/><path class="dash ch" d="M224 64 V104 H172"/></g>
+  <g class="buf"><path class="dash chg" d="M168 80 H180 V128 H192"/><path class="dash chg" d="M192 186 H172 V104 H168"/>
+   <path class="dash ch" d="M211 118 V84 H196 V64"/><path class="dash ch" d="M224 64 V96 H235 V180 H230"/></g>
  </g>
 </svg>`;
 
@@ -6114,6 +6134,7 @@ svg{display:block;width:100%;max-width:200px;height:var(--appliance-illustration
     ['flow', 'mdi:thermometer-chevron-up', 'show_temps', 'entity_flow_temp'],
     ['ret', 'mdi:thermometer-chevron-down', 'show_temps', 'entity_return_temp'],
     ['delta', 'mdi:delta', 'show_temps', 'entity_flow_temp'],
+    ['buffer', 'mdi:storage-tank', 'show_temps', 'entity_buffer_temp'],
     ['src_in', 'mdi:thermometer-water', 'show_source', 'entity_source_in_temp'],
     ['src_out', 'mdi:thermometer-low', 'show_source', 'entity_source_out_temp'],
     ['rate', 'mdi:pump', 'show_flow_rate', 'entity_flow_rate'],
@@ -6143,6 +6164,7 @@ svg{display:block;width:100%;max-width:200px;height:var(--appliance-illustration
           { type: 'grid', name: '', schema: [ent('entity_power', 'sensor'), ent('entity_heat_power', 'sensor'), ent('entity_cop', 'sensor')] },
           { type: 'grid', name: '', schema: [ent('entity_flow_temp', 'sensor'), ent('entity_return_temp', 'sensor'), ent('entity_flow_rate', 'sensor')] },
           { type: 'grid', name: '', schema: [ent('entity_source_in_temp', 'sensor'), ent('entity_source_out_temp', 'sensor')] },
+          { type: 'grid', name: '', schema: [{ name: 'buffer_tank', selector: { boolean: {} } }, ent('entity_buffer_temp', 'sensor')] },
           { type: 'grid', name: '', schema: [ent('entity_energy', 'sensor'), ent('entity_heat_energy', 'sensor'), ent('entity_scop', 'sensor')] },
           { type: 'grid', name: '', schema: [ent('entity_compressor', RELAY), ent('entity_source_pump', RELAY)] },
           { type: 'grid', name: '', schema: [
@@ -6244,20 +6266,28 @@ svg{display:block;width:100%;max-width:200px;height:var(--appliance-illustration
       const src = c.entity_source_pump ? this._on(c.entity_source_pump)
         : c.source_threshold != null && !isNaN(pw) ? pw > c.source_threshold || run : run;
       const rate = this._num(c.entity_flow_rate);
+      // ballon tampon : la PAC charge le ballon (compresseur, ou débit côté PAC s'il est mesuré)
+      // et le circulateur distribue l'eau du ballon vers les émetteurs, compresseur arrêté ou non
+      if (c.buffer_tank) {
+        const chg = c.entity_flow_rate ? rate > 0 : run;
+        return { st, run, src, chg, circ: pump, pw, heat, rate };
+      }
       const circ = c.entity_flow_rate ? rate > 0 : pump || heat > 0;
-      return { st, run, src, circ, pw, heat, rate };
+      return { st, run, src, chg: false, circ, pw, heat, rate };
     }
 
     _render() {
       if (!this._built) this._build();
       const c = this._c, card = this._card, r = this._root;
-      const { st, run, src, circ, pw, heat, rate } = this._compute();
+      const { st, run, src, chg, circ, pw, heat, rate } = this._compute();
       const flow = this._num(c.entity_flow_temp), ret = this._num(c.entity_return_temp);
-      card.className = `${st} ${run ? 'run' : ''} ${src ? 'src' : ''} ${circ ? 'circ' : ''} ${c.animations === false ? 'noanim' : ''}`;
+      card.className = `${st} ${run ? 'run' : ''} ${src ? 'src' : ''} ${chg ? 'chg' : ''} ${circ ? 'circ' : ''} ${c.buffer_tank ? 'buffer' : ''} ${c.animations === false ? 'noanim' : ''}`;
       // départ / retour : bleu à 20 °C, rouge à 55 °C (températures de PAC, plus basses qu'une chaudière)
       const tc = (t, d) => isNaN(t) ? d : `color-mix(in srgb, #e5392b ${Math.round(Math.max(0, Math.min(1, (t - 20) / 35)) * 100)}%, #3b8fe8)`;
       card.style.setProperty('--wp-flowc', tc(flow, '#e5533d'));
       card.style.setProperty('--wp-retc', tc(ret, '#3b8fe8'));
+      const buf = this._num(c.entity_buffer_temp);
+      card.style.setProperty('--wp-tankc', tc(isNaN(buf) ? flow : buf, '#e5533d'));
 
       r.getElementById('title').textContent = c.name || this._t('name');
       const badge = r.getElementById('badge'); badge.textContent = this._t(st); badge.style.display = c.show_status === false ? 'none' : '';
@@ -6274,6 +6304,7 @@ svg{display:block;width:100%;max-width:200px;height:var(--appliance-illustration
         flow: [c.entity_flow_temp, this._fmt(flow, 1), '°C'],
         ret: [c.entity_return_temp, this._fmt(ret, 1), '°C'],
         delta: [c.entity_flow_temp && c.entity_return_temp, this._fmt(flow - ret, 1), 'K'],
+        buffer: [c.entity_buffer_temp, this._fmt(buf, 1), '°C'],
         src_in: [c.entity_source_in_temp, this._fmt(this._num(c.entity_source_in_temp), 1), '°C'],
         src_out: [c.entity_source_out_temp, this._fmt(this._num(c.entity_source_out_temp), 1), '°C'],
         rate: [c.entity_flow_rate, this._fmt(rate, 2), this._unit(c.entity_flow_rate, 'l/h')],
