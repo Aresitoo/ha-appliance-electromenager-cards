@@ -6016,7 +6016,7 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--wp-heat:var(--app
 .heating .badge{background:color-mix(in srgb,var(--wp-heat) 22%,transparent);color:var(--wp-heat)}
 .dhw .badge,.cooling .badge{background:color-mix(in srgb,var(--wp-cold) 22%,transparent);color:var(--wp-cold)}
 .alarm .badge{background:color-mix(in srgb,var(--wp-alert) 22%,transparent);color:var(--wp-alert)}
-svg{display:block;width:100%;max-width:200px;height:var(--appliance-illustration-height,auto);margin:2px auto 0;overflow:visible}
+svg{display:block;width:100%;height:var(--appliance-illustration-height,auto);margin:2px auto 0;overflow:visible}
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(76px,1fr));gap:6px;margin-top:6px}
 .tile{box-sizing:border-box;background:var(--secondary-background-color);border-radius:10px;padding:5px 7px;min-width:0;overflow:hidden;text-align:center;cursor:pointer}
 .tile .l{display:flex;align-items:center;justify-content:center;gap:3px;font-size:10px;line-height:14px;color:var(--secondary-text-color);min-width:0}
@@ -6048,7 +6048,7 @@ svg{display:block;width:100%;max-width:200px;height:var(--appliance-illustration
 `;
 
   const SVG = `
-<svg viewBox="0 0 240 204" role="img" aria-label="water heat pump">
+<svg viewBox="0 0 290 204" role="img" aria-label="water heat pump">
  <defs>
   <linearGradient id="wp-body" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#d9dfe6"/></linearGradient>
   <linearGradient id="wp-comp" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5b6570"/><stop offset=".45" stop-color="#3a434d"/><stop offset="1" stop-color="#22292f"/></linearGradient>
@@ -6059,11 +6059,13 @@ svg{display:block;width:100%;max-width:200px;height:var(--appliance-illustration
  <rect x="0" y="158" width="66" height="46" rx="3" fill="url(#wp-soil)" opacity=".85"/>
  <path d="M0 158 H66" stroke="#6aa84f" stroke-width="3"/>
  <!-- radiateur -->
+ <g transform="translate(40 0)">
  <rect x="184" y="14" width="52" height="50" rx="5" fill="#000" opacity=".1" transform="translate(1.5 2)"/>
  <g class="rad" stroke="#aab3bd" stroke-width="1">
   <rect x="184" y="14" width="52" height="8" rx="3"/><rect x="184" y="56" width="52" height="8" rx="3"/>
   <rect x="187" y="18" width="7" height="42" rx="3"/><rect x="198" y="18" width="7" height="42" rx="3"/>
   <rect x="209" y="18" width="7" height="42" rx="3"/><rect x="220" y="18" width="7" height="42" rx="3"/>
+ </g>
  </g>
  <!-- caisson -->
  <rect x="76" y="26" width="96" height="128" rx="9" fill="#000" opacity=".12" transform="translate(2 3)"/>
@@ -6080,20 +6082,20 @@ svg{display:block;width:100%;max-width:200px;height:var(--appliance-illustration
   <path d="M46 188 V104 H92" stroke="#2b6cb0"/>
  </g>
  <g class="direct" fill="none" stroke-width="6" stroke-linecap="round">
-  <path d="M148 80 H196 V64" style="stroke:var(--wp-flowc,#e5533d)"/>
-  <path d="M224 64 V104 H148" style="stroke:var(--wp-retc,#3b8fe8)"/>
+  <path d="M148 80 H236 V64" style="stroke:var(--wp-flowc,#e5533d)"/>
+  <path d="M264 64 V104 H148" style="stroke:var(--wp-retc,#3b8fe8)"/>
  </g>
  <!-- ballon tampon : boucle de charge (PAC ↔ ballon) et boucle de distribution (ballon ↔ émetteurs) -->
  <g class="buf">
   <g fill="none" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
-   <path d="M148 80 H180 V128 H192" style="stroke:var(--wp-flowc,#e5533d)"/>
-   <path d="M192 186 H172 V104 H148" style="stroke:var(--wp-retc,#3b8fe8)"/>
-   <path d="M211 118 V84 H196 V64" style="stroke:var(--wp-tankc,#e5533d)"/>
-   <path d="M224 64 V96 H235 V180 H230" style="stroke:var(--wp-retc,#3b8fe8)"/>
+   <path d="M148 80 H204 V128 H232" style="stroke:var(--wp-flowc,#e5533d)"/>
+   <path d="M232 186 H190 V104 H148" style="stroke:var(--wp-retc,#3b8fe8)"/>
+   <path d="M251 118 V84 H236 V64" style="stroke:var(--wp-tankc,#e5533d)"/>
+   <path d="M264 64 V96 H280 V180 H270" style="stroke:var(--wp-retc,#3b8fe8)"/>
   </g>
-  <rect x="194" y="120" width="38" height="78" rx="12" fill="#000" opacity=".12"/>
-  <rect x="192" y="118" width="38" height="78" rx="12" fill="url(#wp-tank)" stroke="#8f99a4" stroke-width="1.2"/>
-  <rect x="197" y="124" width="6" height="66" rx="3" fill="#fff" opacity=".28"/>
+  <rect x="234" y="120" width="38" height="78" rx="12" fill="#000" opacity=".12"/>
+  <rect x="232" y="118" width="38" height="78" rx="12" fill="url(#wp-tank)" stroke="#8f99a4" stroke-width="1.2"/>
+  <rect x="237" y="124" width="6" height="66" rx="3" fill="#fff" opacity=".28"/>
  </g>
  <!-- évaporateur (captage) et condenseur (chauffage) : échangeurs à plaques -->
  <g fill="#5fa8e8" stroke="#2f6ea8" stroke-width=".5">
@@ -6121,9 +6123,9 @@ svg{display:block;width:100%;max-width:200px;height:var(--appliance-illustration
  <!-- circulation de l'eau -->
  <g stroke="#fff" stroke-width="2.4" stroke-linecap="round" fill="none">
   <path class="dash src" d="M30 188 V80 H72"/><path class="dash src" d="M72 104 H46 V188"/>
-  <g class="direct"><path class="dash ch" d="M172 80 H196 V64"/><path class="dash ch" d="M224 64 V104 H172"/></g>
-  <g class="buf"><path class="dash chg" d="M168 80 H180 V128 H192"/><path class="dash chg" d="M192 186 H172 V104 H168"/>
-   <path class="dash ch" d="M211 118 V84 H196 V64"/><path class="dash ch" d="M224 64 V96 H235 V180 H230"/></g>
+  <g class="direct"><path class="dash ch" d="M172 80 H236 V64"/><path class="dash ch" d="M264 64 V104 H172"/></g>
+  <g class="buf"><path class="dash chg" d="M168 80 H204 V128 H232"/><path class="dash chg" d="M232 186 H190 V104 H168"/>
+   <path class="dash ch" d="M251 118 V84 H236 V64"/><path class="dash ch" d="M264 64 V96 H280 V180 H270"/></g>
  </g>
 </svg>`;
 
