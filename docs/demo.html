@@ -384,6 +384,10 @@ const SCEN = [
       entity_hp: 'sensor.linky3_hp', entity_hc: 'sensor.linky3_hc', subscribed_power: 15, hc_ranges: '01:00-07:00,12:30-14:30' },
     build(ctl) {
       const VA = { unit_of_measurement: 'VA', device_class: 'apparent_power' };
+      // option de la carte (pas un état) : on reconfigure la carte
+      select(ctl, 'Jauge', 'input_select.demo_linky_gauge', [['needles', '3 aiguilles / needles'], ['cycle', 'Cycle L1 → L3 / cycle'], ['max', 'Phase la plus chargée / max']], this.cfg.phase_gauge || 'needles', (v) => {
+        this.cfg.phase_gauge = v; const el = cards.find((e) => e._scen === this); if (el) { el.setConfig(scenCfg(this)); refresh(); }
+      });
       range(ctl, 'Phase L1', 'sensor.linky_sinsts1', 0, 5500, 50, 250, 'VA', VA);
       range(ctl, 'Phase L2', 'sensor.linky_sinsts2', 0, 5500, 50, 500, 'VA', VA);
       range(ctl, 'Phase L3', 'sensor.linky_sinsts3', 0, 5500, 50, 700, 'VA', VA);
