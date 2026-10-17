@@ -3786,7 +3786,10 @@ const I18N_LINKY = {
     "subscribed": "Vertragsleistung",
     "name": "Linky",
     "conso": "Verbrauch",
-    "alert": "Überlast"
+    "alert": "Überlast",
+    "active": "WIRKLEISTUNG",
+    "active_short": "Wirkleistung",
+    "per_phase": "pro Phase"
   },
   "fr": {
     "power": "PUISSANCE",
