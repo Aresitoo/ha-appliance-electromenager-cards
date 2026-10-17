@@ -349,6 +349,12 @@ const s1=customElements.get('appliance-washer-card').getStubConfig(gh); ok('stub
 const s2=customElements.get('appliance-fridge-card').getStubConfig(gh); ok('stub fridge',s2.temperature==='sensor.fridge_temperature'&&s2.power==='sensor.fridge_power',JSON.stringify(s2));
 const s3=customElements.get('appliance-oven-card').getStubConfig(hassOf([])); ok('stub with nothing still valid',Object.keys(s3).length>0,JSON.stringify(s3));
 ok('card size / grid',typeof c.el.getCardSize()==='number'&&c.el.getGridOptions().columns>0);
+// visual editor: a switch that is on by default must show as on (schema default: true)
+['aquarium','linky','battery','ev-charger','robot-vacuum-solo','robot-mower-solo','pellet-boiler'].forEach((t)=>{
+  const C=customElements.get(`appliance-${t}-card`), e=document.createElement(`appliance-${t}-card`); e.setConfig({entity:"vacuum.test"}); // robots require an entity
+  const cfg=e._config||e._c, off=[], walk=(s)=>s.forEach((i)=>i.schema?walk(i.schema):(i.selector?.boolean&&cfg[i.name]===true&&i.default!==true&&off.push(i.name)));
+  walk(C.getConfigForm().schema); ok(`editor defaults ${t}`,off.length===0,`shown off but on: ${off.join(', ')}`);
+});
 ok('no page errors',__errors.length===0,__errors.join('; '));
 window.RESULTS=R;
 const fails=R.filter(r=>!r.pass).length;
