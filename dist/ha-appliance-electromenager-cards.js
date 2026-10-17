@@ -5528,3 +5528,339 @@ svg{display:block;width:100%;max-width:170px;height:var(--appliance-illustration
     description: 'Chaudière gaz animée : flamme, départ/retour, ECS, pression, conso élec et gaz.', preview: true,
   });
 })();
+
+/* Carte « PAC eau/eau » — custom:appliance-water-heat-pump-card
+ * Pompe à chaleur eau/eau ou sol/eau (géothermie, nappe) : compresseur qui vibre entre
+ * l'évaporateur (boucle de captage, à gauche) et le condenseur (boucle de chauffage, à droite),
+ * départ/retour qui changent de couleur avec la température, COP instantané.
+ */
+(() => {
+  const TAG = 'appliance-water-heat-pump-card';
+  if (customElements.get(TAG)) return;
+
+  const T = {
+    "en": {
+      "name": "Water heat pump",
+      "off": "Off",
+      "standby": "Standby",
+      "heating": "Heating",
+      "dhw": "Hot water",
+      "cooling": "Cooling",
+      "alarm": "Fault",
+      "power": "Electric",
+      "heat": "Heat output",
+      "cop": "COP",
+      "flow": "Flow",
+      "ret": "Return",
+      "delta": "ΔT",
+      "src_in": "Source in",
+      "src_out": "Source out",
+      "rate": "Flow rate",
+      "energy": "Elec. energy",
+      "heat_energy": "Heat energy",
+      "scop": "SCOP"
+    },
+    "fr": {
+      "name": "PAC eau/eau",
+      "off": "Arrêt",
+      "standby": "Veille",
+      "heating": "Chauffage",
+      "dhw": "Eau chaude",
+      "cooling": "Rafraîchissement",
+      "alarm": "Défaut",
+      "power": "Électrique",
+      "heat": "Thermique",
+      "cop": "COP",
+      "flow": "Départ",
+      "ret": "Retour",
+      "delta": "ΔT",
+      "src_in": "Captage entrée",
+      "src_out": "Captage sortie",
+      "rate": "Débit",
+      "energy": "Énergie élec.",
+      "heat_energy": "Énergie chaleur",
+      "scop": "SCOP"
+    },
+    "nb": {
+      "name": "Vann-til-vann-varmepumpe",
+      "off": "Av",
+      "standby": "Hvilemodus",
+      "heating": "Varmer",
+      "dhw": "Varmtvann",
+      "cooling": "Kjøler",
+      "alarm": "Feil",
+      "power": "Elektrisk",
+      "heat": "Varmeeffekt",
+      "cop": "COP",
+      "flow": "Tur",
+      "ret": "Retur",
+      "delta": "ΔT",
+      "src_in": "Kilde inn",
+      "src_out": "Kilde ut",
+      "rate": "Gjennomstrømning",
+      "energy": "Elektr. energi",
+      "heat_energy": "Varmeenergi",
+      "scop": "SCOP"
+    }
+  };
+
+  const CSS = `
+:host{display:block}
+ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--wp-heat:var(--appliance-heat-color,#ff8a3d);--wp-cold:var(--appliance-cold-color,#2b9af9);
+  --wp-alert:var(--appliance-alert-color,#db4437)}
+.head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.title{font-size:14px;font-weight:500;color:var(--primary-text-color);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:12px;background:var(--secondary-background-color);color:var(--secondary-text-color);white-space:nowrap}
+.heating .badge{background:color-mix(in srgb,var(--wp-heat) 22%,transparent);color:var(--wp-heat)}
+.dhw .badge,.cooling .badge{background:color-mix(in srgb,var(--wp-cold) 22%,transparent);color:var(--wp-cold)}
+.alarm .badge{background:color-mix(in srgb,var(--wp-alert) 22%,transparent);color:var(--wp-alert)}
+svg{display:block;width:100%;max-width:200px;height:var(--appliance-illustration-height,auto);margin:2px auto 0;overflow:visible}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(76px,1fr));gap:6px;margin-top:6px}
+.tile{box-sizing:border-box;background:var(--secondary-background-color);border-radius:10px;padding:5px 7px;min-width:0;overflow:hidden;text-align:center;cursor:pointer}
+.tile .l{display:flex;align-items:center;justify-content:center;gap:3px;font-size:10px;line-height:14px;color:var(--secondary-text-color);min-width:0}
+.tile .l span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tile .l ha-icon{--mdc-icon-size:13px;flex:none}
+.tile .v{font-size:14px;line-height:18px;font-weight:600;color:var(--primary-text-color);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile .v small{font-size:10px;font-weight:400;color:var(--secondary-text-color);margin-left:2px}
+.tile.hide{display:none}
+
+/* ---- illustration ---- */
+.comp{transform-box:fill-box;transform-origin:50% 100%}
+.run .comp{animation:vib .11s linear infinite alternate}
+@keyframes vib{0%{transform:translate(-.5px,0)}100%{transform:translate(.5px,-.4px)}}
+.dash{stroke-dasharray:3 8;opacity:0}
+.run .dash.src,.run .dash.ref,.circ .dash.ch{opacity:.9;animation:flow 1s linear infinite}
+.run .dash.ref{opacity:.55;animation-duration:1.6s}
+@keyframes flow{to{stroke-dashoffset:-11}}
+.rad{fill:#e9edf1;transition:fill .8s}
+.heating .rad{fill:color-mix(in srgb,var(--wp-flowc,#e5533d) 35%,#f4f6f8)}
+.cooling .rad{fill:color-mix(in srgb,#3b8fe8 22%,#f4f6f8)}
+.led{fill:#6b7480}
+.heating .led{fill:#ff8a3d}.dhw .led{fill:#3fa3ff}.cooling .led{fill:#4dd0e1}.standby .led{fill:#43a047}.alarm .led{fill:#db4437;animation:blink .8s steps(2) infinite}
+@keyframes blink{50%{opacity:.15}}
+.dsp{fill:#7fe3ff;font:700 13px/1 var(--paper-font-body1_-_font-family,Roboto,sans-serif);text-anchor:middle}
+.alarm .dsp{fill:#ffb74d}.off .dsp{fill:#3b4a5c}
+.off .body-shade{opacity:.55}
+.noanim *{animation:none!important}
+`;
+
+  const SVG = `
+<svg viewBox="0 0 240 204" role="img" aria-label="water heat pump">
+ <defs>
+  <linearGradient id="wp-body" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#d9dfe6"/></linearGradient>
+  <linearGradient id="wp-comp" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5b6570"/><stop offset=".45" stop-color="#3a434d"/><stop offset="1" stop-color="#22292f"/></linearGradient>
+  <linearGradient id="wp-soil" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a1856a"/><stop offset="1" stop-color="#6f5641"/></linearGradient>
+ </defs>
+ <!-- sol et sonde de captage -->
+ <rect x="0" y="158" width="66" height="46" rx="3" fill="url(#wp-soil)" opacity=".85"/>
+ <path d="M0 158 H66" stroke="#6aa84f" stroke-width="3"/>
+ <!-- radiateur -->
+ <rect x="184" y="14" width="52" height="50" rx="5" fill="#000" opacity=".1" transform="translate(1.5 2)"/>
+ <g class="rad" stroke="#aab3bd" stroke-width="1">
+  <rect x="184" y="14" width="52" height="8" rx="3"/><rect x="184" y="56" width="52" height="8" rx="3"/>
+  <rect x="187" y="18" width="7" height="42" rx="3"/><rect x="198" y="18" width="7" height="42" rx="3"/>
+  <rect x="209" y="18" width="7" height="42" rx="3"/><rect x="220" y="18" width="7" height="42" rx="3"/>
+ </g>
+ <!-- caisson -->
+ <rect x="76" y="26" width="96" height="128" rx="9" fill="#000" opacity=".12" transform="translate(2 3)"/>
+ <rect class="body-shade" x="72" y="24" width="96" height="128" rx="9" fill="url(#wp-body)" stroke="#aeb6c0" stroke-width="1.2"/>
+ <rect x="82" y="31" width="58" height="21" rx="4" fill="#0e1b2c" stroke="#27394f"/>
+ <text class="dsp" id="dsp" x="111" y="46">--</text>
+ <circle class="led" cx="152" cy="37" r="3.2"/>
+ <circle cx="152" cy="47" r="3.6" fill="#c8cfd7" stroke="#9aa3ad"/>
+ <rect x="80" y="58" width="80" height="88" rx="6" fill="#18212c" stroke="#2a3340" stroke-width="1.4"/>
+ <!-- boucles d'eau : captage (gauche) et chauffage (droite), jusqu'aux échangeurs -->
+ <g fill="none" stroke-width="6" stroke-linecap="round">
+  <path d="M92 80 H30 V188" stroke="#4aa3df"/>
+  <path d="M30 188 Q38 199 46 188" stroke="#3d8fd0"/>
+  <path d="M46 188 V104 H92" stroke="#2b6cb0"/>
+ </g>
+ <g fill="none" stroke-width="6" stroke-linecap="round">
+  <path d="M148 80 H196 V64" style="stroke:var(--wp-flowc,#e5533d)"/>
+  <path d="M224 64 V104 H148" style="stroke:var(--wp-retc,#3b8fe8)"/>
+ </g>
+ <!-- évaporateur (captage) et condenseur (chauffage) : échangeurs à plaques -->
+ <g fill="#5fa8e8" stroke="#2f6ea8" stroke-width=".5">
+  <rect x="86" y="70" width="2.6" height="42" rx=".8"/><rect x="89.6" y="70" width="2.6" height="42" rx=".8"/><rect x="93.2" y="70" width="2.6" height="42" rx=".8"/>
+  <rect x="96.8" y="70" width="2.6" height="42" rx=".8"/><rect x="100.4" y="70" width="2.6" height="42" rx=".8"/>
+ </g>
+ <g fill="#f0883e" stroke="#a8541c" stroke-width=".5">
+  <rect x="137" y="70" width="2.6" height="42" rx=".8"/><rect x="140.6" y="70" width="2.6" height="42" rx=".8"/><rect x="144.2" y="70" width="2.6" height="42" rx=".8"/>
+  <rect x="147.8" y="70" width="2.6" height="42" rx=".8"/><rect x="151.4" y="70" width="2.6" height="42" rx=".8"/>
+ </g>
+ <!-- circuit frigorifique : aspiration, refoulement, détendeur -->
+ <g fill="none" stroke="#c98a55" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M94 70 V64 H114 V92"/><path d="M126 92 V64 H146 V70"/><path d="M146 112 V136 H94 V112"/>
+ </g>
+ <circle cx="120" cy="136" r="3" fill="#8c95a0" stroke="#5c6570"/>
+ <g stroke="#fff" stroke-width="1.2" stroke-linecap="round" fill="none">
+  <path class="dash ref" d="M94 70 V64 H114 V92"/><path class="dash ref" d="M126 92 V64 H146 V70"/><path class="dash ref" d="M146 112 V136 H94 V112"/>
+ </g>
+ <!-- compresseur -->
+ <g class="comp">
+  <rect x="107" y="88" width="26" height="40" rx="11" fill="url(#wp-comp)" stroke="#1b2127"/>
+  <ellipse cx="120" cy="92" rx="11" ry="4" fill="#6b7580" opacity=".55"/>
+  <rect x="103" y="127" width="34" height="6" rx="2" fill="#4a535e"/>
+ </g>
+ <!-- circulation de l'eau -->
+ <g stroke="#fff" stroke-width="2.4" stroke-linecap="round" fill="none">
+  <path class="dash src" d="M30 188 V80 H72"/><path class="dash src" d="M72 104 H46 V188"/>
+  <path class="dash ch" d="M172 80 H196 V64"/><path class="dash ch" d="M224 64 V104 H172"/>
+ </g>
+</svg>`;
+
+  const TILES = [
+    ['power', 'mdi:flash', 'show_power', 'entity_power'],
+    ['heat', 'mdi:heat-wave', 'show_heat', 'entity_heat_power'],
+    ['cop', 'mdi:speedometer', 'show_cop', 'entity_cop'],
+    ['flow', 'mdi:thermometer-chevron-up', 'show_temps', 'entity_flow_temp'],
+    ['ret', 'mdi:thermometer-chevron-down', 'show_temps', 'entity_return_temp'],
+    ['delta', 'mdi:delta', 'show_temps', 'entity_flow_temp'],
+    ['src_in', 'mdi:thermometer-water', 'show_source', 'entity_source_in_temp'],
+    ['src_out', 'mdi:thermometer-low', 'show_source', 'entity_source_out_temp'],
+    ['rate', 'mdi:pump', 'show_flow_rate', 'entity_flow_rate'],
+    ['energy', 'mdi:lightning-bolt-circle', 'show_energy', 'entity_energy'],
+    ['heat_energy', 'mdi:fire-circle', 'show_energy', 'entity_heat_energy'],
+    ['scop', 'mdi:chart-line', 'show_scop', 'entity_scop'],
+  ];
+  const SHOW = ['show_status', 'show_power', 'show_heat', 'show_cop', 'show_temps', 'show_source', 'show_flow_rate', 'show_energy', 'show_scop', 'animations'];
+
+  class ApplianceWaterHeatPumpCard extends HTMLElement {
+    static getStubConfig(hass) {
+      const ids = Object.keys((hass && hass.states) || {});
+      const f = (re, dom) => ids.find((i) => (!dom || i.startsWith(dom + '.')) && re.test(i)) || '';
+      return {
+        entity_status: f(/pac|heat_?pump|pompe_a_chaleur|geotherm/i, 'climate'),
+        entity_power: f(/(pac|heat_?pump|pompe_a_chaleur|geotherm).*(power|puissance)/i, 'sensor'),
+        entity_heat_power: f(/(chaleur|heat_meter|thermi|multical|kamstrup).*(power|puissance)/i, 'sensor'),
+      };
+    }
+    static getConfigForm() {
+      const ent = (name, domain, extra = {}) => ({ name, selector: { entity: { domain, ...extra } } });
+      return {
+        schema: [
+          { name: 'name', selector: { text: {} } },
+          ent('entity_status', ['climate', 'sensor', 'select', 'input_select', 'water_heater']),
+          { type: 'grid', name: '', schema: [ent('entity_power', 'sensor'), ent('entity_heat_power', 'sensor'), ent('entity_cop', 'sensor')] },
+          { type: 'grid', name: '', schema: [ent('entity_flow_temp', 'sensor'), ent('entity_return_temp', 'sensor'), ent('entity_flow_rate', 'sensor')] },
+          { type: 'grid', name: '', schema: [ent('entity_source_in_temp', 'sensor'), ent('entity_source_out_temp', 'sensor')] },
+          { type: 'grid', name: '', schema: [ent('entity_energy', 'sensor'), ent('entity_heat_energy', 'sensor'), ent('entity_scop', 'sensor')] },
+          { name: 'threshold', selector: { number: { min: 0, max: 2000, step: 5, mode: 'box', unit_of_measurement: 'W' } } },
+          { type: 'grid', name: '', schema: SHOW.map((name) => ({ name, selector: { boolean: {} }, default: true })) },
+          { name: 'language', selector: { select: { options: Object.keys(T) } } },
+        ],
+      };
+    }
+    setConfig(c) {
+      if (!c || typeof c !== 'object') throw new Error('Invalid configuration');
+      this._c = { ...Object.fromEntries(SHOW.map((k) => [k, true])), threshold: 100, ...c };
+      this._built = false;
+      if (this._hass) this._render();
+    }
+    set hass(h) { this._hass = h; if (this._c) this._render(); }
+    getCardSize() { return 5; }
+    getGridOptions() { return { columns: 12, min_columns: 6, rows: 'auto' }; }
+
+    _t(k) { return T[this._lang()][k] ?? T.en[k] ?? k; }
+    _lang() { const l = (this._c.language || (this._hass && this._hass.language) || 'en').slice(0, 2); return T[l] ? l : 'en'; }
+    _st(id) { return id && this._hass.states[id]; }
+    _num(id) {
+      const s = this._st(id); if (!s) return NaN;
+      const v = parseFloat(String(s.state).replace(',', '.'));
+      return isFinite(v) ? v : NaN;
+    }
+    _watts(id) {
+      const v = this._num(id); if (isNaN(v)) return NaN;
+      const u = ((this._st(id).attributes || {}).unit_of_measurement || '').toLowerCase();
+      return u === 'kw' ? v * 1000 : u === 'mw' ? v * 1e6 : v;
+    }
+    _unit(id, d) { const s = this._st(id); return (s && s.attributes && s.attributes.unit_of_measurement) || d; }
+    _fmt(v, d = 0) { return isNaN(v) ? '--' : v.toLocaleString(this._lang() === 'en' ? 'en-US' : this._lang(), { maximumFractionDigits: d, minimumFractionDigits: 0 }); }
+    _kw(w) { return isNaN(w) ? ['--', ''] : w >= 1000 ? [this._fmt(w / 1000, 2), 'kW'] : [this._fmt(w, 0), 'W']; }
+
+    _build() {
+      const root = this.shadowRoot || this.attachShadow({ mode: 'open' });
+      root.innerHTML = `<style>${CSS}</style><ha-card><div class="wrap">
+        <div class="head"><div class="title" id="title"></div><div class="badge" id="badge"></div></div>
+        ${SVG}
+        <div class="tiles" id="tiles">${TILES.map(([k, ic]) => `<div class="tile hide" data-k="${k}"><div class="l"><ha-icon icon="${ic}"></ha-icon><span class="lbl"></span></div><div class="v"></div></div>`).join('')}</div>
+      </div></ha-card>`;
+      this._root = root; this._card = root.querySelector('ha-card'); this._built = true;
+    }
+
+    // État : entité climate / texte si fournie, sinon puissance électrique (compresseur au-dessus du seuil)
+    _compute() {
+      const c = this._c, pw = this._watts(c.entity_power), heat = this._watts(c.entity_heat_power);
+      const s = this._st(c.entity_status);
+      const state = s ? String(s.state).toLowerCase() : '';
+      const action = s ? String((s.attributes || {}).hvac_action || '').toLowerCase() : '';
+      const txt = `${state} ${action}`, key = action || state;
+      let st;
+      if (/alarm|alarme|error|erreur|fault|défaut|defaut|lock|verrou/.test(txt)) st = 'alarm';
+      else if (s && /^(unavailable|unknown|off|arr[eê]t|eteint|éteint)$/.test(state)) st = 'off';
+      else if (/idle|standby|veille|attente/.test(action)) st = 'standby';
+      else if (/dhw|ecs|hot.?water|eau.?chaude|sanitaire/.test(txt) || (s && String(c.entity_status).startsWith('water_heater.'))) st = 'dhw';
+      else if (/cool|rafra|froid/.test(key) && key !== 'heat_cool') st = 'cooling';
+      else if (/heat|chauff|compress|running|marche|^on/.test(key)) st = 'heating';
+      else if (s) st = 'standby';
+      else if (!isNaN(pw)) st = pw > c.threshold ? 'heating' : pw > 0.5 ? 'standby' : 'off';
+      else if (!isNaN(heat)) st = heat > 0 ? 'heating' : 'standby';
+      else st = 'standby';
+      const active = st === 'heating' || st === 'dhw' || st === 'cooling';
+      const run = active && (isNaN(pw) || pw > c.threshold);
+      const rate = this._num(c.entity_flow_rate);
+      const circ = c.entity_flow_rate ? rate > 0 : run || heat > 0;
+      return { st, run, circ, pw, heat, rate };
+    }
+
+    _render() {
+      if (!this._built) this._build();
+      const c = this._c, card = this._card, r = this._root;
+      const { st, run, circ, pw, heat, rate } = this._compute();
+      const flow = this._num(c.entity_flow_temp), ret = this._num(c.entity_return_temp);
+      card.className = `${st} ${run ? 'run' : ''} ${circ ? 'circ' : ''} ${c.animations === false ? 'noanim' : ''}`;
+      // départ / retour : bleu à 20 °C, rouge à 55 °C (températures de PAC, plus basses qu'une chaudière)
+      const tc = (t, d) => isNaN(t) ? d : `color-mix(in srgb, #e5392b ${Math.round(Math.max(0, Math.min(1, (t - 20) / 35)) * 100)}%, #3b8fe8)`;
+      card.style.setProperty('--wp-flowc', tc(flow, '#e5533d'));
+      card.style.setProperty('--wp-retc', tc(ret, '#3b8fe8'));
+
+      r.getElementById('title').textContent = c.name || this._t('name');
+      const badge = r.getElementById('badge'); badge.textContent = this._t(st); badge.style.display = c.show_status === false ? 'none' : '';
+      r.getElementById('dsp').textContent = st === 'off' ? 'OFF' : st === 'alarm' ? 'Err' : isNaN(flow) ? '--' : `${Math.round(flow)}°`;
+
+      // COP : capteur si fourni, sinon puissance thermique / puissance électrique quand le compresseur tourne
+      let cop = this._num(c.entity_cop);
+      if (!c.entity_cop && run && heat > 0 && pw > 0) cop = heat / pw;
+      const hasCop = c.entity_cop || (c.entity_heat_power && c.entity_power);
+      const V = {
+        power: [c.entity_power, ...this._kw(pw)],
+        heat: [c.entity_heat_power, ...this._kw(heat)],
+        cop: [hasCop, this._fmt(cop, 1), ''],
+        flow: [c.entity_flow_temp, this._fmt(flow, 1), '°C'],
+        ret: [c.entity_return_temp, this._fmt(ret, 1), '°C'],
+        delta: [c.entity_flow_temp && c.entity_return_temp, this._fmt(flow - ret, 1), 'K'],
+        src_in: [c.entity_source_in_temp, this._fmt(this._num(c.entity_source_in_temp), 1), '°C'],
+        src_out: [c.entity_source_out_temp, this._fmt(this._num(c.entity_source_out_temp), 1), '°C'],
+        rate: [c.entity_flow_rate, this._fmt(rate, 2), this._unit(c.entity_flow_rate, 'l/h')],
+        energy: [c.entity_energy, this._fmt(this._num(c.entity_energy), 1), this._unit(c.entity_energy, 'kWh')],
+        heat_energy: [c.entity_heat_energy, this._fmt(this._num(c.entity_heat_energy), 2), this._unit(c.entity_heat_energy, 'kWh')],
+        scop: [c.entity_scop, this._fmt(this._num(c.entity_scop), 2), ''],
+      };
+      TILES.forEach(([k, , opt, more]) => {
+        const el = r.querySelector(`.tile[data-k="${k}"]`); const [shown, val, unit] = V[k];
+        el.classList.toggle('hide', !shown || c[opt] === false);
+        el.querySelector('.lbl').textContent = this._t(k);
+        el.querySelector('.v').innerHTML = `${val}<small>${unit}</small>`;
+        const id = k === 'cop' && !c.entity_cop ? c.entity_heat_power : c[more];
+        el.onclick = () => { if (id) this.dispatchEvent(new CustomEvent('hass-more-info', { detail: { entityId: id }, bubbles: true, composed: true })); };
+      });
+    }
+  }
+  customElements.define(TAG, ApplianceWaterHeatPumpCard);
+
+  window.customCards = window.customCards || [];
+  window.customCards.push({
+    type: TAG, name: 'Appliance – PAC eau/eau / Water heat pump',
+    description: 'Pompe à chaleur eau/eau ou géothermique animée : compresseur, captage, départ/retour, COP.', preview: true,
+  });
+})();
