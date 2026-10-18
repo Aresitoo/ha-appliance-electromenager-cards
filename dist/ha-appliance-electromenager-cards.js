@@ -3144,6 +3144,15 @@ svg { width: 100%; height: 100%; display: block; overflow: visible; }
   .illus { width: var(--appliance-illustration-size-small, 84px); }
   .stats { grid-template-columns: repeat(auto-fit, minmax(88px, 1fr)); }
 }
+/* carte très étroite (ex. 3 cartes côte à côte) : illustration au-dessus, titre et statut centrés et sur plusieurs lignes */
+@container (max-width: 230px) {
+  .top { grid-template-columns: minmax(0, 1fr); grid-template-areas: "illus" "head" "stats"; justify-items: center; }
+  .head { flex-direction: column; align-items: center; text-align: center; width: 100%; }
+  .info { align-items: center; width: 100%; }
+  .name { white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; }
+  .status { justify-content: center; flex-wrap: wrap; }
+  .status span:last-child { white-space: normal; overflow: visible; text-overflow: clip; }
+}
 
 /* ---------- illustration: shared ---------- */
 .lcd { font: 700 7.2px "Courier New", ui-monospace, monospace; letter-spacing: .4px; fill: #24404f; transition: fill .3s; }
