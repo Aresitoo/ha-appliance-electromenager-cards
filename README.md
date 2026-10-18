@@ -3,7 +3,7 @@
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://hacs.xyz/docs/faq/custom_repositories)
 [![Validate](https://github.com/skyrotter/ha-appliance-electromenager-cards/actions/workflows/validate.yml/badge.svg)](https://github.com/skyrotter/ha-appliance-electromenager-cards/actions/workflows/validate.yml)
 
-Thirty-six Lovelace cards for household appliances, with **realistic animated illustrations** (tumbling drum, water and foam, spin with vibration, rotating spray arms, glowing oven element, turntable, opening fridge door, flickering pellet-stove flames, water flowing through a pool pump, a 3D printer building its part layer by layer, a chest freezer lid lifting, freezer drawers sliding out, a sun powering solar panels on their frame, a bathroom extractor fan drawing in steam, cooktop zones glowing under a steaming pot, an electric radiator sending heat waves, a dual-basket air fryer blowing hot air over fries, a coffee maker filling the carafe or the cup, a flat TV switching on like a real screen, a range hood sucking up the steam, an air-conditioning split and its outdoor heat pump, a heated towel rail glowing with warm towels, a homelab server rack with blinking LEDs and spinning fans, a desktop PC with RGB fans, a laptop with a live screen, a wine cooler with cold air flowing between the bottles, an aquarium with swimming fish, a Linky electricity meter, a home battery bank, an EV wallbox charging a car, a robot vacuum, a robot mower a pellet boiler feeding its burner through an auger and a gas boiler with its blue flames…), live status, power, energy and cost.
+Thirty-nine Lovelace cards for household appliances, with **realistic animated illustrations** (tumbling drum, water and foam, spin with vibration, rotating spray arms, glowing oven element, turntable, opening fridge door, flickering pellet-stove flames, water flowing through a pool pump, a 3D printer building its part layer by layer, a chest freezer lid lifting, freezer drawers sliding out, a sun powering solar panels on their frame, a bathroom extractor fan drawing in steam, cooktop zones glowing under a steaming pot, an electric radiator sending heat waves, a dual-basket air fryer blowing hot air over fries, a coffee maker filling the carafe or the cup, a flat TV switching on like a real screen, a range hood sucking up the steam, an air-conditioning split and its outdoor heat pump, a heated towel rail glowing with warm towels, a homelab server rack with blinking LEDs and spinning fans, a desktop PC with RGB fans, a laptop with a live screen, a wine cooler with cold air flowing between the bottles, an aquarium with swimming fish, a Linky electricity meter, a home battery bank, an EV wallbox charging a car, a robot vacuum, a robot mower a pellet boiler feeding its burner through an auger a gas boiler with its blue flames, a beer tap pouring a pint a home cinema amplifier with its dancing equalizer and an oscillating fan…), live status, power, energy and cost.
 They follow your Home Assistant theme (light/dark) and switch between **French** and **English** automatically.
 
 **▶ [Try it online / Essayer en ligne](https://skyrotter.github.io/ha-appliance-electromenager-cards/docs/demo.html)** · [Automated tests](https://skyrotter.github.io/ha-appliance-electromenager-cards/docs/tests.html)
@@ -41,6 +41,9 @@ They follow your Home Assistant theme (light/dark) and switch between **French**
 | Desktop PC | `custom:appliance-desktop-pc-card` |
 | Laptop | `custom:appliance-laptop-card` |
 | Wine cooler | `custom:appliance-wine-cooler-card` |
+| Beer tap | `custom:appliance-beer-tap-card` |
+| Home cinema amplifier (AV receiver) | `custom:appliance-av-receiver-card` |
+| Fan | `custom:appliance-fan-card` |
 | Aquarium | `custom:appliance-aquarium-card` |
 | Linky electricity meter | `custom:appliance-linky-card` |
 | Home battery (solar storage) | `custom:appliance-battery-card` |
@@ -470,6 +473,46 @@ temperature: sensor.cave_a_vin_temperature
 door: binary_sensor.cave_a_vin_door   # optional
 ```
 
+### Beer tap and home cinema amplifier
+
+<p align="center"><img src="docs/beer-tap-av-receiver.gif" width="560" alt="Beer tap and AV receiver cards"></p>
+
+**Beer tap** (`custom:appliance-beer-tap-card`): a home draught machine with its keg window, chrome tap and a pint glass.
+- **Cooling** (above `threshold`, 30 W): snowflake pulsing, cold mist, condensation on the glass. **Ready** (plug on, below the threshold): full pint with rising bubbles.
+- **Pouring** (optional `pouring` sensor on): the handle tilts, beer flows and the glass fills up with its head.
+- `temperature` is shown on the display, `keg_level` (%) fills the keg window and warns below `keg_alert` (10 %).
+
+```yaml
+type: custom:appliance-beer-tap-card
+power: sensor.beer_tap_power
+temperature: sensor.beer_tap_temperature   # optional
+keg_level: sensor.keg_level                # optional, %
+pouring: binary_sensor.beer_pouring        # optional
+```
+
+**Home cinema amplifier** (`custom:appliance-av-receiver-card`): an AV receiver with its display, big volume knob and equalizer.
+- **Playing**: the equalizer bars dance, the volume ring glows, sound waves and notes come out; the knob position and the bar height follow the volume (`media_player`) or the power drawn (vs `max_power`, 250 W).
+- The display shows the source (or the volume); **Muted** shows `MUTE`; **Standby**: red LED.
+- With a `media_player`: `on`/`playing` = playing, `paused`, `standby`, `off`, plus `volume_level`, `source`, `is_volume_muted`. With a plug: playing above 40 W, standby from 0.2 W.
+
+```yaml
+type: custom:appliance-av-receiver-card
+entity: media_player.living_room_avr   # or power: sensor.avr_power
+```
+
+### Fan
+
+<p align="center"><img src="docs/fan.gif" width="480" alt="Fan card"></p>
+
+`custom:appliance-fan-card`: a pedestal fan with its cage, five blades and a ribbon. Three speeds: the blades spin faster, airflow lines widen, the ribbon flutters and the base LEDs light up (1, 2 or 3). The head oscillates left and right (`oscillating: false` to stop it).
+- With a `fan` entity: `percentage` (≤ 34 % speed 1, ≤ 67 % speed 2, above speed 3) and `oscillating`; the percentage is shown in the status.
+- With a smart plug: speed 1 above `threshold` (5 W), speed 2 above `mid_threshold` (30 W), speed 3 above `high_threshold` (40 W).
+
+```yaml
+type: custom:appliance-fan-card
+entity: fan.bedroom_fan      # or power: sensor.fan_plug_power
+```
+
 ### Modes (radiator and heated towel rail)
 
 With a `mode` entity (`select`, `input_select`, or a `climate` entity used as `entity`), the radiator and the heated towel rail show four buttons — **Comfort, Eco, Frost protection, Off** — to switch mode, and the active mode is highlighted. Options are matched by name (Confort, Eco/Nuit, Hors-gel, Arrêt/Off…); a button is only shown if a matching option exists. Hide them with `show_modes: false`.
@@ -653,6 +696,12 @@ cost: sensor.lave_linge_cout_jour
 **Pack clim** : deux cartes à mettre côte à côte, pilotées par la même entité `climate` (et/ou une prise). **Split intérieur** (`custom:appliance-ac-split-card`) : le volet s'ouvre et balaie, l'air souffle (bleu en froid, orange en chaud, gris en ventilation, gouttes en déshumidification), l'écran affiche la consigne. **Unité extérieure** (`custom:appliance-heat-pump-card`) : l'hélice tourne, le groupe vibre quand le compresseur tourne, ondes d'air chaud en clim et d'air froid en chauffage, vapeur pendant le dégivrage. Consigne atteinte : hélice au ralenti. Sans entité `climate`, régler `hvac: cool` ou `hvac: heat` (par défaut : clim de mai à septembre, chauffage sinon).
 
 **Sécurité du bouton marche/arrêt** : sur le lave-linge, le sèche-linge, le lave-vaisselle et le poêle à granulés, couper la prise pendant un cycle (ou poêle allumé) demande deux clics (le bouton devient rouge et affiche « Cycle en cours – cliquer encore pour couper »). Option `confirm_off: false` pour désactiver. Conseil : sur un lave-linge, ne mets pas de `switch:` du tout.
+
+**Pompe à bière** (`custom:appliance-beer-tap-card`) : tireuse avec fenêtre du fût, robinet chromé et pinte. Au-dessus de 30 W : refroidissement (flocon, brume froide, buée sur le verre) ; prise allumée sous le seuil : prête (pinte pleine, bulles). Avec un capteur `pouring` : la manette bascule, la bière coule et le verre se remplit. `temperature` sur l'écran, `keg_level` (%) remplit la fenêtre du fût avec alerte « Fût presque vide ».
+
+**Ampli home cinéma** (`custom:appliance-av-receiver-card`) : ampli avec écran, gros bouton de volume et égaliseur. En lecture, les barres dansent, l'anneau du volume s'illumine, des ondes et des notes sortent ; l'amplitude suit le volume (`media_player`) ou la puissance. L'écran affiche la source, `MUTE` en sourdine ; veille : voyant rouge. Avec une prise : lecture au-dessus de 40 W.
+
+**Ventilateur** (`custom:appliance-fan-card`) : ventilateur sur pied avec grille, cinq pales et un petit ruban. Trois vitesses : les pales tournent plus vite, l'air souffle plus fort, le ruban s'agite et les voyants du socle s'allument (1, 2 ou 3) ; la tête oscille (`oscillating: false` pour l'arrêter). Avec une entité `fan` : le pourcentage et l'oscillation sont lus. Avec une prise : vitesse 1 au-dessus de 5 W, vitesse 2 au-dessus de 30 W (`mid_threshold`), vitesse 3 au-dessus de 40 W (`high_threshold`).
 
 **Sèche-serviettes, baie informatique, PC fixe, PC portable, cave à vin** : cinq cartes pilotées par une prise connectée (`power`). `custom:appliance-towel-dryer-card` : au-dessus de 50 W, les barres rougeoient, la chaleur monte, les serviettes se balancent et fument ; prise allumée sous le seuil : « Consigne atteinte ». `custom:appliance-server-rack-card` (homelab) : au-dessus de 30 W, les LED clignotent, les ventilateurs tournent, les baies de disques s'allument en bleu et les données circulent dans les câbles ; la vitesse suit la charge (`max_power`, 300 W par défaut) et l'onduleur affiche la puissance. `custom:appliance-desktop-pc-card` : au-dessus de 40 W, l'écran s'allume (code qui s'écrit, graphique, curseur) et les ventilateurs RGB tournent ; entre 0,5 W et le seuil : veille (voyant orange). `custom:appliance-laptop-card` : au-dessus de 15 W, l'écran affiche un tableau de bord animé et le clavier est rétroéclairé ; en dessous : veille. `custom:appliance-wine-cooler-card` : cave vitrée ; quand le compresseur tourne (au-dessus de 15 W), l'intérieur s'éclaire, l'air froid circule entre les bouteilles et la condensation coule ; la porte s'ouvre avec un capteur `door` ; alerte au-dessus de `max_temperature` (18 °C).
 
