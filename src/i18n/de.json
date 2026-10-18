@@ -92,6 +92,7 @@
     "bed": "Druckbett",
     "f_bed_temperature": "Sensor Druckbetttemperatur",
     "f_filament_color": "Filamentfarbe (CSS)",
+    "f_nozzle_temperatures": "Düsentemperatursensoren (T0, T1…)",
     "filtering": "Filtert",
     "water": "Wasser",
     "today": "Heute",
