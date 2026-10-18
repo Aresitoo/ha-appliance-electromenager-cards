@@ -26,6 +26,7 @@
     "wine_cooler": "Weinkühlschrank",
     "f_max_temperature_wine": "Alarm über (°C)",
     "f_show_modes": "Modus-Tasten anzeigen",
+    "f_show_power": "Leistung anzeigen",
     "grid": "Netz",
     "energy_grid": "Netzenergie",
     "energy_solar": "Solarenergie",
