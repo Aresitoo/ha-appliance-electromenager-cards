@@ -211,6 +211,9 @@ class ApplianceCardBase extends HTMLElement {
           const per = watts / n;
           const lv = Math.max(1, Math.min(9, Math.round(per / zp * 9)));
           [0, 3, 1, 2].slice(0, n).forEach((z) => { zl[z] = lv; });
+        } else if (watts == null && base === "running") {
+          // pas de capteur de puissance : l'état de `entity` (binary_sensor, sensor d'état "run"…) suffit pour « en marche »
+          zl[0] = 5;
         }
       } else zl = zl.map((v) => v ?? 0);
       const now = Date.now(), keep = (c.residual_minutes ?? 10) * 60000;
@@ -693,7 +696,7 @@ class ApplianceCardBase extends HTMLElement {
     if (m.remaining != null && m.remaining > 0 && active && kind !== "water_heater") tile("mdi:timer-sand", fmtDuration(m.remaining), tr(hass, "remaining"), c.remaining);
     const solar = kind === "solar";
     const dual = kind === "water_heater" && (m.pwS || m.energyS);
-    if (m.pw) tile(solar ? "mdi:solar-power" : "mdi:flash", fmtPower(hass, m.pw) ?? "—", tr(hass, solar ? "production" : dual ? "grid" : "power"), c.power);
+    if (m.pw && c.show_power !== false) tile(solar ? "mdi:solar-power" : "mdi:flash", fmtPower(hass, m.pw) ?? "—", tr(hass, solar ? "production" : dual ? "grid" : "power"), c.power);
     if (m.pwS) tile("mdi:solar-power", fmtPower(hass, m.pwS) ?? "—", tr(hass, "solar_surplus"), c.power_solar);
     if (m.energy) tile("mdi:lightning-bolt-circle", fmtUnit(hass, m.energy, 2) ?? "—", tr(hass, solar ? "today" : dual ? "energy_grid" : "energy"), c.energy);
     if (m.energyS) tile("mdi:solar-power-variant", fmtUnit(hass, m.energyS, 2) ?? "—", tr(hass, "energy_solar"), c.energy_solar);
