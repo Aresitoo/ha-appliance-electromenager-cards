@@ -26,6 +26,7 @@
 "wine_cooler": "Vinkjøleskap",
 "f_max_temperature_wine": "Varsel over (°C)",
 "f_show_modes": "Vis modusknapper",
+"f_show_power": "Vis effekt",
 "grid": "Strømnett",
 "energy_grid": "Energi fra nettet",
 "energy_solar": "Solenergi",
