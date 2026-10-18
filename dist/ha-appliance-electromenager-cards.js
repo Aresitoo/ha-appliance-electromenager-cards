@@ -2535,11 +2535,14 @@ class ApplianceCardBase extends HTMLElement {
       else m.status = base === "running" ? "speed1" : base === "standby" ? "off" : base;
       m.lights = m.light ? isOn(m.light) : (m.status === "lights" || ((m.status === "speed1" || m.status === "speed2") && c.light === undefined && watts !== null && watts > threshold));
     } else if (kind === "towel_dryer") {
+      // entité climate : hvac_action fait foi (heating / idle / off), hvac_mode seulement en repli
+      const isClimate = main && domainOf(c.entity) === "climate";
+      const act = isClimate ? String(main.attributes.hvac_action || "").toLowerCase() : "";
       m.radMode = modeOf(m, main, c);
       if (base === "off" || base === "unavailable") m.status = base;
-      else if (m.radMode === "off") m.status = "off";
-      else if (powered || (watts === null && base === "running" && !m.mode)) m.status = "heating";
-      else m.status = base === "standby" || isOn(sw) || m.radMode ? "at_target" : "off";
+      else if (m.radMode === "off" || act === "off" || (isClimate && main.state === "off")) m.status = "off";
+      else if (act === "heating" || powered || (watts === null && !act && base === "running" && !m.mode)) m.status = "heating";
+      else m.status = act || base === "standby" || isOn(sw) || m.radMode ? "at_target" : "off";
     } else if (kind === "server_rack") {
       if (base === "off" || base === "unavailable") m.status = base;
       else if (watts !== null) m.status = powered ? "online" : watts > 0.5 ? "standby" : "off";
