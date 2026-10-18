@@ -92,6 +92,7 @@
     "bed": "Bed",
     "f_bed_temperature": "Bed temperature sensor",
     "f_filament_color": "Filament color (CSS)",
+    "f_nozzle_temperatures": "Nozzle temperature sensors (T0, T1…)",
     "filtering": "Filtering",
     "water": "Water",
     "today": "Today",
