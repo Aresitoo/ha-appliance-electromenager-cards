@@ -44,6 +44,7 @@ They follow your Home Assistant theme (light/dark) and switch between **French**
 | Beer tap | `custom:appliance-beer-tap-card` |
 | Home cinema amplifier (AV receiver) | `custom:appliance-av-receiver-card` |
 | Fan | `custom:appliance-fan-card` |
+| Generic appliance (your own image) | `custom:appliance-generic-card` |
 | Aquarium | `custom:appliance-aquarium-card` |
 | Linky electricity meter | `custom:appliance-linky-card` |
 | Home battery (solar storage) | `custom:appliance-battery-card` |
@@ -528,6 +529,21 @@ type: custom:appliance-fan-card
 entity: fan.bedroom_fan      # or power: sensor.fan_plug_power
 ```
 
+### Generic card (your own image)
+
+`custom:appliance-generic-card`: for any device without a dedicated card (a speaker, a lamp, a pump…), put your own picture in `image`. The card keeps everything else: status (running / idle / off), power, energy and cost chips, and the power button. The picture is dimmed when the device is off and glows softly while it is running.
+
+- `image`: URL of the picture (`/local/my-device.png` for a file in `config/www/`, or any `https://` URL). A PNG or SVG with a transparent background looks best.
+- Running detection works like the other cards: `power` above `threshold` (5 W by default), or the state of `entity`.
+
+```yaml
+type: custom:appliance-generic-card
+name: Sonos living room
+image: /local/sonos.png
+power: sensor.tasmota_sonos_power
+switch: switch.tasmota_sonos
+```
+
 ### Modes (radiator and heated towel rail)
 
 With a `mode` entity (`select`, `input_select`, or a `climate` entity used as `entity`), the radiator and the heated towel rail show four buttons — **Comfort, Eco, Frost protection, Off** — to switch mode, and the active mode is highlighted. Options are matched by name (Confort, Eco/Nuit, Hors-gel, Arrêt/Off…); a button is only shown if a matching option exists. Hide them with `show_modes: false`.
@@ -717,6 +733,8 @@ cost: sensor.lave_linge_cout_jour
 **Ampli home cinéma** (`custom:appliance-av-receiver-card`) : ampli avec écran, gros bouton de volume et égaliseur. En lecture, les barres dansent, l'anneau du volume s'illumine, des ondes et des notes sortent ; l'amplitude suit le volume (`media_player`) ou la puissance. L'écran affiche la source, `MUTE` en sourdine ; veille : voyant rouge. Avec une prise : lecture au-dessus de 40 W.
 
 **Ventilateur** (`custom:appliance-fan-card`) : ventilateur sur pied avec grille, cinq pales et un petit ruban. Trois vitesses : les pales tournent plus vite, l'air souffle plus fort, le ruban s'agite et les voyants du socle s'allument (1, 2 ou 3) ; la tête oscille (`oscillating: false` pour l'arrêter). Avec une entité `fan` : le pourcentage et l'oscillation sont lus. Avec une prise : vitesse 1 au-dessus de 5 W, vitesse 2 au-dessus de 30 W (`mid_threshold`), vitesse 3 au-dessus de 40 W (`high_threshold`).
+
+**Carte générique** (`custom:appliance-generic-card`) : pour tout appareil sans carte dédiée (enceinte, lampe, pompe…), renseigne ta propre image dans `image` (`/local/mon-appareil.png` pour un fichier de `config/www/`, ou une URL `https://`). La carte garde le statut (en cours / inactif / éteint), la puissance, l'énergie, le coût et le bouton ; l'image est atténuée quand l'appareil est éteint et brille doucement en marche.
 
 **Sèche-serviettes, baie informatique, PC fixe, PC portable, cave à vin** : cinq cartes pilotées par une prise connectée (`power`). `custom:appliance-towel-dryer-card` : au-dessus de 50 W, les barres rougeoient, la chaleur monte, les serviettes se balancent et fument ; prise allumée sous le seuil : « Consigne atteinte ». `custom:appliance-server-rack-card` (homelab) : au-dessus de 30 W, les LED clignotent, les ventilateurs tournent, les baies de disques s'allument en bleu et les données circulent dans les câbles ; la vitesse suit la charge (`max_power`, 300 W par défaut) et l'onduleur affiche la puissance. `custom:appliance-desktop-pc-card` : au-dessus de 40 W, l'écran s'allume (code qui s'écrit, graphique, curseur) et les ventilateurs RGB tournent ; entre 0,5 W et le seuil : veille (voyant orange). `custom:appliance-laptop-card` : au-dessus de 15 W, l'écran affiche un tableau de bord animé et le clavier est rétroéclairé ; en dessous : veille. `custom:appliance-wine-cooler-card` : cave vitrée ; quand le compresseur tourne (au-dessus de 15 W), l'intérieur s'éclaire, l'air froid circule entre les bouteilles et la condensation coule ; la porte s'ouvre avec un capteur `door` ; alerte au-dessus de `max_temperature` (18 °C).
 
