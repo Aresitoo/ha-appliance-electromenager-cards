@@ -16,7 +16,7 @@ function card(kind,cfg,states,lang){const el=document.createElement(`appliance-$
 const has=(c,cls)=>c.wrap.classList.contains(cls);
 
 // registration
-const tags=['washer','dryer','dishwasher','water-heater','oven','microwave','fridge','pellet-stove','pool-pump','printer-3d','chest-freezer','drawer-freezer','solar','vmc','hob','radiator','air-fryer','coffee-maker','tv','range-hood','ac-split','heat-pump','towel-dryer','server-rack','desktop-pc','laptop','wine-cooler'];
+const tags=['washer','dryer','dishwasher','water-heater','oven','microwave','fridge','pellet-stove','pool-pump','printer-3d','chest-freezer','drawer-freezer','solar','vmc','hob','radiator','air-fryer','coffee-maker','tv','range-hood','ac-split','heat-pump','towel-dryer','server-rack','desktop-pc','laptop','wine-cooler','beer-tap','av-receiver','fan'];
 tags.forEach(t=>ok(`registered ${t}`,customElements.get(`appliance-${t}-card`)));
 // card picker: every core card and every self-contained card listed exactly once
 const solo=['aquarium','linky','battery','ev-charger','robot-vacuum-solo','robot-mower-solo','pellet-boiler','gas-boiler','water-heat-pump'];
@@ -158,6 +158,27 @@ c=card('ac-split',{entity:'climate.c',power:'sensor.p'},[mk('climate.c','cool',{
 c=card('heat-pump',{entity:'climate.c'},[CL('heat','heating')]); ok('pac heating',has(c,'st-heating'),c.wrap.className);
 c=card('heat-pump',{entity:'climate.c'},[CL('heat','defrosting')]); ok('pac defrost',has(c,'st-defrost')&&/Dégivrage/.test(c.txt()),c.txt());
 c=card('heat-pump',{power:'sensor.p'},[mk('sensor.p',5,W)]); ok('pac off',has(c,'st-off'),c.wrap.className);
+
+// beer tap
+c=card('beer-tap',{entity:'switch.b',power:'sensor.p',temperature:'sensor.t',keg_level:'sensor.k'},[mk('switch.b','on'),mk('sensor.p',70,W),mk('sensor.t',3.2,T),mk('sensor.k',64,{unit_of_measurement:'%'})]); ok('beer cooling + lcd temp',has(c,'st-cooling')&&c.lcd()==='3,2°',c.wrap.className+' '+c.lcd());
+c=card('beer-tap',{entity:'switch.b',power:'sensor.p'},[mk('switch.b','on'),mk('sensor.p',3,W)]); ok('beer ready',has(c,'st-ready'),c.wrap.className);
+c=card('beer-tap',{power:'sensor.p',pouring:'binary_sensor.pour'},[mk('sensor.p',3,W),mk('binary_sensor.pour','on')]); ok('beer pouring',has(c,'st-pouring')&&/Service en cours/.test(c.txt()),c.txt());
+c=card('beer-tap',{power:'sensor.p',keg_level:'sensor.k'},[mk('sensor.p',3,W),mk('sensor.k',5,{unit_of_measurement:'%'})]); ok('beer keg low alert',has(c,'alert')&&/Fût presque vide/.test(c.txt()),c.txt());
+c=card('beer-tap',{entity:'switch.b',power:'sensor.p'},[mk('switch.b','off'),mk('sensor.p',0,W)]); ok('beer off',has(c,'st-off'),c.wrap.className);
+// av receiver
+c=card('av-receiver',{entity:'media_player.avr'},[mk('media_player.avr','on',{volume_level:0.45,source:'TV'})]); ok('avr playing + source + vol',has(c,'st-playing')&&c.lcd()==='TV'&&/Vol 45 %/.test(c.txt()),c.lcd()+' '+c.txt());
+c=card('avr'==='x'?'':'av-receiver',{entity:'media_player.avr'},[mk('media_player.avr','on',{volume_level:0.3,is_volume_muted:true})]); ok('avr muted',has(c,'st-muted')&&c.lcd()==='MUTE',c.lcd());
+c=card('av-receiver',{entity:'media_player.avr'},[mk('media_player.avr','standby')]); ok('avr standby',has(c,'st-standby'),c.wrap.className);
+c=card('av-receiver',{power:'sensor.p'},[mk('sensor.p',120,W)]); ok('avr plug playing',has(c,'st-playing')&&/En lecture/.test(c.txt()),c.txt());
+c=card('av-receiver',{power:'sensor.p'},[mk('sensor.p',0,W)]); ok('avr off',has(c,'st-off'),c.wrap.className);
+
+// fan
+c=card('fan',{power:'sensor.p'},[mk('sensor.p',22,W)]); ok('fan speed 1 + osc',has(c,'st-fan_1')&&has(c,'osc')&&/Vitesse 1/.test(c.txt()),c.wrap.className+' '+c.txt());
+c=card('fan',{power:'sensor.p'},[mk('sensor.p',35,W)]); ok('fan speed 2',has(c,'st-fan_2'),c.wrap.className);
+c=card('fan',{power:'sensor.p',oscillating:false},[mk('sensor.p',45,W)]); ok('fan speed 3 no osc',has(c,'st-fan_3')&&!has(c,'osc'),c.wrap.className);
+c=card('fan',{entity:'fan.f'},[mk('fan.f','on',{percentage:66,oscillating:true})]); ok('fan entity 66 %',has(c,'st-fan_2')&&has(c,'osc')&&/66 %/.test(c.txt()),c.txt());
+c=card('fan',{entity:'fan.f'},[mk('fan.f','off',{percentage:0})]); ok('fan entity off',has(c,'st-off'),c.wrap.className);
+c=card('fan',{power:'sensor.p'},[mk('sensor.p',0,W)]); ok('fan plug off',has(c,'st-off'),c.wrap.className);
 
 // fridge
 c=card('fridge',{power:'sensor.p',temperature:'sensor.t',freezer_temperature:'sensor.f'},[mk('sensor.p',90,W),mk('sensor.t',4,T),mk('sensor.f',-18,T)]);

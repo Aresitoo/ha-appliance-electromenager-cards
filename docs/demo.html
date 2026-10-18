@@ -273,6 +273,20 @@ const SCEN = [
   { kind: 'heat-pump', title: 'Pompe à chaleur (ext.)',
     cfg: { entity: 'climate.ac', power: 'sensor.ac_power' },
     build(ctl) { range(ctl, 'Puissance', 'sensor.ac_power', 0, 2000, 10, 900, 'W', W); } },
+  { kind: 'beer-tap', title: 'Pompe à bière',
+    cfg: { power: 'sensor.beer_power', temperature: 'sensor.beer_temp', keg_level: 'sensor.keg', pouring: 'binary_sensor.pouring' },
+    build(ctl) {
+      range(ctl, 'Puissance', 'sensor.beer_power', 0, 120, 1, 70, 'W', W);
+      range(ctl, 'Température', 'sensor.beer_temp', 0, 15, 0.1, 3.2, '°C', T);
+      range(ctl, 'Fût', 'sensor.keg', 0, 100, 1, 64, '%', { unit_of_measurement: '%' });
+      checks(ctl, [['Service en cours', 'binary_sensor.pouring', false]]);
+    } },
+  { kind: 'av-receiver', title: 'Ampli home cinéma',
+    cfg: { power: 'sensor.avr_power' },
+    build(ctl) { range(ctl, 'Puissance', 'sensor.avr_power', 0, 400, 1, 120, 'W', W); } },
+  { kind: 'fan', title: 'Ventilateur',
+    cfg: { power: 'sensor.fan_power' },
+    build(ctl) { range(ctl, 'Puissance', 'sensor.fan_power', 0, 60, 1, 35, 'W', W); } },
   { kind: 'pellet-stove', title: 'Poêle à granulés',
     cfg: { entity: 'sensor.stove_status', power: 'sensor.stove_power', temperature: 'sensor.stove_temp', target_temperature: 'sensor.stove_target', power_level: 'sensor.stove_level', pellet_level: 'sensor.stove_pellets', energy: 'sensor.stove_energy' },
     build(ctl) {
