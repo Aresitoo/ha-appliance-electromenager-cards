@@ -38,7 +38,7 @@ class ApplianceCardBase extends HTMLElement {
   _ids() {
     const c = this._config;
     return ["entity", "power", "power_solar", "energy_solar", "energy", "cost", "remaining", "progress", "program", "door", "switch",
-      "power_level", "pellet_level", "runtime", "speed", "bed_temperature", "humidity", "light", "zone_1", "zone_2", "zone_3", "zone_4", "mode", "window", "temperature", "target_temperature", "freezer_temperature", "freezer_door"].map((k) => c[k]).filter(Boolean);
+      "power_level", "pellet_level", "runtime", "speed", "bed_temperature", "humidity", "light", "keg_level", "pouring", "zone_1", "zone_2", "zone_3", "zone_4", "mode", "window", "temperature", "target_temperature", "freezer_temperature", "freezer_door"].map((k) => c[k]).filter(Boolean);
   }
 
   _build() {
@@ -99,7 +99,7 @@ class ApplianceCardBase extends HTMLElement {
       temp: S(c.temperature), target: S(c.target_temperature),
       ftemp: S(c.freezer_temperature), fdoor: S(c.freezer_door),
       level: num(S(c.power_level)), pellets: num(S(c.pellet_level)),
-      runtime: parseRemaining(S(c.runtime)), speed: S(c.speed), bedTemp: num(S(c.bed_temperature)), humidity: num(S(c.humidity)), mode: S(c.mode), window: S(c.window), light: S(c.light),
+      runtime: parseRemaining(S(c.runtime)), speed: S(c.speed), bedTemp: num(S(c.bed_temperature)), humidity: num(S(c.humidity)), mode: S(c.mode), window: S(c.window), light: S(c.light), keg: num(S(c.keg_level)), pouring: S(c.pouring),
       status: "idle", phase: null, alerts: [],
     };
     if (main && ["water_heater", "climate"].includes(domainOf(c.entity))) {
@@ -263,6 +263,39 @@ class ApplianceCardBase extends HTMLElement {
       if (sw && String(sw.state).toLowerCase() === "off") m.status = "off";
       m.acMode = mode && mode !== "off" ? mode : null;
       m.accent = m.status === "heating" ? "heat" : "cold";
+    } else if (kind === "fan") {
+      const isFan = main && domainOf(c.entity) === "fan", fs = isFan ? String(main.state).toLowerCase() : "";
+      let lvl = 0, st = null;
+      if (isFan && !BAD.includes(fs)) {
+        if (fs === "on") { const p = Number(main.attributes.percentage); lvl = Number.isFinite(p) && p > 0 ? (p <= 34 ? 1 : p <= 67 ? 2 : 3) : 2; m.pct = Number.isFinite(p) ? p : null; }
+      } else if (["off", "unavailable"].includes(base)) st = base;
+      else if (watts !== null) {
+        lvl = watts > (c.high_threshold ?? 40) ? 3 : watts > (c.mid_threshold ?? 30) ? 2 : powered ? 1 : 0;
+        if (!lvl) st = watts >= (c.standby_threshold ?? 0.3) ? "standby" : "off";
+      } else lvl = ["running", "on"].includes(base) ? 2 : 0;
+      m.status = st || (lvl ? `fan_${lvl}` : "off");
+      if (sw && String(sw.state).toLowerCase() === "off") m.status = "off";
+      m.osc = isFan && main.attributes.oscillating != null ? !!main.attributes.oscillating : c.oscillating !== false;
+    } else if (kind === "beer_tap") {
+      if (["off", "unavailable"].includes(base)) m.status = base;
+      else if (isOn(m.pouring)) m.status = "pouring";
+      else if (watts !== null) m.status = watts > threshold ? "cooling" : watts >= (c.standby_threshold ?? 0.3) ? "ready" : "off";
+      else m.status = base === "running" ? "cooling" : "ready";
+      if (sw && String(sw.state).toLowerCase() === "off") m.status = "off";
+      if (m.keg != null && m.keg <= (c.keg_alert ?? 10) && m.status !== "off") m.alerts.push("keg_low");
+    } else if (kind === "av_receiver") {
+      const isMp = main && domainOf(c.entity) === "media_player", ms = isMp ? String(main.state).toLowerCase() : "";
+      const a = isMp ? (main.attributes || {}) : {};
+      if (isMp && !BAD.includes(ms)) m.status = ["on", "playing", "idle", "buffering"].includes(ms) ? "playing" : ms === "paused" ? "paused" : ms === "standby" ? "standby" : "off";
+      else if (["off", "unavailable"].includes(base)) m.status = base;
+      else if (watts !== null) m.status = watts > threshold ? "playing" : watts >= (c.standby_threshold ?? 0.2) ? "standby" : "off";
+      else m.status = base === "running" ? "playing" : "standby";
+      if (sw && String(sw.state).toLowerCase() === "off") m.status = "off";
+      if (m.status === "playing" && a.is_volume_muted) m.status = "muted";
+      m.vol = a.volume_level != null ? Number(a.volume_level) : null;
+      m.source = a.source || null;
+      const maxP = c.max_power ?? 250;
+      m.amp = m.vol != null ? m.vol : (watts !== null ? Math.max(.25, Math.min(1, watts / maxP)) : .6);
     } else if (kind === "tv") {
       const dom = main ? domainOf(c.entity) : null, ms = main ? String(main.state).toLowerCase() : "";
       if (dom === "media_player" && !BAD.includes(ms)) {
@@ -357,7 +390,7 @@ class ApplianceCardBase extends HTMLElement {
   /* ---------------- rendering ---------------- */
   _lcdText(m) {
     const hass = this._hass, kind = this._kind;
-    const active = ["running", "heating", "preheating", "cooling", "ignition", "filtering", "printing", "producing", "low", "speed1", "speed2", "cooking", "brewing", "keep_warm", "screen_on", "online", "ac_dry", "ac_fan", "defrost"].includes(m.status);
+    const active = ["running", "heating", "preheating", "cooling", "ignition", "filtering", "printing", "producing", "low", "speed1", "speed2", "cooking", "brewing", "keep_warm", "screen_on", "online", "ac_dry", "ac_fan", "defrost", "pouring", "playing", "muted", "fan_1", "fan_2", "fan_3"].includes(m.status);
     if (m.status === "unavailable") return "- - -";
     if (["fridge", "wine_cooler", "chest_freezer", "drawer_freezer"].includes(kind)) return m.tempVal != null ? `${fmtNum(hass, m.tempVal, 0)}°` : "--°";
     if (kind === "towel_dryer") {
@@ -413,6 +446,17 @@ class ApplianceCardBase extends HTMLElement {
       if (active) return m.remaining ? lcdDuration(m.remaining) : "ON";
       return fmtClock(hass, new Date());
     }
+    if (kind === "beer_tap") {
+      if (m.status === "off" || m.status === "unavailable") return "";
+      return m.tempVal != null ? `${fmtNum(hass, m.tempVal, 1)}°` : m.status === "cooling" ? "COLD" : "READY";
+    }
+    if (kind === "av_receiver") {
+      if (["off", "unavailable", "standby"].includes(m.status)) return "";
+      if (m.status === "muted") return "MUTE";
+      if (m.status === "paused") return "PAUSE";
+      if (m.source) return String(m.source).toUpperCase().slice(0, 9);
+      return m.vol != null ? `VOL ${Math.round(m.vol * 100)}` : "ON";
+    }
     if (kind === "ac_split") {
       if (m.status === "off" || m.status === "unavailable") return "";
       return m.targetVal != null ? `${Math.round(m.targetVal)}°` : m.tempVal != null ? `${Math.round(m.tempVal)}°` : "ON";
@@ -443,15 +487,17 @@ class ApplianceCardBase extends HTMLElement {
   _render(m) {
     const hass = this._hass, c = this._config, kind = this._kind;
     const $ = (i) => this.shadowRoot.getElementById(i);
-    const active = ["running", "heating", "preheating", "cooling", "ignition", "filtering", "printing", "producing", "low", "speed1", "speed2", "cooking", "brewing", "keep_warm", "screen_on", "online", "ac_dry", "ac_fan", "defrost"].includes(m.status);
+    const active = ["running", "heating", "preheating", "cooling", "ignition", "filtering", "printing", "producing", "low", "speed1", "speed2", "cooking", "brewing", "keep_warm", "screen_on", "online", "ac_dry", "ac_fan", "defrost", "pouring", "playing", "muted", "fan_1", "fan_2", "fan_3"].includes(m.status);
     $("wrap").className = [
       "wrap", `k-${kind}`, `st-${m.status}`, `accent-${m.accent || this._def.accent}`,
       active ? "active" : "", m.phase ? `ph-${m.phase}` : "",
       m.alerts.length ? "alert" : "", isOn(m.door) ? "door-open" : "", isOn(m.fdoor) ? "fz-open" : "",
-      m.alerts.includes("too_warm") ? "warm" : "", m.alerts.includes("humid") ? "humid" : "", c.animations === false ? "no-anim" : "", m.lights ? "lights-on" : "", m.solarHeat ? "solar-heat" : "", m.acMode ? `mode-${m.acMode}` : "",
+      m.alerts.includes("too_warm") ? "warm" : "", m.alerts.includes("humid") ? "humid" : "", c.animations === false ? "no-anim" : "", m.lights ? "lights-on" : "", m.solarHeat ? "solar-heat" : "", m.acMode ? `mode-${m.acMode}` : "", m.osc ? "osc" : "",
     ].filter(Boolean).join(" ");
 
     // illustration dynamic parts
+    if (kind === "av_receiver") $("wrap").style.setProperty("--amp", (m.amp ?? .6).toFixed(2));
+    if (kind === "beer_tap") $("wrap").style.setProperty("--keg", ((m.keg ?? 70) / 100).toFixed(2));
     if (kind === "tv") {
       const prev = this._tvPrev, on = m.status === "screen_on";
       const scr = this.shadowRoot.querySelector(".tv-flash");
@@ -526,6 +572,9 @@ class ApplianceCardBase extends HTMLElement {
       if (![...OFF_STATES, ...DONE_STATES, "on", "running", "run"].includes(raw)) statusTxt = stateText(hass, m.main);
     }
     if ((kind === "radiator" || kind === "towel_dryer") && m.radMode && m.radMode !== "off" && m.status !== "off" && m.status !== "unavailable") statusTxt += ` · ${tr(hass, m.radMode)}`;
+    if (kind === "fan" && m.pct != null && /^fan_/.test(m.status)) statusTxt += ` · ${Math.round(m.pct)} %`;
+    if (kind === "av_receiver" && m.vol != null && ["playing", "paused"].includes(m.status)) statusTxt += ` · Vol ${Math.round(m.vol * 100)} %`;
+    if (kind === "av_receiver" && m.source && ["playing", "paused", "muted"].includes(m.status)) statusTxt += ` · ${m.source}`;
     if (kind === "tv" && m.status === "screen_on" && m.main && domainOf(c.entity) === "media_player") {
       const a = m.main.attributes || {}, what = a.app_name || a.media_title || a.source;
       if (what) statusTxt += ` · ${what}`;
@@ -603,6 +652,9 @@ class ApplianceCardBase extends HTMLElement {
     if (kind === "chest_freezer" || kind === "drawer_freezer") {
       if (m.tempVal != null) tile("mdi:snowflake-thermometer", `${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}`, tr(hass, "temperature"), tEntity,
         m.alerts.includes("too_warm") ? "warn" : "");
+    } else if (kind === "beer_tap") {
+      if (m.tempVal != null) tile("mdi:thermometer", `${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}`, tr(hass, "temperature"), tEntity);
+      if (m.keg != null) tile("mdi:keg", `${fmtNum(hass, m.keg, 0)} %`, tr(hass, "keg"), c.keg_level, m.alerts.includes("keg_low") ? "warn" : "");
     } else if (kind === "wine_cooler") {
       if (m.tempVal != null) tile("mdi:thermometer", `${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}`, tr(hass, "temperature"), tEntity, m.alerts.includes("too_warm") ? "warn" : "");
     } else if (kind === "fridge") {

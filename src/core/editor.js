@@ -21,6 +21,8 @@ const SEL = {
   pellet_level: { entity: { domain: ["sensor", "number", "input_number"] } },
   runtime: { entity: { domain: ["sensor"] } },
   light: { entity: { domain: ["light", "switch", "binary_sensor", "input_boolean"] } },
+  keg_level: { entity: { domain: ["sensor", "number", "input_number"] } },
+  pouring: { entity: { domain: ["binary_sensor", "input_boolean", "switch"] } },
   bed_temperature: { entity: { domain: ["sensor"], device_class: "temperature" } },
   humidity: { entity: { domain: ["sensor"], device_class: "humidity" } },
   mode: { entity: { domain: ["select", "input_select", "sensor", "climate"] } },
@@ -55,6 +57,14 @@ function buildForm(kind) {
           ...(["ac_split", "heat_pump"].includes(kind) ? [
             { name: "hvac", selector: { select: { mode: "dropdown", options: [
               { value: "auto", label: "Auto (saison) / Auto (season)" }, { value: "cool", label: "Climatisation / Cooling" }, { value: "heat", label: "Chauffage / Heating" }] } } },
+          ] : []),
+          ...(kind === "fan" ? [
+            { name: "oscillating", selector: { boolean: {} }, default: true },
+            { name: "mid_threshold", selector: { number: { min: 5, max: 200, step: 1, mode: "box", unit_of_measurement: "W" } } },
+            { name: "high_threshold", selector: { number: { min: 5, max: 300, step: 1, mode: "box", unit_of_measurement: "W" } } },
+          ] : []),
+          ...(kind === "av_receiver" ? [
+            { name: "max_power", selector: { number: { min: 50, max: 2000, step: 10, mode: "box", unit_of_measurement: "W" } } },
           ] : []),
           ...(kind === "range_hood" ? [
             { name: "high_threshold", selector: { number: { min: 40, max: 600, step: 5, mode: "box", unit_of_measurement: "W" } } },
@@ -115,7 +125,7 @@ function stubFor(kind, hass) {
   const cost = pick((i) => i.startsWith("sensor.") && /(cout|cost|prix)/.test(i) && /(jour|daily|today|day)/.test(i))
     || pick((i, st) => i.startsWith("sensor.") && dc(st) === "monetary");
   const sw = pick((i) => i.startsWith("switch.") && !/(child_lock|lock|led|indicator)/.test(i));
-  const wh = kind === "water_heater" ? pick((i) => i.startsWith("water_heater.")) : kind === "tv" ? pick((i) => i.startsWith("media_player.")) : ["ac_split", "heat_pump"].includes(kind) ? pick((i) => i.startsWith("climate.")) : null;
+  const wh = kind === "water_heater" ? pick((i) => i.startsWith("water_heater.")) : kind === "tv" || kind === "av_receiver" ? pick((i) => i.startsWith("media_player.")) : kind === "fan" ? pick((i) => i.startsWith("fan.")) : ["ac_split", "heat_pump"].includes(kind) ? pick((i) => i.startsWith("climate.")) : null;
   const temp = pick((i, st) => i.startsWith("sensor.") && dc(st) === "temperature");
   const flag = ["washer", "dryer", "dishwasher", "microwave"].includes(kind)
     ? pick((i) => /^(input_boolean|binary_sensor)\./.test(i) && /(running|en_cours|marche|cycle)/.test(i)) : null;
@@ -124,11 +134,11 @@ function stubFor(kind, hass) {
   if (power) cfg.power = power;
   if (energy) cfg.energy = energy;
   if (cost) cfg.cost = cost;
-  if (sw && ["water_heater", "oven", "microwave", "pool_pump", "air_fryer", "coffee_maker", "tv", "range_hood", "ac_split", "heat_pump", "towel_dryer", "server_rack", "desktop_pc", "laptop", "wine_cooler"].includes(kind)) cfg.switch = sw;
+  if (sw && ["water_heater", "oven", "microwave", "pool_pump", "air_fryer", "coffee_maker", "tv", "range_hood", "ac_split", "heat_pump", "towel_dryer", "server_rack", "desktop_pc", "laptop", "wine_cooler", "beer_tap", "av_receiver", "fan"].includes(kind)) cfg.switch = sw;
   else if (sw && !cfg.entity) cfg.entity = sw;
   const clim = kind === "radiator" ? pick((i) => i.startsWith("climate.")) : null;
   if (clim) cfg.entity = clim;
-  if (temp && ["fridge", "water_heater", "oven", "air_fryer", "pellet_stove", "pool_pump", "printer_3d", "chest_freezer", "drawer_freezer", "radiator", "towel_dryer", "server_rack", "wine_cooler"].includes(kind)) cfg.temperature = temp;
+  if (temp && ["fridge", "water_heater", "oven", "air_fryer", "beer_tap", "pellet_stove", "pool_pump", "printer_3d", "chest_freezer", "drawer_freezer", "radiator", "towel_dryer", "server_rack", "wine_cooler"].includes(kind)) cfg.temperature = temp;
   if (!cfg.entity && !cfg.power && !cfg.switch && !cfg.temperature) cfg.power = "sensor.example_power";
   return cfg;
 }
