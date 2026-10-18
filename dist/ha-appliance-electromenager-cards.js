@@ -8,7 +8,7 @@
  */
 (() => {
 "use strict";
-const VERSION = "1.17.0";
+const VERSION = "1.20.0";
 
 /* ------------------------------------------------------------------ */
 /* i18n — strings live in src/i18n/<lang>.json, inlined by build.js    */
@@ -25,6 +25,9 @@ const STRINGS = {
     "coffee_maker": "Coffee maker",
     "tv": "TV",
     "range_hood": "Range hood",
+    "beer_tap": "Beer tap",
+    "av_receiver": "Home cinema amplifier",
+    "fan": "Fan",
     "towel_dryer": "Heated towel rail",
     "server_rack": "Server rack (homelab)",
     "desktop_pc": "Desktop PC",
@@ -175,7 +178,19 @@ const STRINGS = {
     "lcd_ignition": "IGNIT",
     "lcd_extinguishing": "COOL",
     "lcd_brewing": "BREW",
-    "lcd_ready": "READY"
+    "lcd_ready": "READY",
+    "pouring": "Pouring",
+    "playing": "Playing",
+    "muted": "Muted",
+    "keg": "Keg",
+    "keg_low": "Keg almost empty",
+    "f_keg_level": "Keg level sensor (%)",
+    "f_pouring": "Pouring sensor (optional)",
+    "fan_1": "Speed 1",
+    "fan_2": "Speed 2",
+    "fan_3": "Speed 3",
+    "f_oscillating": "Oscillation",
+    "f_mid_threshold": "Speed 2 above (W)"
   },
   "de": {
     "washer": "Waschmaschine",
@@ -188,6 +203,9 @@ const STRINGS = {
     "coffee_maker": "Kaffeemaschine",
     "tv": "Fernseher",
     "range_hood": "Dunstabzugshaube",
+    "beer_tap": "Zapfanlage",
+    "av_receiver": "Heimkino-Verstärker",
+    "fan": "Ventilator",
     "towel_dryer": "Handtuchheizkörper",
     "server_rack": "Serverschrank (Homelab)",
     "desktop_pc": "Desktop-PC",
@@ -338,7 +356,19 @@ const STRINGS = {
     "lcd_ignition": "ZÜND",
     "lcd_extinguishing": "STOP",
     "lcd_brewing": "BRÜHT",
-    "lcd_ready": "BEREIT"
+    "lcd_ready": "BEREIT",
+    "pouring": "Zapft",
+    "playing": "Wiedergabe",
+    "muted": "Stumm",
+    "keg": "Fass",
+    "keg_low": "Fass fast leer",
+    "f_keg_level": "Fassfüllstand-Sensor (%)",
+    "f_pouring": "Zapf-Sensor (optional)",
+    "fan_1": "Stufe 1",
+    "fan_2": "Stufe 2",
+    "fan_3": "Stufe 3",
+    "f_oscillating": "Oszillation",
+    "f_mid_threshold": "Stufe 2 ab (W)"
   },
   "fr": {
     "washer": "Lave-linge",
@@ -351,6 +381,9 @@ const STRINGS = {
     "coffee_maker": "Cafetière",
     "tv": "Téléviseur",
     "range_hood": "Hotte aspirante",
+    "beer_tap": "Pompe à bière",
+    "av_receiver": "Ampli home cinéma",
+    "fan": "Ventilateur",
     "towel_dryer": "Sèche-serviettes",
     "server_rack": "Baie informatique (homelab)",
     "desktop_pc": "PC fixe",
@@ -501,7 +534,19 @@ const STRINGS = {
     "lcd_ignition": "ALLUM",
     "lcd_extinguishing": "EXTIN",
     "lcd_brewing": "CAFE",
-    "lcd_ready": "PRET"
+    "lcd_ready": "PRET",
+    "pouring": "Service en cours",
+    "playing": "En lecture",
+    "muted": "Muet",
+    "keg": "Fût",
+    "keg_low": "Fût presque vide",
+    "f_keg_level": "Capteur de niveau du fût (%)",
+    "f_pouring": "Capteur de service (optionnel)",
+    "fan_1": "Vitesse 1",
+    "fan_2": "Vitesse 2",
+    "fan_3": "Vitesse 3",
+    "f_oscillating": "Oscillation",
+    "f_mid_threshold": "Vitesse 2 au-dessus de (W)"
   },
   "nb": {
     "washer": "Vaskemaskin",
@@ -514,6 +559,9 @@ const STRINGS = {
     "coffee_maker": "Kaffetrakter",
     "tv": "TV",
     "range_hood": "Kjøkkenvifte",
+    "beer_tap": "Øltapper",
+    "av_receiver": "Hjemmekino-forsterker",
+    "fan": "Vifte",
     "towel_dryer": "Håndklevarmer",
     "server_rack": "Serverrack (homelab)",
     "desktop_pc": "Stasjonær PC",
@@ -664,7 +712,19 @@ const STRINGS = {
     "lcd_ignition": "TENN",
     "lcd_extinguishing": "KJØL",
     "lcd_brewing": "TRAKT",
-    "lcd_ready": "KLAR"
+    "lcd_ready": "KLAR",
+    "pouring": "Tapper",
+    "playing": "Spiller",
+    "muted": "Dempet",
+    "keg": "Fat",
+    "keg_low": "Fatet er nesten tomt",
+    "f_keg_level": "Fatnivå-sensor (%)",
+    "f_pouring": "Tappesensor (valgfri)",
+    "fan_1": "Hastighet 1",
+    "fan_2": "Hastighet 2",
+    "fan_3": "Hastighet 3",
+    "f_oscillating": "Svinging",
+    "f_mid_threshold": "Hastighet 2 over (W)"
   }
 };
 const lang = (hass) => {
@@ -819,6 +879,68 @@ ${lcd(46, 33, 28, 11)}
 <path d="M20 98.5h27M73 98.5h27" stroke="#fff" stroke-opacity=".14" stroke-width="1" stroke-linecap="round"/>
 <rect x="29" y="105" width="9" height="2.2" rx="1.1" fill="#59616b"/><rect x="82" y="105" width="9" height="2.2" rx="1.1" fill="#59616b"/>
 <path d="M11 55l14-1M64 55l14-1" stroke="#fff" stroke-opacity=".5" stroke-width=".8" stroke-linecap="round"/>`;
+
+SVG.av_receiver = () => `
+<defs>${DEFS}
+<linearGradient id="ID-avb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a4048"/><stop offset=".15" stop-color="#1d2126"/><stop offset="1" stop-color="#0d0f12"/></linearGradient>
+<radialGradient id="ID-ring" cx=".5" cy=".5" r=".5"><stop offset=".7" stop-color="#38d9ff" stop-opacity="0"/><stop offset=".85" stop-color="#38d9ff" stop-opacity=".9"/><stop offset="1" stop-color="#38d9ff" stop-opacity="0"/></radialGradient></defs>
+<ellipse cx="60" cy="104" rx="58" ry="4" fill="url(#ID-shadow)"/>
+<g class="av-notes" fill="#9fd3f0"><path d="M30 44v-9l6-2v9"/><circle cx="29" cy="44" r="1.8"/><circle cx="35" cy="42" r="1.8"/><path d="M60 40v-8"/><circle cx="59" cy="40" r="1.8"/><path d="M60 32l4 1.5" stroke="#9fd3f0" stroke-width="1"/><path d="M88 44v-9l6-2v9"/><circle cx="87" cy="44" r="1.8"/><circle cx="93" cy="42" r="1.8"/></g>
+<g class="av-waves" fill="none" stroke-linecap="round"><path d="M2 64q-4 8 0 16"/><path d="M-3 60q-6 12 0 24"/><path d="M118 64q4 8 0 16"/><path d="M123 60q6 12 0 24"/></g>
+<rect x="10" y="96" width="12" height="5" rx="1.5" fill="#15181b"/><rect x="98" y="96" width="12" height="5" rx="1.5" fill="#15181b"/>
+<rect x="4" y="52" width="112" height="45" rx="3.5" fill="url(#ID-avb)" stroke="#000" stroke-width=".6"/>
+<path d="M6 54.5h108" stroke="#fff" stroke-opacity=".18" stroke-width="1"/>
+<path d="M6 92h108" stroke="#2c3138" stroke-width=".8"/>
+<circle class="av-pwr" cx="14" cy="62" r="1.4"/>
+<circle cx="16" cy="78" r="6.5" fill="url(#ID-chrome)" stroke="#2a2f35" stroke-width=".6"/>
+<circle cx="16" cy="78" r="4.4" fill="#2a2f35"/><path d="M16 78l0-3.6" stroke="#cfd6dd" stroke-width="1" stroke-linecap="round"/>
+<rect x="30" y="58" width="52" height="14" rx="2" fill="#071016" stroke="#2c3138" stroke-width=".6"/>
+<text class="lcd av-lcd" x="56" y="67.4" text-anchor="middle">OFF</text>
+<g class="av-eq">
+  <rect x="33" y="76" width="3.2" height="12" rx=".6"/><rect x="38" y="76" width="3.2" height="12" rx=".6"/><rect x="43" y="76" width="3.2" height="12" rx=".6"/>
+  <rect x="48" y="76" width="3.2" height="12" rx=".6"/><rect x="53" y="76" width="3.2" height="12" rx=".6"/><rect x="58" y="76" width="3.2" height="12" rx=".6"/>
+  <rect x="63" y="76" width="3.2" height="12" rx=".6"/><rect x="68" y="76" width="3.2" height="12" rx=".6"/><rect x="73" y="76" width="3.2" height="12" rx=".6"/>
+  <rect x="78" y="76" width="3.2" height="12" rx=".6"/>
+</g>
+<circle class="av-ring" cx="99" cy="74" r="16" fill="url(#ID-ring)"/>
+<circle cx="99" cy="74" r="12.5" fill="url(#ID-chrome)" stroke="#2a2f35" stroke-width=".7"/>
+<circle cx="99" cy="74" r="10" fill="url(#ID-steel)"/>
+<g class="av-knob"><circle cx="99" cy="66.5" r="1.1" fill="#2a2f35"/></g>
+<path d="M92 68a10 10 0 0 1 8-4" stroke="#fff" stroke-opacity=".7" stroke-width="1.2" fill="none" stroke-linecap="round"/>`;
+
+SVG.beer_tap = () => `
+<defs>${DEFS}<clipPath id="ID-gl"><path d="M85 80h26l-2.4 36q-.2 2-2.2 2h-17.2q-2 0-2.2-2z"/></clipPath><clipPath id="ID-kw"><rect x="26" y="70" width="40" height="34" rx="4"/></clipPath>
+<linearGradient id="ID-beer" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7c948"/><stop offset="1" stop-color="#d8891c"/></linearGradient>
+<linearGradient id="ID-glassb" x1="0" x2="1"><stop offset="0" stop-color="#ffffff" stop-opacity=".35"/><stop offset=".3" stop-color="#ffffff" stop-opacity=".08"/><stop offset="1" stop-color="#dfe9f2" stop-opacity=".3"/></linearGradient></defs>
+<ellipse cx="60" cy="128" rx="54" ry="4.5" fill="url(#ID-shadow)"/>
+<g class="bt-mist"><circle cx="16" cy="70" r="3"/><circle cx="14" cy="88" r="2.6"/><circle cx="18" cy="104" r="3.2"/></g>
+<rect x="12" y="44" width="68" height="78" rx="10" fill="url(#ID-dark)" stroke="#05070a" stroke-width=".6"/>
+<path d="M16 48h60" stroke="#fff" stroke-opacity=".15" stroke-width="1.2" stroke-linecap="round"/>
+${lcd(28, 52, 36, 11)}
+<g class="bt-flake" stroke="#6fd8ff" stroke-width=".8" stroke-linecap="round"><path d="M22 54.5v6M19.4 56l5.2 3M19.4 59l5.2-3"/></g>
+<rect x="24" y="68" width="44" height="38" rx="5" fill="#15181b" stroke="#3a424b" stroke-width=".6"/>
+<g clip-path="url(#ID-kw)">
+  <rect x="30" y="70" width="32" height="40" rx="3" fill="url(#ID-inox)"/>
+  <path d="M30 78h32M30 98h32" stroke="#8f979f" stroke-width="1.2"/>
+  <rect x="58" y="72" width="3" height="32" rx="1.5" fill="#2a2f35"/>
+  <g class="bt-keg"><rect x="58" y="72" width="3" height="32" rx="1.5" fill="url(#ID-beer)"/></g>
+</g>
+<path d="M26 70L40 70L26 86z" fill="#fff" opacity=".08"/>
+<rect x="76" y="114" width="40" height="7" rx="2" fill="url(#ID-chrome)" stroke="#6f7780" stroke-width=".5"/>
+<rect x="79" y="114.5" width="34" height="2" fill="url(#ID-mesh)"/>
+<path d="M40 44v-26q0-8 8-8h40q8 0 8 8v10" fill="none" stroke="url(#ID-chrome)" stroke-width="7" stroke-linecap="round"/>
+<path d="M40 44v-26q0-8 8-8h40q8 0 8 8v10" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="1.2" stroke-linecap="round"/>
+<rect x="93" y="27" width="6" height="7" rx="1.5" fill="#8f979f"/>
+<g class="bt-handle"><rect x="61" y="-6" width="9" height="16" rx="3" fill="#1d2126" stroke="#000" stroke-width=".5"/><rect x="63" y="-4" width="2" height="12" rx="1" fill="#fff" opacity=".2"/></g>
+<rect x="60" y="8" width="11" height="4" rx="1.5" fill="url(#ID-chrome)"/>
+<path class="bt-stream" d="M96 34v46"/>
+<g clip-path="url(#ID-gl)">
+  <g class="bt-beer"><rect x="84" y="80" width="28" height="40" fill="url(#ID-beer)"/><rect x="84" y="80" width="28" height="6" fill="#fff8e6"/></g>
+  <g class="bt-bubbles" fill="#fff6c8"><circle cx="92" cy="114" r=".8"/><circle cx="99" cy="116" r=".7"/><circle cx="104" cy="113" r=".9"/><circle cx="95" cy="110" r=".6"/></g>
+</g>
+<path d="M85 80h26l-2.4 36q-.2 2-2.2 2h-17.2q-2 0-2.2-2z" fill="url(#ID-glassb)" stroke="#d6e2ec" stroke-opacity=".8" stroke-width=".7"/>
+<path d="M88 84l1.6 28" stroke="#fff" stroke-opacity=".55" stroke-width="1.2" stroke-linecap="round"/>
+<g class="bt-drops" fill="#cfe9ff"><circle cx="87.5" cy="92" r=".7"/><circle cx="108.5" cy="98" r=".7"/><circle cx="90" cy="104" r=".6"/></g>`;
 
 SVG.chest_freezer = () => `
 <defs>${DEFS}
@@ -1088,6 +1210,41 @@ SVG.dryer = () => `
   <rect x="95.5" y="74" width="4" height="12" rx="1.5" fill="#9aa3ad"/>
   <rect x="22" y="114" width="76" height="9" rx="2" fill="#e3e7eb" stroke="#c3c9d0" stroke-width=".6"/>
   <path d="M28 116.5h64M28 118.5h64M28 120.5h64" stroke="#b7bec6" stroke-width=".6"/>
+</g>`;
+
+SVG.fan = () => `
+<defs>${DEFS}
+<radialGradient id="ID-cage" cx=".5" cy=".5" r=".5"><stop offset=".82" stop-color="#cfe6f5" stop-opacity=".1"/><stop offset="1" stop-color="#cfe6f5" stop-opacity=".25"/></radialGradient>
+<linearGradient id="ID-blade" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#bfe3f7" stop-opacity=".95"/><stop offset="1" stop-color="#6fa9cf" stop-opacity=".85"/></linearGradient></defs>
+<ellipse cx="60" cy="128" rx="34" ry="4" fill="url(#ID-shadow)"/>
+<g class="fn-air" fill="none" stroke-linecap="round"><path d="M22 40q-10 12 0 26"/><path d="M14 34q-14 18 0 38"/><path d="M98 40q10 12 0 26"/><path d="M106 34q14 18 0 38"/></g>
+<ellipse cx="60" cy="122" rx="28" ry="6" fill="url(#ID-dark)"/>
+<ellipse cx="60" cy="120" rx="27" ry="5.2" fill="#2a2f35"/>
+<path d="M40 119.5q20-5 40 0" stroke="#fff" stroke-opacity=".15" stroke-width="1" fill="none"/>
+<circle class="fn-led l1" cx="50" cy="121" r="1.3"/><circle class="fn-led l2" cx="56" cy="121.8" r="1.3"/><circle class="fn-led l3" cx="62" cy="121.8" r="1.3"/>
+<circle cx="70" cy="121" r="1.9" fill="url(#ID-chrome)"/>
+<rect x="57.5" y="80" width="5" height="40" rx="2" fill="url(#ID-chrome)" stroke="#7d858e" stroke-width=".4"/>
+<rect x="56.5" y="96" width="7" height="4" rx="1.5" fill="#59616b"/>
+<g class="fn-head">
+  <path d="M52 78h16l-2 8h-12z" fill="url(#ID-dark)"/>
+  <ellipse cx="60" cy="52" rx="13" ry="11" fill="url(#ID-dark)"/>
+  <circle cx="60" cy="52" r="35" fill="url(#ID-cage)" stroke="#d7dce1" stroke-width="1.6"/>
+  <g class="fn-blades">
+    <path d="M60 52q-6-16 2-28q12 6 2 28z" fill="url(#ID-blade)"/>
+    <path d="M60 52q-6-16 2-28q12 6 2 28z" fill="url(#ID-blade)" transform="rotate(72 60 52)"/>
+    <path d="M60 52q-6-16 2-28q12 6 2 28z" fill="url(#ID-blade)" transform="rotate(144 60 52)"/>
+    <path d="M60 52q-6-16 2-28q12 6 2 28z" fill="url(#ID-blade)" transform="rotate(216 60 52)"/>
+    <path d="M60 52q-6-16 2-28q12 6 2 28z" fill="url(#ID-blade)" transform="rotate(288 60 52)"/>
+  </g>
+  <circle class="fn-blur" cx="60" cy="52" r="30" fill="#bfe3f7"/>
+  <g fill="none" stroke="#e6eaee" stroke-opacity=".75" stroke-width=".6">
+    <circle cx="60" cy="52" r="10"/><circle cx="60" cy="52" r="18"/><circle cx="60" cy="52" r="26"/>
+    <path d="M60 17v70M25 52h70M35.3 27.3l49.4 49.4M84.7 27.3l-49.4 49.4M46.6 19.7l26.8 64.6M73.4 19.7l-26.8 64.6M27.7 38.6l64.6 26.8M92.3 38.6l-64.6 26.8"/>
+  </g>
+  <circle cx="60" cy="52" r="6" fill="url(#ID-chrome)" stroke="#7d858e" stroke-width=".5"/>
+  <circle cx="60" cy="52" r="2.2" fill="#38a3d6"/>
+  <path d="M34 34a35 35 0 0 1 22-15" stroke="#fff" stroke-opacity=".6" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+  <g class="fn-ribbon"><path d="M93 44q8 2 12 -2q-4 6 -12 6z" fill="#ff7a59"/></g>
 </g>`;
 
 SVG.fridge = () => `
@@ -1902,6 +2059,15 @@ const DEF = {
   heat_pump: { accent: "heat", threshold: 60,
     fields: ["entity", "power", "energy", "cost", "temperature", "switch"],
     keys: ["pac", "pompe_a_chaleur", "heat_pump", "heatpump", "unite_ext", "groupe_ext", "outdoor_unit"] },
+  fan: { accent: "cold", threshold: 5,
+    fields: ["entity", "power", "energy", "cost", "switch"],
+    keys: ["ventilateur", "ventilo", "fan", "brasseur", "dyson"] },
+  beer_tap: { accent: "cold", threshold: 30,
+    fields: ["entity", "power", "energy", "cost", "temperature", "keg_level", "pouring", "switch"],
+    keys: ["biere", "beer", "tireuse", "perfectdraft", "beertender", "pompe_a_biere", "kegerator", "draft"] },
+  av_receiver: { accent: "active", threshold: 40,
+    fields: ["entity", "power", "energy", "cost", "switch"],
+    keys: ["ampli", "amplificateur", "home_cinema", "homecinema", "avr", "receiver", "denon", "yamaha", "onkyo", "marantz", "pioneer"] },
   tv: { accent: "active", threshold: 25,
     fields: ["entity", "power", "energy", "cost", "switch"],
     keys: ["tv", "tele", "television", "televiseur", "bravia", "webos", "android_tv", "tizen", "salon_tv"] },
@@ -2091,7 +2257,7 @@ class ApplianceCardBase extends HTMLElement {
   _ids() {
     const c = this._config;
     return ["entity", "power", "power_solar", "energy_solar", "energy", "cost", "remaining", "progress", "program", "door", "switch",
-      "power_level", "pellet_level", "runtime", "speed", "bed_temperature", "humidity", "light", "zone_1", "zone_2", "zone_3", "zone_4", "mode", "window", "temperature", "target_temperature", "freezer_temperature", "freezer_door"].map((k) => c[k]).filter(Boolean);
+      "power_level", "pellet_level", "runtime", "speed", "bed_temperature", "humidity", "light", "keg_level", "pouring", "zone_1", "zone_2", "zone_3", "zone_4", "mode", "window", "temperature", "target_temperature", "freezer_temperature", "freezer_door"].map((k) => c[k]).filter(Boolean);
   }
 
   _build() {
@@ -2152,7 +2318,7 @@ class ApplianceCardBase extends HTMLElement {
       temp: S(c.temperature), target: S(c.target_temperature),
       ftemp: S(c.freezer_temperature), fdoor: S(c.freezer_door),
       level: num(S(c.power_level)), pellets: num(S(c.pellet_level)),
-      runtime: parseRemaining(S(c.runtime)), speed: S(c.speed), bedTemp: num(S(c.bed_temperature)), humidity: num(S(c.humidity)), mode: S(c.mode), window: S(c.window), light: S(c.light),
+      runtime: parseRemaining(S(c.runtime)), speed: S(c.speed), bedTemp: num(S(c.bed_temperature)), humidity: num(S(c.humidity)), mode: S(c.mode), window: S(c.window), light: S(c.light), keg: num(S(c.keg_level)), pouring: S(c.pouring),
       status: "idle", phase: null, alerts: [],
     };
     if (main && ["water_heater", "climate"].includes(domainOf(c.entity))) {
@@ -2316,6 +2482,39 @@ class ApplianceCardBase extends HTMLElement {
       if (sw && String(sw.state).toLowerCase() === "off") m.status = "off";
       m.acMode = mode && mode !== "off" ? mode : null;
       m.accent = m.status === "heating" ? "heat" : "cold";
+    } else if (kind === "fan") {
+      const isFan = main && domainOf(c.entity) === "fan", fs = isFan ? String(main.state).toLowerCase() : "";
+      let lvl = 0, st = null;
+      if (isFan && !BAD.includes(fs)) {
+        if (fs === "on") { const p = Number(main.attributes.percentage); lvl = Number.isFinite(p) && p > 0 ? (p <= 34 ? 1 : p <= 67 ? 2 : 3) : 2; m.pct = Number.isFinite(p) ? p : null; }
+      } else if (["off", "unavailable"].includes(base)) st = base;
+      else if (watts !== null) {
+        lvl = watts > (c.high_threshold ?? 40) ? 3 : watts > (c.mid_threshold ?? 30) ? 2 : powered ? 1 : 0;
+        if (!lvl) st = watts >= (c.standby_threshold ?? 0.3) ? "standby" : "off";
+      } else lvl = ["running", "on"].includes(base) ? 2 : 0;
+      m.status = st || (lvl ? `fan_${lvl}` : "off");
+      if (sw && String(sw.state).toLowerCase() === "off") m.status = "off";
+      m.osc = isFan && main.attributes.oscillating != null ? !!main.attributes.oscillating : c.oscillating !== false;
+    } else if (kind === "beer_tap") {
+      if (["off", "unavailable"].includes(base)) m.status = base;
+      else if (isOn(m.pouring)) m.status = "pouring";
+      else if (watts !== null) m.status = watts > threshold ? "cooling" : watts >= (c.standby_threshold ?? 0.3) ? "ready" : "off";
+      else m.status = base === "running" ? "cooling" : "ready";
+      if (sw && String(sw.state).toLowerCase() === "off") m.status = "off";
+      if (m.keg != null && m.keg <= (c.keg_alert ?? 10) && m.status !== "off") m.alerts.push("keg_low");
+    } else if (kind === "av_receiver") {
+      const isMp = main && domainOf(c.entity) === "media_player", ms = isMp ? String(main.state).toLowerCase() : "";
+      const a = isMp ? (main.attributes || {}) : {};
+      if (isMp && !BAD.includes(ms)) m.status = ["on", "playing", "idle", "buffering"].includes(ms) ? "playing" : ms === "paused" ? "paused" : ms === "standby" ? "standby" : "off";
+      else if (["off", "unavailable"].includes(base)) m.status = base;
+      else if (watts !== null) m.status = watts > threshold ? "playing" : watts >= (c.standby_threshold ?? 0.2) ? "standby" : "off";
+      else m.status = base === "running" ? "playing" : "standby";
+      if (sw && String(sw.state).toLowerCase() === "off") m.status = "off";
+      if (m.status === "playing" && a.is_volume_muted) m.status = "muted";
+      m.vol = a.volume_level != null ? Number(a.volume_level) : null;
+      m.source = a.source || null;
+      const maxP = c.max_power ?? 250;
+      m.amp = m.vol != null ? m.vol : (watts !== null ? Math.max(.25, Math.min(1, watts / maxP)) : .6);
     } else if (kind === "tv") {
       const dom = main ? domainOf(c.entity) : null, ms = main ? String(main.state).toLowerCase() : "";
       if (dom === "media_player" && !BAD.includes(ms)) {
@@ -2410,7 +2609,7 @@ class ApplianceCardBase extends HTMLElement {
   /* ---------------- rendering ---------------- */
   _lcdText(m) {
     const hass = this._hass, kind = this._kind;
-    const active = ["running", "heating", "preheating", "cooling", "ignition", "filtering", "printing", "producing", "low", "speed1", "speed2", "cooking", "brewing", "keep_warm", "screen_on", "online", "ac_dry", "ac_fan", "defrost"].includes(m.status);
+    const active = ["running", "heating", "preheating", "cooling", "ignition", "filtering", "printing", "producing", "low", "speed1", "speed2", "cooking", "brewing", "keep_warm", "screen_on", "online", "ac_dry", "ac_fan", "defrost", "pouring", "playing", "muted", "fan_1", "fan_2", "fan_3"].includes(m.status);
     if (m.status === "unavailable") return "- - -";
     if (["fridge", "wine_cooler", "chest_freezer", "drawer_freezer"].includes(kind)) return m.tempVal != null ? `${fmtNum(hass, m.tempVal, 0)}°` : "--°";
     if (kind === "towel_dryer") {
@@ -2466,6 +2665,17 @@ class ApplianceCardBase extends HTMLElement {
       if (active) return m.remaining ? lcdDuration(m.remaining) : "ON";
       return fmtClock(hass, new Date());
     }
+    if (kind === "beer_tap") {
+      if (m.status === "off" || m.status === "unavailable") return "";
+      return m.tempVal != null ? `${fmtNum(hass, m.tempVal, 1)}°` : m.status === "cooling" ? "COLD" : "READY";
+    }
+    if (kind === "av_receiver") {
+      if (["off", "unavailable", "standby"].includes(m.status)) return "";
+      if (m.status === "muted") return "MUTE";
+      if (m.status === "paused") return "PAUSE";
+      if (m.source) return String(m.source).toUpperCase().slice(0, 9);
+      return m.vol != null ? `VOL ${Math.round(m.vol * 100)}` : "ON";
+    }
     if (kind === "ac_split") {
       if (m.status === "off" || m.status === "unavailable") return "";
       return m.targetVal != null ? `${Math.round(m.targetVal)}°` : m.tempVal != null ? `${Math.round(m.tempVal)}°` : "ON";
@@ -2496,15 +2706,17 @@ class ApplianceCardBase extends HTMLElement {
   _render(m) {
     const hass = this._hass, c = this._config, kind = this._kind;
     const $ = (i) => this.shadowRoot.getElementById(i);
-    const active = ["running", "heating", "preheating", "cooling", "ignition", "filtering", "printing", "producing", "low", "speed1", "speed2", "cooking", "brewing", "keep_warm", "screen_on", "online", "ac_dry", "ac_fan", "defrost"].includes(m.status);
+    const active = ["running", "heating", "preheating", "cooling", "ignition", "filtering", "printing", "producing", "low", "speed1", "speed2", "cooking", "brewing", "keep_warm", "screen_on", "online", "ac_dry", "ac_fan", "defrost", "pouring", "playing", "muted", "fan_1", "fan_2", "fan_3"].includes(m.status);
     $("wrap").className = [
       "wrap", `k-${kind}`, `st-${m.status}`, `accent-${m.accent || this._def.accent}`,
       active ? "active" : "", m.phase ? `ph-${m.phase}` : "",
       m.alerts.length ? "alert" : "", isOn(m.door) ? "door-open" : "", isOn(m.fdoor) ? "fz-open" : "",
-      m.alerts.includes("too_warm") ? "warm" : "", m.alerts.includes("humid") ? "humid" : "", c.animations === false ? "no-anim" : "", m.lights ? "lights-on" : "", m.solarHeat ? "solar-heat" : "", m.acMode ? `mode-${m.acMode}` : "",
+      m.alerts.includes("too_warm") ? "warm" : "", m.alerts.includes("humid") ? "humid" : "", c.animations === false ? "no-anim" : "", m.lights ? "lights-on" : "", m.solarHeat ? "solar-heat" : "", m.acMode ? `mode-${m.acMode}` : "", m.osc ? "osc" : "",
     ].filter(Boolean).join(" ");
 
     // illustration dynamic parts
+    if (kind === "av_receiver") $("wrap").style.setProperty("--amp", (m.amp ?? .6).toFixed(2));
+    if (kind === "beer_tap") $("wrap").style.setProperty("--keg", ((m.keg ?? 70) / 100).toFixed(2));
     if (kind === "tv") {
       const prev = this._tvPrev, on = m.status === "screen_on";
       const scr = this.shadowRoot.querySelector(".tv-flash");
@@ -2579,6 +2791,9 @@ class ApplianceCardBase extends HTMLElement {
       if (![...OFF_STATES, ...DONE_STATES, "on", "running", "run"].includes(raw)) statusTxt = stateText(hass, m.main);
     }
     if ((kind === "radiator" || kind === "towel_dryer") && m.radMode && m.radMode !== "off" && m.status !== "off" && m.status !== "unavailable") statusTxt += ` · ${tr(hass, m.radMode)}`;
+    if (kind === "fan" && m.pct != null && /^fan_/.test(m.status)) statusTxt += ` · ${Math.round(m.pct)} %`;
+    if (kind === "av_receiver" && m.vol != null && ["playing", "paused"].includes(m.status)) statusTxt += ` · Vol ${Math.round(m.vol * 100)} %`;
+    if (kind === "av_receiver" && m.source && ["playing", "paused", "muted"].includes(m.status)) statusTxt += ` · ${m.source}`;
     if (kind === "tv" && m.status === "screen_on" && m.main && domainOf(c.entity) === "media_player") {
       const a = m.main.attributes || {}, what = a.app_name || a.media_title || a.source;
       if (what) statusTxt += ` · ${what}`;
@@ -2656,6 +2871,9 @@ class ApplianceCardBase extends HTMLElement {
     if (kind === "chest_freezer" || kind === "drawer_freezer") {
       if (m.tempVal != null) tile("mdi:snowflake-thermometer", `${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}`, tr(hass, "temperature"), tEntity,
         m.alerts.includes("too_warm") ? "warn" : "");
+    } else if (kind === "beer_tap") {
+      if (m.tempVal != null) tile("mdi:thermometer", `${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}`, tr(hass, "temperature"), tEntity);
+      if (m.keg != null) tile("mdi:keg", `${fmtNum(hass, m.keg, 0)} %`, tr(hass, "keg"), c.keg_level, m.alerts.includes("keg_low") ? "warn" : "");
     } else if (kind === "wine_cooler") {
       if (m.tempVal != null) tile("mdi:thermometer", `${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}`, tr(hass, "temperature"), tEntity, m.alerts.includes("too_warm") ? "warn" : "");
     } else if (kind === "fridge") {
@@ -2725,6 +2943,8 @@ const SEL = {
   pellet_level: { entity: { domain: ["sensor", "number", "input_number"] } },
   runtime: { entity: { domain: ["sensor"] } },
   light: { entity: { domain: ["light", "switch", "binary_sensor", "input_boolean"] } },
+  keg_level: { entity: { domain: ["sensor", "number", "input_number"] } },
+  pouring: { entity: { domain: ["binary_sensor", "input_boolean", "switch"] } },
   bed_temperature: { entity: { domain: ["sensor"], device_class: "temperature" } },
   humidity: { entity: { domain: ["sensor"], device_class: "humidity" } },
   mode: { entity: { domain: ["select", "input_select", "sensor", "climate"] } },
@@ -2759,6 +2979,14 @@ function buildForm(kind) {
           ...(["ac_split", "heat_pump"].includes(kind) ? [
             { name: "hvac", selector: { select: { mode: "dropdown", options: [
               { value: "auto", label: "Auto (saison) / Auto (season)" }, { value: "cool", label: "Climatisation / Cooling" }, { value: "heat", label: "Chauffage / Heating" }] } } },
+          ] : []),
+          ...(kind === "fan" ? [
+            { name: "oscillating", selector: { boolean: {} }, default: true },
+            { name: "mid_threshold", selector: { number: { min: 5, max: 200, step: 1, mode: "box", unit_of_measurement: "W" } } },
+            { name: "high_threshold", selector: { number: { min: 5, max: 300, step: 1, mode: "box", unit_of_measurement: "W" } } },
+          ] : []),
+          ...(kind === "av_receiver" ? [
+            { name: "max_power", selector: { number: { min: 50, max: 2000, step: 10, mode: "box", unit_of_measurement: "W" } } },
           ] : []),
           ...(kind === "range_hood" ? [
             { name: "high_threshold", selector: { number: { min: 40, max: 600, step: 5, mode: "box", unit_of_measurement: "W" } } },
@@ -2819,7 +3047,7 @@ function stubFor(kind, hass) {
   const cost = pick((i) => i.startsWith("sensor.") && /(cout|cost|prix)/.test(i) && /(jour|daily|today|day)/.test(i))
     || pick((i, st) => i.startsWith("sensor.") && dc(st) === "monetary");
   const sw = pick((i) => i.startsWith("switch.") && !/(child_lock|lock|led|indicator)/.test(i));
-  const wh = kind === "water_heater" ? pick((i) => i.startsWith("water_heater.")) : kind === "tv" ? pick((i) => i.startsWith("media_player.")) : ["ac_split", "heat_pump"].includes(kind) ? pick((i) => i.startsWith("climate.")) : null;
+  const wh = kind === "water_heater" ? pick((i) => i.startsWith("water_heater.")) : kind === "tv" || kind === "av_receiver" ? pick((i) => i.startsWith("media_player.")) : kind === "fan" ? pick((i) => i.startsWith("fan.")) : ["ac_split", "heat_pump"].includes(kind) ? pick((i) => i.startsWith("climate.")) : null;
   const temp = pick((i, st) => i.startsWith("sensor.") && dc(st) === "temperature");
   const flag = ["washer", "dryer", "dishwasher", "microwave"].includes(kind)
     ? pick((i) => /^(input_boolean|binary_sensor)\./.test(i) && /(running|en_cours|marche|cycle)/.test(i)) : null;
@@ -2828,11 +3056,11 @@ function stubFor(kind, hass) {
   if (power) cfg.power = power;
   if (energy) cfg.energy = energy;
   if (cost) cfg.cost = cost;
-  if (sw && ["water_heater", "oven", "microwave", "pool_pump", "air_fryer", "coffee_maker", "tv", "range_hood", "ac_split", "heat_pump", "towel_dryer", "server_rack", "desktop_pc", "laptop", "wine_cooler"].includes(kind)) cfg.switch = sw;
+  if (sw && ["water_heater", "oven", "microwave", "pool_pump", "air_fryer", "coffee_maker", "tv", "range_hood", "ac_split", "heat_pump", "towel_dryer", "server_rack", "desktop_pc", "laptop", "wine_cooler", "beer_tap", "av_receiver", "fan"].includes(kind)) cfg.switch = sw;
   else if (sw && !cfg.entity) cfg.entity = sw;
   const clim = kind === "radiator" ? pick((i) => i.startsWith("climate.")) : null;
   if (clim) cfg.entity = clim;
-  if (temp && ["fridge", "water_heater", "oven", "air_fryer", "pellet_stove", "pool_pump", "printer_3d", "chest_freezer", "drawer_freezer", "radiator", "towel_dryer", "server_rack", "wine_cooler"].includes(kind)) cfg.temperature = temp;
+  if (temp && ["fridge", "water_heater", "oven", "air_fryer", "beer_tap", "pellet_stove", "pool_pump", "printer_3d", "chest_freezer", "drawer_freezer", "radiator", "towel_dryer", "server_rack", "wine_cooler"].includes(kind)) cfg.temperature = temp;
   if (!cfg.entity && !cfg.power && !cfg.switch && !cfg.temperature) cfg.power = "sensor.example_power";
   return cfg;
 }
@@ -3477,6 +3705,84 @@ svg { width: 100%; height: 100%; display: block; overflow: visible; }
 .k-wine_cooler.warm .lcd { fill: var(--ac-alert); }
 .no-anim *, .no-anim { animation: none !important; }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+
+/* ---------- beer tap ---------- */
+.k-beer_tap svg { overflow: visible; }
+.k-beer_tap .lcd { fill: #24404f; }
+.k-beer_tap:not(.st-off):not(.st-unavailable) .lcd { fill: #6fd8ff; }
+.bt-flake { opacity: .25; transition: opacity .4s; }
+.k-beer_tap.st-cooling .bt-flake { opacity: 1; animation: ac-pulse 1.8s ease-in-out infinite; }
+.k-beer_tap.st-ready .bt-flake, .k-beer_tap.st-pouring .bt-flake { opacity: .8; }
+.bt-mist circle { fill: #bfe6ff; opacity: 0; }
+.k-beer_tap.st-cooling .bt-mist circle { animation: ac-mist 3s ease-out infinite; }
+.bt-mist circle:nth-child(2) { animation-delay: 1s !important; } .bt-mist circle:nth-child(3) { animation-delay: 2s !important; }
+.bt-keg { transform-box: fill-box; transform-origin: 50% 100%; transform: scaleY(var(--keg, .7)); transition: transform 1s; }
+.bt-handle { transform-box: view-box; transform-origin: 65.5px 10px; transition: transform .5s cubic-bezier(.3,1.4,.5,1); }
+.k-beer_tap.st-pouring .bt-handle { transform: rotate(32deg); }
+.bt-stream { fill: none; stroke: #f0b23a; stroke-width: 2.6; stroke-linecap: round; stroke-dasharray: 5 2; opacity: 0; transition: opacity .3s; }
+.k-beer_tap.st-pouring .bt-stream { opacity: .95; animation: cf-flow .35s linear infinite; }
+.bt-beer { transform-box: view-box; transform-origin: 98px 118px; transform: scaleY(0); transition: transform 1s ease; }
+.k-beer_tap.st-ready .bt-beer, .k-beer_tap.st-cooling .bt-beer { transform: scaleY(.95); }
+.k-beer_tap.st-pouring .bt-beer { animation: bt-fill 6s cubic-bezier(.2,.6,.4,1) forwards; }
+.bt-bubbles circle { opacity: 0; }
+.k-beer_tap:not(.st-off) .bt-bubbles circle { animation: bt-bub 2.2s ease-in infinite; }
+.bt-bubbles circle:nth-child(2) { animation-delay: .6s !important; } .bt-bubbles circle:nth-child(3) { animation-delay: 1.1s !important; } .bt-bubbles circle:nth-child(4) { animation-delay: 1.6s !important; }
+.bt-drops circle { opacity: 0; transition: opacity 1s; }
+.k-beer_tap.st-cooling .bt-drops circle, .k-beer_tap.st-ready .bt-drops circle { opacity: .9; animation: ac-drip 4s ease-in infinite; }
+.k-beer_tap.st-off .bt-beer { transform: scaleY(0); }
+@keyframes bt-fill { from { transform: scaleY(0); } to { transform: scaleY(.95); } }
+@keyframes bt-bub { 0% { opacity: 0; transform: translateY(0); } 20% { opacity: .9; } 100% { opacity: 0; transform: translateY(-26px); } }
+
+/* ---------- AV receiver ---------- */
+.k-av_receiver svg { overflow: visible; }
+.k-av_receiver .lcd { fill: #24404f; }
+.k-av_receiver.st-playing .lcd, .k-av_receiver.st-paused .lcd { fill: #38d9ff; }
+.k-av_receiver.st-muted .lcd { fill: #ff8a3d; }
+.av-pwr { fill: #3a2222; transition: fill .3s; }
+.k-av_receiver.st-standby .av-pwr { fill: #ff3b30; }
+.k-av_receiver.st-playing .av-pwr, .k-av_receiver.st-muted .av-pwr, .k-av_receiver.st-paused .av-pwr { fill: #38d9ff; }
+.av-eq rect { fill: #38d9ff; opacity: .12; transform-box: fill-box; transform-origin: 50% 100%; transform: scaleY(.15); transition: opacity .4s; }
+.k-av_receiver.st-playing .av-eq rect { opacity: .9; animation: av-eq .9s ease-in-out infinite alternate; }
+.k-av_receiver.st-paused .av-eq rect, .k-av_receiver.st-muted .av-eq rect { opacity: .5; }
+.av-eq rect:nth-child(2) { animation-duration: .6s !important; } .av-eq rect:nth-child(3) { animation-duration: .75s !important; } .av-eq rect:nth-child(4) { animation-duration: .5s !important; }
+.av-eq rect:nth-child(5) { animation-duration: .85s !important; } .av-eq rect:nth-child(6) { animation-duration: .55s !important; } .av-eq rect:nth-child(7) { animation-duration: .7s !important; }
+.av-eq rect:nth-child(8) { animation-duration: .45s !important; } .av-eq rect:nth-child(9) { animation-duration: .8s !important; } .av-eq rect:nth-child(10) { animation-duration: .65s !important; }
+.av-ring { opacity: 0; transition: opacity .6s; }
+.k-av_receiver.st-playing .av-ring { opacity: calc(.4 + var(--amp, .6) * .6); animation: ac-glow 2.4s ease-in-out infinite; }
+.k-av_receiver.st-muted .av-ring, .k-av_receiver.st-paused .av-ring { opacity: .35; }
+.av-knob { transform-box: view-box; transform-origin: 99px 74px; transform: rotate(calc(-135deg + var(--amp, .6) * 270deg)); transition: transform .8s ease; }
+.k-av_receiver.st-off .av-knob, .k-av_receiver.st-standby .av-knob { transform: rotate(-135deg); }
+.av-waves path { stroke: #38d9ff; stroke-width: 1.6; opacity: 0; }
+.k-av_receiver.st-playing .av-waves path { animation: av-wave calc(1.6s - var(--amp, .6) * .8s) ease-out infinite; }
+.av-waves path:nth-child(2), .av-waves path:nth-child(4) { animation-delay: .4s !important; }
+.av-notes { opacity: 0; }
+.k-av_receiver.st-playing .av-notes { animation: av-notes 3.2s ease-in-out infinite; }
+@keyframes av-eq { from { transform: scaleY(.15); } to { transform: scaleY(calc(.3 + var(--amp, .6) * .7)); } }
+@keyframes av-wave { 0% { opacity: 0; } 30% { opacity: .85; } 100% { opacity: 0; } }
+@keyframes av-notes { 0% { opacity: 0; transform: translateY(6px); } 30% { opacity: .9; } 100% { opacity: 0; transform: translateY(-10px); } }
+
+/* ---------- fan ---------- */
+.k-fan svg { overflow: visible; }
+.k-fan { --fspd: 1s; }
+.k-fan.st-fan_1 { --fspd: .55s; } .k-fan.st-fan_2 { --fspd: .28s; } .k-fan.st-fan_3 { --fspd: .16s; }
+.fn-blades { transform-box: view-box; transform-origin: 60px 52px; }
+.k-fan.st-fan_1 .fn-blades, .k-fan.st-fan_2 .fn-blades, .k-fan.st-fan_3 .fn-blades { animation: ac-rot var(--fspd) linear infinite; }
+.fn-blur { opacity: 0; transition: opacity .6s; }
+.k-fan.st-fan_2 .fn-blur { opacity: .12; } .k-fan.st-fan_3 .fn-blur { opacity: .2; }
+.fn-head { transform-box: view-box; transform-origin: 60px 80px; }
+.k-fan.osc.st-fan_1 .fn-head, .k-fan.osc.st-fan_2 .fn-head, .k-fan.osc.st-fan_3 .fn-head { animation: fn-osc 7s ease-in-out infinite; }
+.fn-air path { stroke: #bfe3f7; stroke-width: 1.8; opacity: 0; stroke-dasharray: 4 6; }
+.k-fan.st-fan_1 .fn-air path { opacity: .45; animation: ac-blow 1.4s linear infinite; }
+.k-fan.st-fan_2 .fn-air path, .k-fan.st-fan_3 .fn-air path { opacity: .8; animation: ac-blow .7s linear infinite; }
+.fn-air path:nth-child(2), .fn-air path:nth-child(4) { animation-delay: -.3s !important; }
+.fn-ribbon { transform-box: view-box; transform-origin: 93px 45px; }
+.k-fan.st-fan_1 .fn-ribbon { animation: fn-flap .5s ease-in-out infinite alternate; }
+.k-fan.st-fan_2 .fn-ribbon, .k-fan.st-fan_3 .fn-ribbon { animation: fn-flap .18s ease-in-out infinite alternate; }
+.fn-led { fill: #3a424b; transition: fill .3s; }
+.k-fan.st-fan_1 .l1, .k-fan.st-fan_2 .l1, .k-fan.st-fan_2 .l2, .k-fan.st-fan_3 .fn-led { fill: #38d9ff; }
+.k-fan.st-standby .l1 { fill: #ff8a3d; }
+@keyframes fn-osc { 0%, 100% { transform: scaleX(1) translateX(0); } 25% { transform: scaleX(.82) translateX(-4px); } 50% { transform: scaleX(1) translateX(0); } 75% { transform: scaleX(.82) translateX(4px); } }
+@keyframes fn-flap { from { transform: rotate(-12deg) scaleY(.8); } to { transform: rotate(14deg) scaleY(1.1); } }
 `;
 
 /* ------------------------------------------------------------------ */
