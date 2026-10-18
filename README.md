@@ -101,7 +101,7 @@ All cards have a visual editor. When added from the card picker, entities are de
 | `freezer_temperature`, `freezer_door` | fridge |
 | `power_level` (1–5), `pellet_level` (%), `ignition_threshold` (default 250 W), `pellet_alert` (default 15 %) | pellet stove |
 | `temperature` (water), `runtime` (filtration time today), `speed` (rpm or %), `max_power` | pool pump |
-| `progress`, `remaining`, `program` (job name), `temperature` (nozzle), `bed_temperature`, `filament_color` | 3D printer |
+| `progress`, `remaining`, `program` (job name), `temperature` (nozzle), `nozzle_temperatures` (list of 2–4 nozzle sensors, shown as T0, T1…), `bed_temperature`, `filament_color` | 3D printer |
 | `temperature`, `door`, `freezer_max_temperature` (default −12 °C) | chest freezer, drawer freezer |
 | `power` (production), `energy` (today), `cost` (savings), `max_power` (peak Wp, default 3000), `sun_entity` (default `sun.sun`) | solar panels |
 | `speed` (select/sensor: text, level or %), `humidity`, `high_threshold` (default 35 W), `humidity_max` (default 70 %) | extractor fan (VMC) |
@@ -246,6 +246,7 @@ An open-frame, bed-slinger style printer (Bambu Lab A1, Prusa MK, Ender…). The
 
 - **With a printer integration** (Bambu Lab, OctoPrint, Moonraker/Klipper, PrusaLink…): use its status entity as `entity`. States such as `prepare`, `running`, `pause`, `finish`, `failed`, `idle`, `offline` or `Printing` are recognised. Add `progress`, `remaining`, nozzle and bed temperatures and the job name (`program`).
 - **With a smart plug only**: above `threshold` (40 W) = Printing. The part then grows in a loop, since the real progress is unknown.
+- **Multi-nozzle printers** (e.g. Snapmaker U1): list one sensor per nozzle in `nozzle_temperatures`; the card shows one chip per nozzle (T0, T1, T2, T3) instead of the single nozzle chip, and the display uses the hottest one. `temperature` is still used for single-nozzle printers.
 - Set `filament_color` to match your spool (default orange).
 - If you set `switch:`, cutting power while printing or paused needs a second click.
 
@@ -259,6 +260,18 @@ bed_temperature: sensor.a1_bed_temperature
 program: sensor.a1_task_name
 power: sensor.printer_plug_power
 filament_color: "#ff8a1f"
+```
+
+Multi-nozzle printer:
+
+```yaml
+type: custom:appliance-printer-3d-card
+entity: sensor.u1_print_status
+nozzle_temperatures:
+  - sensor.u1_nozzle_0_temperature
+  - sensor.u1_nozzle_1_temperature
+  - sensor.u1_nozzle_2_temperature
+  - sensor.u1_nozzle_3_temperature
 ```
 
 ### Freezers (chest and upright with drawers)
