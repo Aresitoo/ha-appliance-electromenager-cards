@@ -107,6 +107,7 @@ const STRINGS = {
     "bed": "Bed",
     "f_bed_temperature": "Bed temperature sensor",
     "f_filament_color": "Filament color (CSS)",
+    "f_nozzle_temperatures": "Nozzle temperature sensors (T0, T1…)",
     "filtering": "Filtering",
     "water": "Water",
     "today": "Today",
@@ -286,6 +287,7 @@ const STRINGS = {
     "bed": "Druckbett",
     "f_bed_temperature": "Sensor Druckbetttemperatur",
     "f_filament_color": "Filamentfarbe (CSS)",
+    "f_nozzle_temperatures": "Düsentemperatursensoren (T0, T1…)",
     "filtering": "Filtert",
     "water": "Wasser",
     "today": "Heute",
@@ -465,6 +467,7 @@ const STRINGS = {
     "bed": "Plateau",
     "f_bed_temperature": "Capteur de température du plateau",
     "f_filament_color": "Couleur du filament (CSS)",
+    "f_nozzle_temperatures": "Capteurs de température des buses (T0, T1…)",
     "filtering": "Filtration",
     "water": "Eau",
     "today": "Aujourd'hui",
@@ -644,6 +647,7 @@ const STRINGS = {
     "bed": "Plate",
     "f_bed_temperature": "Sensor for platetemperatur",
     "f_filament_color": "Filamentfarge (CSS)",
+    "f_nozzle_temperatures": "Dysetemperatursensorer (T0, T1…)",
     "filtering": "Filtrerer",
     "water": "Vann",
     "today": "I dag",
@@ -2258,10 +2262,16 @@ class ApplianceCardBase extends HTMLElement {
   getCardSize() { return 4; }
   getGridOptions() { return { columns: 12, min_columns: 6 }; }
 
+  // liste des capteurs de buse (imprimante multi-buses) ; une simple chaîne est acceptée
+  _nozzles() {
+    const n = this._config.nozzle_temperatures;
+    return (Array.isArray(n) ? n : n ? [n] : []).filter((i) => typeof i === "string" && i);
+  }
+
   _ids() {
     const c = this._config;
     return ["entity", "power", "power_solar", "energy_solar", "energy", "cost", "remaining", "progress", "program", "door", "switch",
-      "power_level", "pellet_level", "runtime", "speed", "bed_temperature", "humidity", "light", "keg_level", "pouring", "zone_1", "zone_2", "zone_3", "zone_4", "mode", "window", "temperature", "target_temperature", "freezer_temperature", "freezer_door"].map((k) => c[k]).filter(Boolean);
+      "power_level", "pellet_level", "runtime", "speed", "bed_temperature", "humidity", "light", "keg_level", "pouring", "zone_1", "zone_2", "zone_3", "zone_4", "mode", "window", "temperature", "target_temperature", "freezer_temperature", "freezer_door"].map((k) => c[k]).filter(Boolean).concat(this._nozzles());
   }
 
   _build() {
@@ -2332,6 +2342,11 @@ class ApplianceCardBase extends HTMLElement {
     if (m.tempVal == null) m.tempVal = num(m.temp);
     if (m.targetVal == null) m.targetVal = num(m.target);
     m.tempUnit = m.temp?.attributes.unit_of_measurement || hass.config?.unit_system?.temperature || "°C";
+    m.nozzles = kind === "printer_3d" ? this._nozzles() : [];
+    if (m.nozzles.length) {
+      const t = m.nozzles.map((i) => num(S(i))).filter((v) => v != null);
+      if (t.length) m.tempVal = Math.max(...t);
+    }
 
     const ref = main || sw;
     const mainIds = ["entity", "power", "power_solar", "switch", "temperature", "zone_1", "zone_2", "zone_3", "zone_4"].map((k) => c[k]).filter(Boolean);
@@ -2901,7 +2916,13 @@ class ApplianceCardBase extends HTMLElement {
       if (m.humidity != null) tile("mdi:water-percent", `${fmtNum(hass, m.humidity, 0)} %`, tr(hass, "humidity"), c.humidity, m.alerts.includes("humid") ? "warn" : "");
     } else if (kind === "printer_3d") {
       if (m.progress != null) tile("mdi:progress-check", `${fmtNum(hass, m.progress, 0)} %`, tr(hass, "progress"), c.progress);
-      if (m.tempVal != null) tile("mdi:printer-3d-nozzle-heat", `${fmtNum(hass, m.tempVal, 0)} ${m.tempUnit}`, tr(hass, "nozzle"), tEntity);
+      if (m.nozzles && m.nozzles.length) {
+        // une puce par buse : T0, T1, T2…
+        m.nozzles.forEach((id, i) => {
+          const v = num(hass.states[id]);
+          tile("mdi:printer-3d-nozzle-heat", v != null ? `${fmtNum(hass, v, 0)} ${m.tempUnit}` : "—", `T${i}`, id);
+        });
+      } else if (m.tempVal != null) tile("mdi:printer-3d-nozzle-heat", `${fmtNum(hass, m.tempVal, 0)} ${m.tempUnit}`, tr(hass, "nozzle"), tEntity);
       if (m.bedTemp != null) tile("mdi:heat-wave", `${fmtNum(hass, m.bedTemp, 0)} ${m.tempUnit}`, tr(hass, "bed"), c.bed_temperature);
     } else if (kind === "pool_pump") {
       if (m.tempVal != null) tile("mdi:thermometer-water", `${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}`, tr(hass, "water"), tEntity);
@@ -2985,7 +3006,10 @@ function buildForm(kind) {
             { name: "freezer_max_temperature", selector: { number: { min: -30, max: 0, step: 0.5, mode: "box" } } },
           ] : []),
           { name: "animations", selector: { boolean: {} }, default: true },
-          ...(kind === "printer_3d" ? [{ name: "filament_color", selector: { text: {} } }] : []),
+          ...(kind === "printer_3d" ? [
+            { name: "nozzle_temperatures", selector: { entity: { multiple: true, domain: "sensor" } } },
+            { name: "filament_color", selector: { text: {} } },
+          ] : []),
           ...(["ac_split", "heat_pump"].includes(kind) ? [
             { name: "hvac", selector: { select: { mode: "dropdown", options: [
               { value: "auto", label: "Auto (saison) / Auto (season)" }, { value: "cool", label: "Climatisation / Cooling" }, { value: "heat", label: "Chauffage / Heating" }] } } },
