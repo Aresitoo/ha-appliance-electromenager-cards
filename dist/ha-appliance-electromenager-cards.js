@@ -28,6 +28,7 @@ const STRINGS = {
     "beer_tap": "Beer tap",
     "av_receiver": "Home cinema amplifier",
     "fan": "Fan",
+    "generic": "Generic appliance (custom image)",
     "towel_dryer": "Heated towel rail",
     "server_rack": "Server rack (homelab)",
     "desktop_pc": "Desktop PC",
@@ -107,6 +108,7 @@ const STRINGS = {
     "bed": "Bed",
     "f_bed_temperature": "Bed temperature sensor",
     "f_filament_color": "Filament color (CSS)",
+    "f_image": "Image URL (e.g. /local/my-device.png)",
     "f_nozzle_temperatures": "Nozzle temperature sensors (T0, T1…)",
     "filtering": "Filtering",
     "water": "Water",
@@ -208,6 +210,7 @@ const STRINGS = {
     "beer_tap": "Zapfanlage",
     "av_receiver": "Heimkino-Verstärker",
     "fan": "Ventilator",
+    "generic": "Generisches Gerät (eigenes Bild)",
     "towel_dryer": "Handtuchheizkörper",
     "server_rack": "Serverschrank (Homelab)",
     "desktop_pc": "Desktop-PC",
@@ -287,6 +290,7 @@ const STRINGS = {
     "bed": "Druckbett",
     "f_bed_temperature": "Sensor Druckbetttemperatur",
     "f_filament_color": "Filamentfarbe (CSS)",
+    "f_image": "Bild-URL (z. B. /local/mein-geraet.png)",
     "f_nozzle_temperatures": "Düsentemperatursensoren (T0, T1…)",
     "filtering": "Filtert",
     "water": "Wasser",
@@ -388,6 +392,7 @@ const STRINGS = {
     "beer_tap": "Pompe à bière",
     "av_receiver": "Ampli home cinéma",
     "fan": "Ventilateur",
+    "generic": "Appareil générique (image perso)",
     "towel_dryer": "Sèche-serviettes",
     "server_rack": "Baie informatique (homelab)",
     "desktop_pc": "PC fixe",
@@ -467,6 +472,7 @@ const STRINGS = {
     "bed": "Plateau",
     "f_bed_temperature": "Capteur de température du plateau",
     "f_filament_color": "Couleur du filament (CSS)",
+    "f_image": "URL de l'image (ex. /local/mon-appareil.png)",
     "f_nozzle_temperatures": "Capteurs de température des buses (T0, T1…)",
     "filtering": "Filtration",
     "water": "Eau",
@@ -568,6 +574,7 @@ const STRINGS = {
     "beer_tap": "Øltapper",
     "av_receiver": "Hjemmekino-forsterker",
     "fan": "Vifte",
+    "generic": "Generisk apparat (eget bilde)",
     "towel_dryer": "Håndklevarmer",
     "server_rack": "Serverrack (homelab)",
     "desktop_pc": "Stasjonær PC",
@@ -647,6 +654,7 @@ const STRINGS = {
     "bed": "Plate",
     "f_bed_temperature": "Sensor for platetemperatur",
     "f_filament_color": "Filamentfarge (CSS)",
+    "f_image": "Bilde-URL (f.eks. /local/min-enhet.png)",
     "f_nozzle_temperatures": "Dysetemperatursensorer (T0, T1…)",
     "filtering": "Filtrerer",
     "water": "Vann",
@@ -1287,6 +1295,21 @@ SVG.fridge = () => `
   <path d="M30 50v76" stroke="#fff" stroke-opacity=".55" stroke-width="2"/>
 </g>
 <g class="mist"><circle cx="40" cy="132" r="1.1"/><circle cx="52" cy="133" r=".9"/><circle cx="66" cy="132" r="1.2"/><circle cx="79" cy="133" r=".9"/></g>`;
+
+/* Carte générique : l'utilisateur fournit sa propre image (option `image`) */
+SVG.generic = (c = {}) => {
+  const src = String((c && c.image) || "").trim();
+  const art = src
+    ? `<image class="gn-img" href="${esc(src)}" x="4" y="6" width="112" height="124" preserveAspectRatio="xMidYMid meet"/>`
+    // pas d'image : pictogramme de prise pour inviter à renseigner `image`
+    : `<g class="gn-img gn-empty">
+  <rect x="14" y="22" width="92" height="92" rx="16" fill="none" stroke="#8d959f" stroke-width="2" stroke-dasharray="5 5"/>
+  <rect x="44" y="40" width="32" height="40" rx="8" fill="#b9bfc6"/>
+  <rect x="51" y="30" width="5" height="14" rx="2" fill="#8d959f"/><rect x="64" y="30" width="5" height="14" rx="2" fill="#8d959f"/>
+  <path d="M60 80v14" stroke="#8d959f" stroke-width="4" stroke-linecap="round"/>
+</g>`;
+  return `<ellipse cx="60" cy="128" rx="34" ry="4" fill="#000" opacity=".18"/>${art}`;
+};
 
 SVG.heat_pump = () => `
 <defs>${DEFS}
@@ -2070,6 +2093,9 @@ const DEF = {
   fan: { accent: "cold", threshold: 5,
     fields: ["entity", "power", "energy", "cost", "switch"],
     keys: ["ventilateur", "ventilo", "fan", "brasseur", "dyson"] },
+  generic: { accent: "active", threshold: 5,
+    fields: ["entity", "power", "energy", "cost", "switch"],
+    keys: [] },
   beer_tap: { accent: "cold", threshold: 30,
     fields: ["entity", "power", "energy", "cost", "temperature", "keg_level", "pouring", "switch"],
     keys: ["biere", "beer", "tireuse", "perfectdraft", "beertender", "pompe_a_biere", "kegerator", "draft"] },
@@ -3006,6 +3032,7 @@ function buildForm(kind) {
             { name: "freezer_max_temperature", selector: { number: { min: -30, max: 0, step: 0.5, mode: "box" } } },
           ] : []),
           { name: "animations", selector: { boolean: {} }, default: true },
+          ...(kind === "generic" ? [{ name: "image", selector: { text: {} } }] : []),
           ...(kind === "printer_3d" ? [
             { name: "nozzle_temperatures", selector: { entity: { multiple: true, domain: "sensor" } } },
             { name: "filament_color", selector: { text: {} } },
@@ -3827,6 +3854,15 @@ svg { width: 100%; height: 100%; display: block; overflow: visible; }
 .k-fan.st-standby .l1 { fill: #ff8a3d; }
 @keyframes fn-osc { 0%, 100% { transform: scaleX(1) translateX(0); } 25% { transform: scaleX(.82) translateX(-4px); } 50% { transform: scaleX(1) translateX(0); } 75% { transform: scaleX(.82) translateX(4px); } }
 @keyframes fn-flap { from { transform: rotate(-12deg) scaleY(.8); } to { transform: rotate(14deg) scaleY(1.1); } }
+
+/* ---------- generic (image perso) ---------- */
+.k-generic svg { overflow: visible; }
+.gn-img { transition: opacity .4s, filter .4s; }
+.k-generic.st-off .gn-img, .k-generic.st-unavailable .gn-img { opacity: .45; filter: grayscale(1); }
+.k-generic.st-idle .gn-img, .k-generic.st-standby .gn-img { opacity: .75; filter: grayscale(.5); }
+.k-generic.active .gn-img { filter: drop-shadow(0 0 4px var(--c)); animation: gn-glow 2.6s ease-in-out infinite; }
+@keyframes gn-glow { 0%, 100% { filter: drop-shadow(0 0 3px var(--c)); } 50% { filter: drop-shadow(0 0 8px var(--c)); } }
+.k-generic .gn-empty { opacity: .6; }
 `;
 
 /* ------------------------------------------------------------------ */
