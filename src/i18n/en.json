@@ -26,6 +26,7 @@
     "wine_cooler": "Wine cooler",
     "f_max_temperature_wine": "Alert above (°C)",
     "f_show_modes": "Show mode buttons",
+    "f_show_power": "Show power",
     "grid": "Grid",
     "energy_grid": "Grid energy",
     "energy_solar": "Solar energy",
