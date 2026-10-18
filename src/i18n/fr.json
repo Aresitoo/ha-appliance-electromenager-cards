@@ -92,6 +92,7 @@
     "bed": "Plateau",
     "f_bed_temperature": "Capteur de température du plateau",
     "f_filament_color": "Couleur du filament (CSS)",
+    "f_nozzle_temperatures": "Capteurs de température des buses (T0, T1…)",
     "filtering": "Filtration",
     "water": "Eau",
     "today": "Aujourd'hui",
