@@ -41,6 +41,7 @@ const STRINGS = {
     "wine_cooler": "Wine cooler",
     "f_max_temperature_wine": "Alert above (°C)",
     "f_show_modes": "Show mode buttons",
+    "f_show_power": "Show power",
     "grid": "Grid",
     "energy_grid": "Grid energy",
     "energy_solar": "Solar energy",
@@ -219,6 +220,7 @@ const STRINGS = {
     "wine_cooler": "Weinkühlschrank",
     "f_max_temperature_wine": "Alarm über (°C)",
     "f_show_modes": "Modus-Tasten anzeigen",
+    "f_show_power": "Leistung anzeigen",
     "grid": "Netz",
     "energy_grid": "Netzenergie",
     "energy_solar": "Solarenergie",
@@ -397,6 +399,7 @@ const STRINGS = {
     "wine_cooler": "Cave à vin",
     "f_max_temperature_wine": "Alerte au-dessus de (°C)",
     "f_show_modes": "Afficher les boutons de mode",
+    "f_show_power": "Afficher la puissance",
     "grid": "Réseau",
     "energy_grid": "Énergie réseau",
     "energy_solar": "Énergie solaire",
@@ -575,6 +578,7 @@ const STRINGS = {
     "wine_cooler": "Vinkjøleskap",
     "f_max_temperature_wine": "Varsel over (°C)",
     "f_show_modes": "Vis modusknapper",
+    "f_show_power": "Vis effekt",
     "grid": "Strømnett",
     "energy_grid": "Energi fra nettet",
     "energy_solar": "Solenergi",
@@ -2430,6 +2434,9 @@ class ApplianceCardBase extends HTMLElement {
           const per = watts / n;
           const lv = Math.max(1, Math.min(9, Math.round(per / zp * 9)));
           [0, 3, 1, 2].slice(0, n).forEach((z) => { zl[z] = lv; });
+        } else if (watts == null && base === "running") {
+          // pas de capteur de puissance : l'état de `entity` (binary_sensor, sensor d'état "run"…) suffit pour « en marche »
+          zl[0] = 5;
         }
       } else zl = zl.map((v) => v ?? 0);
       const now = Date.now(), keep = (c.residual_minutes ?? 10) * 60000;
@@ -2912,7 +2919,7 @@ class ApplianceCardBase extends HTMLElement {
     if (m.remaining != null && m.remaining > 0 && active && kind !== "water_heater") tile("mdi:timer-sand", fmtDuration(m.remaining), tr(hass, "remaining"), c.remaining);
     const solar = kind === "solar";
     const dual = kind === "water_heater" && (m.pwS || m.energyS);
-    if (m.pw) tile(solar ? "mdi:solar-power" : "mdi:flash", fmtPower(hass, m.pw) ?? "—", tr(hass, solar ? "production" : dual ? "grid" : "power"), c.power);
+    if (m.pw && c.show_power !== false) tile(solar ? "mdi:solar-power" : "mdi:flash", fmtPower(hass, m.pw) ?? "—", tr(hass, solar ? "production" : dual ? "grid" : "power"), c.power);
     if (m.pwS) tile("mdi:solar-power", fmtPower(hass, m.pwS) ?? "—", tr(hass, "solar_surplus"), c.power_solar);
     if (m.energy) tile("mdi:lightning-bolt-circle", fmtUnit(hass, m.energy, 2) ?? "—", tr(hass, solar ? "today" : dual ? "energy_grid" : "energy"), c.energy);
     if (m.energyS) tile("mdi:solar-power-variant", fmtUnit(hass, m.energyS, 2) ?? "—", tr(hass, "energy_solar"), c.energy_solar);
@@ -2999,6 +3006,7 @@ function buildForm(kind) {
               { value: "filtre", label: "Filtre / Drip" }, { value: "dosette", label: "Dosettes / Pods" }, { value: "expresso", label: "Expresso / Bean-to-cup" }] } } },
             { name: "warm_threshold", selector: { number: { min: 0, max: 300, step: 1, mode: "box", unit_of_measurement: "W" } } },
           ] : []),
+          { name: "show_power", selector: { boolean: {} }, default: true },
           ...(["radiator", "towel_dryer"].includes(kind) ? [{ name: "show_modes", selector: { boolean: {} }, default: true }] : []),
           ...(kind === "server_rack" ? [
             { name: "max_power", selector: { number: { min: 50, max: 3000, step: 10, mode: "box", unit_of_measurement: "W" } } },
