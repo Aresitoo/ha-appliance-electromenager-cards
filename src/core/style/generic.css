@@ -1,0 +1,8 @@
+/* ---------- generic (image perso) ---------- */
+.k-generic svg { overflow: visible; }
+.gn-img { transition: opacity .4s, filter .4s; }
+.k-generic.st-off .gn-img, .k-generic.st-unavailable .gn-img { opacity: .45; filter: grayscale(1); }
+.k-generic.st-idle .gn-img, .k-generic.st-standby .gn-img { opacity: .75; filter: grayscale(.5); }
+.k-generic.active .gn-img { filter: drop-shadow(0 0 4px var(--c)); animation: gn-glow 2.6s ease-in-out infinite; }
+@keyframes gn-glow { 0%, 100% { filter: drop-shadow(0 0 3px var(--c)); } 50% { filter: drop-shadow(0 0 8px var(--c)); } }
+.k-generic .gn-empty { opacity: .6; }
