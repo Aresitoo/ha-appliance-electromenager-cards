@@ -92,6 +92,7 @@
 "bed": "Plate",
 "f_bed_temperature": "Sensor for platetemperatur",
 "f_filament_color": "Filamentfarge (CSS)",
+"f_nozzle_temperatures": "Dysetemperatursensorer (T0, T1…)",
 "filtering": "Filtrerer",
 "water": "Vann",
 "today": "I dag",
