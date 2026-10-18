@@ -1,0 +1,702 @@
+/* ------------------------------------------------------------------ */
+/* Base card                                                           */
+/* ------------------------------------------------------------------ */
+let SEQ = 0;
+
+class ApplianceCardBase extends HTMLElement {
+  static get kind() { return "washer"; }
+  static getConfigForm() { return buildForm(this.kind); }
+  static getStubConfig(hass) { return stubFor(this.kind, hass); }
+
+  setConfig(config) {
+    if (!config) throw new Error("Invalid configuration");
+    if (!["entity", "power", "power_solar", "switch", "temperature", "zone_1"].some((f) => config[f])) {
+      throw new Error(tr(undefined, "err_need_entity"));
+    }
+    this._config = { ...config };
+    this._kind = this.constructor.kind;
+    this._def = DEF[this._kind];
+    this._lastKey = null;
+    this._build();
+    if (this._hass) this._update(true);
+  }
+
+  set hass(hass) {
+    this._hass = hass;
+    if (this._config) this._update(false);
+  }
+
+  connectedCallback() {
+    // keep LCD clock / countdown fresh even when no entity changes
+    this._tick = setInterval(() => { if (this._hass && this._config) this._update(false); }, 20000);
+  }
+  disconnectedCallback() { clearInterval(this._tick); }
+
+  getCardSize() { return 4; }
+  getGridOptions() { return { columns: 12, min_columns: 6 }; }
+
+  _ids() {
+    const c = this._config;
+    return ["entity", "power", "power_solar", "energy_solar", "energy", "cost", "remaining", "progress", "program", "door", "switch",
+      "power_level", "pellet_level", "runtime", "speed", "bed_temperature", "humidity", "light", "keg_level", "pouring", "zone_1", "zone_2", "zone_3", "zone_4", "mode", "window", "temperature", "target_temperature", "freezer_temperature", "freezer_door"].map((k) => c[k]).filter(Boolean);
+  }
+
+  _build() {
+    if (!this.shadowRoot) this.attachShadow({ mode: "open" });
+    const id = `ac${++SEQ}`;
+    const svg = SVG[this._kind](this._config).replace(/ID-/g, `${id}-`);
+    this.shadowRoot.innerHTML = `
+      <style>${STYLE}</style>
+      <ha-card>
+        <div class="wrap" id="wrap">
+          <div class="top">
+            <div class="illus"><svg viewBox="0 0 120 140" aria-hidden="true">${svg}</svg></div>
+            <div class="head">
+              <div class="info" id="info"></div>
+              <div class="actions" id="actions"></div>
+            </div>
+            <div class="stats" id="stats"></div>
+          </div>
+          <div class="modes" id="modes"></div>
+          <div class="bar" id="bar"><div class="bar-fill" id="barfill"></div></div>
+        </div>
+      </ha-card>`;
+    this.shadowRoot.querySelector("ha-card").addEventListener("click", (ev) => {
+      const path = ev.composedPath();
+      if (path.some((n) => n.classList && (n.classList.contains("toggle") || n.classList.contains("mode-btn")))) return;
+      const tile = path.find((n) => n.dataset && n.dataset.entity);
+      const c = this._config;
+      const eid = tile ? tile.dataset.entity : (c.entity || c.power || c.switch || c.temperature);
+      if (eid) this.dispatchEvent(new CustomEvent("hass-more-info", { detail: { entityId: eid }, bubbles: true, composed: true }));
+    });
+    if (this._config.color) this.style.setProperty("--ac-accent", this._config.color);
+  }
+
+  _update(force) {
+    const hass = this._hass;
+    const key = this._ids().map((i) => {
+      const s = hass.states[i];
+      return s ? `${s.state}|${s.attributes.temperature ?? ""}|${s.attributes.current_temperature ?? ""}` : "x";
+    }).join(";") + "|" + lang(hass) + "|" + Math.floor(Date.now() / 30000);
+    if (!force && key === this._lastKey) return;
+    this._lastKey = key;
+    this._render(this._compute());
+  }
+
+  /* ---------------- state model ---------------- */
+  _compute() {
+    const hass = this._hass, c = this._config, d = this._def, kind = this._kind;
+    const S = (i) => (i ? hass.states[i] : undefined);
+    const main = S(c.entity), pw = S(c.power), pwS = S(c.power_solar), sw = S(c.switch);
+    const threshold = c.threshold ?? d.threshold;
+    // deux sources de puissance possibles (ex. contacteur réseau + routeur solaire) : on additionne
+    const wGrid = powerW(pw), wSolar = powerW(pwS);
+    const watts = wGrid === null && wSolar === null ? null : (wGrid || 0) + (wSolar || 0);
+    const m = {
+      main, pw, pwS, wGrid, wSolar, sw, watts, threshold,
+      energy: S(c.energy), energyS: S(c.energy_solar), cost: S(c.cost), remaining: parseRemaining(S(c.remaining)),
+      progress: num(S(c.progress)), program: S(c.program), door: S(c.door),
+      temp: S(c.temperature), target: S(c.target_temperature),
+      ftemp: S(c.freezer_temperature), fdoor: S(c.freezer_door),
+      level: num(S(c.power_level)), pellets: num(S(c.pellet_level)),
+      runtime: parseRemaining(S(c.runtime)), speed: S(c.speed), bedTemp: num(S(c.bed_temperature)), humidity: num(S(c.humidity)), mode: S(c.mode), window: S(c.window), light: S(c.light), keg: num(S(c.keg_level)), pouring: S(c.pouring),
+      status: "idle", phase: null, alerts: [],
+    };
+    if (main && ["water_heater", "climate"].includes(domainOf(c.entity))) {
+      if (!m.temp && main.attributes.current_temperature != null) m.tempVal = main.attributes.current_temperature;
+      if (!m.target && main.attributes.temperature != null) m.targetVal = main.attributes.temperature;
+    }
+    if (m.tempVal == null) m.tempVal = num(m.temp);
+    if (m.targetVal == null) m.targetVal = num(m.target);
+    m.tempUnit = m.temp?.attributes.unit_of_measurement || hass.config?.unit_system?.temperature || "°C";
+
+    const ref = main || sw;
+    const mainIds = ["entity", "power", "power_solar", "switch", "temperature", "zone_1", "zone_2", "zone_3", "zone_4"].map((k) => c[k]).filter(Boolean);
+    const usable = mainIds.some((i) => hass.states[i] && !BAD.includes(String(hass.states[i].state).toLowerCase()));
+    if (!usable) { m.status = "unavailable"; return m; }
+    let base = null;
+    if (ref) {
+      const s = String(ref.state).toLowerCase();
+      const dom = domainOf(main ? c.entity : c.switch);
+      if (BAD.includes(s)) base = null;
+      else if (DONE_STATES.includes(s)) base = "finished";
+      else if (OFF_STATES.includes(s)) {
+        base = ["standby", "veille"].includes(s) ? "standby"
+          : ["idle", "inactive", "inactif", "ready", "stopped", "stop", "pause", "paused"].includes(s) ? "idle"
+          : ["input_boolean", "binary_sensor"].includes(dom) ? "idle" : "off";
+      }
+      // a plug/switch being "on" only means powered: let the power sensor decide
+      else if (["switch", "light", "water_heater", "climate", "fan"].includes(dom)) base = "on";
+      // input_boolean / binary_sensor "on", or a descriptive sensor state, means running
+      else base = "running";
+    }
+    if (base === null && !pw && !pwS && ref) base = "unavailable";
+    const powered = watts !== null && watts > threshold;
+    if (base === "on" || base === null) {
+      if (watts !== null) base = powered ? "running" : (base === "on" ? "standby" : "idle");
+      else base = base === "on" ? "running" : "idle";
+    }
+    if (base === "finished" && powered) base = "running";
+    if (sw && String(sw.state).toLowerCase() === "off" && base !== "unavailable") base = "off";
+
+    m.solarHeat = kind === "water_heater" && wSolar !== null && wSolar > threshold;
+    if (kind === "water_heater") {
+      if (base === "off" || base === "unavailable") m.status = base;
+      else if (powered || (watts === null && base === "running")) m.status = "heating";
+      else m.status = "ready";
+    } else if (kind === "oven") {
+      if (["off", "idle", "standby", "unavailable", "finished"].includes(base)) m.status = base === "standby" ? "off" : base;
+      else if (m.tempVal != null && m.targetVal != null && m.tempVal < m.targetVal - 5) m.status = "preheating";
+      else m.status = "heating";
+    } else if (kind === "pellet_stove") {
+      const raw = main ? `${main.state} ${main.attributes.hvac_action || ""} ${main.attributes.status || ""}`.toLowerCase() : "";
+      const ign = c.ignition_threshold ?? 250;
+      const byPower = () => (watts > ign ? "ignition" : powered ? "heating" : "standby");
+      if (/alarm|alarme|error|erreur|d[eé]faut|fault|bloqu|block/.test(raw)) m.status = "alarm";
+      else if (/allum|ignit|d[eé]marr|start|pr[eé]chauf|preheat|charg/.test(raw)) m.status = "ignition";
+      else if (/extin|shut.?down|cool|refroid|clean|nettoy/.test(raw)) m.status = "extinguishing";
+      else if (base === "off" || base === "unavailable") m.status = base;
+      else if (main && ["climate", "water_heater"].includes(domainOf(c.entity))) {
+        const act = String(main.attributes.hvac_action || "").toLowerCase();
+        m.status = act === "off" ? "off" : act === "heating" ? (watts !== null ? (watts > ign ? "ignition" : "heating") : "heating")
+          : act ? "standby" : (watts !== null ? byPower() : "heating");
+      }
+      else if (/eco|veille|standby|attente|wait/.test(raw)) m.status = "standby";
+      else if (watts !== null) m.status = base === "idle" && !powered ? "off" : byPower();
+      else m.status = base === "running" ? "heating" : base === "standby" ? "standby" : "off";
+      if (m.pellets != null && m.pellets < (c.pellet_alert ?? 15)) m.alerts.push("pellets_low");
+    } else if (kind === "pool_pump") {
+      m.status = base === "running" ? "filtering" : base;
+    } else if (kind === "printer_3d") {
+      const raw = main ? `${main.state}`.toLowerCase() : "";
+      if (/fail|error|erreur|[eé]chec/.test(raw)) m.status = "failed";
+      else if (/paus/.test(raw)) m.status = "paused";
+      else if (/finish|done|complete|termin|fini/.test(raw)) m.status = "finished";
+      else if (/prepar|heat|chauff|preheat|calibr|level|homing|init/.test(raw)) m.status = "heating";
+      else if (/print|running|impression|en cours|busy|slicing/.test(raw)) m.status = "printing";
+      else if (/offline|hors ligne/.test(raw)) m.status = "off";
+      else if (/idle|ready|pr[eê]t|operational|standby/.test(raw)) m.status = powered ? "printing" : "ready";
+      else if (base === "running") m.status = "printing";
+      else if (base === "standby" || base === "idle") m.status = main || sw ? "ready" : "off";
+      else m.status = base;
+    } else if (kind === "radiator") {
+      const isClimate = main && domainOf(c.entity) === "climate";
+      const act = isClimate ? String(main.attributes.hvac_action || "").toLowerCase() : "";
+      m.radMode = modeOf(m, main, c);
+      if (base === "unavailable") m.status = "unavailable";
+      else if (m.radMode === "off" || base === "off" || act === "off" || (isClimate && main.state === "off")) m.status = "off";
+      else if (act === "heating" || (watts != null && powered) || (watts == null && !isClimate && base === "running")) m.status = "heating";
+      else m.status = "standby";
+      m.heat = m.status !== "heating" ? 0 : watts != null ? Math.max(0.3, Math.min(1, watts / (c.max_power || 1500))) : 0.8;
+      if (isOn(m.window)) m.alerts.push("window_open");
+    } else if (kind === "hob") {
+      const zp = c.zone_power || 1500;
+      const lvlOf = (st) => {
+        if (!st || BAD.includes(String(st.state).toLowerCase())) return null;
+        const t = String(st.state).toLowerCase(), n = parseFloat(t), u = String(st.attributes.unit_of_measurement || "");
+        if (/boost|^p$|power/.test(t)) return 9;
+        if (["off", "arret", "arrêt", "0"].includes(t)) return 0;
+        if (!Number.isFinite(n)) return t === "on" ? 5 : 0;
+        if (u === "W") return Math.max(0, Math.min(9, Math.round(n / zp * 9)));
+        if (u === "kW") return Math.max(0, Math.min(9, Math.round(n * 1000 / zp * 9)));
+        if (u === "%") return Math.max(0, Math.min(9, Math.round(n / 100 * 9)));
+        return Math.max(0, Math.min(9, Math.round(n)));
+      };
+      let zl = [1, 2, 3, 4].map((i) => lvlOf(S(c[`zone_${i}`])));
+      if (zl.every((v) => v == null)) {
+        // no per-zone data: spread the total power over zones (front-left, back-right, front-right, back-left)
+        zl = [0, 0, 0, 0];
+        if (base !== "off" && base !== "unavailable" && watts != null && watts > threshold) {
+          const n = Math.max(1, Math.min(4, Math.ceil(watts / (zp * 1.4))));
+          const per = watts / n;
+          const lv = Math.max(1, Math.min(9, Math.round(per / zp * 9)));
+          [0, 3, 1, 2].slice(0, n).forEach((z) => { zl[z] = lv; });
+        }
+      } else zl = zl.map((v) => v ?? 0);
+      const now = Date.now(), keep = (c.residual_minutes ?? 10) * 60000;
+      this._hot = this._hot || [0, 0, 0, 0];
+      zl.forEach((v, i) => { if (v > 0) this._hot[i] = now; });
+      m.zones = zl;
+      m.residualZones = zl.map((v, i) => v === 0 && this._hot[i] && now - this._hot[i] < keep);
+      m.activeZones = zl.filter((v) => v > 0).length;
+      if (base === "unavailable") m.status = "unavailable";
+      else if (m.activeZones > 0) m.status = "cooking";
+      else if (m.residualZones.some(Boolean)) m.status = "residual";
+      else m.status = "off";
+    } else if (kind === "vmc") {
+      const sp = m.speed ? String(m.speed.state).toLowerCase() : "";
+      const spn = num(m.speed);
+      const hi = c.high_threshold ?? 35;
+      if (base === "off" || base === "unavailable") m.status = base;
+      else if (m.speed && !BAD.includes(sp) && /boost|grande|high|max|rapide|fast|gv/.test(sp)) m.status = "speed2";
+      else if (m.speed && !BAD.includes(sp) && /petite|low|eco|lente|slow|min|pv|auto|normal/.test(sp)) m.status = "speed1";
+      else if (spn != null && spn > 0) m.status = (String(m.speed.attributes.unit_of_measurement || "") === "%" ? spn > 60 : spn >= 2) ? "speed2" : "speed1";
+      else if (spn === 0) m.status = "off";
+      else if (watts != null) m.status = watts > hi ? "speed2" : powered ? "speed1" : (base === "standby" ? "standby" : "off");
+      else m.status = base === "running" ? "speed1" : base;
+      if (m.humidity != null && m.humidity > (c.humidity_max ?? 70)) m.alerts.push("humid");
+    } else if (kind === "solar") {
+      const sunSt = hass.states[c.sun_entity || "sun.sun"];
+      const hr = new Date().getHours();
+      const night = sunSt ? sunSt.state === "below_horizon" : (hr >= 21 || hr < 6);
+      m.frac = watts != null ? Math.max(0, Math.min(1, watts / (c.max_power || 3000))) : 0;
+      if (base === "unavailable") m.status = "unavailable";
+      else if (watts != null && watts > threshold) m.status = m.frac < 0.15 ? "low" : "producing";
+      else m.status = night ? "night" : "idle";
+    } else if (kind === "chest_freezer" || kind === "drawer_freezer") {
+      if (base === "off" || base === "unavailable") m.status = base;
+      else m.status = powered ? "cooling" : "standby";
+      if (m.tempVal != null && m.tempVal > (c.freezer_max_temperature ?? c.max_temperature ?? -12)) m.alerts.push("too_warm");
+    } else if (kind === "ac_split" || kind === "heat_pump") {
+      const isClim = main && domainOf(c.entity) === "climate";
+      const mode = isClim ? String(main.state).toLowerCase() : null;
+      const act = isClim ? String(main.attributes.hvac_action || "").toLowerCase() : "";
+      const hint = String(c.hvac || "auto").toLowerCase(), mon = new Date().getMonth();
+      const guess = hint === "cool" || hint === "clim" ? "cooling" : hint === "heat" || hint === "chauffage" ? "heating" : (mon >= 4 && mon <= 8 ? "cooling" : "heating");
+      const fromMode = (md) => ({ cool: "cooling", heat: "heating", dry: "ac_dry", fan_only: "ac_fan" }[md]);
+      if (isClim && BAD.includes(mode)) m.status = "unavailable";
+      else if (mode === "off" || (!isClim && ["off", "unavailable"].includes(base))) m.status = mode === "off" ? "off" : base;
+      else if (act && act !== "off") m.status = ({ cooling: "cooling", heating: "heating", preheating: "heating", drying: "ac_dry", fan: "ac_fan", idle: "at_target", defrosting: "defrost" }[act]) || fromMode(mode) || guess;
+      else if (mode) m.status = (watts !== null && !powered && !["fan_only", "dry"].includes(mode)) ? "at_target" : (fromMode(mode) || guess);
+      else if (watts !== null) m.status = powered ? guess : "off";
+      else m.status = base === "running" || base === "on" ? guess : "off";
+      if (sw && String(sw.state).toLowerCase() === "off") m.status = "off";
+      m.acMode = mode && mode !== "off" ? mode : null;
+      m.accent = m.status === "heating" ? "heat" : "cold";
+    } else if (kind === "fan") {
+      const isFan = main && domainOf(c.entity) === "fan", fs = isFan ? String(main.state).toLowerCase() : "";
+      let lvl = 0, st = null;
+      if (isFan && !BAD.includes(fs)) {
+        if (fs === "on") { const p = Number(main.attributes.percentage); lvl = Number.isFinite(p) && p > 0 ? (p <= 34 ? 1 : p <= 67 ? 2 : 3) : 2; m.pct = Number.isFinite(p) ? p : null; }
+      } else if (["off", "unavailable"].includes(base)) st = base;
+      else if (watts !== null) {
+        lvl = watts > (c.high_threshold ?? 40) ? 3 : watts > (c.mid_threshold ?? 30) ? 2 : powered ? 1 : 0;
+        if (!lvl) st = watts >= (c.standby_threshold ?? 0.3) ? "standby" : "off";
+      } else lvl = ["running", "on"].includes(base) ? 2 : 0;
+      m.status = st || (lvl ? `fan_${lvl}` : "off");
+      if (sw && String(sw.state).toLowerCase() === "off") m.status = "off";
+      m.osc = isFan && main.attributes.oscillating != null ? !!main.attributes.oscillating : c.oscillating !== false;
+    } else if (kind === "beer_tap") {
+      if (["off", "unavailable"].includes(base)) m.status = base;
+      else if (isOn(m.pouring)) m.status = "pouring";
+      else if (watts !== null) m.status = watts > threshold ? "cooling" : watts >= (c.standby_threshold ?? 0.3) ? "ready" : "off";
+      else m.status = base === "running" ? "cooling" : "ready";
+      if (sw && String(sw.state).toLowerCase() === "off") m.status = "off";
+      if (m.keg != null && m.keg <= (c.keg_alert ?? 10) && m.status !== "off") m.alerts.push("keg_low");
+    } else if (kind === "av_receiver") {
+      const isMp = main && domainOf(c.entity) === "media_player", ms = isMp ? String(main.state).toLowerCase() : "";
+      const a = isMp ? (main.attributes || {}) : {};
+      if (isMp && !BAD.includes(ms)) m.status = ["on", "playing", "idle", "buffering"].includes(ms) ? "playing" : ms === "paused" ? "paused" : ms === "standby" ? "standby" : "off";
+      else if (["off", "unavailable"].includes(base)) m.status = base;
+      else if (watts !== null) m.status = watts > threshold ? "playing" : watts >= (c.standby_threshold ?? 0.2) ? "standby" : "off";
+      else m.status = base === "running" ? "playing" : "standby";
+      if (sw && String(sw.state).toLowerCase() === "off") m.status = "off";
+      if (m.status === "playing" && a.is_volume_muted) m.status = "muted";
+      m.vol = a.volume_level != null ? Number(a.volume_level) : null;
+      m.source = a.source || null;
+      const maxP = c.max_power ?? 250;
+      m.amp = m.vol != null ? m.vol : (watts !== null ? Math.max(.25, Math.min(1, watts / maxP)) : .6);
+    } else if (kind === "tv") {
+      const dom = main ? domainOf(c.entity) : null, ms = main ? String(main.state).toLowerCase() : "";
+      if (dom === "media_player" && !BAD.includes(ms)) {
+        m.status = ["on", "playing", "paused", "idle", "buffering"].includes(ms) ? "screen_on" : ms === "standby" ? "standby" : "off";
+        if (watts !== null && m.status !== "screen_on" && watts > threshold) m.status = "screen_on";
+      } else if (["off", "unavailable"].includes(base)) m.status = base;
+      else if (watts !== null) m.status = watts > threshold ? "screen_on" : watts >= (c.standby_threshold ?? 0.2) ? "standby" : "off";
+      else m.status = base === "running" ? "screen_on" : "standby";
+      if (sw && String(sw.state).toLowerCase() === "off") m.status = "off";
+    } else if (kind === "range_hood") {
+      const sp = m.speed ? String(m.speed.state).toLowerCase() : "", spn = num(m.speed);
+      const hi = c.high_threshold ?? 130, lightT = c.light_threshold ?? 3;
+      if (base === "off" || base === "unavailable") m.status = base;
+      else if (m.speed && !BAD.includes(sp) && /boost|grande|high|max|rapide|fast|3|intensi/.test(sp)) m.status = "speed2";
+      else if (m.speed && !BAD.includes(sp) && /petite|low|eco|lente|slow|min|1|2|moyen|medium/.test(sp)) m.status = "speed1";
+      else if (spn === 0) m.status = "off";
+      else if (watts !== null) m.status = watts > hi ? "speed2" : powered ? "speed1" : watts > lightT ? "lights" : "off";
+      else m.status = base === "running" ? "speed1" : base === "standby" ? "off" : base;
+      m.lights = m.light ? isOn(m.light) : (m.status === "lights" || ((m.status === "speed1" || m.status === "speed2") && c.light === undefined && watts !== null && watts > threshold));
+    } else if (kind === "towel_dryer") {
+      m.radMode = modeOf(m, main, c);
+      if (base === "off" || base === "unavailable") m.status = base;
+      else if (m.radMode === "off") m.status = "off";
+      else if (powered || (watts === null && base === "running" && !m.mode)) m.status = "heating";
+      else m.status = base === "standby" || isOn(sw) || m.radMode ? "at_target" : "off";
+    } else if (kind === "server_rack") {
+      if (base === "off" || base === "unavailable") m.status = base;
+      else if (watts !== null) m.status = powered ? "online" : watts > 0.5 ? "standby" : "off";
+      else m.status = base === "running" ? "online" : base === "standby" ? "standby" : "off";
+      m.load = watts !== null ? Math.max(0, Math.min(1, watts / (c.max_power || 300))) : 0.4;
+    } else if (kind === "desktop_pc" || kind === "laptop") {
+      if (base === "off" || base === "unavailable") m.status = base;
+      else if (watts !== null) m.status = powered ? "screen_on" : watts >= (c.standby_threshold ?? 0.5) ? "standby" : "off";
+      else m.status = base === "running" ? "screen_on" : "standby";
+    } else if (kind === "coffee_maker") {
+      const warmT = c.warm_threshold ?? 5;
+      if (["off", "unavailable"].includes(base)) m.status = base;
+      else if (base === "finished") m.status = "ready";
+      else if (watts !== null) m.status = watts > threshold ? "brewing" : watts > warmT ? (cfStyle(c) === "filtre" ? "keep_warm" : "ready") : "idle";
+      else m.status = base === "running" ? "brewing" : "idle";
+    } else if (kind === "air_fryer") {
+      m.status = base === "running" ? "cooking" : base === "standby" ? "idle" : base;
+    } else if (kind === "wine_cooler") {
+      if (base === "off" || base === "unavailable") m.status = base;
+      else m.status = powered || (watts === null && base === "running") ? "cooling" : "standby";
+      if (m.tempVal != null && m.tempVal > (c.max_temperature ?? 18)) m.alerts.push("too_warm");
+    } else if (kind === "fridge") {
+      if (base === "off" || base === "unavailable") m.status = base;
+      else m.status = powered ? "cooling" : "standby";
+      const maxF = c.max_temperature ?? 8, maxZ = c.freezer_max_temperature ?? -12;
+      if (m.tempVal != null && m.tempVal > maxF) m.alerts.push("too_warm");
+      if (num(m.ftemp) != null && num(m.ftemp) > maxZ) m.alerts.push("too_warm");
+    } else {
+      m.status = base;
+    }
+
+    // phase detection (washer / dryer / dishwasher) from status or program text
+    if (m.status === "running" && ["washer", "dryer", "dishwasher"].includes(kind)) {
+      const txt = `${main ? main.state : ""} ${m.program ? m.program.state : ""}`.toLowerCase();
+      if (/rin[cç]|rinse/.test(txt)) m.phase = "rinse";
+      else if (/essor|spin|centrif|essorage/.test(txt)) m.phase = "spin";
+      else if (/refroid|cool|anti.?froiss|wrinkle/.test(txt)) m.phase = "cool";
+      else if (/s[eé]ch|dry/.test(txt)) m.phase = "dry";
+      else m.phase = kind === "dryer" ? "dry" : "wash";
+    }
+    if (isOn(m.door) || isOn(m.fdoor)) m.alerts.unshift("door_open");
+    m.alerts = [...new Set(m.alerts)];
+    return m;
+  }
+
+  async _setMode(key) {
+    const hass = this._hass, c = this._config;
+    const id = c.mode || (domainOf(c.entity) === "climate" ? c.entity : null);
+    const st = id && hass.states[id];
+    if (!st) return;
+    const dom = domainOf(id), opts = modeOptions(st);
+    const opt = pickMode(opts, key);
+    if (!opt) return;
+    if (dom === "select" || dom === "input_select") {
+      hass.callService(dom, "select_option", { entity_id: id, option: opt });
+    } else if (dom === "climate") {
+      const hv = st.attributes.hvac_modes || [];
+      if (key === "off") { hass.callService("climate", "set_hvac_mode", { entity_id: id, hvac_mode: hv.find((x) => x === "off") || "off" }); return; }
+      if (st.state === "off") {
+        const on = hv.find((x) => ["heat", "heat_cool", "auto"].includes(x));
+        if (on) await hass.callService("climate", "set_hvac_mode", { entity_id: id, hvac_mode: on });
+      }
+      if ((st.attributes.preset_modes || []).includes(opt)) hass.callService("climate", "set_preset_mode", { entity_id: id, preset_mode: opt });
+    }
+  }
+
+  /* ---------------- rendering ---------------- */
+  _lcdText(m) {
+    const hass = this._hass, kind = this._kind;
+    const active = ["running", "heating", "preheating", "cooling", "ignition", "filtering", "printing", "producing", "low", "speed1", "speed2", "cooking", "brewing", "keep_warm", "screen_on", "online", "ac_dry", "ac_fan", "defrost", "pouring", "playing", "muted", "fan_1", "fan_2", "fan_3"].includes(m.status);
+    if (m.status === "unavailable") return "- - -";
+    if (["fridge", "wine_cooler", "chest_freezer", "drawer_freezer"].includes(kind)) return m.tempVal != null ? `${fmtNum(hass, m.tempVal, 0)}°` : "--°";
+    if (kind === "towel_dryer") {
+      if (m.status === "off") return "OFF";
+      if (m.radMode === "frost") return "H-G";
+      const v = m.targetVal ?? m.tempVal;
+      return v != null ? `${Math.round(v)}°` : "ON";
+    }
+    if (kind === "server_rack") {
+      if (m.status === "off") return "OFF";
+      if (m.status === "standby") return "STBY";
+      return m.watts != null ? `${Math.round(m.watts)}W` : "ON";
+    }
+    if (kind === "radiator") {
+      if (m.status === "off") return "OFF";
+      if (m.radMode === "frost") return "H-G";
+      const v = m.targetVal ?? m.tempVal;
+      return v != null ? `${Math.round(v)}°` : "ON";
+    }
+    if (kind === "solar") {
+      if (m.status === "night") return tr(hass, "lcd_night");
+      if (m.watts == null) return "--";
+      return m.watts >= 1000 ? `${(m.watts / 1000).toFixed(m.watts >= 10000 ? 0 : 1)}kW` : `${Math.round(m.watts)}W`;
+    }
+    if (kind === "printer_3d") {
+      if (m.status === "printing") return m.progress != null ? `${Math.round(m.progress)}%` : m.remaining ? lcdDuration(m.remaining) : "PRINT";
+      if (m.status === "heating") return m.tempVal != null ? `${Math.round(m.tempVal)}°` : "HEAT";
+      if (m.status === "paused") return "PAUSE";
+      if (m.status === "finished") return "DONE";
+      if (m.status === "failed") return "ERROR";
+      if (m.status === "ready") return "READY";
+      return "OFF";
+    }
+    if (kind === "pool_pump") {
+      if (m.status === "filtering") {
+        const sp = num(m.speed), u = String(m.speed?.attributes.unit_of_measurement || "").toLowerCase();
+        if (sp != null && u !== "%") return `${Math.round(sp)}`;
+        if (sp != null) return `${Math.round(sp)}%`;
+        return m.watts != null ? `${Math.round(m.watts)}W` : "ON";
+      }
+      return m.status === "standby" ? "STBY" : "OFF";
+    }
+    if (kind === "pellet_stove") {
+      if (m.status === "ignition") return tr(hass, "lcd_ignition");
+      if (m.status === "extinguishing") return tr(hass, "lcd_extinguishing");
+      if (m.status === "alarm") return "ALARM";
+      if (m.status === "standby") return "ECO";
+      if (m.status === "heating") return m.tempVal != null ? `${Math.round(m.tempVal)}°` : m.level != null ? `P${Math.round(m.level)}` : "ON";
+      return fmtClock(hass, new Date());
+    }
+    if (kind === "oven") {
+      if (active && m.tempVal != null) return `${Math.round(m.tempVal)}°`;
+      if (active) return m.remaining ? lcdDuration(m.remaining) : "ON";
+      return fmtClock(hass, new Date());
+    }
+    if (kind === "beer_tap") {
+      if (m.status === "off" || m.status === "unavailable") return "";
+      return m.tempVal != null ? `${fmtNum(hass, m.tempVal, 1)}°` : m.status === "cooling" ? "COLD" : "READY";
+    }
+    if (kind === "av_receiver") {
+      if (["off", "unavailable", "standby"].includes(m.status)) return "";
+      if (m.status === "muted") return "MUTE";
+      if (m.status === "paused") return "PAUSE";
+      if (m.source) return String(m.source).toUpperCase().slice(0, 9);
+      return m.vol != null ? `VOL ${Math.round(m.vol * 100)}` : "ON";
+    }
+    if (kind === "ac_split") {
+      if (m.status === "off" || m.status === "unavailable") return "";
+      return m.targetVal != null ? `${Math.round(m.targetVal)}°` : m.tempVal != null ? `${Math.round(m.tempVal)}°` : "ON";
+    }
+    if (kind === "coffee_maker") {
+      if (m.status === "brewing") return tr(hass, "lcd_brewing");
+      if (m.status === "ready") return tr(hass, "lcd_ready");
+      if (m.status === "off") return "OFF";
+      return fmtClock(hass, new Date());
+    }
+    if (kind === "air_fryer") {
+      if (m.status === "finished") return "End";
+      if (active && m.remaining != null && m.remaining > 0) return lcdDuration(m.remaining, m.remaining < 60);
+      if (active && m.tempVal != null) return `${Math.round(m.tempVal)}°`;
+      return active ? "ON" : "OFF";
+    }
+    if (kind === "microwave") {
+      if (m.status === "finished") return "End";
+      if (active) return m.remaining != null ? lcdDuration(m.remaining, m.remaining < 60) : "ON";
+      return fmtClock(hass, new Date());
+    }
+    if (m.status === "finished") return "END";
+    if (!active) return "OFF";
+    if (m.remaining != null && m.remaining > 0) return lcdDuration(m.remaining);
+    return { wash: "WASH", rinse: "RINSE", spin: "SPIN", dry: "DRY", cool: "COOL" }[m.phase] || "RUN";
+  }
+
+  _render(m) {
+    const hass = this._hass, c = this._config, kind = this._kind;
+    const $ = (i) => this.shadowRoot.getElementById(i);
+    const active = ["running", "heating", "preheating", "cooling", "ignition", "filtering", "printing", "producing", "low", "speed1", "speed2", "cooking", "brewing", "keep_warm", "screen_on", "online", "ac_dry", "ac_fan", "defrost", "pouring", "playing", "muted", "fan_1", "fan_2", "fan_3"].includes(m.status);
+    $("wrap").className = [
+      "wrap", `k-${kind}`, `st-${m.status}`, `accent-${m.accent || this._def.accent}`,
+      active ? "active" : "", m.phase ? `ph-${m.phase}` : "",
+      m.alerts.length ? "alert" : "", isOn(m.door) ? "door-open" : "", isOn(m.fdoor) ? "fz-open" : "",
+      m.alerts.includes("too_warm") ? "warm" : "", m.alerts.includes("humid") ? "humid" : "", c.animations === false ? "no-anim" : "", m.lights ? "lights-on" : "", m.solarHeat ? "solar-heat" : "", m.acMode ? `mode-${m.acMode}` : "", m.osc ? "osc" : "",
+    ].filter(Boolean).join(" ");
+
+    // illustration dynamic parts
+    if (kind === "av_receiver") $("wrap").style.setProperty("--amp", (m.amp ?? .6).toFixed(2));
+    if (kind === "beer_tap") $("wrap").style.setProperty("--keg", ((m.keg ?? 70) / 100).toFixed(2));
+    if (kind === "tv") {
+      const prev = this._tvPrev, on = m.status === "screen_on";
+      const scr = this.shadowRoot.querySelector(".tv-flash");
+      if (prev !== undefined && scr && (prev === "screen_on") !== on) {
+        const g = this.shadowRoot.querySelector("svg");
+        g.classList.remove("tv-boot", "tv-shut"); void g.getBoundingClientRect(); g.classList.add(on ? "tv-boot" : "tv-shut");
+        clearTimeout(this._tvT); this._tvT = setTimeout(() => g.classList.remove("tv-boot", "tv-shut"), 3400);
+      }
+      this._tvPrev = m.status;
+    }
+    const sr = this.shadowRoot;
+    const lcdEl = sr.querySelector(".lcd");
+    if (lcdEl) lcdEl.textContent = this._lcdText(m);
+    if (kind === "server_rack") $("wrap").style.setProperty("--load", (m.load ?? 0.4).toFixed(2));
+    if (kind === "solar") $("wrap").style.setProperty("--sun", (m.frac || 0).toFixed(2));
+    if (kind === "radiator" || kind === "towel_dryer") {
+      $("wrap").style.setProperty("--heat", (m.heat || 0).toFixed(2));
+      ["comfort", "eco", "frost"].forEach((k) => $("wrap").classList.toggle(`mode-${k}`, m.radMode === k || (k === "comfort" && !m.radMode && m.status !== "off")));
+      if (kind === "radiator") $("wrap").classList.toggle("win-open", isOn(m.window));
+    }
+    if (kind === "hob" && m.zones) {
+      m.zones.forEach((v, i) => {
+        const z = sr.querySelector(`.z${i + 1}`), d = sr.querySelector(`.zd${i + 1}`);
+        const res = m.residualZones[i];
+        z.style.setProperty("--lvl", v > 0 ? (0.25 + v * 0.083).toFixed(2) : res ? "0.12" : "0");
+        z.classList.toggle("on", v > 0); z.classList.toggle("res", !!res);
+        d.textContent = v > 0 ? String(v) : res ? "H" : "0";
+        d.classList.toggle("on", v > 0 || !!res);
+      });
+      $("wrap").classList.toggle("pot-on", m.zones[0] > 0);
+      $("wrap").classList.toggle("pot-boil", m.zones[0] >= 7);
+      $("wrap").classList.toggle("pan-on", m.zones[3] > 0);
+    }
+    if (kind === "printer_3d") {
+      const H = 38;
+      let frac = m.progress != null ? Math.max(0, Math.min(1, m.progress / 100)) : null;
+      if (m.status === "finished") frac = 1;
+      if (m.progress == null && m.status !== "printing" && m.status !== "finished") frac = 0;
+      const wrap = $("wrap");
+      wrap.classList.toggle("indeterminate", frac == null);
+      const h = (frac ?? 0) * H;
+      wrap.style.setProperty("--h", h.toFixed(2));
+      const clip = sr.querySelector(".objclip");
+      clip.setAttribute("y", (104 - h).toFixed(2)); clip.setAttribute("height", h.toFixed(2));
+      wrap.style.setProperty("--fil", c.filament_color || "#ff8a1f");
+    }
+    if (kind === "pool_pump") {
+      const sp = num(m.speed), u = String(m.speed?.attributes.unit_of_measurement || "").toLowerCase();
+      let spd = 1;
+      if (sp != null) spd = u === "%" ? 0.3 + sp / 100 : sp / 2800;
+      else if (m.watts != null && c.max_power) spd = m.watts / c.max_power;
+      spd = Math.max(0.3, Math.min(1.6, spd));
+      $("wrap").style.setProperty("--spd", spd.toFixed(2));
+    }
+    if (kind === "pellet_stove") {
+      const fs = m.level != null ? Math.max(0.55, Math.min(1.2, 0.55 + 0.13 * m.level)) : 1;
+      sr.querySelector(".fire").style.setProperty("--fs", fs.toFixed(2));
+    }
+    if (kind === "water_heater") {
+      const t = m.tempVal;
+      const ang = t == null ? -135 : -135 + Math.max(0, Math.min(1, (t - 10) / 70)) * 270;
+      sr.querySelector(".needle").setAttribute("transform", `rotate(${ang.toFixed(1)} 60 76)`);
+      sr.querySelector(".gauge-txt").textContent = t == null ? "--°" : `${Math.round(t)}°`;
+    }
+
+    // name + status
+    const name = c.name || tr(hass, kind);
+    let statusTxt = m.phase ? tr(hass, `ph_${m.phase}`) : tr(hass, m.status);
+    if (m.main && ["sensor", "input_select", "select"].includes(domainOf(c.entity)) &&
+        active && !["fridge", "water_heater", "printer_3d", "pool_pump"].includes(kind)) {
+      const raw = String(m.main.state).toLowerCase();
+      if (![...OFF_STATES, ...DONE_STATES, "on", "running", "run"].includes(raw)) statusTxt = stateText(hass, m.main);
+    }
+    if ((kind === "radiator" || kind === "towel_dryer") && m.radMode && m.radMode !== "off" && m.status !== "off" && m.status !== "unavailable") statusTxt += ` · ${tr(hass, m.radMode)}`;
+    if (kind === "fan" && m.pct != null && /^fan_/.test(m.status)) statusTxt += ` · ${Math.round(m.pct)} %`;
+    if (kind === "av_receiver" && m.vol != null && ["playing", "paused"].includes(m.status)) statusTxt += ` · Vol ${Math.round(m.vol * 100)} %`;
+    if (kind === "av_receiver" && m.source && ["playing", "paused", "muted"].includes(m.status)) statusTxt += ` · ${m.source}`;
+    if (kind === "tv" && m.status === "screen_on" && m.main && domainOf(c.entity) === "media_player") {
+      const a = m.main.attributes || {}, what = a.app_name || a.media_title || a.source;
+      if (what) statusTxt += ` · ${what}`;
+    }
+    if (m.solarHeat && active) statusTxt += ` · ${tr(hass, "solar_surplus")}`;
+    const prog = m.program && active && !BAD.includes(String(m.program.state).toLowerCase()) ? stateText(hass, m.program) : "";
+    let sub = "";
+    if (active && m.remaining != null && m.remaining > 0) {
+      sub = `${tr(hass, "ends_at")} ${fmtClock(hass, new Date(Date.now() + m.remaining * 60000))}`;
+    }
+    const alertTxt = m.alerts.map((a) => tr(hass, a)).join(" · ");
+    $("info").innerHTML = `
+      <div class="name">${esc(name)}</div>
+      <div class="status"><span class="dot"></span><span>${esc(statusTxt)}${prog && prog !== statusTxt ? ` · ${esc(prog)}` : ""}</span></div>
+      ${alertTxt ? `<div class="alert-line"><ha-icon icon="mdi:alert-circle-outline"></ha-icon>${esc(alertTxt)}</div>` : ""}
+      ${sub ? `<div class="sub">${esc(sub)}</div>` : ""}`;
+
+    if (c.switch && c.show_toggle !== false) {
+      const on = isOn(m.sw);
+      // safety: cutting a washer/dryer/dishwasher mid-cycle needs a second click
+      const freezer = ["chest_freezer", "drawer_freezer"].includes(kind);
+      const guarded = c.confirm_off !== false && on && (freezer || ((active || ["extinguishing", "paused"].includes(m.status)) && ["washer", "dryer", "dishwasher", "pellet_stove", "printer_3d"].includes(kind)));
+      const arming = guarded && this._confirmUntil && Date.now() < this._confirmUntil;
+      const label = arming ? tr(hass, "confirm_off") : tr(hass, "toggle");
+      $("actions").innerHTML = `<button class="toggle ${on ? "on" : ""} ${arming ? "confirm" : ""}" title="${esc(label)}" aria-label="${esc(label)}" aria-pressed="${on}"><ha-icon icon="${arming ? "mdi:alert" : "mdi:power"}"></ha-icon></button>${arming ? `<div class="confirm-tip">${esc(label)}</div>` : ""}`;
+      $("actions").querySelector("button").onclick = (ev) => {
+        ev.stopPropagation();
+        if (guarded && !(this._confirmUntil && Date.now() < this._confirmUntil)) {
+          this._confirmUntil = Date.now() + 4000;
+          this._render(this._compute());
+          clearTimeout(this._confirmTimer);
+          this._confirmTimer = setTimeout(() => { this._confirmUntil = 0; if (this._hass) this._render(this._compute()); }, 4100);
+          return;
+        }
+        this._confirmUntil = 0;
+        clearTimeout(this._confirmTimer);
+        const dom = domainOf(c.switch);
+        hass.callService(["switch", "input_boolean", "light", "fan"].includes(dom) ? dom : "homeassistant", "toggle", { entity_id: c.switch });
+      };
+    } else $("actions").innerHTML = "";
+
+    // progress bar
+    let pct = null;
+    if (active && m.progress != null) pct = m.progress;
+    else if ((kind === "oven" && m.status === "preheating") || (kind === "water_heater" && m.status !== "off")) {
+      if (m.tempVal != null && m.targetVal) {
+        const floor = kind === "water_heater" ? 10 : 20;
+        pct = ((m.tempVal - floor) / (m.targetVal - floor)) * 100;
+      }
+    }
+    if (pct != null && Number.isFinite(pct)) {
+      $("bar").style.display = "";
+      $("barfill").style.width = `${Math.max(0, Math.min(100, pct))}%`;
+    } else $("bar").style.display = "none";
+
+    // boutons de mode (confort / éco / hors-gel / arrêt)
+    const modesEl = $("modes");
+    const mEnt = c.mode || (domainOf(c.entity) === "climate" ? c.entity : null);
+    if ((kind === "radiator" || kind === "towel_dryer") && mEnt && c.show_modes !== false && hass.states[mEnt]) {
+      const opts = modeOptions(hass.states[mEnt]);
+      const cur = m.radMode ?? (m.status !== "off" ? "comfort" : "off");
+      modesEl.innerHTML = MODE_ORDER.filter((k) => pickMode(opts, k)).map((k) =>
+        `<button class="mode-btn ${cur === k ? "on" : ""}" data-mode="${k}" aria-pressed="${cur === k}"><ha-icon icon="${MODE_ICON[k]}"></ha-icon>${esc(tr(hass, k === "off" ? "mode_off" : k))}</button>`).join("");
+      modesEl.querySelectorAll("button").forEach((b) => { b.onclick = (ev) => { ev.stopPropagation(); this._setMode(b.dataset.mode); }; });
+    } else modesEl.innerHTML = "";
+
+    // stats
+    const tiles = [];
+    const tile = (icon, value, label, entity, cls = "") => {
+      if (value == null) return;
+      tiles.push(`<div class="tile ${cls}" ${entity ? `data-entity="${esc(entity)}"` : ""}>
+        <span class="val">${esc(value)}</span><span class="lbl"><ha-icon icon="${icon}"></ha-icon>${esc(label)}</span></div>`);
+    };
+    const tEntity = c.temperature || (["water_heater", "climate"].includes(domainOf(c.entity)) ? c.entity : null);
+    if (kind === "chest_freezer" || kind === "drawer_freezer") {
+      if (m.tempVal != null) tile("mdi:snowflake-thermometer", `${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}`, tr(hass, "temperature"), tEntity,
+        m.alerts.includes("too_warm") ? "warn" : "");
+    } else if (kind === "beer_tap") {
+      if (m.tempVal != null) tile("mdi:thermometer", `${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}`, tr(hass, "temperature"), tEntity);
+      if (m.keg != null) tile("mdi:keg", `${fmtNum(hass, m.keg, 0)} %`, tr(hass, "keg"), c.keg_level, m.alerts.includes("keg_low") ? "warn" : "");
+    } else if (kind === "wine_cooler") {
+      if (m.tempVal != null) tile("mdi:thermometer", `${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}`, tr(hass, "temperature"), tEntity, m.alerts.includes("too_warm") ? "warn" : "");
+    } else if (kind === "fridge") {
+      if (m.tempVal != null) tile("mdi:thermometer", `${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}`, tr(hass, "fridge_temp"), tEntity,
+        m.tempVal > (c.max_temperature ?? 8) ? "warn" : "");
+      if (m.ftemp) tile("mdi:snowflake", fmtUnit(hass, m.ftemp, 1), tr(hass, "freezer_temp"), c.freezer_temperature,
+        num(m.ftemp) > (c.freezer_max_temperature ?? -12) ? "warn" : "");
+    } else if (kind === "radiator") {
+      const te = c.temperature || (domainOf(c.entity) === "climate" ? c.entity : null);
+      if (m.tempVal != null) tile("mdi:home-thermometer", `${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}`, tr(hass, "temperature"), te);
+      if (m.targetVal != null) tile("mdi:target", `${fmtNum(hass, m.targetVal, 1)} ${m.tempUnit}`, tr(hass, "target"), c.target_temperature || te);
+    } else if (kind === "hob") {
+      /* no extra tile */
+    } else if (kind === "vmc") {
+      if (m.humidity != null) tile("mdi:water-percent", `${fmtNum(hass, m.humidity, 0)} %`, tr(hass, "humidity"), c.humidity, m.alerts.includes("humid") ? "warn" : "");
+    } else if (kind === "printer_3d") {
+      if (m.progress != null) tile("mdi:progress-check", `${fmtNum(hass, m.progress, 0)} %`, tr(hass, "progress"), c.progress);
+      if (m.tempVal != null) tile("mdi:printer-3d-nozzle-heat", `${fmtNum(hass, m.tempVal, 0)} ${m.tempUnit}`, tr(hass, "nozzle"), tEntity);
+      if (m.bedTemp != null) tile("mdi:heat-wave", `${fmtNum(hass, m.bedTemp, 0)} ${m.tempUnit}`, tr(hass, "bed"), c.bed_temperature);
+    } else if (kind === "pool_pump") {
+      if (m.tempVal != null) tile("mdi:thermometer-water", `${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}`, tr(hass, "water"), tEntity);
+      if (m.runtime != null) tile("mdi:timer-outline", fmtDuration(m.runtime), tr(hass, "today"), c.runtime);
+      if (num(m.speed) != null) tile("mdi:speedometer", fmtUnit(hass, m.speed, 0), tr(hass, "speed"), c.speed);
+    } else if (kind === "pellet_stove") {
+      if (m.tempVal != null) tile("mdi:thermometer", `${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}`, tr(hass, "temperature"), tEntity);
+      if (m.targetVal != null) tile("mdi:target", `${fmtNum(hass, m.targetVal, 1)} ${m.tempUnit}`, tr(hass, "target"), c.target_temperature || tEntity);
+      if (m.level != null) tile("mdi:fire", `P${fmtNum(hass, m.level, 0)}`, tr(hass, "level"), c.power_level);
+      if (m.pellets != null) tile("mdi:grain", `${fmtNum(hass, m.pellets, 0)} %`, tr(hass, "pellets"), c.pellet_level, m.alerts.includes("pellets_low") ? "warn" : "");
+    } else if (["water_heater", "oven", "air_fryer", "ac_split", "heat_pump", "towel_dryer", "server_rack"].includes(kind)) {
+      if (m.tempVal != null) tile("mdi:thermometer", `${fmtNum(hass, m.tempVal, 0)} ${m.tempUnit}`, tr(hass, "temperature"), tEntity);
+      if (m.targetVal != null) tile("mdi:target", `${fmtNum(hass, m.targetVal, 0)} ${m.tempUnit}`, tr(hass, "target"), c.target_temperature || tEntity);
+    }
+    if (m.remaining != null && m.remaining > 0 && active && kind !== "water_heater") tile("mdi:timer-sand", fmtDuration(m.remaining), tr(hass, "remaining"), c.remaining);
+    const solar = kind === "solar";
+    const dual = kind === "water_heater" && (m.pwS || m.energyS);
+    if (m.pw) tile(solar ? "mdi:solar-power" : "mdi:flash", fmtPower(hass, m.pw) ?? "—", tr(hass, solar ? "production" : dual ? "grid" : "power"), c.power);
+    if (m.pwS) tile("mdi:solar-power", fmtPower(hass, m.pwS) ?? "—", tr(hass, "solar_surplus"), c.power_solar);
+    if (m.energy) tile("mdi:lightning-bolt-circle", fmtUnit(hass, m.energy, 2) ?? "—", tr(hass, solar ? "today" : dual ? "energy_grid" : "energy"), c.energy);
+    if (m.energyS) tile("mdi:solar-power-variant", fmtUnit(hass, m.energyS, 2) ?? "—", tr(hass, "energy_solar"), c.energy_solar);
+    if (m.cost) tile(solar ? "mdi:piggy-bank-outline" : "mdi:cash", fmtUnit(hass, m.cost, 2, 2) ?? "—", tr(hass, solar ? "savings" : "cost"), c.cost);
+    if (solar && m.status !== "night" && m.frac != null && m.pw && !BAD.includes(String(m.pw.state).toLowerCase())) tile("mdi:white-balance-sunny", `${Math.round(m.frac * 100)} %`, tr(hass, "of_peak"), c.power);
+    $("stats").innerHTML = tiles.join("");
+    $("stats").style.display = tiles.length ? "" : "none";
+  }
+}

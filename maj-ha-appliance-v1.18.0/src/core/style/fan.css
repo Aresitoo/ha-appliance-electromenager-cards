@@ -1,0 +1,22 @@
+/* ---------- fan ---------- */
+.k-fan svg { overflow: visible; }
+.k-fan { --fspd: 1s; }
+.k-fan.st-fan_1 { --fspd: .55s; } .k-fan.st-fan_2 { --fspd: .28s; } .k-fan.st-fan_3 { --fspd: .16s; }
+.fn-blades { transform-box: view-box; transform-origin: 60px 52px; }
+.k-fan.st-fan_1 .fn-blades, .k-fan.st-fan_2 .fn-blades, .k-fan.st-fan_3 .fn-blades { animation: ac-rot var(--fspd) linear infinite; }
+.fn-blur { opacity: 0; transition: opacity .6s; }
+.k-fan.st-fan_2 .fn-blur { opacity: .12; } .k-fan.st-fan_3 .fn-blur { opacity: .2; }
+.fn-head { transform-box: view-box; transform-origin: 60px 80px; }
+.k-fan.osc.st-fan_1 .fn-head, .k-fan.osc.st-fan_2 .fn-head, .k-fan.osc.st-fan_3 .fn-head { animation: fn-osc 7s ease-in-out infinite; }
+.fn-air path { stroke: #bfe3f7; stroke-width: 1.8; opacity: 0; stroke-dasharray: 4 6; }
+.k-fan.st-fan_1 .fn-air path { opacity: .45; animation: ac-blow 1.4s linear infinite; }
+.k-fan.st-fan_2 .fn-air path, .k-fan.st-fan_3 .fn-air path { opacity: .8; animation: ac-blow .7s linear infinite; }
+.fn-air path:nth-child(2), .fn-air path:nth-child(4) { animation-delay: -.3s !important; }
+.fn-ribbon { transform-box: view-box; transform-origin: 93px 45px; }
+.k-fan.st-fan_1 .fn-ribbon { animation: fn-flap .5s ease-in-out infinite alternate; }
+.k-fan.st-fan_2 .fn-ribbon, .k-fan.st-fan_3 .fn-ribbon { animation: fn-flap .18s ease-in-out infinite alternate; }
+.fn-led { fill: #3a424b; transition: fill .3s; }
+.k-fan.st-fan_1 .l1, .k-fan.st-fan_2 .l1, .k-fan.st-fan_2 .l2, .k-fan.st-fan_3 .fn-led { fill: #38d9ff; }
+.k-fan.st-standby .l1 { fill: #ff8a3d; }
+@keyframes fn-osc { 0%, 100% { transform: scaleX(1) translateX(0); } 25% { transform: scaleX(.82) translateX(-4px); } 50% { transform: scaleX(1) translateX(0); } 75% { transform: scaleX(.82) translateX(4px); } }
+@keyframes fn-flap { from { transform: rotate(-12deg) scaleY(.8); } to { transform: rotate(14deg) scaleY(1.1); } }

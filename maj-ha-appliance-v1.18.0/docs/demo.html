@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Appliance Cards – page de test</title>
+<script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js"></script>
+<style>
+:root {
+  --primary-color:#03a9f4; --error-color:#db4437; --success-color:#43a047; --disabled-text-color:#8a8a8a;
+  --primary-text-color:#e6e6e6; --secondary-text-color:#9da3aa; --card-background-color:#1c1f23;
+  --page-bg:#111315; --panel-bg:#181b1f; --line:rgba(127,127,127,.22);
+}
+body.light {
+  --primary-text-color:#1d2125; --secondary-text-color:#68707a; --card-background-color:#ffffff;
+  --page-bg:#eef0f3; --panel-bg:#f7f8fa;
+}
+* { box-sizing:border-box; }
+body { margin:0; background:var(--page-bg); color:var(--primary-text-color); font:14px/1.45 Roboto, system-ui, -apple-system, "Segoe UI", sans-serif; }
+header { position:sticky; top:0; z-index:5; background:var(--page-bg); border-bottom:1px solid var(--line); padding:12px 16px; display:flex; flex-wrap:wrap; gap:10px 18px; align-items:center; }
+header h1 { font-size:17px; margin:0; font-weight:600; flex:1 1 220px; }
+header h1 small { display:block; font-size:12px; font-weight:400; color:var(--secondary-text-color); }
+.seg { display:inline-flex; border:1px solid var(--line); border-radius:8px; overflow:hidden; }
+.seg button { background:none; border:0; color:var(--secondary-text-color); padding:6px 11px; font:inherit; cursor:pointer; }
+.seg button.on { background:var(--primary-color); color:#fff; }
+header a { color:var(--primary-color); text-decoration:none; font-size:13px; }
+main { padding:16px; display:grid; gap:16px; grid-template-columns:repeat(auto-fill, minmax(min(100%, 360px), 1fr)); max-width:1600px; margin:0 auto; }
+.cell { display:flex; flex-direction:column; gap:10px; }
+ha-card { display:block; background:var(--card-background-color); border-radius:12px; border:1px solid var(--line); }
+.ctl { background:var(--panel-bg); border:1px solid var(--line); border-radius:10px; padding:10px 12px; display:grid; grid-template-columns:auto 1fr auto; gap:6px 10px; align-items:center; font-size:13px; }
+.ctl h3 { grid-column:1/-1; margin:0 0 2px; font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--secondary-text-color); font-weight:600; }
+.ctl label { color:var(--secondary-text-color); white-space:nowrap; }
+.ctl output { font-variant-numeric:tabular-nums; min-width:62px; text-align:right; }
+.ctl select, .ctl input[type=range] { width:100%; min-width:0; }
+.ctl select { background:var(--card-background-color); color:var(--primary-text-color); border:1px solid var(--line); border-radius:6px; padding:4px 6px; font:inherit; }
+.ctl .chk { grid-column:2/-1; display:flex; gap:14px; flex-wrap:wrap; }
+.ctl .chk label { color:var(--primary-text-color); display:flex; gap:5px; align-items:center; }
+details.yaml { grid-column:1/-1; }
+details.yaml summary { cursor:pointer; color:var(--secondary-text-color); font-size:12px; }
+details.yaml pre { margin:6px 0 0; font-size:11.5px; background:var(--card-background-color); border:1px solid var(--line); border-radius:6px; padding:8px; overflow:auto; }
+#log { position:fixed; right:16px; bottom:16px; width:min(340px, calc(100vw - 32px)); max-height:180px; overflow:auto; background:var(--panel-bg); border:1px solid var(--line); border-radius:10px; padding:8px 10px; font-size:12px; box-shadow:0 6px 24px rgba(0,0,0,.25); }
+#log b { display:block; font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--secondary-text-color); margin-bottom:4px; }
+#log div { padding:2px 0; border-top:1px solid var(--line); font-family:ui-monospace, monospace; }
+footer { text-align:center; color:var(--secondary-text-color); font-size:12px; padding:8px 16px 220px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Appliance Cards — page de test <small id="ver">Données simulées · aucune installation Home Assistant nécessaire</small></h1>
+  <div class="seg" id="theme"><button data-v="dark" class="on">Sombre</button><button data-v="light">Clair</button></div>
+  <div class="seg" id="lang"></div>
+  <div class="seg" id="anim"><button data-v="1" class="on">Animations</button><button data-v="0">Off</button></div>
+  <a href="tests.html">Tests automatiques →</a>
+  <a href="https://github.com/skyrotter/ha-appliance-electromenager-cards">GitHub</a>
+</header>
+<main id="main"></main>
+<footer>Les cartes chargées ici sont exactement le fichier <code>dist/ha-appliance-electromenager-cards.js</code> du dépôt.</footer>
+<div id="log"><b>Actions de la carte</b></div>
+
+<script>
+/* Minimal stand-ins for Home Assistant's own elements */
+customElements.define('ha-card', class extends HTMLElement {});
+customElements.define('ha-icon', class extends HTMLElement {
+  static get observedAttributes() { return ['icon']; }
+  connectedCallback() { this.render(); }
+  attributeChangedCallback() { this.render(); }
+  render() {
+    const s = getComputedStyle(this).getPropertyValue('--mdc-icon-size').trim() || '24px';
+    this.style.display = 'inline-flex'; this.style.width = s; this.style.height = s;
+    this.innerHTML = `<iconify-icon icon="${this.getAttribute('icon') || ''}" width="${s}" height="${s}"></iconify-icon>`;
+  }
+});
+</script>
+<script src="../dist/ha-appliance-electromenager-cards.js"></script>
+<script>
+const W = { unit_of_measurement: 'W', device_class: 'power' };
+const T = { unit_of_measurement: '°C', device_class: 'temperature' };
+const KWH = { unit_of_measurement: 'kWh', device_class: 'energy' };
+const EUR = { unit_of_measurement: '€' };
+const states = {};
+const set = (id, state, attrs) => { states[id] = { entity_id: id, state: String(state), attributes: attrs || states[id]?.attributes || {}, last_changed: new Date().toISOString() }; };
+let lang = 'fr', animations = true;
+const cards = [];
+const log = (msg) => { const d = document.createElement('div'); d.textContent = `${new Date().toLocaleTimeString()} ${msg}`; document.getElementById('log').insertBefore(d, document.getElementById('log').children[1]); };
+
+const hass = () => ({
+  states: { ...states }, language: lang, locale: { language: lang }, config: {},
+  callService(domain, service, data) {
+    log(`callService ${domain}.${service} ${data.entity_id}`);
+    const cur = states[data.entity_id];
+    if (cur && service === 'toggle') { set(data.entity_id, cur.state === 'on' ? 'off' : 'on'); refresh(); }
+    if (cur && service === 'select_option') { const at = cur.attributes; set(data.entity_id, data.option); states[data.entity_id].attributes = at; if (cur._input) cur._input.value = data.option; refresh(); }
+    // robots : les boutons Démarrer / Pause / Base changent l'état simulé
+    const robot = { start: 'cleaning', start_mowing: 'mowing', pause: 'paused', return_to_base: 'returning', dock: 'returning' }[service];
+    if (cur && robot && (domain === 'vacuum' || domain === 'lawn_mower')) { set(data.entity_id, robot); if (ROBOT_SEL[data.entity_id]) ROBOT_SEL[data.entity_id].value = robot; refresh(); }
+  },
+});
+const refresh = () => { const h = hass(); cards.forEach((c) => (c.hass = h)); };
+
+/* ---------- control widgets ---------- */
+const T_ = (fr, en) => (lang === 'fr' ? fr : en);
+function range(ctl, label, id, min, max, step, val, unit, attrs, fmt) {
+  set(id, val, attrs);
+  const lab = document.createElement('label'); lab.textContent = label;
+  const inp = Object.assign(document.createElement('input'), { type: 'range', min, max, step, value: val });
+  const out = document.createElement('output');
+  const show = () => (out.textContent = fmt ? fmt(+inp.value) : `${inp.value} ${unit}`);
+  inp.oninput = () => { set(id, inp.value); show(); refresh(); };
+  show(); ctl.append(lab, inp, out);
+}
+function select(ctl, label, id, options, val, onChange) {
+  set(id, val);
+  const lab = document.createElement('label'); lab.textContent = label;
+  const sel = document.createElement('select');
+  options.forEach(([v, t]) => sel.append(new Option(t, v, false, v === val)));
+  sel.onchange = () => { set(id, sel.value); onChange && onChange(sel.value); refresh(); };
+  ctl.append(lab, sel, document.createElement('span'));
+  return sel;
+}
+function checks(ctl, items) {
+  const wrap = document.createElement('div'); wrap.className = 'chk';
+  ctl.append(document.createElement('span'), wrap);
+  items.forEach(([label, id, val]) => {
+    set(id, val ? 'on' : 'off');
+    const l = document.createElement('label');
+    const c = Object.assign(document.createElement('input'), { type: 'checkbox', checked: !!val });
+    c.onchange = () => { set(id, c.checked ? 'on' : 'off'); refresh(); };
+    states[id]._input = c;
+    l.append(c, label); wrap.append(l);
+  });
+}
+const mmss = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+
+/* ---------- appliance scenarios ---------- */
+const CYCLE = [
+  ['off', 'Arrêt / Off'], ['Lavage', 'Lavage / Wash'], ['Rinçage', 'Rinçage / Rinse'], ['Essorage', 'Essorage / Spin'],
+  ['finished', 'Terminé / Finished'], ['unavailable', 'Indisponible'],
+];
+const SCEN = [
+  { kind: 'washer', title: 'Lave-linge', p: 'washer',
+    cfg: { entity: 'sensor.washer_status', power: 'sensor.washer_power', energy: 'sensor.washer_energy', cost: 'sensor.washer_cost', remaining: 'sensor.washer_remaining', door: 'binary_sensor.washer_door' },
+    build(ctl) {
+      select(ctl, 'État', 'sensor.washer_status', CYCLE, 'Lavage');
+      range(ctl, 'Puissance', 'sensor.washer_power', 0, 2400, 10, 1850, 'W', W);
+      range(ctl, 'Restant', 'sensor.washer_remaining', 0, 180, 1, 47, 'min', { unit_of_measurement: 'min' });
+      set('sensor.washer_energy', 1.42, KWH); set('sensor.washer_cost', 0.31, EUR);
+      checks(ctl, [['Porte ouverte', 'binary_sensor.washer_door', false]]);
+    } },
+  { kind: 'dryer', title: 'Sèche-linge',
+    cfg: { entity: 'sensor.dryer_status', power: 'sensor.dryer_power', energy: 'sensor.dryer_energy', remaining: 'sensor.dryer_remaining' },
+    build(ctl) {
+      select(ctl, 'État', 'sensor.dryer_status', [['off', 'Arrêt'], ['Séchage', 'Séchage / Dry'], ['Refroidissement', 'Refroidissement / Cool'], ['finished', 'Terminé'], ['unavailable', 'Indisponible']], 'Séchage');
+      range(ctl, 'Puissance', 'sensor.dryer_power', 0, 2800, 10, 2300, 'W', W);
+      range(ctl, 'Restant', 'sensor.dryer_remaining', 0, 180, 1, 64, 'min', { unit_of_measurement: 'min' });
+      set('sensor.dryer_energy', 2.1, KWH);
+    } },
+  { kind: 'dishwasher', title: 'Lave-vaisselle',
+    cfg: { entity: 'sensor.dishwasher_status', power: 'sensor.dishwasher_power', remaining: 'sensor.dishwasher_remaining', progress: 'sensor.dishwasher_progress' },
+    build(ctl) {
+      select(ctl, 'État', 'sensor.dishwasher_status', [['off', 'Arrêt'], ['Lavage', 'Lavage / Wash'], ['Rinçage', 'Rinçage / Rinse'], ['Séchage', 'Séchage / Dry'], ['finished', 'Terminé'], ['unavailable', 'Indisponible']], 'Lavage');
+      range(ctl, 'Puissance', 'sensor.dishwasher_power', 0, 2200, 10, 1900, 'W', W);
+      range(ctl, 'Restant', 'sensor.dishwasher_remaining', 0, 240, 1, 72, 'min', { unit_of_measurement: 'min' });
+      range(ctl, 'Progression', 'sensor.dishwasher_progress', 0, 100, 1, 35, '%', { unit_of_measurement: '%' });
+    } },
+  { kind: 'water-heater', title: "Ballon d'eau chaude",
+    cfg: { switch: 'switch.water_heater', power: 'sensor.water_heater_power', temperature: 'sensor.water_heater_temp', target_temperature: 'sensor.water_heater_target', cost: 'sensor.water_heater_cost' },
+    build(ctl) {
+      set('switch.water_heater', 'on');
+      range(ctl, 'Puissance', 'sensor.water_heater_power', 0, 3000, 50, 2400, 'W', W);
+      range(ctl, 'Température', 'sensor.water_heater_temp', 10, 80, 1, 48, '°C', T);
+      range(ctl, 'Consigne', 'sensor.water_heater_target', 40, 75, 1, 60, '°C', T);
+      set('sensor.water_heater_cost', 0.34, EUR);
+      ctl.append(Object.assign(document.createElement('span'), { textContent: '' }), Object.assign(document.createElement('span'), { textContent: 'Bouton ⏻ de la carte = interrupteur', style: 'color:var(--secondary-text-color);font-size:12px' }), document.createElement('span'));
+    } },
+  { kind: 'oven', title: 'Four',
+    cfg: { switch: 'switch.oven', power: 'sensor.oven_power', temperature: 'sensor.oven_temp', target_temperature: 'sensor.oven_target', door: 'binary_sensor.oven_door' },
+    build(ctl) {
+      set('switch.oven', 'on');
+      range(ctl, 'Puissance', 'sensor.oven_power', 0, 3500, 50, 2600, 'W', W);
+      range(ctl, 'Température', 'sensor.oven_temp', 20, 250, 1, 140, '°C', T);
+      range(ctl, 'Consigne', 'sensor.oven_target', 50, 250, 5, 180, '°C', T);
+      checks(ctl, [['Porte ouverte', 'binary_sensor.oven_door', false]]);
+    } },
+  { kind: 'microwave', title: 'Micro-ondes',
+    cfg: { power: 'sensor.microwave_power', remaining: 'sensor.microwave_remaining', door: 'binary_sensor.microwave_door' },
+    build(ctl) {
+      range(ctl, 'Puissance', 'sensor.microwave_power', 0, 1200, 10, 900, 'W', W);
+      range(ctl, 'Restant', 'sensor.microwave_remaining', 0, 600, 5, 105, 's', { unit_of_measurement: 's' }, mmss);
+      checks(ctl, [['Porte ouverte', 'binary_sensor.microwave_door', false]]);
+    } },
+  { kind: 'air-fryer', title: 'Airfryer',
+    cfg: { entity: 'switch.airfryer', power: 'sensor.airfryer_power', remaining: 'sensor.airfryer_remaining', energy: 'sensor.airfryer_energy', cost: 'sensor.airfryer_cost' },
+    build(ctl) {
+      set('switch.airfryer', 'on');
+      range(ctl, 'Puissance', 'sensor.airfryer_power', 0, 2400, 10, 1650, 'W', W);
+      range(ctl, 'Restant', 'sensor.airfryer_remaining', 0, 1800, 15, 720, 's', { unit_of_measurement: 's' }, mmss);
+      set('sensor.airfryer_energy', 0.42, KWH);
+      set('sensor.airfryer_cost', 0.09, { unit_of_measurement: '€', device_class: 'monetary' });
+    } },
+  { kind: 'coffee-maker', title: 'Cafetière (filtre)',
+    cfg: { entity: 'switch.coffee', power: 'sensor.coffee_power', energy: 'sensor.coffee_energy', style: 'filtre' },
+    build(ctl) {
+      set('switch.coffee', 'on');
+      range(ctl, 'Puissance', 'sensor.coffee_power', 0, 1500, 10, 950, 'W', W);
+      set('sensor.coffee_energy', 0.18, KWH);
+    } },
+  { kind: 'coffee-maker', title: 'Cafetière (dosettes)',
+    cfg: { power: 'sensor.pod_power', style: 'dosette' },
+    build(ctl) { range(ctl, 'Puissance', 'sensor.pod_power', 0, 1500, 10, 1400, 'W', W); } },
+  { kind: 'coffee-maker', title: 'Cafetière (expresso)',
+    cfg: { power: 'sensor.espresso_power', style: 'expresso' },
+    build(ctl) { range(ctl, 'Puissance', 'sensor.espresso_power', 0, 1500, 10, 1300, 'W', W); } },
+  { kind: 'tv', title: 'Téléviseur',
+    cfg: { entity: 'switch.tv', power: 'sensor.tv_power', energy: 'sensor.tv_energy' },
+    build(ctl) {
+      set('switch.tv', 'on');
+      range(ctl, 'Puissance', 'sensor.tv_power', 0, 200, 0.5, 90, 'W', W);
+      set('sensor.tv_energy', 0.35, KWH);
+    } },
+  { kind: 'range-hood', title: 'Hotte aspirante',
+    cfg: { power: 'sensor.hood_power', energy: 'sensor.hood_energy' },
+    build(ctl) {
+      range(ctl, 'Puissance', 'sensor.hood_power', 0, 300, 1, 80, 'W', W);
+      set('sensor.hood_energy', 0.12, KWH);
+    } },
+  { kind: 'towel-dryer', title: 'Sèche-serviettes',
+    cfg: { switch: 'switch.towel', power: 'sensor.towel_power', mode: 'select.towel_mode', temperature: 'sensor.bathroom_temp', target_temperature: 'sensor.towel_target', energy: 'sensor.towel_energy' },
+    build(ctl) {
+      set('switch.towel', 'on');
+      select(ctl, 'Mode', 'select.towel_mode', [['confort', 'Confort'], ['eco', 'Éco'], ['hors-gel', 'Hors-gel'], ['arret', 'Arrêt']], 'confort');
+      states['select.towel_mode'].attributes = { options: ['Confort', 'Eco', 'Hors-gel', 'Arrêt'] };
+      range(ctl, 'Puissance', 'sensor.towel_power', 0, 1000, 10, 500, 'W', W);
+      range(ctl, 'Salle de bain', 'sensor.bathroom_temp', 10, 30, 0.5, 20, '°C', T);
+      range(ctl, 'Consigne', 'sensor.towel_target', 15, 30, 0.5, 22, '°C', T);
+      set('sensor.towel_energy', 1.2, KWH);
+    } },
+  { kind: 'server-rack', title: 'Baie informatique (homelab)',
+    cfg: { switch: 'switch.rack', power: 'sensor.rack_power', temperature: 'sensor.rack_temp', energy: 'sensor.rack_energy', max_power: 300 },
+    build(ctl) {
+      set('switch.rack', 'on');
+      range(ctl, 'Puissance', 'sensor.rack_power', 0, 400, 1, 145, 'W', W);
+      range(ctl, 'Température', 'sensor.rack_temp', 15, 50, 0.5, 29, '°C', T);
+      set('sensor.rack_energy', 3.5, KWH);
+    } },
+  { kind: 'desktop-pc', title: 'PC fixe',
+    cfg: { switch: 'switch.pc', power: 'sensor.pc_power', energy: 'sensor.pc_energy' },
+    build(ctl) {
+      set('switch.pc', 'on');
+      range(ctl, 'Puissance', 'sensor.pc_power', 0, 500, 0.5, 120, 'W', W);
+      set('sensor.pc_energy', 0.8, KWH);
+    } },
+  { kind: 'laptop', title: 'PC portable',
+    cfg: { switch: 'switch.laptop', power: 'sensor.laptop_power', energy: 'sensor.laptop_energy' },
+    build(ctl) {
+      set('switch.laptop', 'on');
+      range(ctl, 'Puissance', 'sensor.laptop_power', 0, 120, 0.5, 45, 'W', W);
+      set('sensor.laptop_energy', 0.2, KWH);
+    } },
+  { kind: 'wine-cooler', title: 'Cave à vin',
+    cfg: { power: 'sensor.wine_power', temperature: 'sensor.wine_temp', door: 'binary_sensor.wine_door', energy: 'sensor.wine_energy' },
+    build(ctl) {
+      range(ctl, 'Puissance', 'sensor.wine_power', 0, 150, 1, 70, 'W', W);
+      range(ctl, 'Température', 'sensor.wine_temp', 4, 22, 0.5, 12, '°C', T);
+      set('sensor.wine_energy', 0.9, KWH);
+      checks(ctl, [['Porte ouverte', 'binary_sensor.wine_door', false]]);
+    } },
+  { kind: 'ac-split', title: 'Climatiseur (split)',
+    cfg: { entity: 'climate.ac' },
+    build(ctl) {
+      select(ctl, 'Mode', 'climate.ac', [['cool', 'Clim'], ['heat', 'Chauffage'], ['dry', 'Déshumidification'], ['fan_only', 'Ventilation'], ['off', 'Arrêt']], 'cool');
+      states['climate.ac'].attributes = { current_temperature: 26, temperature: 23 };
+    } },
+  { kind: 'heat-pump', title: 'Pompe à chaleur (ext.)',
+    cfg: { entity: 'climate.ac', power: 'sensor.ac_power' },
+    build(ctl) { range(ctl, 'Puissance', 'sensor.ac_power', 0, 2000, 10, 900, 'W', W); } },
+  { kind: 'beer-tap', title: 'Pompe à bière',
+    cfg: { power: 'sensor.beer_power', temperature: 'sensor.beer_temp', keg_level: 'sensor.keg', pouring: 'binary_sensor.pouring' },
+    build(ctl) {
+      range(ctl, 'Puissance', 'sensor.beer_power', 0, 120, 1, 70, 'W', W);
+      range(ctl, 'Température', 'sensor.beer_temp', 0, 15, 0.1, 3.2, '°C', T);
+      range(ctl, 'Fût', 'sensor.keg', 0, 100, 1, 64, '%', { unit_of_measurement: '%' });
+      checks(ctl, [['Service en cours', 'binary_sensor.pouring', false]]);
+    } },
+  { kind: 'av-receiver', title: 'Ampli home cinéma',
+    cfg: { power: 'sensor.avr_power' },
+    build(ctl) { range(ctl, 'Puissance', 'sensor.avr_power', 0, 400, 1, 120, 'W', W); } },
+  { kind: 'fan', title: 'Ventilateur',
+    cfg: { power: 'sensor.fan_power' },
+    build(ctl) { range(ctl, 'Puissance', 'sensor.fan_power', 0, 60, 1, 35, 'W', W); } },
+  { kind: 'pellet-stove', title: 'Poêle à granulés',
+    cfg: { entity: 'sensor.stove_status', power: 'sensor.stove_power', temperature: 'sensor.stove_temp', target_temperature: 'sensor.stove_target', power_level: 'sensor.stove_level', pellet_level: 'sensor.stove_pellets', energy: 'sensor.stove_energy' },
+    build(ctl) {
+      select(ctl, 'État', 'sensor.stove_status', [['on', 'Auto (selon la puissance)'], ['off', 'Éteint'], ['Allumage', 'Allumage'], ['Chauffe', 'Chauffe'], ['Extinction', 'Extinction'], ['Alarme', 'Alarme'], ['unavailable', 'Indisponible']], 'on');
+      range(ctl, 'Puissance', 'sensor.stove_power', 0, 450, 5, 65, 'W', W);
+      range(ctl, 'Niveau', 'sensor.stove_level', 1, 5, 1, 3, '', {}, (v) => `P${v}`);
+      range(ctl, 'Température', 'sensor.stove_temp', 10, 28, 0.5, 19.5, '°C', T);
+      range(ctl, 'Consigne', 'sensor.stove_target', 15, 25, 0.5, 21, '°C', T);
+      range(ctl, 'Granulés', 'sensor.stove_pellets', 0, 100, 1, 64, '%', { unit_of_measurement: '%' });
+      set('sensor.stove_energy', 2.4, KWH);
+    } },
+  { kind: 'pool-pump', title: 'Pompe de piscine',
+    cfg: { switch: 'switch.pool_pump', entity: 'switch.pool_pump', power: 'sensor.pool_pump_power', temperature: 'sensor.pool_water_temp', runtime: 'sensor.pool_runtime_today', energy: 'sensor.pool_pump_energy', cost: 'sensor.pool_pump_cost', max_power: 1100 },
+    build(ctl) {
+      set('switch.pool_pump', 'on');
+      range(ctl, 'Puissance', 'sensor.pool_pump_power', 0, 1100, 10, 650, 'W', W);
+      range(ctl, 'Eau', 'sensor.pool_water_temp', 10, 34, 0.5, 26.5, '°C', T);
+      range(ctl, 'Filtré aujourd’hui', 'sensor.pool_runtime_today', 0, 24, 0.25, 4.5, 'h', { unit_of_measurement: 'h' });
+      set('sensor.pool_pump_energy', 2.9, KWH); set('sensor.pool_pump_cost', 0.48, EUR);
+      ctl.append(document.createElement('span'), Object.assign(document.createElement('span'), { textContent: 'Bouton ⏻ de la carte = prise de la pompe · vitesse d’animation selon la puissance', style: 'color:var(--secondary-text-color);font-size:12px' }), document.createElement('span'));
+    } },
+  { kind: 'printer-3d', title: 'Imprimante 3D',
+    cfg: { entity: 'sensor.printer_status', power: 'sensor.printer_power', progress: 'sensor.printer_progress', remaining: 'sensor.printer_remaining', temperature: 'sensor.printer_nozzle', bed_temperature: 'sensor.printer_bed', program: 'sensor.printer_task' },
+    build(ctl) {
+      select(ctl, 'État', 'sensor.printer_status', [['idle', 'Prêt'], ['prepare', 'Préparation / chauffe'], ['running', 'Impression'], ['pause', 'Pause'], ['finish', 'Terminé'], ['failed', 'Échec'], ['offline', 'Hors ligne']], 'running');
+      range(ctl, 'Progression', 'sensor.printer_progress', 0, 100, 1, 42, '%', { unit_of_measurement: '%' });
+      range(ctl, 'Restant', 'sensor.printer_remaining', 0, 600, 1, 74, 'min', { unit_of_measurement: 'min' });
+      range(ctl, 'Buse', 'sensor.printer_nozzle', 20, 300, 1, 220, '°C', T);
+      range(ctl, 'Plateau', 'sensor.printer_bed', 20, 110, 1, 65, '°C', T);
+      range(ctl, 'Puissance', 'sensor.printer_power', 0, 400, 1, 140, 'W', W);
+      set('sensor.printer_task', 'Vase spirale');
+    } },
+  { kind: 'chest-freezer', title: 'Congélateur coffre',
+    cfg: { power: 'sensor.chest_power', temperature: 'sensor.chest_temp', door: 'binary_sensor.chest_lid', energy: 'sensor.chest_energy' },
+    build(ctl) {
+      range(ctl, 'Puissance', 'sensor.chest_power', 0, 200, 1, 85, 'W', W);
+      range(ctl, 'Température', 'sensor.chest_temp', -30, 0, 0.5, -18, '°C', T);
+      set('sensor.chest_energy', 0.9, KWH);
+      checks(ctl, [['Couvercle ouvert', 'binary_sensor.chest_lid', false]]);
+    } },
+  { kind: 'drawer-freezer', title: 'Congélateur à tiroirs',
+    cfg: { power: 'sensor.drawer_power', temperature: 'sensor.drawer_temp', door: 'binary_sensor.drawer_door', energy: 'sensor.drawer_energy' },
+    build(ctl) {
+      range(ctl, 'Puissance', 'sensor.drawer_power', 0, 200, 1, 80, 'W', W);
+      range(ctl, 'Température', 'sensor.drawer_temp', -30, 0, 0.5, -19, '°C', T);
+      set('sensor.drawer_energy', 1.0, KWH);
+      checks(ctl, [['Porte ouverte', 'binary_sensor.drawer_door', false]]);
+    } },
+  { kind: 'solar', title: 'Panneaux solaires',
+    cfg: { power: 'sensor.solar_power', energy: 'sensor.solar_energy_today', cost: 'sensor.solar_savings', sun_entity: 'sun.demo', max_power: 3000 },
+    build(ctl) {
+      select(ctl, 'Soleil', 'sun.demo', [['above_horizon', 'Jour'], ['below_horizon', 'Nuit']], 'above_horizon');
+      range(ctl, 'Production', 'sensor.solar_power', 0, 3000, 10, 2150, 'W', W);
+      range(ctl, 'Aujourd’hui', 'sensor.solar_energy_today', 0, 25, 0.1, 9.8, 'kWh', KWH);
+      set('sensor.solar_savings', 2.15, EUR);
+    } },
+  { kind: 'vmc', title: 'VMC',
+    cfg: { power: 'sensor.vmc_power', humidity: 'sensor.bathroom_humidity', energy: 'sensor.vmc_energy' },
+    build(ctl) {
+      range(ctl, 'Puissance', 'sensor.vmc_power', 0, 80, 1, 18, 'W', W);
+      range(ctl, 'Humidité SdB', 'sensor.bathroom_humidity', 30, 100, 1, 58, '%', { unit_of_measurement: '%', device_class: 'humidity' });
+      set('sensor.vmc_energy', 0.42, KWH);
+      ctl.append(document.createElement('span'), Object.assign(document.createElement('span'), { textContent: '5–35 W = petite vitesse · au-dessus = grande vitesse', style: 'color:var(--secondary-text-color);font-size:12px' }), document.createElement('span'));
+    } },
+  { kind: 'hob', title: 'Plaques de cuisson',
+    cfg: { power: 'sensor.hob_power', energy: 'sensor.hob_energy' },
+    build(ctl) {
+      range(ctl, 'Puissance', 'sensor.hob_power', 0, 7200, 50, 1800, 'W', W);
+      set('sensor.hob_energy', 1.6, KWH);
+      ctl.append(document.createElement('span'), Object.assign(document.createElement('span'), { textContent: 'Les foyers s’allument selon la puissance (≈ 1500 W par foyer) · remets à 0 pour voir le « H » de chaleur résiduelle', style: 'color:var(--secondary-text-color);font-size:12px' }), document.createElement('span'));
+    } },
+  { kind: 'radiator', title: 'Radiateur',
+    cfg: { power: 'sensor.radiator_power', mode: 'select.radiator_mode', temperature: 'sensor.room_temp', target_temperature: 'sensor.radiator_target', window: 'binary_sensor.window', energy: 'sensor.radiator_energy' },
+    build(ctl) {
+      select(ctl, 'Mode (fil pilote)', 'select.radiator_mode', [['confort', 'Confort'], ['eco', 'Éco'], ['hors-gel', 'Hors-gel'], ['arret', 'Arrêt']], 'confort');
+      states['select.radiator_mode'].attributes = { options: ['Confort', 'Eco', 'Hors-gel', 'Arrêt'] };
+      range(ctl, 'Puissance', 'sensor.radiator_power', 0, 2000, 10, 1300, 'W', W);
+      range(ctl, 'Pièce', 'sensor.room_temp', 10, 26, 0.1, 19.2, '°C', T);
+      range(ctl, 'Consigne', 'sensor.radiator_target', 7, 24, 0.5, 20, '°C', T);
+      set('sensor.radiator_energy', 3.4, KWH);
+      checks(ctl, [['Fenêtre ouverte', 'binary_sensor.window', false]]);
+    } },
+  { kind: 'fridge', title: 'Réfrigérateur',
+    cfg: { power: 'sensor.fridge_power', temperature: 'sensor.fridge_temp', freezer_temperature: 'sensor.freezer_temp', door: 'binary_sensor.fridge_door', freezer_door: 'binary_sensor.freezer_door', energy: 'sensor.fridge_energy' },
+    build(ctl) {
+      range(ctl, 'Puissance', 'sensor.fridge_power', 0, 200, 1, 85, 'W', W);
+      range(ctl, 'Frigo', 'sensor.fridge_temp', -2, 15, 0.5, 4, '°C', T);
+      range(ctl, 'Congélateur', 'sensor.freezer_temp', -30, 0, 0.5, -18, '°C', T);
+      set('sensor.fridge_energy', 1.1, KWH);
+      checks(ctl, [['Porte frigo', 'binary_sensor.fridge_door', false], ['Porte congélateur', 'binary_sensor.freezer_door', false]]);
+    } },
+  /* ---------- cartes autonomes (options entity_…, langue via `language`) ---------- */
+  { kind: 'aquarium', title: 'Aquarium', lang: true,
+    cfg: { entity_power: 'sensor.aquarium_power', entity_energy: 'sensor.aquarium_energy', entity_temperature: 'sensor.aquarium_temp', entity_light: 'light.aquarium', temp_min: 24, temp_max: 27, price_per_kwh: 0.2 },
+    build(ctl) {
+      range(ctl, 'Puissance', 'sensor.aquarium_power', 0, 300, 5, 120, 'W', W);
+      range(ctl, 'Température eau', 'sensor.aquarium_temp', 18, 32, 0.5, 25.5, '°C', T);
+      set('sensor.aquarium_energy', 0.8, KWH);
+      checks(ctl, [['Éclairage', 'light.aquarium', true]]);
+    } },
+  { kind: 'linky', title: 'Compteur Linky', lang: true,
+    cfg: { entity_power: 'sensor.linky_sinsts', entity_hp: 'sensor.linky_hp', entity_hc: 'sensor.linky_hc', entity_cost: 'sensor.linky_cost', subscribed_power: 9, hc_ranges: '01:00-07:00,12:30-14:30' },
+    build(ctl) {
+      range(ctl, 'Puissance apparente', 'sensor.linky_sinsts', 0, 9500, 50, 2300, 'VA', { unit_of_measurement: 'VA', device_class: 'apparent_power' });
+      set('sensor.linky_hp', 12543, KWH); set('sensor.linky_hc', 8321, KWH); set('sensor.linky_cost', 2.47, EUR);
+    } },
+  { kind: 'linky', title: 'Compteur Linky triphasé (15 kVA)', lang: true,
+    cfg: { entity_power_l1: 'sensor.linky_sinsts1', entity_power_l2: 'sensor.linky_sinsts2', entity_power_l3: 'sensor.linky_sinsts3', entity_active_power: 'sensor.linky_active_power',
+      entity_hp: 'sensor.linky3_hp', entity_hc: 'sensor.linky3_hc', subscribed_power: 15, hc_ranges: '01:00-07:00,12:30-14:30' },
+    build(ctl) {
+      const VA = { unit_of_measurement: 'VA', device_class: 'apparent_power' };
+      // option de la carte (pas un état) : on reconfigure la carte
+      select(ctl, 'Jauge', 'input_select.demo_linky_gauge', [['needles', '3 aiguilles / needles'], ['cycle', 'Cycle L1 → L3 / cycle'], ['max', 'Phase la plus chargée / max']], this.cfg.phase_gauge || 'needles', (v) => {
+        this.cfg.phase_gauge = v; const el = cards.find((e) => e._scen === this); if (el) { el.setConfig(scenCfg(this)); refresh(); }
+      });
+      range(ctl, 'Phase L1', 'sensor.linky_sinsts1', 0, 5500, 50, 250, 'VA', VA);
+      range(ctl, 'Phase L2', 'sensor.linky_sinsts2', 0, 5500, 50, 500, 'VA', VA);
+      range(ctl, 'Phase L3', 'sensor.linky_sinsts3', 0, 5500, 50, 700, 'VA', VA);
+      range(ctl, 'Puissance active', 'sensor.linky_active_power', 0, 15000, 10, 1320, 'W', W);
+      set('sensor.linky3_hp', 23871, KWH); set('sensor.linky3_hc', 15402, KWH);
+      ctl.append(document.createElement('span'), Object.assign(document.createElement('span'), { textContent: 'Coupure par phase à 5 kVA (1/3 de 15 kVA) : monte une seule phase vers 4 800 VA', style: 'color:var(--secondary-text-color);font-size:12px' }), document.createElement('span'));
+    } },
+  { kind: 'battery', title: 'Batterie domestique', lang: true,
+    cfg: { entity_soc: 'sensor.battery_soc', entity_power: 'sensor.battery_power', entity_temperature: 'sensor.battery_temp', capacity_kwh: 10, max_power: 5000 },
+    build(ctl) {
+      range(ctl, 'Charge', 'sensor.battery_soc', 0, 100, 1, 62, '%', { unit_of_measurement: '%', device_class: 'battery' });
+      range(ctl, 'Puissance (+ charge)', 'sensor.battery_power', -5000, 5000, 50, 1800, 'W', W);
+      range(ctl, 'Température', 'sensor.battery_temp', 0, 50, 1, 24, '°C', T);
+    } },
+  { kind: 'ev-charger', title: 'Borne de recharge', lang: true,
+    cfg: { entity_status: 'sensor.ev_status', entity_power: 'sensor.ev_power', entity_session_energy: 'sensor.ev_energy', entity_car_soc: 'sensor.car_soc', price_per_kwh: 0.2 },
+    build(ctl) {
+      select(ctl, 'État', 'sensor.ev_status', [['charging', 'En charge / Charging'], ['connected', 'Branchée / Plugged in'], ['complete', 'Terminée / Complete'], ['disconnected', 'Débranchée / Unplugged']], 'charging');
+      range(ctl, 'Puissance', 'sensor.ev_power', 0, 11000, 100, 7200, 'W', W);
+      range(ctl, 'Batterie voiture', 'sensor.car_soc', 0, 100, 1, 58, '%', { unit_of_measurement: '%', device_class: 'battery' });
+      range(ctl, 'Énergie session', 'sensor.ev_energy', 0, 60, 0.5, 12.5, 'kWh', KWH);
+    } },
+  { kind: 'robot-vacuum-solo', title: 'Robot aspirateur', lang: true,
+    cfg: { entity: 'vacuum.robot', entity_battery: 'sensor.robot_battery', entity_area: 'sensor.robot_area', entity_time: 'sensor.robot_time' },
+    build(ctl) {
+      set('vacuum.robot', 'cleaning', { fan_speed: 'Turbo', friendly_name: 'Robot' });
+      ROBOT_SEL['vacuum.robot'] = select(ctl, 'État', 'vacuum.robot', [['cleaning', 'Nettoyage / Cleaning'], ['returning', 'Retour base / Returning'], ['docked', 'À la base / Docked'], ['paused', 'En pause / Paused'], ['error', 'Erreur / Error']], 'cleaning');
+      range(ctl, 'Batterie', 'sensor.robot_battery', 0, 100, 1, 76, '%', { unit_of_measurement: '%', device_class: 'battery' });
+      set('sensor.robot_area', 34, { unit_of_measurement: 'm²' }); set('sensor.robot_time', 41, { unit_of_measurement: 'min' });
+      ctl.append(document.createElement('span'), Object.assign(document.createElement('span'), { textContent: 'Boutons Démarrer / Pause / Base de la carte = changent l’état', style: 'color:var(--secondary-text-color);font-size:12px' }), document.createElement('span'));
+    } },
+  { kind: 'robot-mower-solo', title: 'Robot tondeuse', lang: true,
+    cfg: { entity: 'lawn_mower.mower', entity_battery: 'sensor.mower_battery', entity_area: 'sensor.mower_area', entity_time: 'sensor.mower_time', entity_rain: 'binary_sensor.rain' },
+    build(ctl) {
+      set('lawn_mower.mower', 'mowing', { friendly_name: 'Tondeuse' });
+      ROBOT_SEL['lawn_mower.mower'] = select(ctl, 'État', 'lawn_mower.mower', [['mowing', 'Tonte / Mowing'], ['returning', 'Retour base / Returning'], ['docked', 'À la base / Docked'], ['paused', 'En pause / Paused'], ['error', 'Erreur / Error']], 'mowing');
+      range(ctl, 'Batterie', 'sensor.mower_battery', 0, 100, 1, 64, '%', { unit_of_measurement: '%', device_class: 'battery' });
+      set('sensor.mower_area', 420, { unit_of_measurement: 'm²' }); set('sensor.mower_time', 95, { unit_of_measurement: 'min' });
+      checks(ctl, [['Pluie', 'binary_sensor.rain', false]]);
+    } },
+  { kind: 'pellet-boiler', title: 'Chaudière à granulés', lang: true,
+    cfg: { entity_status: 'sensor.pellet_boiler_status', entity_power: 'sensor.pellet_boiler_power', entity_flow_temp: 'sensor.pellet_boiler_flow', entity_return_temp: 'sensor.pellet_boiler_return', entity_pellet_level: 'sensor.pellet_level', entity_energy: 'sensor.pellet_boiler_energy' },
+    build(ctl) {
+      select(ctl, 'État', 'sensor.pellet_boiler_status', [['Chauffe', 'Chauffe / Heating'], ['Allumage', 'Allumage / Igniting'], ['Extinction', 'Extinction / Shutting down'], ['Arrêt', 'Arrêt / Off'], ['Alarme', 'Alarme / Alarm']], 'Chauffe');
+      range(ctl, 'Puissance', 'sensor.pellet_boiler_power', 0, 600, 5, 120, 'W', W);
+      range(ctl, 'Départ', 'sensor.pellet_boiler_flow', 20, 85, 1, 68, '°C', T);
+      range(ctl, 'Retour', 'sensor.pellet_boiler_return', 20, 85, 1, 55, '°C', T);
+      range(ctl, 'Granulés', 'sensor.pellet_level', 0, 100, 1, 45, '%', { unit_of_measurement: '%' });
+      set('sensor.pellet_boiler_energy', 3.4, KWH);
+    } },
+  { kind: 'gas-boiler', title: 'Chaudière gaz', lang: true,
+    cfg: { entity_status: 'sensor.gas_boiler_status', entity_power: 'sensor.gas_boiler_power', entity_flow_temp: 'sensor.gas_boiler_flow', entity_return_temp: 'sensor.gas_boiler_return', entity_pressure: 'sensor.gas_boiler_pressure', entity_modulation: 'sensor.gas_boiler_modulation', entity_gas: 'sensor.gas_boiler_gas' },
+    build(ctl) {
+      select(ctl, 'État', 'sensor.gas_boiler_status', [['heating', 'Chauffage / Heating'], ['dhw', 'Eau chaude / Hot water'], ['standby', 'Veille / Standby'], ['off', 'Arrêt / Off'], ['fault', 'Défaut / Fault']], 'heating');
+      range(ctl, 'Puissance élec.', 'sensor.gas_boiler_power', 0, 200, 1, 85, 'W', W);
+      range(ctl, 'Départ', 'sensor.gas_boiler_flow', 20, 85, 1, 62, '°C', T);
+      range(ctl, 'Retour', 'sensor.gas_boiler_return', 20, 85, 1, 48, '°C', T);
+      range(ctl, 'Pression', 'sensor.gas_boiler_pressure', 0, 4, 0.1, 1.6, 'bar', { unit_of_measurement: 'bar' });
+      range(ctl, 'Modulation', 'sensor.gas_boiler_modulation', 0, 100, 1, 60, '%', { unit_of_measurement: '%' });
+      set('sensor.gas_boiler_gas', 3.2, { unit_of_measurement: 'm³' });
+    } },
+  { kind: 'water-heat-pump', title: 'PAC eau/eau (géothermie)', lang: true,
+    cfg: { entity_status: 'sensor.whp_status', entity_power: 'sensor.whp_power', entity_heat_power: 'sensor.whp_heat', entity_flow_temp: 'sensor.whp_flow', entity_return_temp: 'sensor.whp_return',
+      entity_flow_rate: 'sensor.whp_rate', entity_source_in_temp: 'sensor.whp_src_in', entity_source_out_temp: 'sensor.whp_src_out', entity_energy: 'sensor.whp_energy', entity_heat_energy: 'sensor.whp_heat_energy',
+      threshold: 25, source_threshold: 150, compressor_threshold: 800 },
+    build(ctl) {
+      select(ctl, 'État', 'sensor.whp_status', [['heating', 'Chauffage / Heating'], ['dhw', 'Eau chaude / Hot water'], ['cooling', 'Rafraîchissement / Cooling'], ['standby', 'Veille / Standby'], ['off', 'Arrêt / Off'], ['fault', 'Défaut / Fault']], 'heating');
+      range(ctl, 'Puissance élec.', 'sensor.whp_power', 0, 8000, 50, 1500, 'W', W);
+      range(ctl, 'Puissance thermique', 'sensor.whp_heat', 0, 25, 0.1, 5.3, 'kW', { unit_of_measurement: 'kW', device_class: 'power' });
+      range(ctl, 'Départ', 'sensor.whp_flow', 15, 60, 0.5, 35, '°C', T);
+      range(ctl, 'Retour', 'sensor.whp_return', 15, 60, 0.5, 30, '°C', T);
+      range(ctl, 'Débit', 'sensor.whp_rate', 0, 4, 0.05, 1.2, 'm³/h', { unit_of_measurement: 'm³/h' });
+      range(ctl, 'Captage entrée', 'sensor.whp_src_in', -5, 15, 0.5, 8, '°C', T);
+      range(ctl, 'Captage sortie', 'sensor.whp_src_out', -5, 15, 0.5, 5, '°C', T);
+      // option de la carte (pas un état) : on reconfigure la carte
+      select(ctl, 'Ballon tampon', 'input_select.demo_whp_buffer', [['no', 'Non / no'], ['yes', 'Oui / yes']], this.cfg.buffer_tank ? 'yes' : 'no', (v) => {
+        this.cfg.buffer_tank = v === 'yes';
+        if (this.cfg.buffer_tank) this.cfg.entity_buffer_temp = 'sensor.whp_buffer'; else delete this.cfg.entity_buffer_temp;
+        const el = cards.find((e) => e._scen === this); if (el) { el.setConfig(scenCfg(this)); refresh(); }
+      });
+      range(ctl, 'Ballon tampon', 'sensor.whp_buffer', 15, 60, 0.5, 38, '°C', T);
+      set('sensor.whp_energy', 12.4, KWH); set('sensor.whp_heat_energy', 43.1, KWH);
+      ctl.append(document.createElement('span'), Object.assign(document.createElement('span'), { textContent: 'COP calculé = thermique / électrique · débit à 0 = l’eau s’arrête · élec. > 150 W : pompes de captage, > 800 W : compresseur · ballon tampon : le circulateur alimente les émetteurs même compresseur arrêté', style: 'color:var(--secondary-text-color);font-size:12px' }), document.createElement('span'));
+    } },
+];
+const ROBOT_SEL = {};
+
+// les cartes autonomes prennent leur langue dans l'option `language`, pas dans Home Assistant
+const scenCfg = (s) => ({ ...s.cfg, ...(s.lang ? { language: lang } : {}), ...(animations ? {} : { animations: false }) });
+const toYaml = (kind, cfg) => [`type: custom:appliance-${kind}-card`, ...Object.entries(cfg).map(([k, v]) => `${k}: ${v}`)].join('\n');
+
+function buildAll() {
+  const main = document.getElementById('main');
+  main.innerHTML = ''; cards.length = 0;
+  for (const s of SCEN) {
+    const cell = document.createElement('div'); cell.className = 'cell';
+    const ctl = document.createElement('div'); ctl.className = 'ctl';
+    ctl.innerHTML = `<h3>${s.title} — commandes simulées</h3>`;
+    s.build(ctl);
+    const cfg = scenCfg(s);
+    const yaml = document.createElement('details'); yaml.className = 'yaml';
+    yaml.innerHTML = `<summary>Voir le YAML</summary><pre>${toYaml(s.kind, cfg)}</pre>`;
+    ctl.append(yaml);
+    const el = document.createElement(`appliance-${s.kind}-card`);
+    el.setConfig(cfg); el._scen = s;
+    el.addEventListener('hass-more-info', (e) => log(`more-info ${e.detail.entityId}`));
+    cards.push(el);
+    cell.append(el, ctl); main.append(cell);
+  }
+  refresh();
+}
+
+function seg(id, cb) {
+  const root = document.getElementById(id);
+  root.addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b) return;
+    root.querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b));
+    cb(b.dataset.v);
+  });
+}
+// Langues disponibles = fichiers src/i18n/<lang>.json, lus dans l'option `language` de l'éditeur d'une carte autonome
+const LANGS = (() => {
+  const form = customElements.get('appliance-linky-card')?.getConfigForm?.();
+  const opt = form && form.schema.find((i) => i.name === 'language');
+  return opt ? opt.selector.select.options.map((o) => o.value || o) : ['fr', 'en'];
+})();
+const langName = (l) => { try { return new Intl.DisplayNames([l], { type: 'language' }).of(l); } catch (e) { return l; } };
+LANGS.forEach((l) => {
+  const b = Object.assign(document.createElement('button'), { textContent: l.toUpperCase(), title: langName(l), className: l === lang ? 'on' : '' });
+  b.dataset.v = l; document.getElementById('lang').append(b);
+});
+seg('theme', (v) => document.body.classList.toggle('light', v === 'light'));
+seg('lang', (v) => { lang = v; document.documentElement.lang = v; cards.forEach((el) => el._scen.lang && el.setConfig(scenCfg(el._scen))); refresh(); });
+seg('anim', (v) => { animations = v === '1'; buildAll(); });
+buildAll();
+const ver = window.customCards ? `${window.customCards.length} cartes chargées` : 'erreur de chargement';
+document.getElementById('ver').textContent += ` · ${ver}`;
+</script>
+</body>
+</html>

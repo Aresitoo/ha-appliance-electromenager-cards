@@ -1,0 +1,26 @@
+/* ---------- beer tap ---------- */
+.k-beer_tap svg { overflow: visible; }
+.k-beer_tap .lcd { fill: #24404f; }
+.k-beer_tap:not(.st-off):not(.st-unavailable) .lcd { fill: #6fd8ff; }
+.bt-flake { opacity: .25; transition: opacity .4s; }
+.k-beer_tap.st-cooling .bt-flake { opacity: 1; animation: ac-pulse 1.8s ease-in-out infinite; }
+.k-beer_tap.st-ready .bt-flake, .k-beer_tap.st-pouring .bt-flake { opacity: .8; }
+.bt-mist circle { fill: #bfe6ff; opacity: 0; }
+.k-beer_tap.st-cooling .bt-mist circle { animation: ac-mist 3s ease-out infinite; }
+.bt-mist circle:nth-child(2) { animation-delay: 1s !important; } .bt-mist circle:nth-child(3) { animation-delay: 2s !important; }
+.bt-keg { transform-box: fill-box; transform-origin: 50% 100%; transform: scaleY(var(--keg, .7)); transition: transform 1s; }
+.bt-handle { transform-box: view-box; transform-origin: 65.5px 10px; transition: transform .5s cubic-bezier(.3,1.4,.5,1); }
+.k-beer_tap.st-pouring .bt-handle { transform: rotate(32deg); }
+.bt-stream { fill: none; stroke: #f0b23a; stroke-width: 2.6; stroke-linecap: round; stroke-dasharray: 5 2; opacity: 0; transition: opacity .3s; }
+.k-beer_tap.st-pouring .bt-stream { opacity: .95; animation: cf-flow .35s linear infinite; }
+.bt-beer { transform-box: view-box; transform-origin: 98px 118px; transform: scaleY(0); transition: transform 1s ease; }
+.k-beer_tap.st-ready .bt-beer, .k-beer_tap.st-cooling .bt-beer { transform: scaleY(.95); }
+.k-beer_tap.st-pouring .bt-beer { animation: bt-fill 6s cubic-bezier(.2,.6,.4,1) forwards; }
+.bt-bubbles circle { opacity: 0; }
+.k-beer_tap:not(.st-off) .bt-bubbles circle { animation: bt-bub 2.2s ease-in infinite; }
+.bt-bubbles circle:nth-child(2) { animation-delay: .6s !important; } .bt-bubbles circle:nth-child(3) { animation-delay: 1.1s !important; } .bt-bubbles circle:nth-child(4) { animation-delay: 1.6s !important; }
+.bt-drops circle { opacity: 0; transition: opacity 1s; }
+.k-beer_tap.st-cooling .bt-drops circle, .k-beer_tap.st-ready .bt-drops circle { opacity: .9; animation: ac-drip 4s ease-in infinite; }
+.k-beer_tap.st-off .bt-beer { transform: scaleY(0); }
+@keyframes bt-fill { from { transform: scaleY(0); } to { transform: scaleY(.95); } }
+@keyframes bt-bub { 0% { opacity: 0; transform: translateY(0); } 20% { opacity: .9; } 100% { opacity: 0; transform: translateY(-26px); } }
