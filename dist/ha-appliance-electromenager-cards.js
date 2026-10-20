@@ -2628,7 +2628,8 @@ class ApplianceCardBase extends HTMLElement {
       if (/rin[cç]|rinse/.test(txt)) m.phase = "rinse";
       else if (/essor|spin|centrif|essorage/.test(txt)) m.phase = "spin";
       else if (/refroid|cool|anti.?froiss|wrinkle/.test(txt)) m.phase = "cool";
-      else if (/s[eé]ch|dry/.test(txt)) m.phase = "dry";
+      // en début de mot : les clés Home Connect « laundry_care_washer_program_… » contiennent « dry »
+      else if (/(^|[^a-zà-ÿ])(s[eé]ch|dry)/.test(txt)) m.phase = "dry";
       else m.phase = kind === "dryer" ? "dry" : "wash";
     }
     if (isOn(m.door) || isOn(m.fdoor)) m.alerts.unshift("door_open");

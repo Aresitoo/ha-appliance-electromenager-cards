@@ -57,6 +57,10 @@ let c=card('dryer',{entity:'binary_sensor.d'},[mk('binary_sensor.d','on')]); ok(
 c=card('dryer',{entity:'sensor.d'},[mk('sensor.d','Refroidissement')]); ok('dryer cooling phase',has(c,'ph-cool'),c.wrap.className);
 c=card('dishwasher',{entity:'sensor.d'},[mk('sensor.d','Séchage')]); ok('dishwasher drying phase',has(c,'ph-dry'),c.wrap.className);
 c=card('dishwasher',{entity:'sensor.d'},[mk('sensor.d','running')]); ok('dishwasher wash phase',has(c,'ph-wash'),c.wrap.className);
+// Home Connect: raw program keys start with "laundry_" (contains "dry"), the washer must stay in the wash phase
+c=card('washer',{entity:'sensor.s',program:'select.p'},[mk('sensor.s','run'),mk('select.p','laundry_care_washer_program_cotton')]); ok('washer Home Connect key -> wash, not dry',has(c,'ph-wash')&&c.lcd()==='WASH',c.wrap.className+' '+c.lcd());
+c=card('washer',{entity:'sensor.s'},[mk('sensor.s','Drying')]); ok('washer Drying -> dry',has(c,'ph-dry'),c.wrap.className);
+c=card('washer',{entity:'sensor.s',program:'select.p'},[mk('sensor.s','run'),mk('select.p','wash_and_dry_60')]); ok('washer program wash_and_dry -> dry',has(c,'ph-dry'),c.wrap.className);
 
 // water heater
 c=card('water-heater',{switch:'switch.h',power:'sensor.p',temperature:'sensor.t',target_temperature:'sensor.c'},[mk('switch.h','on'),mk('sensor.p',2400,W),mk('sensor.t',45,T),mk('sensor.c',60,T)]);
