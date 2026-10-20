@@ -79,7 +79,7 @@ All cards have a visual editor. When added from the card picker, entities are de
 |---|---|
 | `entity` | Status entity: `switch`, `input_boolean`, `binary_sensor`, `sensor`, `input_select`, `water_heater`… |
 | `power` | Power sensor (W or kW) |
-| `energy` | Energy sensor (kWh) — e.g. today's consumption |
+| `energy` | Energy sensor (Wh, kWh or MWh, shown in kWh) — e.g. today's consumption |
 | `cost` | Cost sensor (any currency) |
 | `switch` | Switch controlled by the power button (button hidden if unset) |
 | `threshold` | Power above which the appliance is considered running (W). Defaults: 10 (washer/dryer/dishwasher), 20 (fridge), 50 (others) |
