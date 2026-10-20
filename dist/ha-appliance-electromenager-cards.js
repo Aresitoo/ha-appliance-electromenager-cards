@@ -6667,6 +6667,12 @@ svg{display:block;width:100%;height:var(--appliance-illustration-height,auto);ma
     _unit(id, d) { const s = this._st(id); return (s && s.attributes && s.attributes.unit_of_measurement) || d; }
     _fmt(v, d = 0) { return isNaN(v) ? '--' : v.toLocaleString(this._lang() === 'en' ? 'en-US' : this._lang(), { maximumFractionDigits: d, minimumFractionDigits: 0 }); }
     _kw(w) { return isNaN(w) ? ['--', ''] : w >= 1000 ? [this._fmt(w / 1000, 2), 'kW'] : [this._fmt(w, 0), 'W']; }
+    // Compteurs d'énergie toujours en kWh (Wh et MWh convertis), sans décimale au-delà de 1000 kWh
+    _kwh(id) {
+      const v = this._num(id), u = String(this._unit(id, 'kWh'));
+      const k = isNaN(v) ? NaN : /^wh$/i.test(u) ? v / 1000 : /^mwh$/i.test(u) ? v * 1000 : /^gwh$/i.test(u) ? v * 1e6 : v;
+      return [this._fmt(k, Math.abs(k) >= 1000 ? 0 : 1), 'kWh'];
+    }
 
     _build() {
       const root = this.shadowRoot || this.attachShadow({ mode: 'open' });
@@ -6750,8 +6756,8 @@ svg{display:block;width:100%;height:var(--appliance-illustration-height,auto);ma
         src_in: [c.entity_source_in_temp, this._fmt(this._num(c.entity_source_in_temp), 1), '°C'],
         src_out: [c.entity_source_out_temp, this._fmt(this._num(c.entity_source_out_temp), 1), '°C'],
         rate: [c.entity_flow_rate, this._fmt(rate, 2), this._unit(c.entity_flow_rate, 'l/h')],
-        energy: [c.entity_energy, this._fmt(this._num(c.entity_energy), 1), this._unit(c.entity_energy, 'kWh')],
-        heat_energy: [c.entity_heat_energy, this._fmt(this._num(c.entity_heat_energy), 2), this._unit(c.entity_heat_energy, 'kWh')],
+        energy: [c.entity_energy, ...this._kwh(c.entity_energy)],
+        heat_energy: [c.entity_heat_energy, ...this._kwh(c.entity_heat_energy)],
         scop: [c.entity_scop, this._fmt(this._num(c.entity_scop), 2), ''],
       };
       TILES.forEach(([k, , opt, more]) => {
