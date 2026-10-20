@@ -4153,7 +4153,7 @@ const I18N_LINKY = {
     "power": "POWER",
     "hp": "PEAK INDEX",
     "hc": "OFF-PEAK INDEX",
-    "tariff": "CURRENT TARIFF",
+    "tariff": "PERIOD",
     "cost": "COST TODAY",
     "subscribed": "Subscribed",
     "name": "Linky",
@@ -4161,13 +4161,18 @@ const I18N_LINKY = {
     "alert": "Overload",
     "active": "ACTIVE POWER",
     "active_short": "Active",
-    "per_phase": "per phase"
+    "per_phase": "per phase",
+    "peak": "PEAK HOURS",
+    "offpeak": "OFF-PEAK HOURS",
+    "injection": "EXPORT INDEX",
+    "injection_power": "EXPORT",
+    "prod": "export"
   },
   "de": {
     "power": "LEISTUNG",
     "hp": "ZÄHLER HT",
     "hc": "ZÄHLER NT",
-    "tariff": "AKTUELLER TARIF",
+    "tariff": "TARIFZEIT",
     "cost": "KOSTEN HEUTE",
     "subscribed": "Vertragsleistung",
     "name": "Linky",
@@ -4175,13 +4180,18 @@ const I18N_LINKY = {
     "alert": "Überlast",
     "active": "WIRKLEISTUNG",
     "active_short": "Wirkleistung",
-    "per_phase": "pro Phase"
+    "per_phase": "pro Phase",
+    "peak": "HOCHTARIF",
+    "offpeak": "NIEDERTARIF",
+    "injection": "ZÄHLER EINSPEISUNG",
+    "injection_power": "EINSPEISUNG",
+    "prod": "Einsp."
   },
   "fr": {
     "power": "PUISSANCE",
     "hp": "INDEX HP",
     "hc": "INDEX HC",
-    "tariff": "TARIF EN COURS",
+    "tariff": "PÉRIODE",
     "cost": "COÛT JOUR",
     "subscribed": "Souscrite",
     "name": "Linky",
@@ -4189,13 +4199,18 @@ const I18N_LINKY = {
     "alert": "Dépassement",
     "active": "PUISS. ACTIVE",
     "active_short": "Active",
-    "per_phase": "par phase"
+    "per_phase": "par phase",
+    "peak": "HEURES PLEINES",
+    "offpeak": "HEURES CREUSES",
+    "injection": "INDEX INJECTION",
+    "injection_power": "INJECTION",
+    "prod": "prod"
   },
   "nb": {
     "power": "EFFEKT",
     "hp": "INDEKS TOPPTID",
     "hc": "INDEKS LAVTID",
-    "tariff": "GJELDENDE TARIFF",
+    "tariff": "PERIODE",
     "cost": "KOSTNAD I DAG",
     "subscribed": "Abonnert",
     "name": "Linky",
@@ -4203,7 +4218,12 @@ const I18N_LINKY = {
     "alert": "Overbelastning",
     "active": "AKTIV EFFEKT",
     "active_short": "Aktiv",
-    "per_phase": "per fase"
+    "per_phase": "per fase",
+    "peak": "TOPPTID",
+    "offpeak": "LAVTID",
+    "injection": "INDEKS INNMATING",
+    "injection_power": "INNMATING",
+    "prod": "innm."
   }
 };
 // Aiguilles L1 / L2 / L3 (mode « needles ») : couleurs distinctes du vert / orange / rouge de la jauge
@@ -4228,6 +4248,10 @@ class ApplianceLinkyCard extends HTMLElement {
         { name: 'phase_gauge', selector: { select: { mode: 'dropdown', options: ['needles', 'cycle', 'max'] } }, default: 'needles' },
         { name: 'entity_hp', selector: { entity: { domain: 'sensor', device_class: 'energy' } } },
         { name: 'entity_hc', selector: { entity: { domain: 'sensor', device_class: 'energy' } } },
+        // Plusieurs index de soutirage (Tempo : 6, semaine/week-end : 4…) : [{ entity, name }], remplace HP/HC
+        { name: 'indexes', selector: { object: {} } },
+        { name: 'entity_injection', selector: { entity: { domain: 'sensor', device_class: 'energy' } } },
+        { name: 'entity_power_injection', selector: { entity: { domain: 'sensor' } } },
         { name: 'entity_tariff', selector: { entity: { domain: ['sensor', 'select'] } } },
         { name: 'entity_cost', selector: { entity: { domain: 'sensor' } } },
         { name: 'subscribed_power', selector: { number: { min: 3, max: 36, step: 1, mode: 'box', unit_of_measurement: 'kVA' } } },
@@ -4236,6 +4260,7 @@ class ApplianceLinkyCard extends HTMLElement {
           { name: 'show_gauge', selector: { boolean: {} }, default: true },
           { name: 'show_phases', selector: { boolean: {} }, default: true },
           { name: 'show_index', selector: { boolean: {} }, default: true },
+          { name: 'show_injection', selector: { boolean: {} }, default: true },
           { name: 'show_tariff', selector: { boolean: {} }, default: true },
           { name: 'show_cost', selector: { boolean: {} }, default: true },
         ] },
@@ -4246,7 +4271,7 @@ class ApplianceLinkyCard extends HTMLElement {
 
   setConfig(config) {
     this._config = {
-      show_gauge: true, show_phases: true, show_index: true, show_tariff: true, show_cost: true,
+      show_gauge: true, show_phases: true, show_index: true, show_injection: true, show_tariff: true, show_cost: true,
       phase_gauge: 'needles', subscribed_power: 9, hc_ranges: '', language: 'fr', ...config,
     };
     this._built = false;
@@ -4299,6 +4324,7 @@ class ApplianceLinkyCard extends HTMLElement {
       .led { width:9px; height:9px; border-radius:50%; background:#5a2a2a; margin:0 auto 2px; }
       .led.conso { background:#ff3b30; box-shadow:0 0 8px #ff3b30; animation:pulse var(--pulse,2s) infinite; }
       .led.hc { background:#ffb300; box-shadow:0 0 8px #ffb300; } .led.hp { background:#6b5a2a; }
+      .led.prod { background:#2a4a2a; } .led.prod.on { background:#43a047; box-shadow:0 0 8px #43a047; }
       .gauge { flex:1; min-width:170px; max-width:260px; }
       .gauge svg { width:100%; display:block; }
       .arc-bg { fill:none; stroke:rgba(127,127,127,.25); stroke-width:12; stroke-linecap:round; }
@@ -4330,7 +4356,7 @@ class ApplianceLinkyCard extends HTMLElement {
             <div class="btns"><button class="btn" id="b1" aria-label="-"></button><button class="btn" id="b2" aria-label="+"></button></div>
           </div>
           <div class="plus">+</div>
-          <div class="leds"><div><div class="led conso" id="ledc"></div>${this._t('conso')}</div><div><div class="led hp" id="ledt"></div><span id="ledtl">HP</span></div></div>
+          <div class="leds"><div><div class="led conso" id="ledc"></div>${this._t('conso')}</div><div><div class="led hp" id="ledt"></div><span id="ledtl">HP</span></div><div id="ledpw" style="display:none"><div class="led prod" id="ledp"></div>${this._t('prod')}</div></div>
         </div>
         <div class="gauge" id="gaugebox">
           <svg viewBox="0 0 200 120">
@@ -4372,6 +4398,27 @@ class ApplianceLinkyCard extends HTMLElement {
     return { v: /^k/i.test(u) ? v * 1000 : v, unit: /va/i.test(u) ? 'VA' : 'W' };
   }
 
+  // Index en kWh (Wh / MWh convertis) : les modules TIC remontent souvent les index en Wh
+  _kwh(id) {
+    const v = this._num(id);
+    if (v === null) return null;
+    const u = this._hass.states[id].attributes.unit_of_measurement || 'kWh';
+    return /^wh$/i.test(u) ? v / 1000 : /^mwh$/i.test(u) ? v * 1000 : v;
+  }
+
+  // Index de soutirage : liste « indexes » ([{ entity, name }] ou identifiants seuls), sinon HP / HC
+  _indexes() {
+    const c = this._config;
+    if (Array.isArray(c.indexes) && c.indexes.length) {
+      return c.indexes.map((it) => {
+        const id = typeof it === 'string' ? it : it && it.entity, st = id && this._hass.states[id];
+        const name = (it && it.name) || (st && st.attributes.friendly_name) || id || '';
+        return [String(name).toUpperCase(), this._kwh(id)];
+      });
+    }
+    return [[this._t('hp'), this._kwh(c.entity_hp)], [this._t('hc'), this._kwh(c.entity_hc)]];
+  }
+
   // Heures creuses : entité tarif si fournie, sinon plages "HH:MM-HH:MM,..."
   _isHC() {
     const c = this._config;
@@ -4392,11 +4439,13 @@ class ApplianceLinkyCard extends HTMLElement {
     const d = this._data, c = this._config, pages = [];
     pages.push([this._t('power'), d.power === null ? '—' : `${Math.round(d.power)} ${d.unit}`]);
     if (c.entity_active_power) pages.push([this._t('active'), d.active === null ? '—' : `${Math.round(d.active.v)} ${d.active.unit}`]);
-    if (c.show_index) {
-      pages.push([this._t('hp'), d.hp === null ? '—' : `${Math.round(d.hp)} kWh`]);
-      pages.push([this._t('hc'), d.hc === null ? '—' : `${Math.round(d.hc)} kWh`]);
+    const kwh = (v) => (v === null ? '—' : `${Math.round(v)} kWh`);
+    if (c.show_index) d.indexes.forEach(([lab, v]) => pages.push([lab, kwh(v)]));
+    if (c.show_injection) {
+      if (c.entity_power_injection) pages.push([this._t('injection_power'), d.injPower === null ? '—' : `${Math.round(d.injPower.v)} ${d.injPower.unit}`]);
+      if (c.entity_injection) pages.push([this._t('injection'), kwh(d.injection)]);
     }
-    if (c.show_tariff) pages.push([this._t('tariff'), d.hcNow ? 'HEURES CREUSES' : 'HEURES PLEINES']);
+    if (c.show_tariff) pages.push([this._t('tariff'), this._t(d.hcNow ? 'offpeak' : 'peak')]);
     if (c.show_cost && d.cost !== null) pages.push([this._t('cost'), `${d.cost.toFixed(2)} €`]);
     const p = pages[(this._page || 0) % pages.length];
     const lab = this.shadowRoot.getElementById('lab'), val = this.shadowRoot.getElementById('val');
@@ -4413,10 +4462,11 @@ class ApplianceLinkyCard extends HTMLElement {
     const pState = c.entity_power && this._hass.states[c.entity_power];
     let unit = (pState && pState.attributes.unit_of_measurement) || 'W';
     let power = this._num(c.entity_power);
-    const hp = this._num(c.entity_hp), hc = this._num(c.entity_hc);
+    const indexes = this._indexes();
     const hcNow = this._isHC();
     let cost = this._num(c.entity_cost);
     const active = this._power(c.entity_active_power);
+    const injPower = this._power(c.entity_power_injection), injection = this._kwh(c.entity_injection);
 
     // Jauge : puissance (W ou VA, kW ou kVA) / puissance souscrite (kVA × 1000).
     // Le Linky donne la puissance apparente en VA : on garde l'unité du capteur.
@@ -4442,7 +4492,7 @@ class ApplianceLinkyCard extends HTMLElement {
       ratio = alertRatio = Math.min(base / max, 1);
       gtxt = power === null ? '—' : `${Math.round(base)} ${gaugeUnit}`;
     }
-    this._data = { power, unit, active, hp, hc, hcNow, cost };
+    this._data = { power, unit, active, indexes, hcNow, cost, injPower, injection };
     const colorOf = (r) => (r > 0.9 ? '#e53935' : r > 0.65 ? '#fb8c00' : '#43a047');
     const needles = tri && mode === 'needles';
     root.getElementById('arc').style.strokeDashoffset = 251.3 * (1 - ratio);
@@ -4478,6 +4528,9 @@ class ApplianceLinkyCard extends HTMLElement {
     const ledt = root.getElementById('ledt');
     ledt.className = `led ${hcNow ? 'hc' : 'hp'}`;
     root.getElementById('ledtl').textContent = hcNow ? 'HC' : 'HP';
+    // LED prod : allumée quand le compteur voit de l'énergie partir vers le réseau
+    root.getElementById('ledpw').style.display = c.entity_power_injection && c.show_injection ? '' : 'none';
+    root.getElementById('ledp').classList.toggle('on', !!injPower && injPower.v > 0);
     this._renderLcd();
   }
 }

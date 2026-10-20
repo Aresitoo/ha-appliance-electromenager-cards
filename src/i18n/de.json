@@ -194,7 +194,7 @@
     "power": "LEISTUNG",
     "hp": "ZÄHLER HT",
     "hc": "ZÄHLER NT",
-    "tariff": "AKTUELLER TARIF",
+    "tariff": "TARIFZEIT",
     "cost": "KOSTEN HEUTE",
     "subscribed": "Vertragsleistung",
     "name": "Linky",
@@ -202,7 +202,12 @@
     "alert": "Überlast",
     "active": "WIRKLEISTUNG",
     "active_short": "Wirkleistung",
-    "per_phase": "pro Phase"
+    "per_phase": "pro Phase",
+    "peak": "HOCHTARIF",
+    "offpeak": "NIEDERTARIF",
+    "injection": "ZÄHLER EINSPEISUNG",
+    "injection_power": "EINSPEISUNG",
+    "prod": "Einsp."
   },
   "battery": {
     "name": "Solarbatterie",

@@ -194,7 +194,7 @@
     "power": "POWER",
     "hp": "PEAK INDEX",
     "hc": "OFF-PEAK INDEX",
-    "tariff": "CURRENT TARIFF",
+    "tariff": "PERIOD",
     "cost": "COST TODAY",
     "subscribed": "Subscribed",
     "name": "Linky",
@@ -202,7 +202,12 @@
     "alert": "Overload",
     "active": "ACTIVE POWER",
     "active_short": "Active",
-    "per_phase": "per phase"
+    "per_phase": "per phase",
+    "peak": "PEAK HOURS",
+    "offpeak": "OFF-PEAK HOURS",
+    "injection": "EXPORT INDEX",
+    "injection_power": "EXPORT",
+    "prod": "export"
   },
   "battery": {
     "name": "Solar battery",

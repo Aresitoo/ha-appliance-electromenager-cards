@@ -393,6 +393,35 @@ byId(c,'b2').click();
 ok('linky active power line and LCD page',byId(c,'gact').textContent==='Active : 506 W'&&byId(c,'lab').textContent==='PUISS. ACTIVE'&&byId(c,'val').textContent==='506 W'&&gt(c)==='1220 VA',byId(c,'gact').textContent+' | '+byId(c,'lab').textContent+' '+byId(c,'val').textContent+' | '+gt(c));
 c=lk([mk('sensor.p',1220,VA),mk('sensor.w',0.506,{unit_of_measurement:'kW',device_class:'power'})],{entity_active_power:'sensor.w',language:'en'});
 ok('linky active power kW converted (en)',byId(c,'gact').textContent==='Active : 506 W',byId(c,'gact').textContent);
+// linky LCD pages: "LABEL=value" for one full turn of the screen
+const pages=(c)=>{c.el._page=0;c.el._renderLcd();const out=[];for(let i=0;i<20;i++){const p=`${byId(c,'lab').textContent}=${byId(c,'val').textContent}`;if(out[0]===p)break;out.push(p);byId(c,'b2').click();}return out;};
+const WH={unit_of_measurement:'Wh',device_class:'energy'}, KWH={unit_of_measurement:'kWh',device_class:'energy'};
+c=lk([mk('sensor.p',600,VA),mk('sensor.hp',4246.866,KWH),mk('sensor.hc',7038.648,KWH)],{entity_hp:'sensor.hp',entity_hc:'sensor.hc',hc_ranges:''});
+ok('linky HP/HC pages kept, period page renamed',pages(c).join('|')==='PUISSANCE=600 VA|INDEX HP=4247 kWh|INDEX HC=7039 kWh|PÉRIODE=HEURES PLEINES',pages(c).join('|'));
+c=lk([mk('sensor.p',600,VA),mk('sensor.hp',4246866,WH)],{entity_hp:'sensor.hp',show_tariff:false});
+ok('linky index in Wh converted to kWh',pages(c).includes('INDEX HP=4247 kWh'),pages(c).join('|'));
+const T6=['bleu_hp','bleu_hc','blanc_hp','blanc_hc','rouge_hp','rouge_hc'];
+c=lk([mk('sensor.p',600,VA),...T6.map((k,i)=>mk(`sensor.${k}`,(i+1)*1000000,WH)),mk('sensor.hp',1,KWH)],
+  {entity_hp:'sensor.hp',indexes:T6.map((k)=>({entity:`sensor.${k}`,name:k.replace('_',' ')})),show_tariff:false});
+ok('linky 6 Tempo indexes replace HP/HC',pages(c).join('|')==='PUISSANCE=600 VA|BLEU HP=1000 kWh|BLEU HC=2000 kWh|BLANC HP=3000 kWh|BLANC HC=4000 kWh|ROUGE HP=5000 kWh|ROUGE HC=6000 kWh',pages(c).join('|'));
+c=lk([mk('sensor.p',600,VA),mk('sensor.s1',12.5,{...KWH,friendly_name:'Semaine HP'}),mk('sensor.s2','unavailable',KWH)],{indexes:['sensor.s1','sensor.s2'],show_tariff:false});
+ok('linky indexes as ids: friendly name, unavailable shows —',pages(c).join('|')==='PUISSANCE=600 VA|SEMAINE HP=13 kWh|SENSOR.S2=—',pages(c).join('|'));
+const INJ={entity_injection:'sensor.eait',entity_power_injection:'sensor.sinsti',show_index:false,show_tariff:false};
+c=lk([mk('sensor.p',0,VA),mk('sensor.eait',11256179,WH),mk('sensor.sinsti',1830,VA)],INJ);
+ok('linky injection pages',pages(c).join('|')==='PUISSANCE=0 VA|INJECTION=1830 VA|INDEX INJECTION=11256 kWh',pages(c).join('|'));
+ok('linky prod LED lit while injecting',vis(c,'ledpw')&&byId(c,'ledp').classList.contains('on'),byId(c,'ledp').className);
+c=lk([mk('sensor.p',900,VA),mk('sensor.eait',11256179,WH),mk('sensor.sinsti',0,VA)],INJ);
+ok('linky prod LED off at 0',vis(c,'ledpw')&&!byId(c,'ledp').classList.contains('on'),byId(c,'ledp').className);
+c=lk([mk('sensor.p',900,VA),mk('sensor.eait',11256179,WH),mk('sensor.sinsti',500,VA)],{...INJ,show_injection:false});
+ok('linky show_injection:false hides pages and LED',pages(c).join('|')==='PUISSANCE=900 VA'&&!vis(c,'ledpw'),pages(c).join('|'));
+c=lk([mk('sensor.p',900,VA)]); ok('linky no injection entity: no prod LED',!vis(c,'ledpw'),byId(c,'ledpw').style.display);
+c=lk([mk('sensor.p',900,VA),mk('sensor.eait',11256.179,KWH),mk('sensor.t','HC')],{entity_injection:'sensor.eait',show_index:false,entity_tariff:'sensor.t',language:'en'});
+ok('linky injection + period (en)',pages(c).join('|')==='POWER=900 VA|EXPORT INDEX=11256 kWh|PERIOD=OFF-PEAK HOURS',pages(c).join('|'));
+// linky three-phase Tempo + injection: indexes and injection live alongside the per-phase gauge
+c=lk([...ph(250,4900,700),...T6.map((k,i)=>mk(`sensor.${k}`,(i+1)*1000000,WH)),mk('sensor.eait',11256179,WH),mk('sensor.sinsti',1830,VA)],
+  {...L3,entity_power:'',indexes:T6.map((k)=>({entity:`sensor.${k}`,name:k.replace('_',' ')})),entity_injection:'sensor.eait',entity_power_injection:'sensor.sinsti',show_tariff:false});
+ok('linky 3-phase + Tempo + injection: pages',pages(c).join('|')==='PUISSANCE=5850 VA|BLEU HP=1000 kWh|BLEU HC=2000 kWh|BLANC HP=3000 kWh|BLANC HC=4000 kWh|ROUGE HP=5000 kWh|ROUGE HC=6000 kWh|INJECTION=1830 VA|INDEX INJECTION=11256 kWh',pages(c).join('|'));
+ok('linky 3-phase + Tempo + injection: phase alert, bars and prod LED',byId(c,'meter').classList.contains('over')&&byId(c,'phases').style.display===''&&byId(c,'phv2').textContent==='4900 VA'&&vis(c,'ledpw')&&byId(c,'ledp').classList.contains('on'),byId(c,'meter').className+' '+byId(c,'phv2').textContent+' '+byId(c,'ledp').className);
 document.querySelectorAll('appliance-linky-card').forEach((e)=>e.remove()); // keep the SVG id check about the core cards
 // live update
 c=card('washer',{entity:'input_boolean.w'},[mk('input_boolean.w','off')]); c.el.hass=hassOf([mk('input_boolean.w','on')]); ok('live update off->running',has(c,'st-running'),c.wrap.className);

@@ -409,6 +409,22 @@ const SCEN = [
       set('sensor.linky3_hp', 23871, KWH); set('sensor.linky3_hc', 15402, KWH);
       ctl.append(document.createElement('span'), Object.assign(document.createElement('span'), { textContent: 'Coupure par phase à 5 kVA (1/3 de 15 kVA) : monte une seule phase vers 4 800 VA', style: 'color:var(--secondary-text-color);font-size:12px' }), document.createElement('span'));
     } },
+  { kind: 'linky', title: 'Compteur Linky triphasé Tempo + injection solaire', lang: true,
+    cfg: { entity_power_l1: 'sensor.linkyt_sinsts1', entity_power_l2: 'sensor.linkyt_sinsts2', entity_power_l3: 'sensor.linkyt_sinsts3',
+      entity_power_injection: 'sensor.linkyt_sinsti', entity_injection: 'sensor.linkyt_eait', subscribed_power: 15,
+      entity_tariff: 'sensor.linkyt_ptec',
+      indexes: [['easf01', 'Bleu HC'], ['easf02', 'Bleu HP'], ['easf03', 'Blanc HC'], ['easf04', 'Blanc HP'], ['easf05', 'Rouge HC'], ['easf06', 'Rouge HP']]
+        .map(([k, name]) => ({ entity: `sensor.linkyt_${k}`, name })) },
+    build(ctl) {
+      const VA = { unit_of_measurement: 'VA', device_class: 'apparent_power' }, WH = { unit_of_measurement: 'Wh', device_class: 'energy' };
+      range(ctl, 'Phase L1', 'sensor.linkyt_sinsts1', 0, 5500, 50, 0, 'VA', VA);
+      range(ctl, 'Phase L2', 'sensor.linkyt_sinsts2', 0, 5500, 50, 0, 'VA', VA);
+      range(ctl, 'Phase L3', 'sensor.linkyt_sinsts3', 0, 5500, 50, 0, 'VA', VA);
+      range(ctl, 'Puissance injectée', 'sensor.linkyt_sinsti', 0, 6000, 50, 1800, 'VA', VA);
+      // index en Wh, comme les remontent la plupart des modules TIC : la carte les affiche en kWh
+      [4210533, 6120874, 512340, 690125, 98410, 120556].forEach((v, i) => set(`sensor.linkyt_easf0${i + 1}`, v, WH));
+      set('sensor.linkyt_eait', 11256179, WH); set('sensor.linkyt_ptec', 'HP BLEU', {});
+    } },
   { kind: 'battery', title: 'Batterie domestique', lang: true,
     cfg: { entity_soc: 'sensor.battery_soc', entity_power: 'sensor.battery_power', entity_temperature: 'sensor.battery_temp', capacity_kwh: 10, max_power: 5000 },
     build(ctl) {
