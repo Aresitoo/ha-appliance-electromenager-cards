@@ -194,7 +194,7 @@
     "power": "PUISSANCE",
     "hp": "INDEX HP",
     "hc": "INDEX HC",
-    "tariff": "TARIF EN COURS",
+    "tariff": "PÉRIODE",
     "cost": "COÛT JOUR",
     "subscribed": "Souscrite",
     "name": "Linky",
@@ -202,7 +202,12 @@
     "alert": "Dépassement",
     "active": "PUISS. ACTIVE",
     "active_short": "Active",
-    "per_phase": "par phase"
+    "per_phase": "par phase",
+    "peak": "HEURES PLEINES",
+    "offpeak": "HEURES CREUSES",
+    "injection": "INDEX INJECTION",
+    "injection_power": "INJECTION",
+    "prod": "prod"
   },
   "battery": {
     "name": "Batterie solaire",

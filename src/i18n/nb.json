@@ -194,7 +194,7 @@
 "power": "EFFEKT",
 "hp": "INDEKS TOPPTID",
 "hc": "INDEKS LAVTID",
-"tariff": "GJELDENDE TARIFF",
+"tariff": "PERIODE",
 "cost": "KOSTNAD I DAG",
 "subscribed": "Abonnert",
 "name": "Linky",
@@ -202,7 +202,12 @@
 "alert": "Overbelastning",
 "active": "AKTIV EFFEKT",
 "active_short": "Aktiv",
-"per_phase": "per fase"
+"per_phase": "per fase",
+"peak": "TOPPTID",
+"offpeak": "LAVTID",
+"injection": "INDEKS INNMATING",
+"injection_power": "INNMATING",
+"prod": "innm."
 },
 "battery": {
 "name": "Solbatteri",
