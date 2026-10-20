@@ -426,6 +426,10 @@ c=lk([...ph(250,4900,700),...T6.map((k,i)=>mk(`sensor.${k}`,(i+1)*1000000,WH)),m
   {...L3,entity_power:'',indexes:T6.map((k)=>({entity:`sensor.${k}`,name:k.replace('_',' ')})),entity_injection:'sensor.eait',entity_power_injection:'sensor.sinsti',show_tariff:false});
 ok('linky 3-phase + Tempo + injection: pages',pages(c).join('|')==='PUISSANCE=5850 VA|BLEU HP=1000 kWh|BLEU HC=2000 kWh|BLANC HP=3000 kWh|BLANC HC=4000 kWh|ROUGE HP=5000 kWh|ROUGE HC=6000 kWh|INJECTION=1830 VA|INDEX INJECTION=11256 kWh',pages(c).join('|'));
 ok('linky 3-phase + Tempo + injection: phase alert, bars and prod LED',byId(c,'meter').classList.contains('over')&&byId(c,'phases').style.display===''&&byId(c,'phv2').textContent==='4900 VA'&&vis(c,'ledpw')&&byId(c,'ledp').classList.contains('on'),byId(c,'meter').className+' '+byId(c,'phv2').textContent+' '+byId(c,'ledp').className);
+// linky HP/HC LED: lit in both periods (HP was drawn dimmed and looked off)
+const lit=(c)=>{const s=getComputedStyle(byId(c,'ledt'));return s.boxShadow!==''&&s.boxShadow!=='none';};
+c=lk([mk('sensor.p',600,VA),mk('sensor.t','HP')],{entity_tariff:'sensor.t'}); ok('linky HP LED lit',byId(c,'ledt').className==='led hp'&&byId(c,'ledtl').textContent==='HP'&&lit(c),byId(c,'ledt').className+' '+getComputedStyle(byId(c,'ledt')).boxShadow);
+c=lk([mk('sensor.p',600,VA),mk('sensor.t','HC')],{entity_tariff:'sensor.t'}); ok('linky HC LED lit',byId(c,'ledt').className==='led hc'&&byId(c,'ledtl').textContent==='HC'&&lit(c),byId(c,'ledt').className+' '+getComputedStyle(byId(c,'ledt')).boxShadow);
 document.querySelectorAll('appliance-linky-card').forEach((e)=>e.remove()); // keep the SVG id check about the core cards
 // live update
 c=card('washer',{entity:'input_boolean.w'},[mk('input_boolean.w','off')]); c.el.hass=hassOf([mk('input_boolean.w','on')]); ok('live update off->running',has(c,'st-running'),c.wrap.className);

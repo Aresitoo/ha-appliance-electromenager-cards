@@ -106,7 +106,7 @@ class ApplianceLinkyCard extends HTMLElement {
       .leds { display:flex; justify-content:center; gap:14px; margin-top:8px; font-size:.55em; letter-spacing:.06em; color:#3b4a08; }
       .led { width:9px; height:9px; border-radius:50%; background:#5a2a2a; margin:0 auto 2px; }
       .led.conso { background:#ff3b30; box-shadow:0 0 8px #ff3b30; animation:pulse var(--pulse,2s) infinite; }
-      .led.hc { background:#ffb300; box-shadow:0 0 8px #ffb300; } .led.hp { background:#6b5a2a; }
+      .led.hc { background:#ffb300; box-shadow:0 0 8px #ffb300; } .led.hp { background:#f4511e; box-shadow:0 0 8px #f4511e; }
       .led.prod { background:#2a4a2a; } .led.prod.on { background:#43a047; box-shadow:0 0 8px #43a047; }
       .gauge { flex:1; min-width:170px; max-width:260px; }
       .gauge svg { width:100%; display:block; }
