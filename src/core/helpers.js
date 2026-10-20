@@ -50,6 +50,15 @@ function fmtUnit(hass, st, digits, minDigits = 0) {
   const u = st.attributes.unit_of_measurement;
   return u ? `${fmtNum(hass, v, digits, minDigits)} ${u}` : fmtNum(hass, v, digits, minDigits);
 }
+// Énergie en kWh (Wh et MWh convertis), sans décimale au-delà de 1000 kWh ; autres unités inchangées
+function fmtEnergy(hass, st) {
+  const v = num(st); if (v === null) return null;
+  const u = st.attributes.unit_of_measurement;
+  const f = { Wh: 1e-3, kWh: 1, MWh: 1e3, GWh: 1e6 }[u];
+  if (f === undefined) return fmtUnit(hass, st, 2);
+  const k = v * f;
+  return `${fmtNum(hass, k, Math.abs(k) >= 1000 ? 0 : 2)} kWh`;
+}
 function parseRemaining(st) {
   if (!st) return null;
   const v = String(st.state);

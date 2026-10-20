@@ -716,8 +716,8 @@ class ApplianceCardBase extends HTMLElement {
     const dual = kind === "water_heater" && (m.pwS || m.energyS);
     if (m.pw && c.show_power !== false) tile(solar ? "mdi:solar-power" : "mdi:flash", fmtPower(hass, m.pw) ?? "—", tr(hass, solar ? "production" : dual ? "grid" : "power"), c.power);
     if (m.pwS) tile("mdi:solar-power", fmtPower(hass, m.pwS) ?? "—", tr(hass, "solar_surplus"), c.power_solar);
-    if (m.energy) tile("mdi:lightning-bolt-circle", fmtUnit(hass, m.energy, 2) ?? "—", tr(hass, solar ? "today" : dual ? "energy_grid" : "energy"), c.energy);
-    if (m.energyS) tile("mdi:solar-power-variant", fmtUnit(hass, m.energyS, 2) ?? "—", tr(hass, "energy_solar"), c.energy_solar);
+    if (m.energy) tile("mdi:lightning-bolt-circle", fmtEnergy(hass, m.energy) ?? "—", tr(hass, solar ? "today" : dual ? "energy_grid" : "energy"), c.energy);
+    if (m.energyS) tile("mdi:solar-power-variant", fmtEnergy(hass, m.energyS) ?? "—", tr(hass, "energy_solar"), c.energy_solar);
     if (m.cost) tile(solar ? "mdi:piggy-bank-outline" : "mdi:cash", fmtUnit(hass, m.cost, 2, 2) ?? "—", tr(hass, solar ? "savings" : "cost"), c.cost);
     if (solar && m.status !== "night" && m.frac != null && m.pw && !BAD.includes(String(m.pw.state).toLowerCase())) tile("mdi:white-balance-sunny", `${Math.round(m.frac * 100)} %`, tr(hass, "of_peak"), c.power);
     $("stats").innerHTML = tiles.join("");

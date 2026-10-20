@@ -108,6 +108,12 @@ c=card('tv',{entity:'media_player.tv'},[mk('media_player.tv','off')]); ok('tv me
 // water heater: grid power + solar router power
 c=card('water-heater',{power:'sensor.g',power_solar:'sensor.s',energy:'sensor.eg',energy_solar:'sensor.es'},[mk('sensor.g',0,W),mk('sensor.s',1200,W),mk('sensor.eg',2,{unit_of_measurement:'kWh'}),mk('sensor.es',3,{unit_of_measurement:'kWh'})]); ok('water heater solar only -> heating + solar-heat',has(c,'st-heating')&&has(c,'solar-heat')&&/Surplus solaire/.test(c.txt()),c.wrap.className+' '+c.txt());
 ok('water heater dual tiles',/Réseau/.test(c.sr.getElementById('stats').textContent)&&/Énergie solaire/.test(c.sr.getElementById('stats').textContent),c.sr.getElementById('stats').textContent);
+// energy tiles always in kWh (Wh / MWh converted, no decimals from 1000 kWh)
+const stx=(c)=>c.sr.getElementById('stats').textContent.replace(/\s/g,'');
+c=card('water-heater',{power:'sensor.g',energy:'sensor.eg',energy_solar:'sensor.es'},[mk('sensor.g',0,W),mk('sensor.eg',2055340.88,{unit_of_measurement:'Wh',device_class:'energy'}),mk('sensor.es',12.724874,{unit_of_measurement:'MWh',device_class:'energy'})]);
+ok('water heater energy Wh and MWh shown in kWh',/2055kWh/.test(stx(c))&&/12725kWh/.test(stx(c))&&!/Wh(?<!kWh)/.test(stx(c).replace(/kWh/g,'')),stx(c));
+c=card('washer',{entity:'switch.w',energy:'sensor.e'},[mk('switch.w','off'),mk('sensor.e',1234,{unit_of_measurement:'Wh',device_class:'energy'})]); ok('washer energy 1234 Wh -> 1,23 kWh',/1,23kWh/.test(stx(c)),stx(c));
+c=card('washer',{entity:'switch.w',energy:'sensor.e'},[mk('switch.w','off'),mk('sensor.e',0.456,{unit_of_measurement:'kWh',device_class:'energy'})]); ok('washer energy kWh unchanged',/0,46kWh/.test(stx(c)),stx(c));
 c=card('water-heater',{power:'sensor.g',power_solar:'sensor.s'},[mk('sensor.g',2000,W),mk('sensor.s',0,W)]); ok('water heater grid only -> heating, no solar-heat',has(c,'st-heating')&&!has(c,'solar-heat'),c.wrap.className);
 c=card('water-heater',{power:'sensor.g',power_solar:'sensor.s'},[mk('sensor.g',0,W),mk('sensor.s',0,W)]); ok('water heater both 0 -> not heating',!has(c,'st-heating'),c.wrap.className);
 // modes: comfort / eco / frost / off (radiator + towel dryer)
