@@ -94,7 +94,7 @@ class ApplianceAquariumCard extends HTMLElement {
       .title { font-weight:600; font-size:1.05em; margin:0 4px 8px; display:flex; justify-content:space-between; align-items:center; }
       .badge { font-size:.75em; color:#fff; background:#e53935; border-radius:10px; padding:2px 8px; display:none; animation:blink 1s infinite; }
       .alert .badge { display:inline-block; }
-      svg { width:100%; height:auto; display:block; border-radius:10px; }
+      svg { width:100%; height:auto; display:block; border-radius:10px; transform:scale(0.8); transform-origin:top center; }
       .tint { fill:var(--water, #2a8fd6); opacity:.45; transition:fill 1.5s; }
       .night-overlay { fill:#050b24; opacity:0; transition:opacity 1.2s; }
       .night .night-overlay { opacity:.6; }
