@@ -1,20 +1,22 @@
 name: Release
 
+# Pas de fichier attaché à la release : HACS télécharge alors dist/ directement
+# depuis raw.githubusercontent.com au tag de la release.
+# (Le lien github.com/.../releases/download/... renvoie un en-tête
+# Content-Security-Policy de plus de 8190 octets, que aiohttp refuse :
+# « Got more than 8190 bytes », et l'installation via HACS échoue.)
 on:
   release:
     types: [published]
 
-permissions:
-  contents: write
-
 jobs:
-  attach:
+  check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Stamp version from tag
-        run: sed -i "s/const VERSION = \"[^\"]*\"/const VERSION = \"${GITHUB_REF_NAME#v}\"/" dist/ha-appliance-electromenager-cards.js
-      - name: Upload card to release
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh release upload "$GITHUB_REF_NAME" dist/ha-appliance-electromenager-cards.js --clobber
+      - name: dist/ est à jour et porte la version du tag
+        run: |
+          v="${GITHUB_REF_NAME#v}"
+          grep -q "const VERSION = \"$v\"" dist/ha-appliance-electromenager-cards.js \
+            || { echo "::error::dist/ ne porte pas la version $v : mets à jour src/core/version.js puis node build.js"; exit 1; }
+          node build.js --check
