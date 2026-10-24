@@ -742,6 +742,188 @@ const STRINGS = {
     "f_oscillating": "Svinging",
     "f_mid_threshold": "Hastighet 2 over (W)"
   },
+  "nl": {
+    "washer": "Wasmachine",
+    "dryer": "Droogkast",
+    "dishwasher": "Vaatwasser",
+    "water_heater": "Boiler",
+    "oven": "Oven",
+    "microwave": "Microgolfoven",
+    "air_fryer": "Airfryer",
+    "coffee_maker": "Koffiezetapparaat",
+    "tv": "Tv",
+    "range_hood": "Dampkap",
+    "beer_tap": "Biertap",
+    "av_receiver": "Thuisbioscoopversterker",
+    "fan": "Ventilator",
+    "generic": "Algemeen toestel (eigen afbeelding)",
+    "towel_dryer": "Handdoekradiator",
+    "server_rack": "Serverkast (homelab)",
+    "desktop_pc": "Desktop-pc",
+    "laptop": "Laptop",
+    "online": "Online",
+    "f_max_power_rack": "Maximale belasting (W)",
+    "f_power_solar": "Vermogenssensor zonne-overschot (W)",
+    "f_energy_solar": "Energiesensor zonne-overschot (kWh)",
+    "solar_surplus": "Zonne-overschot",
+    "mode_off": "Uit",
+    "wine_cooler": "Wijnkoelkast",
+    "f_max_temperature_wine": "Alarm boven (°C)",
+    "f_show_modes": "Modusknoppen tonen",
+    "f_show_power": "Vermogen tonen",
+    "grid": "Net",
+    "energy_grid": "Energie van het net",
+    "energy_solar": "Zonne-energie",
+    "ac_split": "Airco (binnenunit)",
+    "heat_pump": "Warmtepomp (buitenunit)",
+    "ac_dry": "Ontvochtigen",
+    "ac_fan": "Enkel ventilatie",
+    "at_target": "Doeltemperatuur bereikt",
+    "defrost": "Ontdooien",
+    "f_hvac": "Modus zonder climate-entiteit",
+    "screen_on": "Aan",
+    "lights": "Enkel verlichting",
+    "f_light": "Lichtentiteit (optioneel)",
+    "brewing": "Koffie zetten",
+    "keep_warm": "Warmhouden",
+    "f_style": "Type koffiezetapparaat",
+    "f_warm_threshold": "Warmhouden / klaar boven (W)",
+    "fridge": "Koelkast",
+    "pellet_stove": "Pelletkachel",
+    "pool_pump": "Zwembadpomp",
+    "printer_3d": "3D-printer",
+    "chest_freezer": "Diepvrieskist",
+    "drawer_freezer": "Diepvriezer met lades",
+    "solar": "Zonnepanelen",
+    "vmc": "Badkamerventilator",
+    "hob": "Kookplaat",
+    "radiator": "Elektrische radiator",
+    "comfort": "Comfort",
+    "eco": "Eco",
+    "frost": "Vorstbeveiliging",
+    "window_open": "Raam open",
+    "f_mode": "Modusentiteit (stuurdraad, select…)",
+    "f_window": "Raamsensor",
+    "f_max_power_rad": "Vermogen radiator (W)",
+    "cooking": "Koken",
+    "residual": "Restwarmte",
+    "zones": "Actieve zones",
+    "f_zone_power": "Vermogen van één zone (W)",
+    "f_zone_1": "Zone linksvoor (stand of W)",
+    "f_zone_2": "Zone rechtsvoor",
+    "f_zone_3": "Zone linksachter",
+    "f_zone_4": "Zone rechtsachter",
+    "f_residual_minutes": "Restwarmte tonen (min)",
+    "speed1": "Lage stand",
+    "speed2": "Hoge stand",
+    "humid": "Hoge vochtigheid",
+    "humidity": "Vochtigheid",
+    "f_humidity": "Vochtigheidssensor (%)",
+    "f_high_threshold": "Hoge stand boven (W)",
+    "f_humidity_max": "Vochtigheidsalarm boven (%)",
+    "producing": "Produceert",
+    "low": "Lage productie",
+    "night": "Nacht",
+    "production": "Productie",
+    "savings": "Besparing",
+    "f_sun_entity": "Zon-entiteit",
+    "f_max_power_solar": "Piekvermogen (Wp)",
+    "printing": "Aan het printen",
+    "paused": "Gepauzeerd",
+    "failed": "Mislukt",
+    "progress": "Voortgang",
+    "nozzle": "Spuitmond",
+    "bed": "Bed",
+    "f_bed_temperature": "Sensor bedtemperatuur",
+    "f_filament_color": "Filamentkleur (CSS)",
+    "f_image": "Afbeeldings-URL (bv. /local/mijn-toestel.png)",
+    "f_nozzle_temperatures": "Sensoren spuitmondtemperatuur (T0, T1…)",
+    "filtering": "Filteren",
+    "water": "Water",
+    "today": "Vandaag",
+    "speed": "Snelheid",
+    "f_runtime": "Sensor filtertijd vandaag",
+    "f_speed": "Snelheidssensor (tpm of %)",
+    "f_max_power": "Maximaal vermogen op volle snelheid (W)",
+    "ignition": "Aansteken",
+    "extinguishing": "Uitdoven",
+    "alarm": "Alarm",
+    "pellets": "Pellets",
+    "pellets_low": "Pellets bijna op",
+    "level": "Stand",
+    "f_power_level": "Sensor verwarmingsstand (1-5)",
+    "f_pellet_level": "Sensor pelletniveau (%)",
+    "f_ignition_threshold": "Aansteken boven (W)",
+    "f_pellet_alert": "Alarm pellets bijna op onder (%)",
+    "off": "Uit",
+    "idle": "Inactief",
+    "standby": "Stand-by",
+    "running": "Bezig",
+    "finished": "Klaar",
+    "heating": "Verwarmen",
+    "ready": "Klaar voor gebruik",
+    "preheating": "Voorverwarmen",
+    "cooling": "Koelen",
+    "door_open": "Deur open",
+    "unavailable": "Niet beschikbaar",
+    "too_warm": "Te warm",
+    "ph_wash": "Wassen",
+    "ph_rinse": "Spoelen",
+    "ph_spin": "Centrifugeren",
+    "ph_dry": "Drogen",
+    "ph_cool": "Afkoelen",
+    "power": "Vermogen",
+    "energy": "Energie",
+    "cost": "Kost",
+    "remaining": "Resterend",
+    "program": "Programma",
+    "temperature": "Temperatuur",
+    "target": "Doel",
+    "fridge_temp": "Koelkast",
+    "freezer_temp": "Diepvries",
+    "ends_at": "Klaar om",
+    "toggle": "Aan/uit",
+    "confirm_off": "Cyclus bezig – klik nog eens om de stroom te onderbreken",
+    "f_name": "Naam",
+    "f_entity": "Statusentiteit (switch, sensor, input_select…)",
+    "f_power": "Vermogenssensor (W)",
+    "f_energy": "Energiesensor (kWh)",
+    "f_cost": "Kostsensor",
+    "f_remaining": "Sensor resterende tijd",
+    "f_progress": "Voortgangssensor (%)",
+    "f_program": "Programma- / fasesensor",
+    "f_door": "Deursensor",
+    "f_switch": "Schakelaar om te bedienen (optioneel)",
+    "f_threshold": "Drempel voor 'bezig' (W)",
+    "f_temperature": "Temperatuursensor",
+    "f_target_temperature": "Sensor doeltemperatuur",
+    "f_freezer_temperature": "Temperatuursensor diepvries",
+    "f_freezer_door": "Deursensor diepvries",
+    "f_max_temperature": "Alarm koelkast boven (°C)",
+    "f_freezer_max_temperature": "Alarm diepvries boven (°C)",
+    "f_color": "Accentkleur (CSS)",
+    "f_animations": "Animaties",
+    "f_confirm_off": "Bevestigen voor de stroom tijdens een cyclus wordt onderbroken",
+    "err_need_entity": "Stel minstens één van `entity`, `power`, `switch` of `temperature` in.",
+    "of_peak": "van piek",
+    "lcd_night": "NACHT",
+    "lcd_ignition": "START",
+    "lcd_extinguishing": "KOEL",
+    "lcd_brewing": "ZET",
+    "lcd_ready": "KLAAR",
+    "pouring": "Tappen",
+    "playing": "Speelt af",
+    "muted": "Gedempt",
+    "keg": "Vat",
+    "keg_low": "Vat bijna leeg",
+    "f_keg_level": "Sensor vatniveau (%)",
+    "f_pouring": "Tapsensor (optioneel)",
+    "fan_1": "Stand 1",
+    "fan_2": "Stand 2",
+    "fan_3": "Stand 3",
+    "f_oscillating": "Zwenken",
+    "f_mid_threshold": "Stand 2 boven (W)"
+  },
   "ro": {
     "washer": "Mașină de spălat rufe",
     "dryer": "Uscător de rufe",
@@ -4125,6 +4307,15 @@ const I18N_AQUARIUM = {
     "alert": "Temperatur utenfor område",
     "unavailable": "Utilgjengelig"
   },
+  "nl": {
+    "power": "Vermogen",
+    "energy": "Energie",
+    "temp": "Water",
+    "cost": "Kost",
+    "name": "Aquarium",
+    "alert": "Temperatuur buiten bereik",
+    "unavailable": "Niet beschikbaar"
+  },
   "ro": {
     "power": "Putere",
     "energy": "Energie",
@@ -4135,6 +4326,8 @@ const I18N_AQUARIUM = {
     "unavailable": "Indisponibil"
   }
 };
+// Langue de Home Assistant (no / nn → nb), utilisée quand `language` n'est pas configuré
+const lang = (h) => { const l = ((h && (h.locale?.language || h.language)) || document.documentElement.lang || 'en').toLowerCase().slice(0, 2); return l === 'no' || l === 'nn' ? 'nb' : l; };
 
 class ApplianceAquariumCard extends HTMLElement {
   static getStubConfig() {
@@ -4170,7 +4363,7 @@ class ApplianceAquariumCard extends HTMLElement {
   setConfig(config) {
     this._config = {
       show_power: true, show_energy: true, show_temperature: true, show_cost: true,
-      temp_min: 24, temp_max: 27, price_per_kwh: 0.2, max_power: 200, language: 'fr',
+      temp_min: 24, temp_max: 27, price_per_kwh: 0.2, max_power: 200,
       ...config,
     };
     this._built = false;
@@ -4178,13 +4371,17 @@ class ApplianceAquariumCard extends HTMLElement {
   }
 
   set hass(hass) {
+    // Sans `language` dans la config, on suit la langue de Home Assistant (reconstruit si elle change)
+    const l = this._config && (this._config.language || lang(hass));
+    if (l && l !== this._lng) { this._lng = l; this._hass = hass; this._built = false; this._build(); }
+   
     this._hass = hass;
     this._update();
   }
 
   getCardSize() { return 5; }
 
-  _t(k) { return (I18N_AQUARIUM[this._config.language] || I18N_AQUARIUM.en)[k] ?? I18N_AQUARIUM.en[k] ?? k; }
+  _t(k) { return (I18N_AQUARIUM[this._config.language || lang(this._hass)] || I18N_AQUARIUM.en)[k] ?? I18N_AQUARIUM.en[k] ?? k; }
 
   _build() {
     const c = this._config;
@@ -4426,6 +4623,25 @@ const I18N_LINKY = {
     "injection_power": "INNMATING",
     "prod": "innm."
   },
+  "nl": {
+    "power": "VERMOGEN",
+    "hp": "INDEX DAG",
+    "hc": "INDEX NACHT",
+    "tariff": "PERIODE",
+    "cost": "KOST VANDAAG",
+    "subscribed": "Contract",
+    "name": "Linky",
+    "conso": "verbruik",
+    "alert": "Overbelasting",
+    "active": "ACTIEF VERMOGEN",
+    "active_short": "Actief",
+    "per_phase": "per fase",
+    "peak": "DAGTARIEF",
+    "offpeak": "NACHTTARIEF",
+    "injection": "INDEX INJECTIE",
+    "injection_power": "INJECTIE",
+    "prod": "injectie"
+  },
   "ro": {
     "power": "PUTERE",
     "hp": "INDEX PLINE",
@@ -4446,6 +4662,8 @@ const I18N_LINKY = {
     "prod": "export"
   }
 };
+// Langue de Home Assistant (no / nn → nb), utilisée quand `language` n'est pas configuré
+const lang = (h) => { const l = ((h && (h.locale?.language || h.language)) || document.documentElement.lang || 'en').toLowerCase().slice(0, 2); return l === 'no' || l === 'nn' ? 'nb' : l; };
 // Aiguilles L1 / L2 / L3 (mode « needles ») : couleurs distinctes du vert / orange / rouge de la jauge
 const PHASE_COLORS = ['#1e88e5', '#8e24aa', '#00897b'];
 
@@ -4492,15 +4710,19 @@ class ApplianceLinkyCard extends HTMLElement {
   setConfig(config) {
     this._config = {
       show_gauge: true, show_phases: true, show_index: true, show_injection: true, show_tariff: true, show_cost: true,
-      phase_gauge: 'needles', subscribed_power: 9, hc_ranges: '', language: 'fr', ...config,
+      phase_gauge: 'needles', subscribed_power: 9, hc_ranges: '', ...config,
     };
     this._built = false;
     this._build();
   }
 
-  set hass(hass) { this._hass = hass; this._update(); }
+  set hass(hass) {
+    // Sans `language` dans la config, on suit la langue de Home Assistant (reconstruit si elle change)
+    const l = this._config && (this._config.language || lang(hass));
+    if (l && l !== this._lng) { this._lng = l; this._hass = hass; this._built = false; this._build(); }
+    this._hass = hass; this._update(); }
   getCardSize() { return 5; }
-  _t(k) { return (I18N_LINKY[this._config.language] || I18N_LINKY.en)[k] ?? I18N_LINKY.en[k] ?? k; }
+  _t(k) { return (I18N_LINKY[this._config.language || lang(this._hass)] || I18N_LINKY.en)[k] ?? I18N_LINKY.en[k] ?? k; }
 
   connectedCallback() {
     // Défilement des pages de l'écran LCD toutes les 3 s (et des phases, en mode jauge « cycle »)
@@ -4823,6 +5045,19 @@ const I18N_BAT = {
     "empty": "Tom om",
     "low": "Lavt batteri"
   },
+  "nl": {
+    "name": "Thuisbatterij",
+    "soc": "Lading",
+    "power": "Vermogen",
+    "energy": "Energie",
+    "temp": "Temperatuur",
+    "charging": "Laden",
+    "discharging": "Ontladen",
+    "idle": "Inactief",
+    "full": "Vol over",
+    "empty": "Leeg over",
+    "low": "Batterij bijna leeg"
+  },
   "ro": {
     "name": "Baterie solară",
     "soc": "Încărcare",
@@ -4837,6 +5072,8 @@ const I18N_BAT = {
     "low": "Baterie slabă"
   }
 };
+// Langue de Home Assistant (no / nn → nb), utilisée quand `language` n'est pas configuré
+const lang = (h) => { const l = ((h && (h.locale?.language || h.language)) || document.documentElement.lang || 'en').toLowerCase().slice(0, 2); return l === 'no' || l === 'nn' ? 'nb' : l; };
 
 class ApplianceBatteryCard extends HTMLElement {
   static getStubConfig() { return { entity_soc: '', entity_power: '', entity_energy: '', entity_temperature: '', capacity_kwh: 10, max_power: 5000 }; }
@@ -4869,12 +5106,18 @@ class ApplianceBatteryCard extends HTMLElement {
   setConfig(config) {
     // Convention : puissance > 0 = charge (inverser avec invert_power si ton capteur est l'inverse)
     this._config = { show_power: true, show_energy: true, show_temperature: true, show_time: true,
-      capacity_kwh: 10, max_power: 5000, low_threshold: 15, invert_power: false, language: 'fr', ...config };
+      capacity_kwh: 10, max_power: 5000, low_threshold: 15, invert_power: false, ...config };
     this._built = false; this._build();
   }
-  set hass(h) { this._hass = h; this._update(); }
+  set hass(h) {
+    this._hass = h;
+    // Sans `language` dans la config, on suit la langue de Home Assistant (reconstruit si elle change)
+    const l = this._config.language || lang(h);
+    if (l !== this._lng) { this._lng = l; this._built = false; this._build(); }
+    this._update();
+  }
   getCardSize() { return 5; }
-  _t(k) { return (I18N_BAT[this._config.language] || I18N_BAT.en)[k] ?? I18N_BAT.en[k] ?? k; }
+  _t(k) { return (I18N_BAT[this._config.language || lang(this._hass)] || I18N_BAT.en)[k] ?? I18N_BAT.en[k] ?? k; }
 
   _build() {
     if (!this.shadowRoot) this.attachShadow({ mode: 'open' });
@@ -5063,6 +5306,19 @@ const I18N_EV = {
     "done": "Ferdig",
     "disconnected": "Frakoblet"
   },
+  "nl": {
+    "name": "Laadpaal",
+    "power": "Vermogen",
+    "energy": "Sessie",
+    "soc": "Batterij",
+    "status": "Status",
+    "duration": "Duur",
+    "cost": "Kost",
+    "charging": "Laden",
+    "plugged": "Aangesloten",
+    "done": "Volgeladen",
+    "disconnected": "Niet aangesloten"
+  },
   "ro": {
     "name": "Stație de încărcare",
     "power": "Putere",
@@ -5077,6 +5333,8 @@ const I18N_EV = {
     "disconnected": "Deconectat"
   }
 };
+// Langue de Home Assistant (no / nn → nb), utilisée quand `language` n'est pas configuré
+const lang = (h) => { const l = ((h && (h.locale?.language || h.language)) || document.documentElement.lang || 'en').toLowerCase().slice(0, 2); return l === 'no' || l === 'nn' ? 'nb' : l; };
 
 class ApplianceEvChargerCard extends HTMLElement {
   static getStubConfig() { return { entity_power: '', entity_session_energy: '', entity_car_soc: '', entity_status: '', max_power: 7400, price_per_kwh: 0.2 }; }
@@ -5110,14 +5368,20 @@ class ApplianceEvChargerCard extends HTMLElement {
 
   setConfig(config) {
     this._config = { show_power: true, show_energy: true, show_soc: true, show_status: true, show_duration: true, show_cost: true,
-      max_power: 7400, price_per_kwh: 0.2, car_color: '#3d6fb6', language: 'fr', ...config };
+      max_power: 7400, price_per_kwh: 0.2, car_color: '#3d6fb6', ...config };
     this._built = false; this._build();
   }
-  set hass(h) { this._hass = h; this._update(); }
+  set hass(h) {
+    this._hass = h;
+    // Sans `language` dans la config, on suit la langue de Home Assistant (reconstruit si elle change)
+    const l = this._config.language || lang(h);
+    if (l !== this._lng) { this._lng = l; this._built = false; this._build(); }
+    this._update();
+  }
   getCardSize() { return 5; }
   connectedCallback() { this._timer = setInterval(() => this._update(), 30000); } // rafraîchit la durée
   disconnectedCallback() { clearInterval(this._timer); }
-  _t(k) { return (I18N_EV[this._config.language] || I18N_EV.en)[k] ?? I18N_EV.en[k] ?? k; }
+  _t(k) { return (I18N_EV[this._config.language || lang(this._hass)] || I18N_EV.en)[k] ?? I18N_EV.en[k] ?? k; }
 
   _build() {
     if (!this.shadowRoot) this.attachShadow({ mode: 'open' });
@@ -5369,6 +5633,27 @@ const I18N_VAC = {
     "error": "Feil",
     "emptying": "Tømmer"
   },
+  "nl": {
+    "name": "Robotstofzuiger",
+    "battery": "Batterij",
+    "area": "Oppervlakte",
+    "time": "Tijd",
+    "fan": "Zuigkracht",
+    "status": "Status",
+    "filter": "Filter",
+    "brush": "Borstel",
+    "start": "Start",
+    "pause": "Pauze",
+    "dock": "Naar basis",
+    "cleaning": "Aan het poetsen",
+    "docked": "In basis",
+    "charging": "Laden",
+    "returning": "Keert terug",
+    "paused": "Gepauzeerd",
+    "idle": "Inactief",
+    "error": "Fout",
+    "emptying": "Aan het legen"
+  },
   "ro": {
     "name": "Robot aspirator",
     "battery": "Baterie",
@@ -5391,6 +5676,8 @@ const I18N_VAC = {
     "emptying": "Golire"
   }
 };
+// Langue de Home Assistant (no / nn → nb), utilisée quand `language` n'est pas configuré
+const lang = (h) => { const l = ((h && (h.locale?.language || h.language)) || document.documentElement.lang || 'en').toLowerCase().slice(0, 2); return l === 'no' || l === 'nn' ? 'nb' : l; };
 const ICONS_VAC = {
   start: '<path d="M8 5v14l11-7z"/>',
   pause: '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>',
@@ -5429,12 +5716,16 @@ class ApplianceRobotVacuumCard extends HTMLElement {
   setConfig(config) {
     if (!config.entity) throw new Error('entity (vacuum.xxx) requise');
     this._config = { show_battery: true, show_area: true, show_time: true, show_fan: true, show_status: true,
-      show_consumables: true, show_buttons: true, language: 'fr', ...config };
+      show_consumables: true, show_buttons: true, ...config };
     this._built = false; this._build();
   }
-  set hass(h) { this._hass = h; this._update(); }
+  set hass(h) {
+    // Sans `language` dans la config, on suit la langue de Home Assistant (reconstruit si elle change)
+    const l = this._config && (this._config.language || lang(h));
+    if (l && l !== this._lng) { this._lng = l; this._hass = h; this._built = false; this._build(); }
+    this._hass = h; this._update(); }
   getCardSize() { return 6; }
-  _t(k) { return (I18N_VAC[this._config.language] || I18N_VAC.en)[k] ?? I18N_VAC.en[k] ?? k; }
+  _t(k) { return (I18N_VAC[this._config.language || lang(this._hass)] || I18N_VAC.en)[k] ?? I18N_VAC.en[k] ?? k; }
 
   _call(action) {
     if (!this._hass) return;
@@ -5687,6 +5978,26 @@ const I18N_MOW = {
     "idle": "Inaktiv",
     "error": "Feil"
   },
+  "nl": {
+    "name": "Robotmaaier",
+    "battery": "Batterij",
+    "area": "Oppervlakte",
+    "time": "Maaitijd",
+    "next": "Volgende start",
+    "status": "Status",
+    "blade": "Mes",
+    "rain": "Regen",
+    "start": "Maaien",
+    "pause": "Pauze",
+    "dock": "Naar basis",
+    "mowing": "Aan het maaien",
+    "docked": "In basis",
+    "charging": "Laden",
+    "returning": "Keert terug",
+    "paused": "Gepauzeerd",
+    "idle": "Inactief",
+    "error": "Fout"
+  },
   "ro": {
     "name": "Robot de tuns iarba",
     "battery": "Baterie",
@@ -5708,6 +6019,8 @@ const I18N_MOW = {
     "error": "Eroare"
   }
 };
+// Langue de Home Assistant (no / nn → nb), utilisée quand `language` n'est pas configuré
+const lang = (h) => { const l = ((h && (h.locale?.language || h.language)) || document.documentElement.lang || 'en').toLowerCase().slice(0, 2); return l === 'no' || l === 'nn' ? 'nb' : l; };
 const ICONS_MOW = {
   start: '<path d="M8 5v14l11-7z"/>',
   pause: '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>',
@@ -5747,12 +6060,16 @@ class ApplianceRobotMowerCard extends HTMLElement {
   setConfig(config) {
     if (!config.entity) throw new Error('entity (lawn_mower.xxx) requise');
     this._config = { show_battery: true, show_area: true, show_time: true, show_next: true, show_status: true,
-      show_blade: true, show_buttons: true, language: 'fr', ...config };
+      show_blade: true, show_buttons: true, ...config };
     this._built = false; this._build();
   }
-  set hass(h) { this._hass = h; this._update(); }
+  set hass(h) {
+    // Sans `language` dans la config, on suit la langue de Home Assistant (reconstruit si elle change)
+    const l = this._config && (this._config.language || lang(h));
+    if (l && l !== this._lng) { this._lng = l; this._hass = h; this._built = false; this._build(); }
+    this._hass = h; this._update(); }
   getCardSize() { return 6; }
-  _t(k) { return (I18N_MOW[this._config.language] || I18N_MOW.en)[k] ?? I18N_MOW.en[k] ?? k; }
+  _t(k) { return (I18N_MOW[this._config.language || lang(this._hass)] || I18N_MOW.en)[k] ?? I18N_MOW.en[k] ?? k; }
 
   _call(action) {
     if (!this._hass) return;
@@ -5981,6 +6298,22 @@ const I18N_PB = {
     "alarm": "Alarm",
     "low": "Lite pellets"
   },
+  "nl": {
+    "name": "Pelletketel",
+    "power": "Vermogen",
+    "energy": "Energie",
+    "cost": "Kost",
+    "flow": "Aanvoer",
+    "ret": "Retour",
+    "pellets": "Pellets",
+    "status": "Status",
+    "off": "Uit",
+    "ignition": "Aansteken",
+    "heating": "Verwarmen",
+    "extinguishing": "Uitdoven",
+    "alarm": "Alarm",
+    "low": "Pellets bijna op"
+  },
   "ro": {
     "name": "Cazan pe peleți",
     "power": "Putere",
@@ -5998,6 +6331,8 @@ const I18N_PB = {
     "low": "Peleți puțini"
   }
 };
+// Langue de Home Assistant (no / nn → nb), utilisée quand `language` n'est pas configuré
+const lang = (h) => { const l = ((h && (h.locale?.language || h.language)) || document.documentElement.lang || 'en').toLowerCase().slice(0, 2); return l === 'no' || l === 'nn' ? 'nb' : l; };
 
 class AppliancePelletBoilerCard extends HTMLElement {
   static getStubConfig() { return { entity_power: '', entity_flow_temp: '', entity_return_temp: '', entity_pellet_level: '' }; }
@@ -6035,12 +6370,16 @@ class AppliancePelletBoilerCard extends HTMLElement {
 
   setConfig(config) {
     this._config = { show_power: true, show_energy: true, show_cost: true, show_temps: true, show_pellets: true, show_status: true,
-      price_per_kwh: 0, threshold: 30, ignition_threshold: 300, pellet_alert: 15, flow_temp_max: 80, language: 'fr', ...config };
+      price_per_kwh: 0, threshold: 30, ignition_threshold: 300, pellet_alert: 15, flow_temp_max: 80, ...config };
     this._built = false; this._build();
   }
-  set hass(h) { this._hass = h; this._update(); }
+  set hass(h) {
+    // Sans `language` dans la config, on suit la langue de Home Assistant (reconstruit si elle change)
+    const l = this._config && (this._config.language || lang(h));
+    if (l && l !== this._lng) { this._lng = l; this._hass = h; this._built = false; this._build(); }
+    this._hass = h; this._update(); }
   getCardSize() { return 6; }
-  _t(k) { return (I18N_PB[this._config.language] || I18N_PB.en)[k] ?? I18N_PB.en[k] ?? k; }
+  _t(k) { return (I18N_PB[this._config.language || lang(this._hass)] || I18N_PB.en)[k] ?? I18N_PB.en[k] ?? k; }
 
   _build() {
     if (!this.shadowRoot) this.attachShadow({ mode: 'open' });
@@ -6334,6 +6673,26 @@ window.customCards.push({ type: 'appliance-pellet-boiler-card', name: 'Pellet Bo
       "lowp": "Lavt trykk",
       "highp": "Høyt trykk",
       "hotf": "For varm tur"
+    },
+    "nl": {
+      "name": "Gasketel",
+      "off": "Uit",
+      "standby": "Stand-by",
+      "heating": "Verwarmen",
+      "dhw": "Warm water",
+      "alarm": "Storing",
+      "power": "Elektrisch",
+      "energy": "Elek. energie",
+      "gas": "Gas",
+      "cost": "Kost",
+      "flow": "Aanvoer",
+      "ret": "Retour",
+      "pressure": "Druk",
+      "mod": "Modulatie",
+      "delta": "ΔT",
+      "lowp": "Lage druk",
+      "highp": "Hoge druk",
+      "hotf": "Aanvoer te heet"
     },
     "ro": {
       "name": "Centrală pe gaz",
@@ -6647,7 +7006,7 @@ svg{display:block;width:100%;max-width:170px;height:var(--appliance-illustration
           { name: 'threshold', selector: { number: { min: 0, max: 2000, step: 1, mode: 'box', unit_of_measurement: 'W' } } },
           { name: 'off_threshold', selector: { number: { min: 0, max: 500, step: 0.1, mode: 'box', unit_of_measurement: 'W' } } },
         ] },
-        { name: 'language', selector: { select: { options: Object.keys(T).map((value) => ({ value, label: { fr: 'Français', en: 'English', de: 'Deutsch', nb: 'Norsk bokmål', ro: 'Română' }[value] || value })) } } },
+        { name: 'language', selector: { select: { options: Object.keys(T).map((value) => ({ value, label: { fr: 'Français', en: 'English', de: 'Deutsch', nb: 'Norsk bokmål', ro: 'Română', nl: 'Nederlands' }[value] || value })) } } },
         { type: 'grid', name: '', schema: [
           { name: 'show_status', selector: { boolean: {} }, default: true }, { name: 'show_power', selector: { boolean: {} }, default: true },
           { name: 'show_energy', selector: { boolean: {} }, default: true }, { name: 'show_gas', selector: { boolean: {} }, default: true },
@@ -6765,6 +7124,28 @@ svg{display:block;width:100%;max-width:170px;height:var(--appliance-illustration
       "heat_energy": "Varmeenergi",
       "scop": "SCOP",
       "buffer": "Buffertank"
+    },
+    "nl": {
+      "name": "Water-waterwarmtepomp",
+      "off": "Uit",
+      "standby": "Stand-by",
+      "heating": "Verwarmen",
+      "dhw": "Warm water",
+      "cooling": "Koelen",
+      "alarm": "Storing",
+      "power": "Elektrisch",
+      "heat": "Warmteafgifte",
+      "cop": "COP",
+      "flow": "Aanvoer",
+      "ret": "Retour",
+      "delta": "ΔT",
+      "src_in": "Bron in",
+      "src_out": "Bron uit",
+      "rate": "Debiet",
+      "energy": "Elek. energie",
+      "heat_energy": "Warmte-energie",
+      "scop": "SCOP",
+      "buffer": "Buffervat"
     },
     "ro": {
       "name": "Pompă de căldură apă-apă",
