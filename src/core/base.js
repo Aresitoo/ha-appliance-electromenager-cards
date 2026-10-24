@@ -277,7 +277,7 @@ class ApplianceCardBase extends HTMLElement {
       if (sw && String(sw.state).toLowerCase() === "off") m.status = "off";
       m.acMode = mode && mode !== "off" ? mode : null;
       m.accent = m.status === "heating" ? "heat" : "cold";
-    } else if (kind === "fan") {
+    } else if (kind === "fan" || kind === "ceiling_fan") {
       const isFan = main && domainOf(c.entity) === "fan", fs = isFan ? String(main.state).toLowerCase() : "";
       let lvl = 0, st = null;
       if (isFan && !BAD.includes(fs)) {
@@ -289,7 +289,12 @@ class ApplianceCardBase extends HTMLElement {
       } else lvl = ["running", "on"].includes(base) ? 2 : 0;
       m.status = st || (lvl ? `fan_${lvl}` : "off");
       if (sw && String(sw.state).toLowerCase() === "off") m.status = "off";
-      m.osc = isFan && main.attributes.oscillating != null ? !!main.attributes.oscillating : c.oscillating !== false;
+      if (kind === "fan") m.osc = isFan && main.attributes.oscillating != null ? !!main.attributes.oscillating : c.oscillating !== false;
+      else {
+        // ventilateur de plafond : lampe intégrée (entité `light`), « lumière seule » si les pales sont à l'arrêt
+        m.lights = isOn(m.light);
+        if (m.lights && m.status === "off" && base !== "unavailable") m.status = "lights";
+      }
     } else if (kind === "beer_tap") {
       if (["off", "unavailable"].includes(base)) m.status = base;
       else if (isOn(m.pouring)) m.status = "pouring";
@@ -610,7 +615,7 @@ class ApplianceCardBase extends HTMLElement {
       if (![...OFF_STATES, ...DONE_STATES, "on", "running", "run"].includes(raw)) statusTxt = stateText(hass, m.main);
     }
     if ((kind === "radiator" || kind === "towel_dryer") && m.radMode && m.radMode !== "off" && m.status !== "off" && m.status !== "unavailable") statusTxt += ` · ${tr(hass, m.radMode)}`;
-    if (kind === "fan" && m.pct != null && /^fan_/.test(m.status)) statusTxt += ` · ${Math.round(m.pct)} %`;
+    if ((kind === "fan" || kind === "ceiling_fan") && m.pct != null && /^fan_/.test(m.status)) statusTxt += ` · ${Math.round(m.pct)} %`;
     if (kind === "av_receiver" && m.vol != null && ["playing", "paused"].includes(m.status)) statusTxt += ` · Vol ${Math.round(m.vol * 100)} %`;
     if (kind === "av_receiver" && m.source && ["playing", "paused", "muted"].includes(m.status)) statusTxt += ` · ${m.source}`;
     if (kind === "tv" && m.status === "screen_on" && m.main && domainOf(c.entity) === "media_player") {
