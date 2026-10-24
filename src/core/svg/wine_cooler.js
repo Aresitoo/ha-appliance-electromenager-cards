@@ -1,4 +1,7 @@
-SVG.wine_cooler = () => `
+/* cave à vin ; avec zone2_temperature : bi-zone (rouges en haut, blancs en bas), deux afficheurs */
+SVG.wine_cooler = (c) => {
+  const dual = !!(c && c.zone2_temperature);
+  return `
 <defs>${DEFS}
 <linearGradient id="ID-wnlight" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff1c9" stop-opacity=".85"/><stop offset=".55" stop-color="#ffd98a" stop-opacity=".25"/><stop offset="1" stop-color="#ffd98a" stop-opacity="0"/></linearGradient>
 <linearGradient id="ID-wncab" x1="0" x2="1"><stop offset="0" stop-color="#2b3036"/><stop offset=".5" stop-color="#14171b"/><stop offset="1" stop-color="#262b31"/></linearGradient>
@@ -9,8 +12,14 @@ SVG.wine_cooler = () => `
 <rect x="26" y="9" width="68" height="17" rx="2" fill="#0d1013"/>
 <circle class="wn-led" cx="34" cy="17.5" r="1.6"/>
 <path d="M42 15h10M42 18h10M42 21h10" stroke="#3b424a" stroke-width=".8" stroke-linecap="round"/>
+${dual ? `
+<rect x="58" y="12" width="16" height="11" rx="1.6" fill="#0c1720" stroke="#59616b" stroke-width=".5"/>
+<text class="lcd" x="66" y="20.4" text-anchor="middle">OFF</text>
+<rect x="76" y="12" width="16" height="11" rx="1.6" fill="#0c1720" stroke="#59616b" stroke-width=".5"/>
+<text class="lcd lcd2" x="84" y="20.4" text-anchor="middle">--</text>
+<circle cx="66" cy="10.2" r=".9" fill="#c0392b"/><circle cx="84" cy="10.2" r=".9" fill="#f2d16b"/>` : `
 <rect x="64" y="12" width="26" height="11" rx="1.6" fill="#0c1720" stroke="#59616b" stroke-width=".5"/>
-<text class="lcd" x="77" y="20.4" text-anchor="middle">OFF</text>
+<text class="lcd" x="77" y="20.4" text-anchor="middle">OFF</text>`}
 <rect x="28" y="30" width="64" height="92" fill="#07090b"/>
 <g class="wn-inside" clip-path="url(#ID-wnclip)">
   <rect x="30" y="32" width="60" height="86" fill="#14181d"/>
@@ -37,6 +46,8 @@ SVG.wine_cooler = () => `
     <rect x="30" y="101.5" width="60" height="3" fill="url(#ID-wnwood)"/>
     <rect x="30" y="112" width="60" height="3" fill="url(#ID-wnwood)"/>
   </g>
+  ${dual ? `<rect class="wn-cold" x="30" y="78.5" width="60" height="40" fill="#9fdcff"/>
+  <rect x="30" y="76" width="60" height="3.4" fill="#0a0c0f"/><rect x="30" y="76" width="60" height="1" fill="#3b424a"/>` : ""}
   <g class="wn-air" fill="none" stroke-linecap="round"><path d="M44 116q-5-14 0-28t-3-30"/><path d="M60 116q5-14 0-28t3-30"/><path d="M76 116q-5-14 0-28t-3-30"/></g>
 </g>
 <g class="wn-door">
@@ -48,3 +59,4 @@ SVG.wine_cooler = () => `
 </g>
 <path d="M28 124h64" stroke="#3b424a" stroke-width="1"/>
 <rect x="30" y="127" width="10" height="5" rx="1.5" fill="#3a3f45"/><rect x="80" y="127" width="10" height="5" rx="1.5" fill="#3a3f45"/>`;
+};
