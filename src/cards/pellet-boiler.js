@@ -3,6 +3,7 @@
 /* ================================================================== */
 (() => {
 "use strict";
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); // texte → HTML sûr
 const define = (tag, cls) => { if (!customElements.get(tag)) customElements.define(tag, cls); };
 window.customCards = window.customCards || [];
 /* appliance-pellet-boiler-card — chaudière à granulés + trémie + vis sans fin, sans fond, animée
@@ -114,7 +115,7 @@ class AppliancePelletBoilerCard extends HTMLElement {
       @keyframes blink { 50% { opacity:.35 } } @keyframes breathe { 50% { opacity:.3 } }
     </style>
     <ha-card id="card">
-      <div class="title"><span>${this._config.name || this._t('name')}</span><span><span class="badge lo">${this._t('low')}</span> <span class="badge al">${this._t('alarm')}</span></span></div>
+      <div class="title"><span>${esc(this._config.name || this._t('name'))}</span><span><span class="badge lo">${this._t('low')}</span> <span class="badge al">${this._t('alarm')}</span></span></div>
       <svg viewBox="0 0 280 214" id="svg">
         <defs>
           <linearGradient id="pbf" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#e9ebed"/><stop offset="1" stop-color="#cfd3d7"/></linearGradient>
@@ -255,7 +256,7 @@ class AppliancePelletBoilerCard extends HTMLElement {
     if (c.show_cost && cost !== null) it.push([this._t('cost'), f(cost, 2, '€')]);
     const stats = r.getElementById('stats');
     stats.style.gridTemplateColumns = `repeat(${it.length > 4 ? Math.ceil(it.length / 2) : it.length}, 1fr)`;
-    stats.innerHTML = it.map(([l, v]) => `<div class="stat"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
+    stats.innerHTML = it.map(([l, v]) => `<div class="stat"><div class="v">${esc(v)}</div><div class="l">${esc(l)}</div></div>`).join('');
   }
 }
 define('appliance-pellet-boiler-card', AppliancePelletBoilerCard);

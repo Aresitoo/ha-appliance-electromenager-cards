@@ -8,6 +8,7 @@
   if (customElements.get(TAG)) return;
 
   const T = /*@i18n water_heat_pump*/{};
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); // texte → HTML sûr
 
   const CSS = `
 :host{display:block}
@@ -327,7 +328,9 @@ svg{display:block;width:100%;height:var(--appliance-illustration-height,auto);ma
         const el = r.querySelector(`.tile[data-k="${k}"]`); const [shown, val, unit] = V[k];
         el.classList.toggle('hide', !shown || c[opt] === false);
         el.querySelector('.lbl').textContent = this._t(k);
-        el.querySelector('.v').innerHTML = `${val}<small>${unit}</small>`;
+        // valeur + unité en texte (l'unité vient de l'entité ou de la config)
+        const small = document.createElement('small'); small.textContent = unit ?? '';
+        el.querySelector('.v').replaceChildren(String(val ?? ''), small);
         const id = k === 'cop' && !c.entity_cop ? c.entity_heat_power : c[more];
         el.onclick = () => { if (id) this.dispatchEvent(new CustomEvent('hass-more-info', { detail: { entityId: id }, bubbles: true, composed: true })); };
       });

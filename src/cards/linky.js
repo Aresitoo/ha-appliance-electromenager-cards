@@ -3,6 +3,7 @@
 /* ================================================================== */
 (() => {
 "use strict";
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); // texte → HTML sûr
 const define = (tag, cls) => { if (!customElements.get(tag)) customElements.define(tag, cls); };
 window.customCards = window.customCards || [];
 /* appliance-linky-card — compteur Linky animé (écran LCD, jauge vs puissance souscrite, index HP/HC)
@@ -136,7 +137,7 @@ class ApplianceLinkyCard extends HTMLElement {
       @keyframes fadein { from { opacity:0; transform:translateY(5px) } to { opacity:1; transform:none } }
     </style>
     <ha-card id="meter">
-      <div class="title" id="name">${this._config.name || this._t('name')}</div>
+      <div class="title" id="name">${esc(this._config.name || this._t('name'))}</div>
       <div class="wrap">
         <div class="box">
           <div class="eye"></div>

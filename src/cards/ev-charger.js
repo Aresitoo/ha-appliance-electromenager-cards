@@ -3,6 +3,7 @@
 /* ================================================================== */
 (() => {
 "use strict";
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); // texte → HTML sûr
 const define = (tag, cls) => { if (!customElements.get(tag)) customElements.define(tag, cls); };
 window.customCards = window.customCards || [];
 /* appliance-ev-charger-card — wallbox murale + voiture branchée, animée
@@ -61,7 +62,7 @@ class ApplianceEvChargerCard extends HTMLElement {
 
   _build() {
     if (!this.shadowRoot) this.attachShadow({ mode: 'open' });
-    const car = this._config.car_color;
+    const car = esc(this._config.car_color);
     const cable = 'M44 112 C 44 168, 112 170, 134 118';
     this.shadowRoot.innerHTML = `
     <style>
@@ -89,7 +90,7 @@ class ApplianceEvChargerCard extends HTMLElement {
       @keyframes spark { 0%,100% { opacity:0; transform:scale(.6); } 50% { opacity:1; transform:scale(1.1); } }
     </style>
     <ha-card>
-      <div class="title">${this._config.name || this._t('name')}</div>
+      <div class="title">${esc(this._config.name || this._t('name'))}</div>
       <svg viewBox="0 0 340 172" id="svg">
         <defs>
           <linearGradient id="wb" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#40454d"/><stop offset="1" stop-color="#16191d"/></linearGradient>
@@ -206,7 +207,7 @@ class ApplianceEvChargerCard extends HTMLElement {
     if (c.show_cost) it.push([this._t('cost'), f(cost, 2, '€')]);
     // 5-6 valeurs → 2 lignes équilibrées
     r.getElementById('stats').style.gridTemplateColumns = `repeat(${it.length > 4 ? Math.ceil(it.length / 2) : it.length}, 1fr)`;
-    r.getElementById('stats').innerHTML = it.map(([l, v]) => `<div class="stat"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
+    r.getElementById('stats').innerHTML = it.map(([l, v]) => `<div class="stat"><div class="v">${esc(v)}</div><div class="l">${esc(l)}</div></div>`).join('');
   }
 }
 define('appliance-ev-charger-card', ApplianceEvChargerCard);

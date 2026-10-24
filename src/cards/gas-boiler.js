@@ -7,6 +7,7 @@
   if (customElements.get(TAG)) return;
 
   const T = /*@i18n gas_boiler*/{};
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); // texte → HTML sûr
 
   const CSS = `
 :host{display:block}
@@ -266,7 +267,9 @@ svg{display:block;width:100%;max-width:170px;height:var(--appliance-illustration
         const el = r.querySelector(`.tile[data-k="${k}"]`); const [ent, val, unit] = V[k];
         el.classList.toggle('hide', !ent || c[opt] === false);
         el.querySelector('.lbl').textContent = this._t(k);
-        el.querySelector('.v').innerHTML = `${val}<small>${unit}</small>`;
+        // valeur + unité en texte (l'unité vient de l'entité ou de la config)
+        const small = document.createElement('small'); small.textContent = unit ?? '';
+        el.querySelector('.v').replaceChildren(String(val ?? ''), small);
         el.onclick = () => { const id = k === 'cost' ? c.entity_cost : c['entity_' + (k === 'ret' ? 'return_temp' : k === 'flow' ? 'flow_temp' : k === 'mod' ? 'modulation' : k)]; if (id) this.dispatchEvent(new CustomEvent('hass-more-info', { detail: { entityId: id }, bubbles: true, composed: true })); };
       });
     }

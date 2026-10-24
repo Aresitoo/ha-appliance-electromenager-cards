@@ -3,6 +3,7 @@
 /* ================================================================== */
 (() => {
 "use strict";
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); // texte → HTML sûr
 const define = (tag, cls) => { if (!customElements.get(tag)) customElements.define(tag, cls); };
 window.customCards = window.customCards || [];
 /* appliance-robot-vacuum-card — robot aspirateur + station de vidage, animé, avec commandes
@@ -109,7 +110,7 @@ class ApplianceRobotVacuumCard extends HTMLElement {
     }
     const stats = r.getElementById('stats');
     stats.style.gridTemplateColumns = `repeat(${it.length > 4 ? Math.ceil(it.length / 2) : it.length}, 1fr)`;
-    stats.innerHTML = it.map(([l, v]) => `<div class="stat"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
+    stats.innerHTML = it.map(([l, v]) => `<div class="stat"><div class="v">${esc(v)}</div><div class="l">${esc(l)}</div></div>`).join('');
   }
 }
 window.customCards = window.customCards || [];
@@ -169,7 +170,7 @@ class ApplianceRobotVacuumSoloCard extends ApplianceRobotVacuumCard {
       @keyframes hop { 50% { transform:translateY(-4px) } }
     </style>
     <ha-card id="card">
-      <div class="title"><span>${this._config.name || this._t('name')}</span><span class="badge" id="err"></span></div>
+      <div class="title"><span>${esc(this._config.name || this._t('name'))}</span><span class="badge" id="err"></span></div>
       <svg viewBox="0 0 240 142" id="svg">
         <defs>
           <linearGradient id="top" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#d3d8dd"/></linearGradient>

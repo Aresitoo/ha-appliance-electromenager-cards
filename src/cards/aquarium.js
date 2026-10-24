@@ -3,6 +3,7 @@
 /* ================================================================== */
 (() => {
 "use strict";
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); // texte → HTML sûr
 const define = (tag, cls) => { if (!customElements.get(tag)) customElements.define(tag, cls); };
 window.customCards = window.customCards || [];
 /* appliance-aquarium-card — carte Lovelace aquarium animé (puissance, kWh, température, coût)
@@ -126,7 +127,7 @@ class ApplianceAquariumCard extends HTMLElement {
       @keyframes blink { 50% { opacity:.35 } }
     </style>
     <ha-card>
-      <div class="title"><span id="name">${c.name || this._t('name')}</span><span class="badge" id="badge">${this._t('alert')}</span></div>
+      <div class="title"><span id="name">${esc(c.name || this._t('name'))}</span><span class="badge" id="badge">${this._t('alert')}</span></div>
       <svg viewBox="0 0 320 200" id="tank">
         <defs>
           <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2d8cf0"/><stop offset="1" stop-color="#0b4fb8"/></linearGradient>
@@ -210,7 +211,7 @@ class ApplianceAquariumCard extends HTMLElement {
     if (c.show_temperature) items.push(['t', this._t('temp'), fmt(temp, 1, '°C')]);
     if (c.show_cost) items.push(['c', this._t('cost'), fmt(cost, 2, '€')]);
     root.getElementById('stats').innerHTML = items.map(([k, l, v]) =>
-      `<div class="stat ${k}"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
+      `<div class="stat ${k}"><div class="v">${esc(v)}</div><div class="l">${esc(l)}</div></div>`).join('');
   }
 }
 

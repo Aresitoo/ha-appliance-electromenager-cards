@@ -3,6 +3,7 @@
 /* ================================================================== */
 (() => {
 "use strict";
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); // texte → HTML sûr
 const define = (tag, cls) => { if (!customElements.get(tag)) customElements.define(tag, cls); };
 window.customCards = window.customCards || [];
 /* appliance-battery-card — batterie de stockage solaire animée (niveau liquide, flux charge/décharge)
@@ -111,7 +112,7 @@ class ApplianceBatteryCard extends HTMLElement {
       @keyframes wave { from { transform:translate(-12px, var(--wy,0px)); } to { transform:translate(8px, var(--wy,0px)); } }
     </style>
     <ha-card id="card">
-      <div class="title"><span>${this._config.name || this._t('name')}</span><span class="badge">${this._t('low')}</span></div>
+      <div class="title"><span>${esc(this._config.name || this._t('name'))}</span><span class="badge">${this._t('low')}</span></div>
       <svg viewBox="0 -6 320 176" id="svg">
         <defs>
           <linearGradient id="body" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#f7f8f9"/><stop offset="1" stop-color="#e3e6e9"/></linearGradient>
@@ -172,7 +173,7 @@ class ApplianceBatteryCard extends HTMLElement {
     if (c.show_energy) it.push([this._t('energy'), f(energy !== null ? energy : (soc === null ? null : c.capacity_kwh * pct / 100), 1, 'kWh')]);
     if (c.show_temperature) it.push([this._t('temp'), f(temp, 0, '°C')]);
     if (time) it.push(['⏱', time]);
-    r.getElementById('stats').innerHTML = it.map(([l, v]) => `<div class="stat"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
+    r.getElementById('stats').innerHTML = it.map(([l, v]) => `<div class="stat"><div class="v">${esc(v)}</div><div class="l">${esc(l)}</div></div>`).join('');
   }
 }
 define('appliance-battery-card', ApplianceBatteryCard);
