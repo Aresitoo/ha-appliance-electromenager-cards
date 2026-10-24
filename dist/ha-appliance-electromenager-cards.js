@@ -28,6 +28,7 @@ const STRINGS = {
     "beer_tap": "Beer tap",
     "av_receiver": "Home cinema amplifier",
     "fan": "Fan",
+    "ceiling_fan": "Ceiling fan",
     "generic": "Generic appliance (custom image)",
     "towel_dryer": "Heated towel rail",
     "server_rack": "Server rack (homelab)",
@@ -221,6 +222,7 @@ const STRINGS = {
     "beer_tap": "Zapfanlage",
     "av_receiver": "Heimkino-Verstärker",
     "fan": "Ventilator",
+    "ceiling_fan": "Deckenventilator",
     "generic": "Generisches Gerät (eigenes Bild)",
     "towel_dryer": "Handtuchheizkörper",
     "server_rack": "Serverschrank (Homelab)",
@@ -414,6 +416,7 @@ const STRINGS = {
     "beer_tap": "Pompe à bière",
     "av_receiver": "Ampli home cinéma",
     "fan": "Ventilateur",
+    "ceiling_fan": "Ventilateur de plafond",
     "generic": "Appareil générique (image perso)",
     "towel_dryer": "Sèche-serviettes",
     "server_rack": "Baie informatique (homelab)",
@@ -607,6 +610,7 @@ const STRINGS = {
     "beer_tap": "Øltapper",
     "av_receiver": "Hjemmekino-forsterker",
     "fan": "Vifte",
+    "ceiling_fan": "Takvifte",
     "generic": "Generisk apparat (eget bilde)",
     "towel_dryer": "Håndklevarmer",
     "server_rack": "Serverrack (homelab)",
@@ -800,6 +804,7 @@ const STRINGS = {
     "beer_tap": "Biertap",
     "av_receiver": "Thuisbioscoopversterker",
     "fan": "Ventilator",
+    "ceiling_fan": "Plafondventilator",
     "generic": "Algemeen toestel (eigen afbeelding)",
     "towel_dryer": "Handdoekradiator",
     "server_rack": "Serverkast (homelab)",
@@ -993,6 +998,7 @@ const STRINGS = {
     "beer_tap": "Dozator de bere",
     "av_receiver": "Amplificator home cinema",
     "fan": "Ventilator",
+    "ceiling_fan": "Ventilator de tavan",
     "generic": "Aparat generic (imagine personalizată)",
     "towel_dryer": "Radiator port-prosop",
     "server_rack": "Rack de servere (homelab)",
@@ -1387,6 +1393,45 @@ ${lcd(28, 52, 36, 11)}
 <path d="M85 80h26l-2.4 36q-.2 2-2.2 2h-17.2q-2 0-2.2-2z" fill="url(#ID-glassb)" stroke="#d6e2ec" stroke-opacity=".8" stroke-width=".7"/>
 <path d="M88 84l1.6 28" stroke="#fff" stroke-opacity=".55" stroke-width="1.2" stroke-linecap="round"/>
 <g class="bt-drops" fill="#cfe9ff"><circle cx="87.5" cy="92" r=".7"/><circle cx="108.5" cy="98" r=".7"/><circle cx="90" cy="104" r=".6"/></g>`;
+
+/* Ventilateur de plafond : pales vues en perspective (disque aplati), bloc moteur, lampe, chaînettes */
+SVG.ceiling_fan = () => {
+  // une pale vue de dessus, de l'axe (0,0) vers l'extérieur ; le groupe est ensuite aplati en Y
+  const blade = (a) => `<g transform="rotate(${a})"><path d="M8 -4L50 -10Q57 0 50 10L8 4z" fill="url(#ID-cfwood)" stroke="#5a3b1e" stroke-width=".8"/><path d="M8 -4L50 -10" stroke="#e8c48f" stroke-width="1" opacity=".7"/><rect x="5" y="-2.4" width="12" height="4.8" rx="1.2" fill="url(#ID-chrome)" stroke="#6f7781" stroke-width=".4"/></g>`;
+  return `
+<defs>${DEFS}
+<linearGradient id="ID-cfwood" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#a8743f"/><stop offset=".5" stop-color="#c9935a"/><stop offset="1" stop-color="#8a5a2b"/></linearGradient>
+<linearGradient id="ID-cfbody" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8d959f"/><stop offset=".35" stop-color="#eef1f4"/><stop offset=".7" stop-color="#b7bec6"/><stop offset="1" stop-color="#7d858e"/></linearGradient>
+<radialGradient id="ID-cfglass" cx=".5" cy=".3" r=".8"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#d9dee3"/></radialGradient>
+<linearGradient id="ID-cfbeam" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe9a0" stop-opacity=".55"/><stop offset="1" stop-color="#ffe9a0" stop-opacity="0"/></linearGradient></defs>
+<ellipse cx="60" cy="132" rx="40" ry="3.5" fill="url(#ID-shadow)" opacity=".45"/>
+<!-- plafond -->
+<rect x="0" y="0" width="120" height="6" fill="#000" opacity=".06"/>
+<path d="M0 6h120" stroke="#9aa2ab" stroke-opacity=".5" stroke-width=".8"/>
+<!-- cône de lumière -->
+<path class="cf-beam" d="M50 62L22 132H98L70 62z" fill="url(#ID-cfbeam)"/>
+<!-- souffle d'air vers le bas -->
+<g class="cf-air" fill="none" stroke-linecap="round"><path d="M24 62q-6 14 0 28t0 28"/><path d="M42 66q-6 14 0 28t0 26"/><path d="M78 66q6 14 0 28t0 26"/><path d="M96 62q6 14 0 28t0 28"/></g>
+<!-- rosace et tige -->
+<path d="M50 6h20l-3 5h-14z" fill="url(#ID-cfbody)" stroke="#6f7781" stroke-width=".5"/>
+<rect x="58" y="11" width="4" height="20" fill="url(#ID-chrome)" stroke="#6f7781" stroke-width=".4"/>
+<!-- pales : disque vu de dessus, aplati pour la perspective -->
+<g transform="translate(60 44) scale(1 .3)">
+  <circle class="cf-blur" r="56" fill="#c9935a"/>
+  <g class="cf-blades">${[0, 90, 180, 270].map(blade).join("")}</g>
+</g>
+<!-- bloc moteur -->
+<path d="M44 34q0-5 16-5t16 5v6q0 6-16 6t-16-6z" fill="url(#ID-cfbody)" stroke="#6f7781" stroke-width=".6"/>
+<path d="M44 38q16 6 32 0" stroke="#6f7781" stroke-width=".6" fill="none"/>
+<ellipse cx="60" cy="31" rx="15" ry="2.6" fill="#fff" opacity=".35"/>
+<!-- lampe -->
+<path d="M52 46h16l-1 3h-14z" fill="url(#ID-cfbody)" stroke="#6f7781" stroke-width=".4"/>
+<path class="cf-glass" d="M51 49h18q0 12-9 12t-9-12z" fill="url(#ID-cfglass)" stroke="#aab2ba" stroke-width=".5"/>
+<path d="M54 51q1 6 4 8" stroke="#fff" stroke-width="1" fill="none" opacity=".8" stroke-linecap="round"/>
+<!-- chaînettes de tirage -->
+<g class="cf-chain c1"><path d="M47 44v14" stroke="#aab2ba" stroke-width=".7" stroke-dasharray="1 .6"/><circle cx="47" cy="59" r="1.3" fill="url(#ID-chrome)"/></g>
+<g class="cf-chain c2"><path d="M73 44v10" stroke="#aab2ba" stroke-width=".7" stroke-dasharray="1 .6"/><circle cx="73" cy="55" r="1.3" fill="url(#ID-chrome)"/></g>`;
+};
 
 SVG.chest_freezer = () => `
 <defs>${DEFS}
@@ -2693,6 +2738,9 @@ const DEF = {
   tool_charger: { accent: "active", threshold: 10,
     fields: ["entity", "power", "energy", "cost", "battery_level", "switch"],
     keys: ["chargeur", "charger", "batterie_outil", "outil", "perceuse", "visseuse", "tool_battery", "power_tool", "makita", "dewalt", "ryobi", "milwaukee", "einhell", "parkside"] },
+  ceiling_fan: { accent: "cold", threshold: 5,
+    fields: ["entity", "power", "energy", "cost", "light", "switch"],
+    keys: ["ventilateur_plafond", "ventilo_plafond", "plafond", "ceiling_fan", "ceiling", "brasseur_d_air"] },
   generic: { accent: "active", threshold: 5,
     fields: ["entity", "power", "energy", "cost", "switch"],
     keys: [] },
@@ -3139,7 +3187,7 @@ class ApplianceCardBase extends HTMLElement {
       if (sw && String(sw.state).toLowerCase() === "off") m.status = "off";
       m.acMode = mode && mode !== "off" ? mode : null;
       m.accent = m.status === "heating" ? "heat" : "cold";
-    } else if (kind === "fan") {
+    } else if (kind === "fan" || kind === "ceiling_fan") {
       const isFan = main && domainOf(c.entity) === "fan", fs = isFan ? String(main.state).toLowerCase() : "";
       let lvl = 0, st = null;
       if (isFan && !BAD.includes(fs)) {
@@ -3151,7 +3199,12 @@ class ApplianceCardBase extends HTMLElement {
       } else lvl = ["running", "on"].includes(base) ? 2 : 0;
       m.status = st || (lvl ? `fan_${lvl}` : "off");
       if (sw && String(sw.state).toLowerCase() === "off") m.status = "off";
-      m.osc = isFan && main.attributes.oscillating != null ? !!main.attributes.oscillating : c.oscillating !== false;
+      if (kind === "fan") m.osc = isFan && main.attributes.oscillating != null ? !!main.attributes.oscillating : c.oscillating !== false;
+      else {
+        // ventilateur de plafond : lampe intégrée (entité `light`), « lumière seule » si les pales sont à l'arrêt
+        m.lights = isOn(m.light);
+        if (m.lights && m.status === "off" && base !== "unavailable") m.status = "lights";
+      }
     } else if (kind === "beer_tap") {
       if (["off", "unavailable"].includes(base)) m.status = base;
       else if (isOn(m.pouring)) m.status = "pouring";
@@ -3472,7 +3525,7 @@ class ApplianceCardBase extends HTMLElement {
       if (![...OFF_STATES, ...DONE_STATES, "on", "running", "run"].includes(raw)) statusTxt = stateText(hass, m.main);
     }
     if ((kind === "radiator" || kind === "towel_dryer") && m.radMode && m.radMode !== "off" && m.status !== "off" && m.status !== "unavailable") statusTxt += ` · ${tr(hass, m.radMode)}`;
-    if (kind === "fan" && m.pct != null && /^fan_/.test(m.status)) statusTxt += ` · ${Math.round(m.pct)} %`;
+    if ((kind === "fan" || kind === "ceiling_fan") && m.pct != null && /^fan_/.test(m.status)) statusTxt += ` · ${Math.round(m.pct)} %`;
     if (kind === "av_receiver" && m.vol != null && ["playing", "paused"].includes(m.status)) statusTxt += ` · Vol ${Math.round(m.vol * 100)} %`;
     if (kind === "av_receiver" && m.source && ["playing", "paused", "muted"].includes(m.status)) statusTxt += ` · ${m.source}`;
     if (kind === "tv" && m.status === "screen_on" && m.main && domainOf(c.entity) === "media_player") {
@@ -3682,6 +3735,10 @@ function buildForm(kind) {
             { name: "hvac", selector: { select: { mode: "dropdown", options: [
               { value: "auto", label: "Auto (saison) / Auto (season)" }, { value: "cool", label: "Climatisation / Cooling" }, { value: "heat", label: "Chauffage / Heating" }] } } },
           ] : []),
+          ...(kind === "ceiling_fan" ? [
+            { name: "mid_threshold", selector: { number: { min: 5, max: 200, step: 1, mode: "box", unit_of_measurement: "W" } } },
+            { name: "high_threshold", selector: { number: { min: 5, max: 300, step: 1, mode: "box", unit_of_measurement: "W" } } },
+          ] : []),
           ...(kind === "fan" ? [
             { name: "oscillating", selector: { boolean: {} }, default: true },
             { name: "mid_threshold", selector: { number: { min: 5, max: 200, step: 1, mode: "box", unit_of_measurement: "W" } } },
@@ -3753,7 +3810,7 @@ function stubFor(kind, hass) {
   const cost = pick((i) => i.startsWith("sensor.") && /(cout|cost|prix)/.test(i) && /(jour|daily|today|day)/.test(i))
     || pick((i, st) => i.startsWith("sensor.") && dc(st) === "monetary");
   const sw = pick((i) => i.startsWith("switch.") && !/(child_lock|lock|led|indicator)/.test(i));
-  const wh = kind === "water_heater" ? pick((i) => i.startsWith("water_heater.")) : kind === "tv" || kind === "av_receiver" ? pick((i) => i.startsWith("media_player.")) : kind === "fan" ? pick((i) => i.startsWith("fan.")) : ["ac_split", "heat_pump"].includes(kind) ? pick((i) => i.startsWith("climate.")) : null;
+  const wh = kind === "water_heater" ? pick((i) => i.startsWith("water_heater.")) : kind === "tv" || kind === "av_receiver" ? pick((i) => i.startsWith("media_player.")) : ["fan", "ceiling_fan"].includes(kind) ? pick((i) => i.startsWith("fan.")) : ["ac_split", "heat_pump"].includes(kind) ? pick((i) => i.startsWith("climate.")) : null;
   const temp = pick((i, st) => i.startsWith("sensor.") && dc(st) === "temperature");
   const flag = ["washer", "dryer", "dishwasher", "microwave"].includes(kind)
     ? pick((i) => /^(input_boolean|binary_sensor)\./.test(i) && /(running|en_cours|marche|cycle)/.test(i)) : null;
@@ -3762,7 +3819,7 @@ function stubFor(kind, hass) {
   if (power) cfg.power = power;
   if (energy) cfg.energy = energy;
   if (cost) cfg.cost = cost;
-  if (sw && ["water_heater", "oven", "microwave", "pool_pump", "air_fryer", "coffee_maker", "tv", "range_hood", "ac_split", "heat_pump", "towel_dryer", "server_rack", "desktop_pc", "laptop", "wine_cooler", "beer_tap", "av_receiver", "fan", "tool_charger"].includes(kind)) cfg.switch = sw;
+  if (sw && ["water_heater", "oven", "microwave", "pool_pump", "air_fryer", "coffee_maker", "tv", "range_hood", "ac_split", "heat_pump", "towel_dryer", "server_rack", "desktop_pc", "laptop", "wine_cooler", "beer_tap", "av_receiver", "fan", "tool_charger", "ceiling_fan"].includes(kind)) cfg.switch = sw;
   else if (sw && !cfg.entity) cfg.entity = sw;
   const clim = kind === "radiator" ? pick((i) => i.startsWith("climate.")) : null;
   if (clim) cfg.entity = clim;
@@ -4559,6 +4616,34 @@ svg { width: 100%; height: 100%; display: block; overflow: visible; }
 @keyframes tc-g2 { 0%, 28% { fill: #2a3036; } 32%, 88% { fill: #43e08a; } 92%, 100% { fill: #2a3036; } }
 @keyframes tc-g3 { 0%, 48% { fill: #2a3036; } 52%, 88% { fill: #43e08a; } 92%, 100% { fill: #2a3036; } }
 @keyframes tc-g4 { 0%, 68% { fill: #2a3036; } 72%, 88% { fill: #43e08a; } 92%, 100% { fill: #2a3036; } }
+
+/* ---------- ceiling fan ---------- */
+.k-ceiling_fan svg { overflow: visible; }
+.k-ceiling_fan { --cspd: 1s; }
+.k-ceiling_fan.st-fan_1 { --cspd: 1.1s; } .k-ceiling_fan.st-fan_2 { --cspd: .55s; } .k-ceiling_fan.st-fan_3 { --cspd: .3s; }
+/* les pales tournent dans le disque aplati : centre de leur boîte = l'axe */
+.cf-blades { transform-box: fill-box; transform-origin: center; }
+.k-ceiling_fan.st-fan_1 .cf-blades, .k-ceiling_fan.st-fan_2 .cf-blades, .k-ceiling_fan.st-fan_3 .cf-blades { animation: ac-rot var(--cspd) linear infinite; }
+.cf-blur { opacity: 0; transition: opacity .6s; }
+.k-ceiling_fan.st-fan_2 .cf-blur { opacity: .06; } .k-ceiling_fan.st-fan_3 .cf-blur { opacity: .11; }
+/* air brassé vers le bas */
+.cf-air path { stroke: #bfe3f7; stroke-width: 1.6; opacity: 0; stroke-dasharray: 4 7; }
+.k-ceiling_fan.st-fan_1 .cf-air path { opacity: .4; animation: cf-down 1.6s linear infinite; }
+.k-ceiling_fan.st-fan_2 .cf-air path, .k-ceiling_fan.st-fan_3 .cf-air path { opacity: .75; animation: cf-down .8s linear infinite; }
+.cf-air path:nth-child(2), .cf-air path:nth-child(4) { animation-delay: -.4s !important; }
+/* chaînettes qui se balancent */
+.cf-chain { transform-box: view-box; }
+.cf-chain.c1 { transform-origin: 47px 44px; } .cf-chain.c2 { transform-origin: 73px 44px; }
+.k-ceiling_fan.st-fan_1 .cf-chain { animation: cf-sway 2.4s ease-in-out infinite; }
+.k-ceiling_fan.st-fan_2 .cf-chain, .k-ceiling_fan.st-fan_3 .cf-chain { animation: cf-sway 1.2s ease-in-out infinite; }
+.cf-chain.c2 { animation-delay: -.6s !important; }
+/* lampe */
+.cf-glass { transition: fill .4s, filter .4s; }
+.k-ceiling_fan.lights-on .cf-glass { fill: #fff6d5; filter: drop-shadow(0 0 3px #ffe9a0); }
+.cf-beam { opacity: 0; transition: opacity .6s; }
+.k-ceiling_fan.lights-on .cf-beam { opacity: 1; }
+@keyframes cf-down { to { stroke-dashoffset: -22; } }
+@keyframes cf-sway { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }
 `;
 
 /* ------------------------------------------------------------------ */
