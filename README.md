@@ -63,8 +63,10 @@ Works with a simple smart plug (power sensor only) as well as with connected app
 
 ### HACS (recommended)
 
-1. HACS → ⋮ → **Custom repositories** → add `https://github.com/skyrotter/ha-appliance-electromenager-cards`, category **Dashboard**.
-2. Search for **Appliance Cards**, install, then reload your browser (Ctrl+F5).
+1. In HACS, search for **Appliance Cards** and install it.
+2. Reload your browser (Ctrl+F5).
+
+If it doesn't show up in the search yet (it is waiting to be listed in the default HACS store), add it once as a custom repository: HACS → ⋮ → **Custom repositories** → `https://github.com/skyrotter/ha-appliance-electromenager-cards`, category **Dashboard**.
 
 ### Manual
 
@@ -762,7 +764,7 @@ src/
 
 Vingt-sept cartes Lovelace pour l'électroménager et l'énergie (lave-linge, sèche-linge, lave-vaisselle, ballon d'eau chaude, four, micro-ondes, réfrigérateur, poêle à granulés, pompe de piscine, imprimante 3D, congélateur coffre, congélateur à tiroirs, panneaux solaires, VMC, plaques de cuisson, radiateur électrique, airfryer, cafetière, téléviseur, hotte aspirante, climatiseur et pompe à chaleur) : illustration animée, état en direct, puissance, énergie et coût. Elles suivent le thème de Home Assistant et s'affichent en français si Home Assistant est en français.
 
-**Installation HACS** : HACS → ⋮ → *Dépôts personnalisés* → `https://github.com/skyrotter/ha-appliance-electromenager-cards`, catégorie **Dashboard** → installer → recharger le navigateur (Ctrl+F5).
+**Installation HACS** : dans HACS, cherche **Appliance Cards**, installe, puis recharge le navigateur (Ctrl+F5). Si la carte n'apparaît pas encore dans la recherche (en attente d'ajout au catalogue HACS par défaut) : HACS → ⋮ → *Dépôts personnalisés* → `https://github.com/skyrotter/ha-appliance-electromenager-cards`, catégorie **Dashboard**.
 
 **Configuration** : éditeur visuel disponible ; les entités sont détectées automatiquement à l'ajout (noms contenant `lave_linge`, `seche_linge`, `lave_vaisselle`, `ballon`, `four`, `micro_ondes`, `frigo`, `washer`, `dryer`, `fridge`…). Les options sont les mêmes que ci-dessus.
 
