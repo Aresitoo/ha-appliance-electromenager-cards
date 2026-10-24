@@ -287,6 +287,14 @@ const SCEN = [
   { kind: 'fan', title: 'Ventilateur',
     cfg: { power: 'sensor.fan_power' },
     build(ctl) { range(ctl, 'Puissance', 'sensor.fan_power', 0, 60, 1, 35, 'W', W); } },
+  { kind: 'tool-charger', title: "Chargeur de batterie d'outils",
+    cfg: { switch: 'switch.tool_charger', power: 'sensor.tool_charger_power', battery_level: 'sensor.drill_battery', energy: 'sensor.tool_charger_energy' },
+    build(ctl) {
+      set('switch.tool_charger', 'on');
+      range(ctl, 'Puissance', 'sensor.tool_charger_power', 0, 80, 0.5, 45, 'W', W);
+      range(ctl, 'Batterie', 'sensor.drill_battery', 0, 100, 1, 60, '%', { unit_of_measurement: '%', device_class: 'battery' });
+      set('sensor.tool_charger_energy', 0.05, KWH);
+    } },
   { kind: 'pellet-stove', title: 'Poêle à granulés',
     cfg: { entity: 'sensor.stove_status', power: 'sensor.stove_power', temperature: 'sensor.stove_temp', target_temperature: 'sensor.stove_target', power_level: 'sensor.stove_level', pellet_level: 'sensor.stove_pellets', energy: 'sensor.stove_energy' },
     build(ctl) {

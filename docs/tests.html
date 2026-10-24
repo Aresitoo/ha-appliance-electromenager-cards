@@ -16,7 +16,7 @@ function card(kind,cfg,states,lang){const el=document.createElement(`appliance-$
 const has=(c,cls)=>c.wrap.classList.contains(cls);
 
 // registration
-const tags=['washer','dryer','dishwasher','water-heater','oven','microwave','fridge','pellet-stove','pool-pump','printer-3d','chest-freezer','drawer-freezer','solar','vmc','hob','radiator','air-fryer','coffee-maker','tv','range-hood','ac-split','heat-pump','towel-dryer','server-rack','desktop-pc','laptop','wine-cooler','beer-tap','av-receiver','fan'];
+const tags=['washer','dryer','dishwasher','water-heater','oven','microwave','fridge','pellet-stove','pool-pump','printer-3d','chest-freezer','drawer-freezer','solar','vmc','hob','radiator','air-fryer','coffee-maker','tv','range-hood','ac-split','heat-pump','towel-dryer','server-rack','desktop-pc','laptop','wine-cooler','beer-tap','av-receiver','fan','generic','tool-charger'];
 tags.forEach(t=>ok(`registered ${t}`,customElements.get(`appliance-${t}-card`)));
 // card picker: every core card and every self-contained card listed exactly once
 const solo=['aquarium','linky','battery','ev-charger','robot-vacuum-solo','robot-mower-solo','pellet-boiler','gas-boiler','water-heat-pump'];
@@ -189,6 +189,13 @@ c=card('fan',{power:'sensor.p',oscillating:false},[mk('sensor.p',45,W)]); ok('fa
 c=card('fan',{entity:'fan.f'},[mk('fan.f','on',{percentage:66,oscillating:true})]); ok('fan entity 66 %',has(c,'st-fan_2')&&has(c,'osc')&&/66 %/.test(c.txt()),c.txt());
 c=card('fan',{entity:'fan.f'},[mk('fan.f','off',{percentage:0})]); ok('fan entity off',has(c,'st-off'),c.wrap.className);
 c=card('fan',{power:'sensor.p'},[mk('sensor.p',0,W)]); ok('fan plug off',has(c,'st-off'),c.wrap.className);
+// tool battery charger
+c=card('tool-charger',{power:'sensor.p'},[mk('sensor.p',45,W)]); ok('charger charging + gauge loop',has(c,'st-charging')&&has(c,'seq')&&/En charge/.test(c.txt()),c.wrap.className+' '+c.txt());
+c=card('tool-charger',{power:'sensor.p'},[mk('sensor.p',1.8,W)]); ok('charger charged (maintenance)',has(c,'st-charged')&&c.sr.querySelectorAll('.tc-g.on').length===4,c.wrap.className);
+c=card('tool-charger',{power:'sensor.p'},[mk('sensor.p',0.3,W)]); ok('charger standby',has(c,'st-standby'),c.wrap.className);
+c=card('tool-charger',{power:'sensor.p',battery_level:'sensor.b'},[mk('sensor.p',45,W),mk('sensor.b',60,{unit_of_measurement:'%'})]); ok('charger level 60 %',!has(c,'seq')&&c.sr.querySelectorAll('.tc-g.on').length===2&&c.sr.querySelector('.tc-g3').classList.contains('next')&&/60%Batterie/.test(stx(c)),stx(c));
+c=card('tool-charger',{power:'sensor.p',battery_level:'sensor.b'},[mk('sensor.p',30,W),mk('sensor.b',100,{unit_of_measurement:'%'})]); ok('charger full at 100 %',has(c,'st-charged'),c.wrap.className);
+c=card('tool-charger',{power:'sensor.p',switch:'switch.s'},[mk('switch.s','off'),mk('sensor.p',0,W)]); ok('charger off',has(c,'st-off'),c.wrap.className);
 
 // fridge
 c=card('fridge',{power:'sensor.p',temperature:'sensor.t',freezer_temperature:'sensor.f'},[mk('sensor.p',90,W),mk('sensor.t',4,T),mk('sensor.f',-18,T)]);
