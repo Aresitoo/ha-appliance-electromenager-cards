@@ -26,7 +26,7 @@ const DIST = path.join(ROOT, "dist", NAME);
 
 /* The 26 core cards share one scope (one IIFE): order matters. */
 const CORE_FILES = [
-  "core/version.js",       // VERSION (stamped from the tag on release)
+  "core/version.js",       // VERSION : à mettre à jour avant chaque release (vérifié par le workflow Release)
   "core/i18n.js",          // STRINGS, lang(), tr()
   "core/illustrations.js", // DEFS and drawing helpers, empty SVG object
   "core/svg/*.js",         // SVG.<kind> = illustration, one file per kind
