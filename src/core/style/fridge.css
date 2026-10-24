@@ -2,6 +2,18 @@
 .fz-door, .fr-door { transform-origin: 26px 0; transition: transform .6s cubic-bezier(.3,.7,.3,1); }
 .door-open .fr-door { transform: scaleX(.16) skewY(-6deg); }
 .fz-open .fz-door { transform: scaleX(.16) skewY(-6deg); }
+/* variantes : French door / américain (porte droite pivotant à droite), tiroirs de congélation */
+.k-fridge .fr-l { transform-origin: 16px 0; }
+.k-fridge .fz-l { transform-origin: 12px 0; }
+.k-fridge .fr-r { transform-origin: 108px 0; }
+.door-open .fr-r { transform: scaleX(.16) skewY(6deg); }
+.fzd { transform-box: view-box; transform-origin: 60px 96px; transition: transform .6s ease, filter .6s; }
+.fz-open .fzd-pull { transform: translateY(5px) scale(1.06); filter: drop-shadow(0 3px 3px rgba(0,0,0,.25)); }
+/* distributeur glaçons / eau du modèle américain */
+.ib-light { opacity: .15; transition: opacity .6s; }
+.k-fridge.st-cooling .ib-light { opacity: .9; animation: ac-pulse 3s ease-in-out infinite; }
+.ib-drop { opacity: 0; }
+.k-fridge.st-cooling .ib-drop { animation: ac-fall 2.6s ease-in infinite; }
 .flight { transition: opacity .4s; } .door-open .flight { opacity: .35; }
 .flake { stroke: var(--ac-cold); transform-origin: 39.5px 60px; }
 .k-fridge.st-cooling .flake, .k-chest_freezer.st-cooling .flake, .k-drawer_freezer.st-cooling .flake { animation: ac-pulse 2.4s ease-in-out infinite; }

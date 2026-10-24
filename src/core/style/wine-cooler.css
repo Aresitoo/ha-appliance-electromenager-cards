@@ -17,6 +17,11 @@
 .wn-door { transform-box: view-box; transform-origin: 26px 76px; transition: transform .6s cubic-bezier(.3,.7,.3,1); }
 .door-open .wn-door { transform: scaleX(.2) skewY(-5deg); }
 .k-wine_cooler .lcd { fill: #6fd8ff; }
+/* bi-zone : zone basse (blancs) plus froide, voile bleuté */
+.wn-cold { opacity: 0; transition: opacity .8s; }
+.k-wine_cooler.st-standby .wn-cold { opacity: .07; }
+.k-wine_cooler.st-cooling .wn-cold { opacity: .14; animation: wn-chill 4s ease-in-out infinite; }
+@keyframes wn-chill { 0%, 100% { opacity: .08; } 50% { opacity: .18; } }
 .k-wine_cooler.st-off .lcd { fill: #24404f; }
 .k-wine_cooler.warm .lcd { fill: var(--ac-alert); }
 .no-anim *, .no-anim { animation: none !important; }
