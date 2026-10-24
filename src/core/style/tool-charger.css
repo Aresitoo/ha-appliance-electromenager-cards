@@ -1,0 +1,32 @@
+/* ---------- tool battery charger ---------- */
+.k-tool_charger svg { overflow: visible; }
+/* voyants du socle */
+.tc-led, .tc-err { fill: #3a424b; transition: fill .3s; }
+.k-tool_charger.st-charging .tc-led { fill: #43e08a; filter: drop-shadow(0 0 1.4px #43e08a); animation: tc-blink 1.2s ease-in-out infinite; }
+.k-tool_charger.st-charged .tc-led { fill: #43e08a; filter: drop-shadow(0 0 1.4px #43e08a); }
+.k-tool_charger.st-standby .tc-led { fill: #2f7a50; }
+.k-tool_charger.alert .tc-err { fill: var(--ac-alert, #e5484d); filter: drop-shadow(0 0 1.2px #e5484d); }
+/* jauge 4 LED de la batterie : allumées selon le capteur de niveau, sinon remplissage en boucle */
+.tc-g { fill: #2a3036; transition: fill .4s; }
+.tc-g.on { fill: #43e08a; filter: drop-shadow(0 0 .8px #43e08a); }
+.tc-g.next { animation: tc-g-blink 1.2s ease-in-out infinite; }
+.k-tool_charger.seq .tc-g1 { animation: tc-g1 4s linear infinite; } .k-tool_charger.seq .tc-g2 { animation: tc-g2 4s linear infinite; }
+.k-tool_charger.seq .tc-g3 { animation: tc-g3 4s linear infinite; } .k-tool_charger.seq .tc-g4 { animation: tc-g4 4s linear infinite; }
+/* éclair et halo pendant la charge */
+.tc-bolt { fill: #43e08a; opacity: 0; transition: opacity .4s; }
+.k-tool_charger.st-charging .tc-bolt { opacity: 1; animation: ac-pulse 1.6s ease-in-out infinite; }
+.tc-glow { opacity: 0; transition: opacity .8s; }
+.k-tool_charger.st-charging .tc-glow { opacity: .9; animation: tc-breathe 2.4s ease-in-out infinite; }
+.k-tool_charger.st-charged .tc-glow { opacity: .35; }
+/* énergie qui circule dans le câble */
+.tc-flow { opacity: 0; transition: opacity .5s; }
+.k-tool_charger.st-charging .tc-flow { opacity: .85; animation: tc-flow 1.1s linear infinite; }
+@keyframes tc-flow { to { stroke-dashoffset: -12; } }
+@keyframes tc-blink { 0%, 100% { opacity: 1; } 50% { opacity: .25; } }
+@keyframes tc-breathe { 0%, 100% { opacity: .45; } 50% { opacity: 1; } }
+@keyframes tc-g-blink { 0%, 100% { fill: #2a3036; } 50% { fill: #43e08a; } }
+/* chaque LED s'allume à son tour, puis toutes s'éteignent ensemble : 0 → 4 barres */
+@keyframes tc-g1 { 0%, 8% { fill: #2a3036; } 12%, 88% { fill: #43e08a; } 92%, 100% { fill: #2a3036; } }
+@keyframes tc-g2 { 0%, 28% { fill: #2a3036; } 32%, 88% { fill: #43e08a; } 92%, 100% { fill: #2a3036; } }
+@keyframes tc-g3 { 0%, 48% { fill: #2a3036; } 52%, 88% { fill: #43e08a; } 92%, 100% { fill: #2a3036; } }
+@keyframes tc-g4 { 0%, 68% { fill: #2a3036; } 72%, 88% { fill: #43e08a; } 92%, 100% { fill: #2a3036; } }
