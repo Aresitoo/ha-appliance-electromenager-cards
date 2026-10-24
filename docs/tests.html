@@ -545,6 +545,20 @@ ok('card size / grid',typeof c.el.getCardSize()==='number'&&c.el.getGridOptions(
   const cfg=e._config||e._c, off=[], walk=(s)=>s.forEach((i)=>i.schema?walk(i.schema):(i.selector?.boolean&&cfg[i.name]===true&&i.default!==true&&off.push(i.name)));
   walk(C.getConfigForm().schema); ok(`editor defaults ${t}`,off.length===0,`shown off but on: ${off.join(', ')}`);
 });
+// XSS: config strings and entity data must never be rendered as HTML (self-contained cards)
+{const X='"><b class="xss">x</b><b class="xss" ', U={unit_of_measurement:X};
+ const xs=[
+  ['aquarium',{name:X,entity_power:'sensor.p'},[mk('sensor.p',5,U)]],
+  ['linky',{name:X,entity_power:'sensor.p'},[mk('sensor.p',500,U)]],
+  ['battery',{name:X,entity_soc:'sensor.s',entity_power:'sensor.p'},[mk('sensor.s',50,U),mk('sensor.p',100,U)]],
+  ['ev-charger',{name:X,car_color:X,entity_power:'sensor.p'},[mk('sensor.p',100,U)]],
+  ['pellet-boiler',{name:X,entity_power:'sensor.p'},[mk('sensor.p',100,U)]],
+  ['robot-vacuum-solo',{name:X,entity:'vacuum.v'},[mk('vacuum.v','cleaning',{fan_speed:X,battery_level:50})]],
+  ['robot-mower-solo',{name:X,entity:'lawn_mower.m',entity_next_start:'sensor.n'},[mk('lawn_mower.m','mowing',{}),mk('sensor.n',X)]],
+  ['gas-boiler',{name:X,entity_power:'sensor.p',entity_gas:'sensor.g',entity_energy:'sensor.e',price_per_unit:1,currency:X},[mk('sensor.p',100,U),mk('sensor.g',2,U),mk('sensor.e',3,U)]],
+  ['water-heat-pump',{name:X,entity_power:'sensor.p',entity_flow_temp:'sensor.f',entity_flow_rate:'sensor.q',entity_energy:'sensor.e'},[mk('sensor.p',900,U),mk('sensor.f',35,U),mk('sensor.q',1.2,U),mk('sensor.e',3,U)]],
+ ];
+ xs.forEach(([t,cfg,st])=>{const c=card(t,cfg,st); ok(`no HTML injection ${t}`,!c.sr.querySelector('.xss'),c.sr.querySelectorAll('.xss').length+' injected'); c.el.remove();});}
 ok('no page errors',__errors.length===0,__errors.join('; '));
 window.RESULTS=R;
 const fails=R.filter(r=>!r.pass).length;
