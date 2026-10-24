@@ -110,6 +110,8 @@ All cards have a visual editor. When added from the card picker, entities are de
 | `zone_1`…`zone_4` (level 0–9, W or %), `zone_power` (default 1500 W), `residual_minutes` (default 10) | cooktop |
 | `mode` (pilot wire / select: comfort, eco, frost, off), `window`, `temperature`, `target_temperature`, `max_power` (default 1500 W) | electric radiator |
 | `max_temperature` (default 8), `freezer_max_temperature` (default −12) | fridge alerts |
+| `style`: `top` (default), `bottom`, `french`, `american` | fridge layout |
+| `zone2_temperature`, `max_temperature_2` (default = `max_temperature`) | dual-zone wine cooler |
 
 ### How the status is computed
 
@@ -490,6 +492,40 @@ temperature: sensor.cave_a_vin_temperature
 door: binary_sensor.cave_a_vin_door   # optional
 ```
 
+### Refrigerator layouts and dual-zone wine cooler
+
+<p align="center"><img src="docs/fridge-styles.gif" width="640" alt="Refrigerator layouts and dual-zone wine cooler"></p>
+
+The refrigerator card has four layouts, chosen with `style` (also in the visual editor):
+- `top` (default): freezer on top, fridge below.
+- `bottom`: fridge on top, two pull-out freezer drawers below (European combi).
+- `french`: two fridge doors on top, two freezer drawers below.
+- `american`: side-by-side, freezer on the left with an ice and water dispenser (it lights up and drips while cooling), fridge on the right.
+
+`door` opens the fridge door(s), `freezer_door` opens the freezer door or pulls out the top drawer. Temperatures, alerts and status work the same in every layout.
+
+The wine cooler becomes dual-zone (reds on top, whites below) when you add `zone2_temperature`: a second display, a divider shelf, a cooler lower zone, and an Upper zone / Lower zone chip each. `max_temperature_2` sets the lower zone alert (defaults to `max_temperature`).
+
+```yaml
+type: custom:appliance-fridge-card
+style: american            # top | bottom | french | american
+power: sensor.fridge_power
+temperature: sensor.fridge_temperature
+door: binary_sensor.fridge_door
+freezer_door: binary_sensor.freezer_door
+---
+type: custom:appliance-wine-cooler-card
+power: sensor.wine_cellar_power
+temperature: sensor.wine_cellar_red_temperature
+zone2_temperature: sensor.wine_cellar_white_temperature
+max_temperature: 18
+max_temperature_2: 12
+```
+
+### Several appliances of the same kind
+
+Each card is independent: it only reads the entities in its own configuration and keeps its own status, timers and drawing. Two washing machines, a washer and a washer-dryer or several fridges can sit side by side; just give each card its own entities (and a `name` to tell them apart).
+
 ### Beer tap and home cinema amplifier
 
 <p align="center"><img src="docs/beer-tap-av-receiver.gif" width="560" alt="Beer tap and AV receiver cards"></p>
@@ -762,6 +798,12 @@ cost: sensor.lave_linge_cout_jour
 **Ventilateur** (`custom:appliance-fan-card`) : ventilateur sur pied avec grille, cinq pales et un petit ruban. Trois vitesses : les pales tournent plus vite, l'air souffle plus fort, le ruban s'agite et les voyants du socle s'allument (1, 2 ou 3) ; la tête oscille (`oscillating: false` pour l'arrêter). Avec une entité `fan` : le pourcentage et l'oscillation sont lus. Avec une prise : vitesse 1 au-dessus de 5 W, vitesse 2 au-dessus de 30 W (`mid_threshold`), vitesse 3 au-dessus de 40 W (`high_threshold`).
 
 **Chargeur de batterie d'outils** (`custom:appliance-tool-charger-card`) : batterie d'outil sans fil (perceuse, visseuse…) posée sur son chargeur, avec le cordon, les voyants du socle et la jauge 4 LED de la batterie. En charge (au-dessus de `threshold`, 10 W) : le voyant clignote en vert, l'énergie circule dans le cordon, un halo et un éclair pulsent et la jauge se remplit LED par LED. Chargée (entre `standby_threshold`, 1 W, et `threshold`, la plupart des chargeurs consomment un peu pour maintenir la batterie) : les quatre LED restent allumées. En dessous : veille (socle vide). `battery_level` (%) en option : la jauge affiche le vrai niveau (25 % par LED, la suivante clignote), avec barre de progression et pastille Batterie ; la batterie est considérée chargée à partir de `full_level` (100 %).
+
+**Réfrigérateur : quatre modèles** avec `style` (aussi dans l'éditeur visuel) : `top` (congélateur en haut, par défaut), `bottom` (combiné : frigo en haut, deux tiroirs de congélation en bas), `french` (deux portes en haut, deux tiroirs en bas), `american` (side-by-side : congélateur à gauche avec distributeur de glaçons et d'eau qui s'éclaire et goutte pendant le froid, frigo à droite). `door` ouvre la ou les portes du frigo, `freezer_door` ouvre la porte du congélateur ou sort le tiroir du haut.
+
+**Cave à vin bi-zone** : ajoute `zone2_temperature` (zone basse, vins blancs) pour avoir deux afficheurs, une séparation, une zone basse plus froide et deux pastilles Zone haute / Zone basse. `max_temperature_2` règle l'alerte de la zone basse (par défaut `max_temperature`).
+
+**Plusieurs appareils du même type** : chaque carte est indépendante (ses propres entités, son état, ses minuteries). Deux lave-linge ou plusieurs frigos peuvent cohabiter, il suffit de donner à chaque carte ses entités (et un `name`).
 
 **Carte générique** (`custom:appliance-generic-card`) : pour tout appareil sans carte dédiée (enceinte, lampe, pompe…), renseigne ta propre image dans `image` (`/local/mon-appareil.png` pour un fichier de `config/www/`, ou une URL `https://`). La carte garde le statut (en cours / inactif / éteint), la puissance, l'énergie, le coût et le bouton ; l'image est atténuée quand l'appareil est éteint et brille doucement en marche.
 
