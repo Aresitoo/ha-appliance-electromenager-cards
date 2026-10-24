@@ -33,6 +33,12 @@ const STRINGS = {
     "server_rack": "Server rack (homelab)",
     "desktop_pc": "Desktop PC",
     "laptop": "Laptop",
+    "tool_charger": "Tool battery charger",
+    "charging": "Charging",
+    "charged": "Charged",
+    "battery": "Battery",
+    "f_battery_level": "Battery level sensor (%)",
+    "f_standby_threshold": "Charged (maintenance) above (W)",
     "online": "Online",
     "f_max_power_rack": "Max load (W)",
     "f_power_solar": "Solar surplus power sensor (W)",
@@ -215,6 +221,12 @@ const STRINGS = {
     "server_rack": "Serverschrank (Homelab)",
     "desktop_pc": "Desktop-PC",
     "laptop": "Laptop",
+    "tool_charger": "Werkzeug-Akkuladegerät",
+    "charging": "Lädt",
+    "charged": "Geladen",
+    "battery": "Akku",
+    "f_battery_level": "Akkustand-Sensor (%)",
+    "f_standby_threshold": "Geladen (Erhaltung) über (W)",
     "online": "Online",
     "f_max_power_rack": "Maximale Last (W)",
     "f_power_solar": "Sensor Solarüberschuss-Leistung (W)",
@@ -397,6 +409,12 @@ const STRINGS = {
     "server_rack": "Baie informatique (homelab)",
     "desktop_pc": "PC fixe",
     "laptop": "PC portable",
+    "tool_charger": "Chargeur de batterie d'outils",
+    "charging": "En charge",
+    "charged": "Chargée",
+    "battery": "Batterie",
+    "f_battery_level": "Capteur de niveau de batterie (%)",
+    "f_standby_threshold": "Chargée (maintien) au-dessus de (W)",
     "online": "En ligne",
     "f_max_power_rack": "Charge max (W)",
     "f_power_solar": "Capteur de puissance surplus solaire (W)",
@@ -579,6 +597,12 @@ const STRINGS = {
     "server_rack": "Serverrack (homelab)",
     "desktop_pc": "Stasjonær PC",
     "laptop": "Bærbar PC",
+    "tool_charger": "Batterilader for verktøy",
+    "charging": "Lader",
+    "charged": "Ladet",
+    "battery": "Batteri",
+    "f_battery_level": "Batterinivå-sensor (%)",
+    "f_standby_threshold": "Ladet (vedlikehold) over (W)",
     "online": "Tilkoblet",
     "f_max_power_rack": "Maks last (W)",
     "f_power_solar": "Sensor for soloverskudd (W)",
@@ -761,6 +785,12 @@ const STRINGS = {
     "server_rack": "Serverkast (homelab)",
     "desktop_pc": "Desktop-pc",
     "laptop": "Laptop",
+    "tool_charger": "Acculader voor gereedschap",
+    "charging": "Opladen",
+    "charged": "Opgeladen",
+    "battery": "Accu",
+    "f_battery_level": "Accuniveausensor (%)",
+    "f_standby_threshold": "Opgeladen (onderhoud) boven (W)",
     "online": "Online",
     "f_max_power_rack": "Maximale belasting (W)",
     "f_power_solar": "Vermogenssensor zonne-overschot (W)",
@@ -943,6 +973,12 @@ const STRINGS = {
     "server_rack": "Rack de servere (homelab)",
     "desktop_pc": "PC desktop",
     "laptop": "Laptop",
+    "tool_charger": "Încărcător baterii scule",
+    "charging": "Se încarcă",
+    "charged": "Încărcată",
+    "battery": "Baterie",
+    "f_battery_level": "Senzor nivel baterie (%)",
+    "f_standby_threshold": "Încărcată (întreținere) peste (W)",
     "online": "Online",
     "f_max_power_rack": "Sarcină maximă (W)",
     "f_power_solar": "Senzor putere surplus solar (W)",
@@ -2183,6 +2219,61 @@ ${lcd(93, 71, 18, 8)}
 <circle class="led l1" cx="96" cy="83" r="1.3"/>
 <path d="M104 80l-2 4h3l-2 4" stroke="#ffb400" stroke-width=".9" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
 
+/* Chargeur de batterie d'outils (perceuse, visseuse…) : batterie posée sur son socle, vue de 3/4 */
+SVG.tool_charger = () => {
+  // repère de la batterie : P0 = coin avant-gauche du dessus, a = arête avant, b = profondeur, H = hauteur
+  const P = [22, 50], A = [46, 12], B = [30, -13], H = 30;
+  const pt = (u, v, h = 0) => `${(P[0] + A[0] * u + B[0] * v).toFixed(1)} ${(P[1] + A[1] * u + B[1] * v + h).toFixed(1)}`;
+  // nervures du dessus (grille comme sur la photo)
+  const ribs = [0.18, 0.34, 0.5, 0.66, 0.82].map((v) => `M${pt(0.08, v)}L${pt(0.92, v)}`).join("")
+    + [0.25, 0.5, 0.75].map((u) => `M${pt(u, 0.1)}L${pt(u, 0.9)}`).join("");
+  // jauge 4 LED sur la face avant de la batterie
+  const gauge = [0, 1, 2, 3].map((i) => {
+    const u = 0.52 + i * 0.1;
+    return `<path class="tc-g tc-g${i + 1}" d="M${pt(u, 0, 5)}L${pt(u + 0.07, 0, 5)}L${pt(u + 0.07, 0, 7.6)}L${pt(u, 0, 7.6)}z"/>`;
+  }).join("");
+  const skew = (Math.atan2(A[1], A[0]) * 180 / Math.PI).toFixed(1);
+  return `
+<defs>${DEFS}
+<linearGradient id="ID-tcfront" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#30363d"/><stop offset="1" stop-color="#15191d"/></linearGradient>
+<linearGradient id="ID-tcside" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22272c"/><stop offset="1" stop-color="#0d1013"/></linearGradient>
+<linearGradient id="ID-tctop" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3a4148"/><stop offset="1" stop-color="#1c2126"/></linearGradient>
+<radialGradient id="ID-tcglow"><stop offset="0" stop-color="#43e08a" stop-opacity=".55"/><stop offset="1" stop-color="#43e08a" stop-opacity="0"/></radialGradient></defs>
+<ellipse cx="62" cy="124" rx="54" ry="5" fill="url(#ID-shadow)"/>
+<!-- câble d'alimentation enroulé à gauche -->
+<path class="tc-cable" d="M14 96 C4 95, 2 84, 9 80 C16 76, 22 84, 15 89 C8 94, 3 104, 9 110 C14 115, 6 120, 2 118" fill="none" stroke="#14171a" stroke-width="2.6" stroke-linecap="round"/>
+<path class="tc-flow" d="M2 118 C6 120, 14 115, 9 110 C3 104, 8 94, 15 89 C22 84, 16 76, 9 80 C2 84, 4 95, 14 96" fill="none" stroke="#43e08a" stroke-width="1.2" stroke-linecap="round" stroke-dasharray="3 9"/>
+<!-- socle du chargeur -->
+<path d="M10 88 L76 105 L76 122 L10 105 Z" fill="url(#ID-tcfront)" stroke="#05070a" stroke-width=".5"/>
+<path d="M76 105 L114 88 L114 104 L76 122 Z" fill="url(#ID-tcside)" stroke="#05070a" stroke-width=".5"/>
+<path d="M10 88 L48 72 L114 88 L76 105 Z" fill="url(#ID-tctop)" stroke="#05070a" stroke-width=".5"/>
+<path d="M10 88 L76 105 L114 88" fill="none" stroke="#5b636c" stroke-width=".6" opacity=".7"/>
+<g stroke="#05070a" stroke-width="1.1" stroke-linecap="round">${[0, 1, 2, 3, 4, 5].map((i) => { const x = 88 + i * 4, y = 101 - i * 1.8; return `<path d="M${x} ${y}v9"/>`; }).join("")}</g>
+<!-- voyants du chargeur : défaut + charge -->
+<path d="M15.5 95.2l1.6 -2.8l1.6 2.8z" fill="none" stroke="#8b939c" stroke-width=".45"/>
+<circle class="tc-err" cx="17.1" cy="98.6" r="1.05"/>
+<rect x="15.6" y="101.4" width="3" height="1.7" rx=".3" fill="none" stroke="#8b939c" stroke-width=".45"/>
+<circle class="tc-led" cx="17.1" cy="105.4" r="1.15"/>
+<ellipse class="tc-glow" cx="62" cy="86" rx="44" ry="12" fill="url(#ID-tcglow)"/>
+<!-- batterie posée sur le socle -->
+<path d="M${pt(0, 0)}L${pt(1, 0)}L${pt(1, 0, H)}L${pt(0, 0, H)}Z" fill="url(#ID-tcfront)" stroke="#05070a" stroke-width=".5"/>
+<path d="M${pt(1, 0)}L${pt(1, 1)}L${pt(1, 1, H - 2)}L${pt(1, 0, H)}Z" fill="url(#ID-tcside)" stroke="#05070a" stroke-width=".5"/>
+<path d="M${pt(0, 0)}L${pt(0, 1)}L${pt(1, 1)}L${pt(1, 0)}Z" fill="url(#ID-tctop)" stroke="#05070a" stroke-width=".5"/>
+<path d="${ribs}" stroke="#0b0d10" stroke-width="2.2" stroke-linecap="round"/>
+<path d="${ribs}" stroke="#4a525a" stroke-width=".5" stroke-linecap="round" transform="translate(-.5 -.6)"/>
+<path d="M${pt(0, 0, H - 6)}L${pt(1, 0, H - 6)}" stroke="#05070a" stroke-width=".8"/>
+<path d="M${pt(0, 0)}L${pt(1, 0)}L${pt(1, 1)}" fill="none" stroke="#6a737c" stroke-width=".6" opacity=".7"/>
+<!-- plaque générique 18 V -->
+<g transform="translate(${pt(0.1, 0, 12).replace(" ", " ")}) skewY(${skew})">
+  <rect x="0" y="0" width="18" height="7" rx="3.5" fill="#e9ecef"/>
+  <rect x="0" y="0" width="7" height="7" rx="3.5" fill="#d63a2f"/>
+  <path d="M4.2 1.2l-1.8 2.8h1.4l-.8 2l2.2 -3h-1.4z" fill="#fff"/>
+  <text x="12.5" y="5.4" text-anchor="middle" font-size="4.6" font-weight="700" fill="#1b1f24" font-family="Arial, sans-serif">18V</text>
+</g>
+<g class="tc-gauge">${gauge}</g>
+<path class="tc-bolt" d="M${pt(0.86, 0, 14)}l-2.6 4.6h2.2l-1.4 4.2l4 -5.6h-2.3l1.6 -3.2z"/>`;
+};
+
 SVG.towel_dryer = () => `
 <defs>${DEFS}
 <linearGradient id="ID-tdglow" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb877"/><stop offset="1" stop-color="#ff6a1f"/></linearGradient>
@@ -2457,6 +2548,9 @@ const DEF = {
   fan: { accent: "cold", threshold: 5,
     fields: ["entity", "power", "energy", "cost", "switch"],
     keys: ["ventilateur", "ventilo", "fan", "brasseur", "dyson"] },
+  tool_charger: { accent: "active", threshold: 10,
+    fields: ["entity", "power", "energy", "cost", "battery_level", "switch"],
+    keys: ["chargeur", "charger", "batterie_outil", "outil", "perceuse", "visseuse", "tool_battery", "power_tool", "makita", "dewalt", "ryobi", "milwaukee", "einhell", "parkside"] },
   generic: { accent: "active", threshold: 5,
     fields: ["entity", "power", "energy", "cost", "switch"],
     keys: [] },
@@ -2731,7 +2825,7 @@ class ApplianceCardBase extends HTMLElement {
       temp: S(c.temperature), target: S(c.target_temperature),
       ftemp: S(c.freezer_temperature), fdoor: S(c.freezer_door),
       level: num(S(c.power_level)), pellets: num(S(c.pellet_level)),
-      runtime: parseRemaining(S(c.runtime)), speed: S(c.speed), bedTemp: num(S(c.bed_temperature)), humidity: num(S(c.humidity)), mode: S(c.mode), window: S(c.window), light: S(c.light), keg: num(S(c.keg_level)), pouring: S(c.pouring),
+      runtime: parseRemaining(S(c.runtime)), speed: S(c.speed), bedTemp: num(S(c.bed_temperature)), humidity: num(S(c.humidity)), mode: S(c.mode), window: S(c.window), light: S(c.light), keg: num(S(c.keg_level)), pouring: S(c.pouring), batt: num(S(c.battery_level)),
       status: "idle", phase: null, alerts: [],
     };
     if (main && ["water_heater", "climate"].includes(domainOf(c.entity))) {
@@ -2973,6 +3067,12 @@ class ApplianceCardBase extends HTMLElement {
       if (base === "off" || base === "unavailable") m.status = base;
       else if (watts !== null) m.status = powered ? "screen_on" : watts >= (c.standby_threshold ?? 0.5) ? "standby" : "off";
       else m.status = base === "running" ? "screen_on" : "standby";
+    } else if (kind === "tool_charger") {
+      // > seuil : en charge ; petite conso résiduelle : batterie chargée (maintien) ; sinon socle vide / veille
+      const full = m.batt != null && m.batt >= (c.full_level ?? 100);
+      if (base === "off" || base === "unavailable") m.status = base;
+      else if (watts !== null) m.status = powered && !full ? "charging" : full || watts >= (c.standby_threshold ?? 1) ? "charged" : "standby";
+      else m.status = base === "running" && !full ? "charging" : full ? "charged" : "standby";
     } else if (kind === "coffee_maker") {
       const warmT = c.warm_threshold ?? 5;
       if (["off", "unavailable"].includes(base)) m.status = base;
@@ -3034,7 +3134,7 @@ class ApplianceCardBase extends HTMLElement {
   /* ---------------- rendering ---------------- */
   _lcdText(m) {
     const hass = this._hass, kind = this._kind;
-    const active = ["running", "heating", "preheating", "cooling", "ignition", "filtering", "printing", "producing", "low", "speed1", "speed2", "cooking", "brewing", "keep_warm", "screen_on", "online", "ac_dry", "ac_fan", "defrost", "pouring", "playing", "muted", "fan_1", "fan_2", "fan_3"].includes(m.status);
+    const active = ["running", "heating", "preheating", "cooling", "ignition", "filtering", "printing", "producing", "low", "speed1", "speed2", "cooking", "brewing", "keep_warm", "screen_on", "online", "ac_dry", "ac_fan", "defrost", "pouring", "playing", "muted", "fan_1", "fan_2", "fan_3", "charging"].includes(m.status);
     if (m.status === "unavailable") return "- - -";
     if (["fridge", "wine_cooler", "chest_freezer", "drawer_freezer"].includes(kind)) return m.tempVal != null ? `${fmtNum(hass, m.tempVal, 0)}°` : "--°";
     if (kind === "towel_dryer") {
@@ -3131,7 +3231,7 @@ class ApplianceCardBase extends HTMLElement {
   _render(m) {
     const hass = this._hass, c = this._config, kind = this._kind;
     const $ = (i) => this.shadowRoot.getElementById(i);
-    const active = ["running", "heating", "preheating", "cooling", "ignition", "filtering", "printing", "producing", "low", "speed1", "speed2", "cooking", "brewing", "keep_warm", "screen_on", "online", "ac_dry", "ac_fan", "defrost", "pouring", "playing", "muted", "fan_1", "fan_2", "fan_3"].includes(m.status);
+    const active = ["running", "heating", "preheating", "cooling", "ignition", "filtering", "printing", "producing", "low", "speed1", "speed2", "cooking", "brewing", "keep_warm", "screen_on", "online", "ac_dry", "ac_fan", "defrost", "pouring", "playing", "muted", "fan_1", "fan_2", "fan_3", "charging"].includes(m.status);
     $("wrap").className = [
       "wrap", `k-${kind}`, `st-${m.status}`, `accent-${m.accent || this._def.accent}`,
       active ? "active" : "", m.phase ? `ph-${m.phase}` : "",
@@ -3142,6 +3242,16 @@ class ApplianceCardBase extends HTMLElement {
     // illustration dynamic parts
     if (kind === "av_receiver") $("wrap").style.setProperty("--amp", (m.amp ?? .6).toFixed(2));
     if (kind === "beer_tap") $("wrap").style.setProperty("--keg", ((m.keg ?? 70) / 100).toFixed(2));
+    if (kind === "tool_charger") {
+      // jauge 4 LED : niveau réel si capteur, sinon remplissage en boucle pendant la charge
+      const st = m.status, lv = m.batt != null ? Math.max(0, Math.min(100, m.batt)) : null;
+      const lit = st === "charged" ? 4 : st === "charging" && lv != null ? Math.min(4, Math.floor(lv / 25)) : 0;
+      $("wrap").classList.toggle("seq", st === "charging" && lv == null);
+      this.shadowRoot.querySelectorAll(".tc-g").forEach((g, i) => {
+        g.classList.toggle("on", i < lit);
+        g.classList.toggle("next", st === "charging" && lv != null && i === lit);
+      });
+    }
     if (kind === "tv") {
       const prev = this._tvPrev, on = m.status === "screen_on";
       const scr = this.shadowRoot.querySelector(".tv-flash");
@@ -3263,6 +3373,7 @@ class ApplianceCardBase extends HTMLElement {
     // progress bar
     let pct = null;
     if (active && m.progress != null) pct = m.progress;
+    else if (kind === "tool_charger" && m.status === "charging" && m.batt != null) pct = m.batt;
     else if ((kind === "oven" && m.status === "preheating") || (kind === "water_heater" && m.status !== "off")) {
       if (m.tempVal != null && m.targetVal) {
         const floor = kind === "water_heater" ? 10 : 20;
@@ -3299,6 +3410,8 @@ class ApplianceCardBase extends HTMLElement {
     } else if (kind === "beer_tap") {
       if (m.tempVal != null) tile("mdi:thermometer", `${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}`, tr(hass, "temperature"), tEntity);
       if (m.keg != null) tile("mdi:keg", `${fmtNum(hass, m.keg, 0)} %`, tr(hass, "keg"), c.keg_level, m.alerts.includes("keg_low") ? "warn" : "");
+    } else if (kind === "tool_charger") {
+      if (m.batt != null) tile(m.status === "charging" ? "mdi:battery-charging" : "mdi:battery", `${fmtNum(hass, m.batt, 0)} %`, tr(hass, "battery"), c.battery_level);
     } else if (kind === "wine_cooler") {
       if (m.tempVal != null) tile("mdi:thermometer", `${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}`, tr(hass, "temperature"), tEntity, m.alerts.includes("too_warm") ? "warn" : "");
     } else if (kind === "fridge") {
@@ -3374,6 +3487,7 @@ const SEL = {
   pellet_level: { entity: { domain: ["sensor", "number", "input_number"] } },
   runtime: { entity: { domain: ["sensor"] } },
   light: { entity: { domain: ["light", "switch", "binary_sensor", "input_boolean"] } },
+  battery_level: { entity: { domain: ["sensor", "number", "input_number"] } },
   keg_level: { entity: { domain: ["sensor", "number", "input_number"] } },
   pouring: { entity: { domain: ["binary_sensor", "input_boolean", "switch"] } },
   bed_temperature: { entity: { domain: ["sensor"], device_class: "temperature" } },
@@ -3419,6 +3533,9 @@ function buildForm(kind) {
             { name: "oscillating", selector: { boolean: {} }, default: true },
             { name: "mid_threshold", selector: { number: { min: 5, max: 200, step: 1, mode: "box", unit_of_measurement: "W" } } },
             { name: "high_threshold", selector: { number: { min: 5, max: 300, step: 1, mode: "box", unit_of_measurement: "W" } } },
+          ] : []),
+          ...(kind === "tool_charger" ? [
+            { name: "standby_threshold", selector: { number: { min: 0, max: 20, step: 0.1, mode: "box", unit_of_measurement: "W" } } },
           ] : []),
           ...(kind === "av_receiver" ? [
             { name: "max_power", selector: { number: { min: 50, max: 2000, step: 10, mode: "box", unit_of_measurement: "W" } } },
@@ -3492,11 +3609,13 @@ function stubFor(kind, hass) {
   if (power) cfg.power = power;
   if (energy) cfg.energy = energy;
   if (cost) cfg.cost = cost;
-  if (sw && ["water_heater", "oven", "microwave", "pool_pump", "air_fryer", "coffee_maker", "tv", "range_hood", "ac_split", "heat_pump", "towel_dryer", "server_rack", "desktop_pc", "laptop", "wine_cooler", "beer_tap", "av_receiver", "fan"].includes(kind)) cfg.switch = sw;
+  if (sw && ["water_heater", "oven", "microwave", "pool_pump", "air_fryer", "coffee_maker", "tv", "range_hood", "ac_split", "heat_pump", "towel_dryer", "server_rack", "desktop_pc", "laptop", "wine_cooler", "beer_tap", "av_receiver", "fan", "tool_charger"].includes(kind)) cfg.switch = sw;
   else if (sw && !cfg.entity) cfg.entity = sw;
   const clim = kind === "radiator" ? pick((i) => i.startsWith("climate.")) : null;
   if (clim) cfg.entity = clim;
   if (temp && ["fridge", "water_heater", "oven", "air_fryer", "beer_tap", "pellet_stove", "pool_pump", "printer_3d", "chest_freezer", "drawer_freezer", "radiator", "towel_dryer", "server_rack", "wine_cooler"].includes(kind)) cfg.temperature = temp;
+  const batt = kind === "tool_charger" ? pick((i, st) => i.startsWith("sensor.") && dc(st) === "battery") : null;
+  if (batt) cfg.battery_level = batt;
   if (!cfg.entity && !cfg.power && !cfg.switch && !cfg.temperature) cfg.power = "sensor.example_power";
   return cfg;
 }
@@ -4237,6 +4356,39 @@ svg { width: 100%; height: 100%; display: block; overflow: visible; }
 .k-generic.active .gn-img { filter: drop-shadow(0 0 4px var(--c)); animation: gn-glow 2.6s ease-in-out infinite; }
 @keyframes gn-glow { 0%, 100% { filter: drop-shadow(0 0 3px var(--c)); } 50% { filter: drop-shadow(0 0 8px var(--c)); } }
 .k-generic .gn-empty { opacity: .6; }
+
+/* ---------- tool battery charger ---------- */
+.k-tool_charger svg { overflow: visible; }
+/* voyants du socle */
+.tc-led, .tc-err { fill: #3a424b; transition: fill .3s; }
+.k-tool_charger.st-charging .tc-led { fill: #43e08a; filter: drop-shadow(0 0 1.4px #43e08a); animation: tc-blink 1.2s ease-in-out infinite; }
+.k-tool_charger.st-charged .tc-led { fill: #43e08a; filter: drop-shadow(0 0 1.4px #43e08a); }
+.k-tool_charger.st-standby .tc-led { fill: #2f7a50; }
+.k-tool_charger.alert .tc-err { fill: var(--ac-alert, #e5484d); filter: drop-shadow(0 0 1.2px #e5484d); }
+/* jauge 4 LED de la batterie : allumées selon le capteur de niveau, sinon remplissage en boucle */
+.tc-g { fill: #2a3036; transition: fill .4s; }
+.tc-g.on { fill: #43e08a; filter: drop-shadow(0 0 .8px #43e08a); }
+.tc-g.next { animation: tc-g-blink 1.2s ease-in-out infinite; }
+.k-tool_charger.seq .tc-g1 { animation: tc-g1 4s linear infinite; } .k-tool_charger.seq .tc-g2 { animation: tc-g2 4s linear infinite; }
+.k-tool_charger.seq .tc-g3 { animation: tc-g3 4s linear infinite; } .k-tool_charger.seq .tc-g4 { animation: tc-g4 4s linear infinite; }
+/* éclair et halo pendant la charge */
+.tc-bolt { fill: #43e08a; opacity: 0; transition: opacity .4s; }
+.k-tool_charger.st-charging .tc-bolt { opacity: 1; animation: ac-pulse 1.6s ease-in-out infinite; }
+.tc-glow { opacity: 0; transition: opacity .8s; }
+.k-tool_charger.st-charging .tc-glow { opacity: .9; animation: tc-breathe 2.4s ease-in-out infinite; }
+.k-tool_charger.st-charged .tc-glow { opacity: .35; }
+/* énergie qui circule dans le câble */
+.tc-flow { opacity: 0; transition: opacity .5s; }
+.k-tool_charger.st-charging .tc-flow { opacity: .85; animation: tc-flow 1.1s linear infinite; }
+@keyframes tc-flow { to { stroke-dashoffset: -12; } }
+@keyframes tc-blink { 0%, 100% { opacity: 1; } 50% { opacity: .25; } }
+@keyframes tc-breathe { 0%, 100% { opacity: .45; } 50% { opacity: 1; } }
+@keyframes tc-g-blink { 0%, 100% { fill: #2a3036; } 50% { fill: #43e08a; } }
+/* chaque LED s'allume à son tour, puis toutes s'éteignent ensemble : 0 → 4 barres */
+@keyframes tc-g1 { 0%, 8% { fill: #2a3036; } 12%, 88% { fill: #43e08a; } 92%, 100% { fill: #2a3036; } }
+@keyframes tc-g2 { 0%, 28% { fill: #2a3036; } 32%, 88% { fill: #43e08a; } 92%, 100% { fill: #2a3036; } }
+@keyframes tc-g3 { 0%, 48% { fill: #2a3036; } 52%, 88% { fill: #43e08a; } 92%, 100% { fill: #2a3036; } }
+@keyframes tc-g4 { 0%, 68% { fill: #2a3036; } 72%, 88% { fill: #43e08a; } 92%, 100% { fill: #2a3036; } }
 `;
 
 /* ------------------------------------------------------------------ */
