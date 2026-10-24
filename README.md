@@ -3,7 +3,7 @@
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://hacs.xyz/docs/faq/custom_repositories)
 [![Validate](https://github.com/skyrotter/ha-appliance-electromenager-cards/actions/workflows/validate.yml/badge.svg)](https://github.com/skyrotter/ha-appliance-electromenager-cards/actions/workflows/validate.yml)
 
-Forty Lovelace cards for household appliances, with **realistic animated illustrations** (tumbling drum, water and foam, spin with vibration, rotating spray arms, glowing oven element, turntable, opening fridge door, flickering pellet-stove flames, water flowing through a pool pump, a 3D printer building its part layer by layer, a chest freezer lid lifting, freezer drawers sliding out, a sun powering solar panels on their frame, a bathroom extractor fan drawing in steam, cooktop zones glowing under a steaming pot, an electric radiator sending heat waves, a dual-basket air fryer blowing hot air over fries, a coffee maker filling the carafe or the cup, a flat TV switching on like a real screen, a range hood sucking up the steam, an air-conditioning split and its outdoor heat pump, a heated towel rail glowing with warm towels, a homelab server rack with blinking LEDs and spinning fans, a desktop PC with RGB fans, a laptop with a live screen, a wine cooler with cold air flowing between the bottles, an aquarium with swimming fish, a Linky electricity meter, a home battery bank, an EV wallbox charging a car, a robot vacuum, a robot mower a pellet boiler feeding its burner through an auger a gas boiler with its blue flames, a beer tap pouring a pint a home cinema amplifier with its dancing equalizer and an oscillating fan, a tool battery charger lighting up its charge LEDs…), live status, power, energy and cost.
+Forty-one Lovelace cards for household appliances, with **realistic animated illustrations** (tumbling drum, water and foam, spin with vibration, rotating spray arms, glowing oven element, turntable, opening fridge door, flickering pellet-stove flames, water flowing through a pool pump, a 3D printer building its part layer by layer, a chest freezer lid lifting, freezer drawers sliding out, a sun powering solar panels on their frame, a bathroom extractor fan drawing in steam, cooktop zones glowing under a steaming pot, an electric radiator sending heat waves, a dual-basket air fryer blowing hot air over fries, a coffee maker filling the carafe or the cup, a flat TV switching on like a real screen, a range hood sucking up the steam, an air-conditioning split and its outdoor heat pump, a heated towel rail glowing with warm towels, a homelab server rack with blinking LEDs and spinning fans, a desktop PC with RGB fans, a laptop with a live screen, a wine cooler with cold air flowing between the bottles, an aquarium with swimming fish, a Linky electricity meter, a home battery bank, an EV wallbox charging a car, a robot vacuum, a robot mower a pellet boiler feeding its burner through an auger a gas boiler with its blue flames, a beer tap pouring a pint a home cinema amplifier with its dancing equalizer and an oscillating fan, a ceiling fan turning above its light, a tool battery charger lighting up its charge LEDs…), live status, power, energy and cost.
 They follow your Home Assistant theme (light/dark) and switch between **French** and **English** automatically.
 
 **▶ [Try it online / Essayer en ligne](https://skyrotter.github.io/ha-appliance-electromenager-cards/docs/demo.html)** · [Automated tests](https://skyrotter.github.io/ha-appliance-electromenager-cards/docs/tests.html)
@@ -44,6 +44,7 @@ They follow your Home Assistant theme (light/dark) and switch between **French**
 | Beer tap | `custom:appliance-beer-tap-card` |
 | Home cinema amplifier (AV receiver) | `custom:appliance-av-receiver-card` |
 | Fan | `custom:appliance-fan-card` |
+| Ceiling fan | `custom:appliance-ceiling-fan-card` |
 | Tool battery charger | `custom:appliance-tool-charger-card` |
 | Generic appliance (your own image) | `custom:appliance-generic-card` |
 | Aquarium | `custom:appliance-aquarium-card` |
@@ -566,6 +567,18 @@ type: custom:appliance-fan-card
 entity: fan.bedroom_fan      # or power: sensor.fan_plug_power
 ```
 
+### Ceiling fan
+
+<p align="center"><img src="docs/fans.gif" width="480" alt="Pedestal fan and ceiling fan cards"></p>
+
+`custom:appliance-ceiling-fan-card`: a ceiling fan with four wooden blades seen in perspective, the motor housing, a glass light and two pull chains. Three speeds like the pedestal fan (`fan` entity `percentage`, or power: `threshold` 5 W, `mid_threshold` 30 W, `high_threshold` 40 W): the blades turn faster, air flows down and the chains sway. With a `light` entity the glass glows and lights the room below, even when the blades are stopped (status "Lights only").
+
+```yaml
+type: custom:appliance-ceiling-fan-card
+entity: fan.living_room_ceiling   # or power: sensor.ceiling_fan_power
+light: light.living_room_ceiling  # optional
+```
+
 ### Tool battery charger
 
 <p align="center"><img src="docs/tool-charger.gif" width="560" alt="Tool battery charger card: charging and charged"></p>
@@ -728,7 +741,7 @@ HACS installs a single file, so `build.js` concatenates the files of `src/` in t
 ```
 src/
   header.js            licence banner
-  core/                the 27 core cards, sharing one scope (order matters)
+  core/                the 28 core cards, sharing one scope (order matters)
     version.js  i18n.js  illustrations.js  definitions.js  helpers.js
     base.js  editor.js  style.js  register.js
     svg/<kind>.js      one illustration per kind: SVG.washer = () => `…`
@@ -738,7 +751,7 @@ src/
 ```
 
 - New core card: add its `DEF` entry (`core/definitions.js`), `core/svg/<kind>.js` (picked up automatically), a CSS file listed in `CSS_FILES` and its strings. New self-contained card: add `cards/<name>.js` and list it in `CARD_FILES`. The build warns about any `src/` file it does not list.
-- Texts: one file per language in `src/i18n/` (`en.json`, `fr.json`, `de.json`, `nb.json`, `nl.json`, `ro.json`). Each file has a `common` section for the 27 core cards and one section per extra card (`aquarium`, `linky`, …). The build inlines them where the source says `/*@i18n <section>*/{}`.
+- Texts: one file per language in `src/i18n/` (`en.json`, `fr.json`, `de.json`, `nb.json`, `nl.json`, `ro.json`). Each file has a `common` section for the 28 core cards and one section per extra card (`aquarium`, `linky`, …). The build inlines them where the source says `/*@i18n <section>*/{}`.
 - English is the reference: a key missing in another language falls back to English, and the build prints a warning.
 - To add a language, copy `en.json` to e.g. `it.json`, translate it and rebuild: the cards follow the Home Assistant language, and the extra cards list it in their `language` option.
 - Commit `src/` and the rebuilt `dist/` together. On a merge conflict in `dist/`, resolve `src/` and re-run `node build.js`.
@@ -797,6 +810,8 @@ cost: sensor.lave_linge_cout_jour
 
 **Ventilateur** (`custom:appliance-fan-card`) : ventilateur sur pied avec grille, cinq pales et un petit ruban. Trois vitesses : les pales tournent plus vite, l'air souffle plus fort, le ruban s'agite et les voyants du socle s'allument (1, 2 ou 3) ; la tête oscille (`oscillating: false` pour l'arrêter). Avec une entité `fan` : le pourcentage et l'oscillation sont lus. Avec une prise : vitesse 1 au-dessus de 5 W, vitesse 2 au-dessus de 30 W (`mid_threshold`), vitesse 3 au-dessus de 40 W (`high_threshold`).
 
+**Ventilateur de plafond** (`custom:appliance-ceiling-fan-card`) : quatre pales en bois vues en perspective, bloc moteur, globe lumineux et chaînettes. Trois vitesses comme le ventilateur sur pied (`percentage` de l'entité `fan`, ou puissance : `threshold` 5 W, `mid_threshold` 30 W, `high_threshold` 40 W) : les pales tournent plus vite, l'air descend et les chaînettes se balancent. Avec une entité `light`, le globe s'allume et éclaire la pièce, même pales arrêtées (état « Éclairage »).
+
 **Chargeur de batterie d'outils** (`custom:appliance-tool-charger-card`) : batterie d'outil sans fil (perceuse, visseuse…) posée sur son chargeur, avec le cordon, les voyants du socle et la jauge 4 LED de la batterie. En charge (au-dessus de `threshold`, 10 W) : le voyant clignote en vert, l'énergie circule dans le cordon, un halo et un éclair pulsent et la jauge se remplit LED par LED. Chargée (entre `standby_threshold`, 1 W, et `threshold`, la plupart des chargeurs consomment un peu pour maintenir la batterie) : les quatre LED restent allumées. En dessous : veille (socle vide). `battery_level` (%) en option : la jauge affiche le vrai niveau (25 % par LED, la suivante clignote), avec barre de progression et pastille Batterie ; la batterie est considérée chargée à partir de `full_level` (100 %).
 
 **Réfrigérateur : quatre modèles** avec `style` (aussi dans l'éditeur visuel) : `top` (congélateur en haut, par défaut), `bottom` (combiné : frigo en haut, deux tiroirs de congélation en bas), `french` (deux portes en haut, deux tiroirs en bas), `american` (side-by-side : congélateur à gauche avec distributeur de glaçons et d'eau qui s'éclaire et goutte pendant le froid, frigo à droite). `door` ouvre la ou les portes du frigo, `freezer_door` ouvre la porte du congélateur ou sort le tiroir du haut.
@@ -813,7 +828,7 @@ cost: sensor.lave_linge_cout_jour
 
 **PAC eau/eau (géothermie, nappe)** : `custom:appliance-water-heat-pump-card`, sans ventilateur ni flux d'air, contrairement à l'unité extérieure de la carte *Pompe à chaleur*. Le compresseur vibre entre l'évaporateur (boucle de captage qui descend dans le sol, à gauche) et le condenseur (boucle de chauffage vers un radiateur, à droite). Le départ et le retour passent du bleu (20 °C) au rouge (55 °C), l'eau circule quand le débit est non nul. Le COP vient de `entity_cop`, ou est calculé avec un compteur de chaleur (`entity_heat_power`) et un compteur électrique (`entity_power`). Températures de captage facultatives. Options : voir le tableau en anglais.
 
-**Développement et traductions** : `dist/` est généré, on modifie `src/` puis on lance `node build.js` (sans dépendance). Le code est découpé en petits fichiers : `src/core/` pour les 27 cartes de base (un dessin par appareil dans `svg/`, un fichier CSS par appareil dans `style/`), `src/cards/` pour les cartes autonomes, et les textes dans un fichier par langue (`src/i18n/en.json`, `src/i18n/fr.json`, `src/i18n/de.json`, `src/i18n/nb.json`, `src/i18n/nl.json`, `src/i18n/ro.json`). Voir *Development and translations* plus haut.
+**Développement et traductions** : `dist/` est généré, on modifie `src/` puis on lance `node build.js` (sans dépendance). Le code est découpé en petits fichiers : `src/core/` pour les 28 cartes de base (un dessin par appareil dans `svg/`, un fichier CSS par appareil dans `style/`), `src/cards/` pour les cartes autonomes, et les textes dans un fichier par langue (`src/i18n/en.json`, `src/i18n/fr.json`, `src/i18n/de.json`, `src/i18n/nb.json`, `src/i18n/nl.json`, `src/i18n/ro.json`). Voir *Development and translations* plus haut.
 
 ## License
 
