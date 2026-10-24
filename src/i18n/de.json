@@ -13,6 +13,7 @@
     "beer_tap": "Zapfanlage",
     "av_receiver": "Heimkino-Verstärker",
     "fan": "Ventilator",
+    "ceiling_fan": "Deckenventilator",
     "generic": "Generisches Gerät (eigenes Bild)",
     "towel_dryer": "Handtuchheizkörper",
     "server_rack": "Serverschrank (Homelab)",

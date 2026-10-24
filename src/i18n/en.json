@@ -13,6 +13,7 @@
     "beer_tap": "Beer tap",
     "av_receiver": "Home cinema amplifier",
     "fan": "Fan",
+    "ceiling_fan": "Ceiling fan",
     "generic": "Generic appliance (custom image)",
     "towel_dryer": "Heated towel rail",
     "server_rack": "Server rack (homelab)",
