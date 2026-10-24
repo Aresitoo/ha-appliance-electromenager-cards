@@ -294,6 +294,12 @@ const SCEN = [
   { kind: 'fan', title: 'Ventilateur',
     cfg: { power: 'sensor.fan_power' },
     build(ctl) { range(ctl, 'Puissance', 'sensor.fan_power', 0, 60, 1, 35, 'W', W); } },
+  { kind: 'ceiling-fan', title: 'Ventilateur de plafond',
+    cfg: { power: 'sensor.cfan_power', light: 'light.cfan_light' },
+    build(ctl) {
+      range(ctl, 'Puissance', 'sensor.cfan_power', 0, 60, 1, 35, 'W', W);
+      checks(ctl, [['Lampe', 'light.cfan_light', true]]);
+    } },
   { kind: 'tool-charger', title: "Chargeur de batterie d'outils",
     cfg: { switch: 'switch.tool_charger', power: 'sensor.tool_charger_power', battery_level: 'sensor.drill_battery', energy: 'sensor.tool_charger_energy' },
     build(ctl) {
