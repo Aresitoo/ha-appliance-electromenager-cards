@@ -9,6 +9,8 @@ window.customCards = window.customCards || [];
  * type: custom:appliance-linky-card
  */
 const I18N_LINKY = /*@i18n linky*/{};
+// Langue de Home Assistant (no / nn → nb), utilisée quand `language` n'est pas configuré
+const lang = (h) => { const l = ((h && (h.locale?.language || h.language)) || document.documentElement.lang || 'en').toLowerCase().slice(0, 2); return l === 'no' || l === 'nn' ? 'nb' : l; };
 // Aiguilles L1 / L2 / L3 (mode « needles ») : couleurs distinctes du vert / orange / rouge de la jauge
 const PHASE_COLORS = ['#1e88e5', '#8e24aa', '#00897b'];
 
@@ -55,15 +57,19 @@ class ApplianceLinkyCard extends HTMLElement {
   setConfig(config) {
     this._config = {
       show_gauge: true, show_phases: true, show_index: true, show_injection: true, show_tariff: true, show_cost: true,
-      phase_gauge: 'needles', subscribed_power: 9, hc_ranges: '', language: 'fr', ...config,
+      phase_gauge: 'needles', subscribed_power: 9, hc_ranges: '', ...config,
     };
     this._built = false;
     this._build();
   }
 
-  set hass(hass) { this._hass = hass; this._update(); }
+  set hass(hass) {
+    // Sans `language` dans la config, on suit la langue de Home Assistant (reconstruit si elle change)
+    const l = this._config && (this._config.language || lang(hass));
+    if (l && l !== this._lng) { this._lng = l; this._hass = hass; this._built = false; this._build(); }
+    this._hass = hass; this._update(); }
   getCardSize() { return 5; }
-  _t(k) { return (I18N_LINKY[this._config.language] || I18N_LINKY.en)[k] ?? I18N_LINKY.en[k] ?? k; }
+  _t(k) { return (I18N_LINKY[this._config.language || lang(this._hass)] || I18N_LINKY.en)[k] ?? I18N_LINKY.en[k] ?? k; }
 
   connectedCallback() {
     // Défilement des pages de l'écran LCD toutes les 3 s (et des phases, en mode jauge « cycle »)

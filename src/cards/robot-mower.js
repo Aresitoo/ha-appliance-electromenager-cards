@@ -10,6 +10,8 @@ window.customCards = window.customCards || [];
  * Compatible lawn_mower.* (recommandé) et vacuum.* (certaines intégrations de tondeuses)
  */
 const I18N_MOW = /*@i18n robot_mower*/{};
+// Langue de Home Assistant (no / nn → nb), utilisée quand `language` n'est pas configuré
+const lang = (h) => { const l = ((h && (h.locale?.language || h.language)) || document.documentElement.lang || 'en').toLowerCase().slice(0, 2); return l === 'no' || l === 'nn' ? 'nb' : l; };
 const ICONS_MOW = {
   start: '<path d="M8 5v14l11-7z"/>',
   pause: '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>',
@@ -49,12 +51,16 @@ class ApplianceRobotMowerCard extends HTMLElement {
   setConfig(config) {
     if (!config.entity) throw new Error('entity (lawn_mower.xxx) requise');
     this._config = { show_battery: true, show_area: true, show_time: true, show_next: true, show_status: true,
-      show_blade: true, show_buttons: true, language: 'fr', ...config };
+      show_blade: true, show_buttons: true, ...config };
     this._built = false; this._build();
   }
-  set hass(h) { this._hass = h; this._update(); }
+  set hass(h) {
+    // Sans `language` dans la config, on suit la langue de Home Assistant (reconstruit si elle change)
+    const l = this._config && (this._config.language || lang(h));
+    if (l && l !== this._lng) { this._lng = l; this._hass = h; this._built = false; this._build(); }
+    this._hass = h; this._update(); }
   getCardSize() { return 6; }
-  _t(k) { return (I18N_MOW[this._config.language] || I18N_MOW.en)[k] ?? I18N_MOW.en[k] ?? k; }
+  _t(k) { return (I18N_MOW[this._config.language || lang(this._hass)] || I18N_MOW.en)[k] ?? I18N_MOW.en[k] ?? k; }
 
   _call(action) {
     if (!this._hass) return;

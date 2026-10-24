@@ -9,6 +9,8 @@ window.customCards = window.customCards || [];
  * type: custom:appliance-aquarium-card
  */
 const I18N_AQUARIUM = /*@i18n aquarium*/{};
+// Langue de Home Assistant (no / nn → nb), utilisée quand `language` n'est pas configuré
+const lang = (h) => { const l = ((h && (h.locale?.language || h.language)) || document.documentElement.lang || 'en').toLowerCase().slice(0, 2); return l === 'no' || l === 'nn' ? 'nb' : l; };
 
 class ApplianceAquariumCard extends HTMLElement {
   static getStubConfig() {
@@ -44,7 +46,7 @@ class ApplianceAquariumCard extends HTMLElement {
   setConfig(config) {
     this._config = {
       show_power: true, show_energy: true, show_temperature: true, show_cost: true,
-      temp_min: 24, temp_max: 27, price_per_kwh: 0.2, max_power: 200, language: 'fr',
+      temp_min: 24, temp_max: 27, price_per_kwh: 0.2, max_power: 200,
       ...config,
     };
     this._built = false;
@@ -52,13 +54,17 @@ class ApplianceAquariumCard extends HTMLElement {
   }
 
   set hass(hass) {
+    // Sans `language` dans la config, on suit la langue de Home Assistant (reconstruit si elle change)
+    const l = this._config && (this._config.language || lang(hass));
+    if (l && l !== this._lng) { this._lng = l; this._hass = hass; this._built = false; this._build(); }
+   
     this._hass = hass;
     this._update();
   }
 
   getCardSize() { return 5; }
 
-  _t(k) { return (I18N_AQUARIUM[this._config.language] || I18N_AQUARIUM.en)[k] ?? I18N_AQUARIUM.en[k] ?? k; }
+  _t(k) { return (I18N_AQUARIUM[this._config.language || lang(this._hass)] || I18N_AQUARIUM.en)[k] ?? I18N_AQUARIUM.en[k] ?? k; }
 
   _build() {
     const c = this._config;

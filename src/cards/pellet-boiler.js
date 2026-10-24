@@ -9,6 +9,8 @@ window.customCards = window.customCards || [];
  * type: custom:appliance-pellet-boiler-card
  */
 const I18N_PB = /*@i18n pellet_boiler*/{};
+// Langue de Home Assistant (no / nn → nb), utilisée quand `language` n'est pas configuré
+const lang = (h) => { const l = ((h && (h.locale?.language || h.language)) || document.documentElement.lang || 'en').toLowerCase().slice(0, 2); return l === 'no' || l === 'nn' ? 'nb' : l; };
 
 class AppliancePelletBoilerCard extends HTMLElement {
   static getStubConfig() { return { entity_power: '', entity_flow_temp: '', entity_return_temp: '', entity_pellet_level: '' }; }
@@ -46,12 +48,16 @@ class AppliancePelletBoilerCard extends HTMLElement {
 
   setConfig(config) {
     this._config = { show_power: true, show_energy: true, show_cost: true, show_temps: true, show_pellets: true, show_status: true,
-      price_per_kwh: 0, threshold: 30, ignition_threshold: 300, pellet_alert: 15, flow_temp_max: 80, language: 'fr', ...config };
+      price_per_kwh: 0, threshold: 30, ignition_threshold: 300, pellet_alert: 15, flow_temp_max: 80, ...config };
     this._built = false; this._build();
   }
-  set hass(h) { this._hass = h; this._update(); }
+  set hass(h) {
+    // Sans `language` dans la config, on suit la langue de Home Assistant (reconstruit si elle change)
+    const l = this._config && (this._config.language || lang(h));
+    if (l && l !== this._lng) { this._lng = l; this._hass = h; this._built = false; this._build(); }
+    this._hass = h; this._update(); }
   getCardSize() { return 6; }
-  _t(k) { return (I18N_PB[this._config.language] || I18N_PB.en)[k] ?? I18N_PB.en[k] ?? k; }
+  _t(k) { return (I18N_PB[this._config.language || lang(this._hass)] || I18N_PB.en)[k] ?? I18N_PB.en[k] ?? k; }
 
   _build() {
     if (!this.shadowRoot) this.attachShadow({ mode: 'open' });

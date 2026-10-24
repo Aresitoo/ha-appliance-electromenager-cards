@@ -9,6 +9,8 @@ window.customCards = window.customCards || [];
  * type: custom:appliance-ev-charger-card
  */
 const I18N_EV = /*@i18n ev_charger*/{};
+// Langue de Home Assistant (no / nn → nb), utilisée quand `language` n'est pas configuré
+const lang = (h) => { const l = ((h && (h.locale?.language || h.language)) || document.documentElement.lang || 'en').toLowerCase().slice(0, 2); return l === 'no' || l === 'nn' ? 'nb' : l; };
 
 class ApplianceEvChargerCard extends HTMLElement {
   static getStubConfig() { return { entity_power: '', entity_session_energy: '', entity_car_soc: '', entity_status: '', max_power: 7400, price_per_kwh: 0.2 }; }
@@ -42,14 +44,20 @@ class ApplianceEvChargerCard extends HTMLElement {
 
   setConfig(config) {
     this._config = { show_power: true, show_energy: true, show_soc: true, show_status: true, show_duration: true, show_cost: true,
-      max_power: 7400, price_per_kwh: 0.2, car_color: '#3d6fb6', language: 'fr', ...config };
+      max_power: 7400, price_per_kwh: 0.2, car_color: '#3d6fb6', ...config };
     this._built = false; this._build();
   }
-  set hass(h) { this._hass = h; this._update(); }
+  set hass(h) {
+    this._hass = h;
+    // Sans `language` dans la config, on suit la langue de Home Assistant (reconstruit si elle change)
+    const l = this._config.language || lang(h);
+    if (l !== this._lng) { this._lng = l; this._built = false; this._build(); }
+    this._update();
+  }
   getCardSize() { return 5; }
   connectedCallback() { this._timer = setInterval(() => this._update(), 30000); } // rafraîchit la durée
   disconnectedCallback() { clearInterval(this._timer); }
-  _t(k) { return (I18N_EV[this._config.language] || I18N_EV.en)[k] ?? I18N_EV.en[k] ?? k; }
+  _t(k) { return (I18N_EV[this._config.language || lang(this._hass)] || I18N_EV.en)[k] ?? I18N_EV.en[k] ?? k; }
 
   _build() {
     if (!this.shadowRoot) this.attachShadow({ mode: 'open' });

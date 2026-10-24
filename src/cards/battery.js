@@ -9,6 +9,8 @@ window.customCards = window.customCards || [];
  * type: custom:appliance-battery-card
  */
 const I18N_BAT = /*@i18n battery*/{};
+// Langue de Home Assistant (no / nn → nb), utilisée quand `language` n'est pas configuré
+const lang = (h) => { const l = ((h && (h.locale?.language || h.language)) || document.documentElement.lang || 'en').toLowerCase().slice(0, 2); return l === 'no' || l === 'nn' ? 'nb' : l; };
 
 class ApplianceBatteryCard extends HTMLElement {
   static getStubConfig() { return { entity_soc: '', entity_power: '', entity_energy: '', entity_temperature: '', capacity_kwh: 10, max_power: 5000 }; }
@@ -41,12 +43,18 @@ class ApplianceBatteryCard extends HTMLElement {
   setConfig(config) {
     // Convention : puissance > 0 = charge (inverser avec invert_power si ton capteur est l'inverse)
     this._config = { show_power: true, show_energy: true, show_temperature: true, show_time: true,
-      capacity_kwh: 10, max_power: 5000, low_threshold: 15, invert_power: false, language: 'fr', ...config };
+      capacity_kwh: 10, max_power: 5000, low_threshold: 15, invert_power: false, ...config };
     this._built = false; this._build();
   }
-  set hass(h) { this._hass = h; this._update(); }
+  set hass(h) {
+    this._hass = h;
+    // Sans `language` dans la config, on suit la langue de Home Assistant (reconstruit si elle change)
+    const l = this._config.language || lang(h);
+    if (l !== this._lng) { this._lng = l; this._built = false; this._build(); }
+    this._update();
+  }
   getCardSize() { return 5; }
-  _t(k) { return (I18N_BAT[this._config.language] || I18N_BAT.en)[k] ?? I18N_BAT.en[k] ?? k; }
+  _t(k) { return (I18N_BAT[this._config.language || lang(this._hass)] || I18N_BAT.en)[k] ?? I18N_BAT.en[k] ?? k; }
 
   _build() {
     if (!this.shadowRoot) this.attachShadow({ mode: 'open' });
