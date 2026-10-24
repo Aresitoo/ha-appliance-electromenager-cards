@@ -8,7 +8,7 @@
  */
 (() => {
 "use strict";
-const VERSION = "1.21.1";
+const VERSION = "1.21.2";
 
 /* ------------------------------------------------------------------ */
 /* i18n — strings live in src/i18n/<lang>.json, inlined by build.js    */
@@ -4672,6 +4672,7 @@ console.info(`%c HA-APPLIANCE-CARDS %c v${VERSION} `,
 /* ================================================================== */
 (() => {
 "use strict";
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); // texte → HTML sûr
 const define = (tag, cls) => { if (!customElements.get(tag)) customElements.define(tag, cls); };
 window.customCards = window.customCards || [];
 /* appliance-aquarium-card — carte Lovelace aquarium animé (puissance, kWh, température, coût)
@@ -4850,7 +4851,7 @@ class ApplianceAquariumCard extends HTMLElement {
       @keyframes blink { 50% { opacity:.35 } }
     </style>
     <ha-card>
-      <div class="title"><span id="name">${c.name || this._t('name')}</span><span class="badge" id="badge">${this._t('alert')}</span></div>
+      <div class="title"><span id="name">${esc(c.name || this._t('name'))}</span><span class="badge" id="badge">${this._t('alert')}</span></div>
       <svg viewBox="0 0 320 200" id="tank">
         <defs>
           <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2d8cf0"/><stop offset="1" stop-color="#0b4fb8"/></linearGradient>
@@ -4934,7 +4935,7 @@ class ApplianceAquariumCard extends HTMLElement {
     if (c.show_temperature) items.push(['t', this._t('temp'), fmt(temp, 1, '°C')]);
     if (c.show_cost) items.push(['c', this._t('cost'), fmt(cost, 2, '€')]);
     root.getElementById('stats').innerHTML = items.map(([k, l, v]) =>
-      `<div class="stat ${k}"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
+      `<div class="stat ${k}"><div class="v">${esc(v)}</div><div class="l">${esc(l)}</div></div>`).join('');
   }
 }
 
@@ -4948,6 +4949,7 @@ window.customCards.push({ type: 'appliance-aquarium-card', name: 'Aquarium Card'
 /* ================================================================== */
 (() => {
 "use strict";
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); // texte → HTML sûr
 const define = (tag, cls) => { if (!customElements.get(tag)) customElements.define(tag, cls); };
 window.customCards = window.customCards || [];
 /* appliance-linky-card — compteur Linky animé (écran LCD, jauge vs puissance souscrite, index HP/HC)
@@ -5196,7 +5198,7 @@ class ApplianceLinkyCard extends HTMLElement {
       @keyframes fadein { from { opacity:0; transform:translateY(5px) } to { opacity:1; transform:none } }
     </style>
     <ha-card id="meter">
-      <div class="title" id="name">${this._config.name || this._t('name')}</div>
+      <div class="title" id="name">${esc(this._config.name || this._t('name'))}</div>
       <div class="wrap">
         <div class="box">
           <div class="eye"></div>
@@ -5394,6 +5396,7 @@ window.customCards.push({ type: 'appliance-linky-card', name: 'Linky Card', desc
 /* ================================================================== */
 (() => {
 "use strict";
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); // texte → HTML sûr
 const define = (tag, cls) => { if (!customElements.get(tag)) customElements.define(tag, cls); };
 window.customCards = window.customCards || [];
 /* appliance-battery-card — batterie de stockage solaire animée (niveau liquide, flux charge/décharge)
@@ -5581,7 +5584,7 @@ class ApplianceBatteryCard extends HTMLElement {
       @keyframes wave { from { transform:translate(-12px, var(--wy,0px)); } to { transform:translate(8px, var(--wy,0px)); } }
     </style>
     <ha-card id="card">
-      <div class="title"><span>${this._config.name || this._t('name')}</span><span class="badge">${this._t('low')}</span></div>
+      <div class="title"><span>${esc(this._config.name || this._t('name'))}</span><span class="badge">${this._t('low')}</span></div>
       <svg viewBox="0 -6 320 176" id="svg">
         <defs>
           <linearGradient id="body" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#f7f8f9"/><stop offset="1" stop-color="#e3e6e9"/></linearGradient>
@@ -5642,7 +5645,7 @@ class ApplianceBatteryCard extends HTMLElement {
     if (c.show_energy) it.push([this._t('energy'), f(energy !== null ? energy : (soc === null ? null : c.capacity_kwh * pct / 100), 1, 'kWh')]);
     if (c.show_temperature) it.push([this._t('temp'), f(temp, 0, '°C')]);
     if (time) it.push(['⏱', time]);
-    r.getElementById('stats').innerHTML = it.map(([l, v]) => `<div class="stat"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
+    r.getElementById('stats').innerHTML = it.map(([l, v]) => `<div class="stat"><div class="v">${esc(v)}</div><div class="l">${esc(l)}</div></div>`).join('');
   }
 }
 define('appliance-battery-card', ApplianceBatteryCard);
@@ -5655,6 +5658,7 @@ window.customCards.push({ type: 'appliance-battery-card', name: 'Solar Battery C
 /* ================================================================== */
 (() => {
 "use strict";
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); // texte → HTML sûr
 const define = (tag, cls) => { if (!customElements.get(tag)) customElements.define(tag, cls); };
 window.customCards = window.customCards || [];
 /* appliance-ev-charger-card — wallbox murale + voiture branchée, animée
@@ -5792,7 +5796,7 @@ class ApplianceEvChargerCard extends HTMLElement {
 
   _build() {
     if (!this.shadowRoot) this.attachShadow({ mode: 'open' });
-    const car = this._config.car_color;
+    const car = esc(this._config.car_color);
     const cable = 'M44 112 C 44 168, 112 170, 134 118';
     this.shadowRoot.innerHTML = `
     <style>
@@ -5820,7 +5824,7 @@ class ApplianceEvChargerCard extends HTMLElement {
       @keyframes spark { 0%,100% { opacity:0; transform:scale(.6); } 50% { opacity:1; transform:scale(1.1); } }
     </style>
     <ha-card>
-      <div class="title">${this._config.name || this._t('name')}</div>
+      <div class="title">${esc(this._config.name || this._t('name'))}</div>
       <svg viewBox="0 0 340 172" id="svg">
         <defs>
           <linearGradient id="wb" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#40454d"/><stop offset="1" stop-color="#16191d"/></linearGradient>
@@ -5937,7 +5941,7 @@ class ApplianceEvChargerCard extends HTMLElement {
     if (c.show_cost) it.push([this._t('cost'), f(cost, 2, '€')]);
     // 5-6 valeurs → 2 lignes équilibrées
     r.getElementById('stats').style.gridTemplateColumns = `repeat(${it.length > 4 ? Math.ceil(it.length / 2) : it.length}, 1fr)`;
-    r.getElementById('stats').innerHTML = it.map(([l, v]) => `<div class="stat"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
+    r.getElementById('stats').innerHTML = it.map(([l, v]) => `<div class="stat"><div class="v">${esc(v)}</div><div class="l">${esc(l)}</div></div>`).join('');
   }
 }
 define('appliance-ev-charger-card', ApplianceEvChargerCard);
@@ -5950,6 +5954,7 @@ window.customCards.push({ type: 'appliance-ev-charger-card', name: 'EV Charger C
 /* ================================================================== */
 (() => {
 "use strict";
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); // texte → HTML sûr
 const define = (tag, cls) => { if (!customElements.get(tag)) customElements.define(tag, cls); };
 window.customCards = window.customCards || [];
 /* appliance-robot-vacuum-card — robot aspirateur + station de vidage, animé, avec commandes
@@ -6183,7 +6188,7 @@ class ApplianceRobotVacuumCard extends HTMLElement {
     }
     const stats = r.getElementById('stats');
     stats.style.gridTemplateColumns = `repeat(${it.length > 4 ? Math.ceil(it.length / 2) : it.length}, 1fr)`;
-    stats.innerHTML = it.map(([l, v]) => `<div class="stat"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
+    stats.innerHTML = it.map(([l, v]) => `<div class="stat"><div class="v">${esc(v)}</div><div class="l">${esc(l)}</div></div>`).join('');
   }
 }
 window.customCards = window.customCards || [];
@@ -6243,7 +6248,7 @@ class ApplianceRobotVacuumSoloCard extends ApplianceRobotVacuumCard {
       @keyframes hop { 50% { transform:translateY(-4px) } }
     </style>
     <ha-card id="card">
-      <div class="title"><span>${this._config.name || this._t('name')}</span><span class="badge" id="err"></span></div>
+      <div class="title"><span>${esc(this._config.name || this._t('name'))}</span><span class="badge" id="err"></span></div>
       <svg viewBox="0 0 240 142" id="svg">
         <defs>
           <linearGradient id="top" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#d3d8dd"/></linearGradient>
@@ -6298,6 +6303,7 @@ window.customCards.push({ type: 'appliance-robot-vacuum-solo-card', name: 'Robot
 /* ================================================================== */
 (() => {
 "use strict";
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); // texte → HTML sûr
 const define = (tag, cls) => { if (!customElements.get(tag)) customElements.define(tag, cls); };
 window.customCards = window.customCards || [];
 /* appliance-robot-mower-card — robot tondeuse + station sur bande de pelouse, animé, avec commandes
@@ -6530,7 +6536,7 @@ class ApplianceRobotMowerCard extends HTMLElement {
     if (c.show_blade && blade !== null) it.push([this._t('blade'), `${Math.round(blade)} %`]);
     const stats = r.getElementById('stats');
     stats.style.gridTemplateColumns = `repeat(${it.length > 4 ? Math.ceil(it.length / 2) : it.length}, 1fr)`;
-    stats.innerHTML = it.map(([l, v]) => `<div class="stat"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
+    stats.innerHTML = it.map(([l, v]) => `<div class="stat"><div class="v">${esc(v)}</div><div class="l">${esc(l)}</div></div>`).join('');
   }
 }
 window.customCards = window.customCards || [];
@@ -6577,7 +6583,7 @@ class ApplianceRobotMowerSoloCard extends ApplianceRobotMowerCard {
       @keyframes hop { 50% { transform:translateY(-4px) } }
     </style>
     <ha-card id="card">
-      <div class="title"><span>${this._config.name || this._t('name')}</span><span class="badge" id="err"></span></div>
+      <div class="title"><span>${esc(this._config.name || this._t('name'))}</span><span class="badge" id="err"></span></div>
       <svg viewBox="0 0 240 132" id="svg">
         <defs><linearGradient id="shell" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6f7f8"/><stop offset="1" stop-color="#b8bec4"/></linearGradient></defs>
         <g class="rain">${rain}</g>
@@ -6635,6 +6641,7 @@ window.customCards.push({ type: 'appliance-robot-mower-solo-card', name: 'Robot 
 /* ================================================================== */
 (() => {
 "use strict";
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); // texte → HTML sûr
 const define = (tag, cls) => { if (!customElements.get(tag)) customElements.define(tag, cls); };
 window.customCards = window.customCards || [];
 /* appliance-pellet-boiler-card — chaudière à granulés + trémie + vis sans fin, sans fond, animée
@@ -6843,7 +6850,7 @@ class AppliancePelletBoilerCard extends HTMLElement {
       @keyframes blink { 50% { opacity:.35 } } @keyframes breathe { 50% { opacity:.3 } }
     </style>
     <ha-card id="card">
-      <div class="title"><span>${this._config.name || this._t('name')}</span><span><span class="badge lo">${this._t('low')}</span> <span class="badge al">${this._t('alarm')}</span></span></div>
+      <div class="title"><span>${esc(this._config.name || this._t('name'))}</span><span><span class="badge lo">${this._t('low')}</span> <span class="badge al">${this._t('alarm')}</span></span></div>
       <svg viewBox="0 0 280 214" id="svg">
         <defs>
           <linearGradient id="pbf" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#e9ebed"/><stop offset="1" stop-color="#cfd3d7"/></linearGradient>
@@ -6984,7 +6991,7 @@ class AppliancePelletBoilerCard extends HTMLElement {
     if (c.show_cost && cost !== null) it.push([this._t('cost'), f(cost, 2, '€')]);
     const stats = r.getElementById('stats');
     stats.style.gridTemplateColumns = `repeat(${it.length > 4 ? Math.ceil(it.length / 2) : it.length}, 1fr)`;
-    stats.innerHTML = it.map(([l, v]) => `<div class="stat"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
+    stats.innerHTML = it.map(([l, v]) => `<div class="stat"><div class="v">${esc(v)}</div><div class="l">${esc(l)}</div></div>`).join('');
   }
 }
 define('appliance-pellet-boiler-card', AppliancePelletBoilerCard);
@@ -7122,6 +7129,7 @@ window.customCards.push({ type: 'appliance-pellet-boiler-card', name: 'Pellet Bo
       "hotf": "Tur prea cald"
     }
   };
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); // texte → HTML sûr
 
   const CSS = `
 :host{display:block}
@@ -7381,7 +7389,9 @@ svg{display:block;width:100%;max-width:170px;height:var(--appliance-illustration
         const el = r.querySelector(`.tile[data-k="${k}"]`); const [ent, val, unit] = V[k];
         el.classList.toggle('hide', !ent || c[opt] === false);
         el.querySelector('.lbl').textContent = this._t(k);
-        el.querySelector('.v').innerHTML = `${val}<small>${unit}</small>`;
+        // valeur + unité en texte (l'unité vient de l'entité ou de la config)
+        const small = document.createElement('small'); small.textContent = unit ?? '';
+        el.querySelector('.v').replaceChildren(String(val ?? ''), small);
         el.onclick = () => { const id = k === 'cost' ? c.entity_cost : c['entity_' + (k === 'ret' ? 'return_temp' : k === 'flow' ? 'flow_temp' : k === 'mod' ? 'modulation' : k)]; if (id) this.dispatchEvent(new CustomEvent('hass-more-info', { detail: { entityId: id }, bubbles: true, composed: true })); };
       });
     }
@@ -7577,6 +7587,7 @@ svg{display:block;width:100%;max-width:170px;height:var(--appliance-illustration
       "buffer": "Rezervor tampon"
     }
   };
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); // texte → HTML sûr
 
   const CSS = `
 :host{display:block}
@@ -7896,7 +7907,9 @@ svg{display:block;width:100%;height:var(--appliance-illustration-height,auto);ma
         const el = r.querySelector(`.tile[data-k="${k}"]`); const [shown, val, unit] = V[k];
         el.classList.toggle('hide', !shown || c[opt] === false);
         el.querySelector('.lbl').textContent = this._t(k);
-        el.querySelector('.v').innerHTML = `${val}<small>${unit}</small>`;
+        // valeur + unité en texte (l'unité vient de l'entité ou de la config)
+        const small = document.createElement('small'); small.textContent = unit ?? '';
+        el.querySelector('.v').replaceChildren(String(val ?? ''), small);
         const id = k === 'cop' && !c.entity_cop ? c.entity_heat_power : c[more];
         el.onclick = () => { if (id) this.dispatchEvent(new CustomEvent('hass-more-info', { detail: { entityId: id }, bubbles: true, composed: true })); };
       });
