@@ -47,6 +47,11 @@ const STRINGS = {
     "mode_off": "Off",
     "wine_cooler": "Wine cooler",
     "f_max_temperature_wine": "Alert above (°C)",
+    "f_fridge_style": "Refrigerator layout",
+    "zone_top": "Upper zone",
+    "zone_bottom": "Lower zone",
+    "f_zone2_temperature": "Lower zone temperature sensor (dual-zone)",
+    "f_max_temperature_2": "Lower zone alert above (°C)",
     "f_show_modes": "Show mode buttons",
     "f_show_power": "Show power",
     "grid": "Grid",
@@ -235,6 +240,11 @@ const STRINGS = {
     "mode_off": "Aus",
     "wine_cooler": "Weinkühlschrank",
     "f_max_temperature_wine": "Alarm über (°C)",
+    "f_fridge_style": "Kühlschrank-Bauform",
+    "zone_top": "Obere Zone",
+    "zone_bottom": "Untere Zone",
+    "f_zone2_temperature": "Temperatursensor untere Zone (Zwei-Zonen)",
+    "f_max_temperature_2": "Alarm untere Zone über (°C)",
     "f_show_modes": "Modus-Tasten anzeigen",
     "f_show_power": "Leistung anzeigen",
     "grid": "Netz",
@@ -423,6 +433,11 @@ const STRINGS = {
     "mode_off": "Arrêt",
     "wine_cooler": "Cave à vin",
     "f_max_temperature_wine": "Alerte au-dessus de (°C)",
+    "f_fridge_style": "Type de réfrigérateur",
+    "zone_top": "Zone haute",
+    "zone_bottom": "Zone basse",
+    "f_zone2_temperature": "Capteur de température zone basse (bi-zone)",
+    "f_max_temperature_2": "Alerte zone basse au-dessus de (°C)",
     "f_show_modes": "Afficher les boutons de mode",
     "f_show_power": "Afficher la puissance",
     "grid": "Réseau",
@@ -611,6 +626,11 @@ const STRINGS = {
     "mode_off": "Av",
     "wine_cooler": "Vinkjøleskap",
     "f_max_temperature_wine": "Varsel over (°C)",
+    "f_fridge_style": "Kjøleskapstype",
+    "zone_top": "Øvre sone",
+    "zone_bottom": "Nedre sone",
+    "f_zone2_temperature": "Temperatursensor nedre sone (to soner)",
+    "f_max_temperature_2": "Varsel nedre sone over (°C)",
     "f_show_modes": "Vis modusknapper",
     "f_show_power": "Vis effekt",
     "grid": "Strømnett",
@@ -799,6 +819,11 @@ const STRINGS = {
     "mode_off": "Uit",
     "wine_cooler": "Wijnkoelkast",
     "f_max_temperature_wine": "Alarm boven (°C)",
+    "f_fridge_style": "Type koelkast",
+    "zone_top": "Bovenste zone",
+    "zone_bottom": "Onderste zone",
+    "f_zone2_temperature": "Temperatuursensor onderste zone (twee zones)",
+    "f_max_temperature_2": "Alarm onderste zone boven (°C)",
     "f_show_modes": "Modusknoppen tonen",
     "f_show_power": "Vermogen tonen",
     "grid": "Net",
@@ -987,6 +1012,11 @@ const STRINGS = {
     "mode_off": "Oprit",
     "wine_cooler": "Vinotecă",
     "f_max_temperature_wine": "Alertă peste (°C)",
+    "f_fridge_style": "Tip frigider",
+    "zone_top": "Zona de sus",
+    "zone_bottom": "Zona de jos",
+    "f_zone2_temperature": "Senzor temperatură zona de jos (două zone)",
+    "f_max_temperature_2": "Alertă zona de jos peste (°C)",
     "f_show_modes": "Afișează butoanele de mod",
     "f_show_power": "Afișează puterea",
     "grid": "Rețea",
@@ -1663,13 +1693,41 @@ SVG.fan = () => `
   <g class="fn-ribbon"><path d="M93 44q8 2 12 -2q-4 6 -12 6z" fill="#ff7a59"/></g>
 </g>`;
 
-SVG.fridge = () => `
-<defs>${DEFS}
+/* style de réfrigérateur : congélateur en haut (défaut), en bas, French door, américain */
+const fridgeStyle = (c) => ({ top: "top", haut: "top", bottom: "bottom", bas: "bottom", combi: "bottom", french: "french", french_door: "french", american: "american", americain: "american", side_by_side: "american", us: "american" }[String(c?.style || "top").toLowerCase()] || "top");
+
+// contenu du compartiment frigo (bouteilles, pots, fruits, bac à légumes), dessiné dans la zone x, y, w, h
+const fridgeFood = (x, y, w, h) => {
+  const s1 = y + h * 0.33, s2 = y + h * 0.64, cx = x + w / 2;
+  return `
+<path d="M${x + 2} ${s1}h${w - 4}M${x + 2} ${s2}h${w - 4}" stroke="#b9c8d6" stroke-width="1.1"/>
+<rect x="${x + 7}" y="${s1 - 14}" width="6" height="14" rx="1.5" fill="#3fbf7f"/><rect x="${x + 15}" y="${s1 - 10}" width="8" height="10" rx="2" fill="#f2c94c"/>
+<rect x="${cx - 3}" y="${s1 - 8}" width="12" height="8" rx="2" fill="#e5484d"/><rect x="${x + w - 15}" y="${s1 - 12}" width="5" height="12" rx="1.5" fill="#3e8ed0"/>
+<rect x="${x + 9}" y="${s2 - 10}" width="14" height="10" rx="2" fill="#ffffff" stroke="#c9d3dc" stroke-width=".6"/><circle cx="${cx + 4}" cy="${s2 - 5}" r="5" fill="#ff8f3d"/><circle cx="${cx + 14}" cy="${s2 - 4}" r="4" fill="#9fd356"/>
+<rect x="${x + 3}" y="${s2 + 6}" width="${w - 6}" height="${y + h - s2 - 9}" rx="2" fill="#e3eef7" stroke="#b9c8d6" stroke-width=".6"/>`;
+};
+// tiroir de congélateur (façade inox + poignée horizontale)
+const fzDrawer = (x, y, w, h, cls) => `
+<g class="${cls}">
+  <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="4" fill="url(#ID-inox)" stroke="#8f979f" stroke-width=".7"/>
+  <rect x="${x + w * 0.25}" y="${y + 3.5}" width="${w * 0.5}" height="3.2" rx="1.6" fill="url(#ID-chrome)" stroke="#6f7781" stroke-width=".4"/>
+  <path d="M${x + 4} ${y + h - 2}h${w - 8}" stroke="#fff" stroke-opacity=".45" stroke-width="1"/>
+</g>`;
+// afficheur température + flocon
+const fridgeLcd = (x, y) => `
+<rect x="${x}" y="${y}" width="24" height="12" rx="2" fill="#0c1720" stroke="#7d868f" stroke-width=".5"/>
+<text class="lcd fr-temp" x="${x + 14.5}" y="${y + 8.8}" text-anchor="middle">--°</text>
+<g class="flake"><path d="M${x + 4.5} ${y + 3}v6M${x + 1.9} ${y + 4.5}l5.2 3M${x + 1.9} ${y + 7.5}l5.2-3" stroke-width=".8" stroke-linecap="round"/></g>`;
+const FRIDGE_DEFS = `<defs>${DEFS}
 <linearGradient id="ID-in" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#dfe9f2"/></linearGradient>
-<linearGradient id="ID-frost" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e9f6ff"/><stop offset="1" stop-color="#bfe0f5"/></linearGradient></defs>
+<linearGradient id="ID-frost" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e9f6ff"/><stop offset="1" stop-color="#bfe0f5"/></linearGradient></defs>`;
+const fridgeMist = `<g class="mist"><circle cx="40" cy="132" r="1.1"/><circle cx="52" cy="133" r=".9"/><circle cx="66" cy="132" r="1.2"/><circle cx="79" cy="133" r=".9"/></g>`;
+
+const FRIDGE = {
+  // congélateur en haut (modèle d'origine)
+  top: () => `
 <ellipse cx="60" cy="134" rx="40" ry="4.5" fill="url(#ID-shadow)"/>
 <rect x="26" y="4" width="68" height="126" rx="6" fill="#9aa2ab"/>
-<!-- interiors -->
 <rect x="29" y="7" width="62" height="36" rx="3" fill="url(#ID-frost)"/>
 <path d="M31 25h58" stroke="#a9cbe2" stroke-width="1"/>
 <rect x="34" y="28" width="22" height="11" rx="2" fill="#d9eefb" stroke="#a9cbe2" stroke-width=".6"/>
@@ -1681,7 +1739,6 @@ SVG.fridge = () => `
 <rect x="38" y="86" width="14" height="10" rx="2" fill="#ffffff" stroke="#c9d3dc" stroke-width=".6"/><circle cx="64" cy="91" r="5" fill="#ff8f3d"/><circle cx="74" cy="92" r="4" fill="#9fd356"/>
 <rect x="32" y="104" width="56" height="18" rx="2" fill="#e3eef7" stroke="#b9c8d6" stroke-width=".6"/>
 <rect class="flight" x="29" y="47" width="62" height="78" fill="#fffbe6" opacity="0"/>
-<!-- doors -->
 <g class="fz-door">
   <rect x="26" y="4" width="68" height="40" rx="6" fill="url(#ID-inox)" stroke="#8f979f" stroke-width=".7"/>
   <rect x="84" y="12" width="3.4" height="24" rx="1.7" fill="url(#ID-chrome)" stroke="#6f7781" stroke-width=".4"/>
@@ -1693,8 +1750,81 @@ SVG.fridge = () => `
   <text class="lcd fr-temp" x="49.5" y="62.8" text-anchor="middle">--°</text>
   <g class="flake"><path d="M39.5 57v6M36.9 58.5l5.2 3M36.9 61.5l5.2-3" stroke-width=".8" stroke-linecap="round"/></g>
   <path d="M30 50v76" stroke="#fff" stroke-opacity=".55" stroke-width="2"/>
+</g>`,
+
+  // combiné : frigo en haut, deux tiroirs de congélation en bas
+  bottom: () => `
+<ellipse cx="60" cy="134" rx="40" ry="4.5" fill="url(#ID-shadow)"/>
+<rect x="26" y="4" width="68" height="126" rx="6" fill="#9aa2ab"/>
+<rect x="29" y="7" width="62" height="74" rx="3" fill="url(#ID-in)"/>
+${fridgeFood(29, 7, 62, 74)}
+<rect class="flight" x="29" y="7" width="62" height="74" fill="#fffbe6" opacity="0"/>
+<rect x="29" y="86" width="62" height="41" rx="3" fill="url(#ID-frost)"/>
+<path d="M31 106h58" stroke="#a9cbe2" stroke-width="1"/>
+${fzDrawer(26, 108, 68, 22, "fzd")}
+${fzDrawer(26, 85, 68, 22, "fzd fzd-pull")}
+<g class="fr-door">
+  <rect x="26" y="4" width="68" height="79" rx="6" fill="url(#ID-inox)" stroke="#8f979f" stroke-width=".7"/>
+  <rect x="84" y="40" width="3.4" height="38" rx="1.7" fill="url(#ID-chrome)" stroke="#6f7781" stroke-width=".4"/>
+  ${fridgeLcd(35, 12)}
+  <path d="M30 8v71" stroke="#fff" stroke-opacity=".55" stroke-width="2"/>
+</g>`,
+
+  // French door : deux portes battantes en haut, deux tiroirs de congélation en bas
+  french: () => `
+<ellipse cx="60" cy="134" rx="50" ry="4.5" fill="url(#ID-shadow)"/>
+<rect x="16" y="4" width="88" height="126" rx="6" fill="#9aa2ab"/>
+<rect x="19" y="7" width="82" height="70" rx="3" fill="url(#ID-in)"/>
+${fridgeFood(19, 7, 82, 70)}
+<rect class="flight" x="19" y="7" width="82" height="70" fill="#fffbe6" opacity="0"/>
+<rect x="19" y="82" width="82" height="45" rx="3" fill="url(#ID-frost)"/>
+<path d="M21 106h78" stroke="#a9cbe2" stroke-width="1"/>
+${fzDrawer(16, 106, 88, 24, "fzd")}
+${fzDrawer(16, 81, 88, 23, "fzd fzd-pull")}
+<g class="fr-door fr-l">
+  <rect x="16" y="4" width="43.6" height="75" rx="5" fill="url(#ID-inox)" stroke="#8f979f" stroke-width=".7"/>
+  <rect x="53" y="16" width="3.2" height="46" rx="1.6" fill="url(#ID-chrome)" stroke="#6f7781" stroke-width=".4"/>
+  ${fridgeLcd(22, 12)}
+  <path d="M20 8v67" stroke="#fff" stroke-opacity=".55" stroke-width="2"/>
 </g>
-<g class="mist"><circle cx="40" cy="132" r="1.1"/><circle cx="52" cy="133" r=".9"/><circle cx="66" cy="132" r="1.2"/><circle cx="79" cy="133" r=".9"/></g>`;
+<g class="fr-door fr-r" style="transform-origin: 104px 0">
+  <rect x="60.4" y="4" width="43.6" height="75" rx="5" fill="url(#ID-inox)" stroke="#8f979f" stroke-width=".7"/>
+  <rect x="63.8" y="16" width="3.2" height="46" rx="1.6" fill="url(#ID-chrome)" stroke="#6f7781" stroke-width=".4"/>
+  <path d="M71 8v67" stroke="#fff" stroke-opacity=".4" stroke-width="2"/>
+</g>`,
+
+  // américain side-by-side : congélateur à gauche avec distributeur glaçons / eau, frigo à droite
+  american: () => `
+<ellipse cx="60" cy="134" rx="54" ry="4.5" fill="url(#ID-shadow)"/>
+<rect x="12" y="4" width="96" height="126" rx="6" fill="#9aa2ab"/>
+<rect x="15" y="7" width="43" height="120" rx="3" fill="url(#ID-frost)"/>
+<path d="M17 36h39M17 66h39M17 96h39" stroke="#a9cbe2" stroke-width="1"/>
+<rect x="19" y="24" width="14" height="10" rx="2" fill="#d9eefb" stroke="#a9cbe2" stroke-width=".6"/><rect x="36" y="27" width="17" height="7" rx="2" fill="#d9eefb" stroke="#a9cbe2" stroke-width=".6"/>
+<rect x="20" y="54" width="32" height="10" rx="2" fill="#d9eefb" stroke="#a9cbe2" stroke-width=".6"/>
+<rect x="62" y="7" width="43" height="120" rx="3" fill="url(#ID-in)"/>
+${fridgeFood(62, 7, 43, 120)}
+<rect class="flight" x="62" y="7" width="43" height="120" fill="#fffbe6" opacity="0"/>
+<g class="fz-door fz-l">
+  <rect x="12" y="4" width="47.6" height="126" rx="6" fill="url(#ID-inox)" stroke="#8f979f" stroke-width=".7"/>
+  <rect x="53.4" y="30" width="3.2" height="66" rx="1.6" fill="url(#ID-chrome)" stroke="#6f7781" stroke-width=".4"/>
+  ${fridgeLcd(19, 14)}
+  <rect x="19" y="32" width="28" height="36" rx="3" fill="#161b21" stroke="#5f6770" stroke-width=".6"/>
+  <rect class="ib-light" x="20.5" y="33.5" width="25" height="2" rx="1" fill="#6fd8ff"/>
+  <path d="M30 36v6h6v-6" fill="#2a3139" stroke="#5f6770" stroke-width=".4"/>
+  <rect x="24" y="44" width="18" height="11" rx="1.5" fill="#20262d" stroke="#3b434c" stroke-width=".5"/>
+  <circle class="ib-drop" cx="33" cy="43" r=".9" fill="#9fdcff"/>
+  <g class="ib-ice"><rect x="27" y="45" width="3" height="3" rx=".6" fill="#e9f6ff" opacity=".8"/><rect x="36" y="46" width="3" height="3" rx=".6" fill="#e9f6ff" opacity=".8"/></g>
+  <rect x="20" y="62" width="26" height="4" rx="1" fill="#2a3139"/><path d="M22 63.2h22M22 64.8h22" stroke="#3b434c" stroke-width=".4"/>
+  <path d="M16 8v118" stroke="#fff" stroke-opacity=".55" stroke-width="2"/>
+</g>
+<g class="fr-door fr-r">
+  <rect x="60.4" y="4" width="47.6" height="126" rx="6" fill="url(#ID-inox)" stroke="#8f979f" stroke-width=".7"/>
+  <rect x="63.4" y="30" width="3.2" height="66" rx="1.6" fill="url(#ID-chrome)" stroke="#6f7781" stroke-width=".4"/>
+  <path d="M71 8v118" stroke="#fff" stroke-opacity=".4" stroke-width="2"/>
+</g>`,
+};
+
+SVG.fridge = (c) => `${FRIDGE_DEFS}${FRIDGE[fridgeStyle(c)]()}${fridgeMist}`;
 
 /* Carte générique : l'utilisateur fournit sa propre image (option `image`) */
 SVG.generic = (c = {}) => {
@@ -2465,7 +2595,10 @@ SVG.water_heater = () => `
 <path d="M36 40q4-6 6-1" stroke="#fff" stroke-opacity=".9" stroke-width="2" fill="none" stroke-linecap="round"/>
 <rect x="34" y="34" width="5" height="70" rx="2.5" fill="#fff" opacity=".35"/>`;
 
-SVG.wine_cooler = () => `
+/* cave à vin ; avec zone2_temperature : bi-zone (rouges en haut, blancs en bas), deux afficheurs */
+SVG.wine_cooler = (c) => {
+  const dual = !!(c && c.zone2_temperature);
+  return `
 <defs>${DEFS}
 <linearGradient id="ID-wnlight" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff1c9" stop-opacity=".85"/><stop offset=".55" stop-color="#ffd98a" stop-opacity=".25"/><stop offset="1" stop-color="#ffd98a" stop-opacity="0"/></linearGradient>
 <linearGradient id="ID-wncab" x1="0" x2="1"><stop offset="0" stop-color="#2b3036"/><stop offset=".5" stop-color="#14171b"/><stop offset="1" stop-color="#262b31"/></linearGradient>
@@ -2476,8 +2609,14 @@ SVG.wine_cooler = () => `
 <rect x="26" y="9" width="68" height="17" rx="2" fill="#0d1013"/>
 <circle class="wn-led" cx="34" cy="17.5" r="1.6"/>
 <path d="M42 15h10M42 18h10M42 21h10" stroke="#3b424a" stroke-width=".8" stroke-linecap="round"/>
+${dual ? `
+<rect x="58" y="12" width="16" height="11" rx="1.6" fill="#0c1720" stroke="#59616b" stroke-width=".5"/>
+<text class="lcd" x="66" y="20.4" text-anchor="middle">OFF</text>
+<rect x="76" y="12" width="16" height="11" rx="1.6" fill="#0c1720" stroke="#59616b" stroke-width=".5"/>
+<text class="lcd lcd2" x="84" y="20.4" text-anchor="middle">--</text>
+<circle cx="66" cy="10.2" r=".9" fill="#c0392b"/><circle cx="84" cy="10.2" r=".9" fill="#f2d16b"/>` : `
 <rect x="64" y="12" width="26" height="11" rx="1.6" fill="#0c1720" stroke="#59616b" stroke-width=".5"/>
-<text class="lcd" x="77" y="20.4" text-anchor="middle">OFF</text>
+<text class="lcd" x="77" y="20.4" text-anchor="middle">OFF</text>`}
 <rect x="28" y="30" width="64" height="92" fill="#07090b"/>
 <g class="wn-inside" clip-path="url(#ID-wnclip)">
   <rect x="30" y="32" width="60" height="86" fill="#14181d"/>
@@ -2504,6 +2643,8 @@ SVG.wine_cooler = () => `
     <rect x="30" y="101.5" width="60" height="3" fill="url(#ID-wnwood)"/>
     <rect x="30" y="112" width="60" height="3" fill="url(#ID-wnwood)"/>
   </g>
+  ${dual ? `<rect class="wn-cold" x="30" y="78.5" width="60" height="40" fill="#9fdcff"/>
+  <rect x="30" y="76" width="60" height="3.4" fill="#0a0c0f"/><rect x="30" y="76" width="60" height="1" fill="#3b424a"/>` : ""}
   <g class="wn-air" fill="none" stroke-linecap="round"><path d="M44 116q-5-14 0-28t-3-30"/><path d="M60 116q5-14 0-28t3-30"/><path d="M76 116q-5-14 0-28t-3-30"/></g>
 </g>
 <g class="wn-door">
@@ -2515,6 +2656,7 @@ SVG.wine_cooler = () => `
 </g>
 <path d="M28 124h64" stroke="#3b424a" stroke-width="1"/>
 <rect x="30" y="127" width="10" height="5" rx="1.5" fill="#3a3f45"/><rect x="80" y="127" width="10" height="5" rx="1.5" fill="#3a3f45"/>`;
+};
 
 /* ------------------------------------------------------------------ */
 /* Appliance definitions                                               */
@@ -2582,7 +2724,7 @@ const DEF = {
     fields: ["entity", "power", "energy", "cost", "switch"],
     keys: ["cafetiere", "coffee", "senseo", "nespresso", "dolce_gusto", "tassimo", "expresso", "espresso", "cafe"] },
   wine_cooler: { accent: "cold", threshold: 15,
-    fields: ["entity", "power", "energy", "cost", "temperature", "door", "switch"],
+    fields: ["entity", "power", "energy", "cost", "temperature", "zone2_temperature", "door", "switch"],
     keys: ["cave_a_vin", "cave", "vin", "wine", "cellar", "wine_cooler", "wine_fridge", "vinotheque"] },
   fridge: { accent: "cold", threshold: 20,
     fields: ["entity", "power", "energy", "cost", "temperature", "freezer_temperature", "door", "freezer_door", "switch"],
@@ -2764,7 +2906,7 @@ class ApplianceCardBase extends HTMLElement {
   _ids() {
     const c = this._config;
     return ["entity", "power", "power_solar", "energy_solar", "energy", "cost", "remaining", "progress", "program", "door", "switch",
-      "power_level", "pellet_level", "runtime", "speed", "bed_temperature", "humidity", "light", "keg_level", "pouring", "zone_1", "zone_2", "zone_3", "zone_4", "mode", "window", "temperature", "target_temperature", "freezer_temperature", "freezer_door"].map((k) => c[k]).filter(Boolean).concat(this._nozzles());
+      "power_level", "pellet_level", "runtime", "speed", "bed_temperature", "humidity", "light", "keg_level", "pouring", "battery_level", "zone2_temperature", "zone_1", "zone_2", "zone_3", "zone_4", "mode", "window", "temperature", "target_temperature", "freezer_temperature", "freezer_door"].map((k) => c[k]).filter(Boolean).concat(this._nozzles());
   }
 
   _build() {
@@ -2825,7 +2967,7 @@ class ApplianceCardBase extends HTMLElement {
       temp: S(c.temperature), target: S(c.target_temperature),
       ftemp: S(c.freezer_temperature), fdoor: S(c.freezer_door),
       level: num(S(c.power_level)), pellets: num(S(c.pellet_level)),
-      runtime: parseRemaining(S(c.runtime)), speed: S(c.speed), bedTemp: num(S(c.bed_temperature)), humidity: num(S(c.humidity)), mode: S(c.mode), window: S(c.window), light: S(c.light), keg: num(S(c.keg_level)), pouring: S(c.pouring), batt: num(S(c.battery_level)),
+      runtime: parseRemaining(S(c.runtime)), speed: S(c.speed), bedTemp: num(S(c.bed_temperature)), humidity: num(S(c.humidity)), mode: S(c.mode), window: S(c.window), light: S(c.light), keg: num(S(c.keg_level)), pouring: S(c.pouring), batt: num(S(c.battery_level)), zone2: num(S(c.zone2_temperature)), zone2Ent: S(c.zone2_temperature),
       status: "idle", phase: null, alerts: [],
     };
     if (main && ["water_heater", "climate"].includes(domainOf(c.entity))) {
@@ -3085,6 +3227,8 @@ class ApplianceCardBase extends HTMLElement {
       if (base === "off" || base === "unavailable") m.status = base;
       else m.status = powered || (watts === null && base === "running") ? "cooling" : "standby";
       if (m.tempVal != null && m.tempVal > (c.max_temperature ?? 18)) m.alerts.push("too_warm");
+      // bi-zone : seuil propre à la zone basse (vins blancs), sinon le même
+      if (m.zone2 != null && m.zone2 > (c.max_temperature_2 ?? c.max_temperature ?? 18)) m.alerts.push("too_warm");
     } else if (kind === "fridge") {
       if (base === "off" || base === "unavailable") m.status = base;
       else m.status = powered ? "cooling" : "standby";
@@ -3265,6 +3409,8 @@ class ApplianceCardBase extends HTMLElement {
     const sr = this.shadowRoot;
     const lcdEl = sr.querySelector(".lcd");
     if (lcdEl) lcdEl.textContent = this._lcdText(m);
+    const lcd2 = sr.querySelector(".lcd2");
+    if (lcd2) lcd2.textContent = m.status === "unavailable" ? "--" : m.zone2 != null ? `${fmtNum(hass, m.zone2, 0)}°` : "--°";
     if (kind === "server_rack") $("wrap").style.setProperty("--load", (m.load ?? 0.4).toFixed(2));
     if (kind === "solar") $("wrap").style.setProperty("--sun", (m.frac || 0).toFixed(2));
     if (kind === "radiator" || kind === "towel_dryer") {
@@ -3413,7 +3559,9 @@ class ApplianceCardBase extends HTMLElement {
     } else if (kind === "tool_charger") {
       if (m.batt != null) tile(m.status === "charging" ? "mdi:battery-charging" : "mdi:battery", `${fmtNum(hass, m.batt, 0)} %`, tr(hass, "battery"), c.battery_level);
     } else if (kind === "wine_cooler") {
-      if (m.tempVal != null) tile("mdi:thermometer", `${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}`, tr(hass, "temperature"), tEntity, m.alerts.includes("too_warm") ? "warn" : "");
+      const dual = !!c.zone2_temperature, max1 = c.max_temperature ?? 18, max2 = c.max_temperature_2 ?? max1;
+      if (m.tempVal != null) tile("mdi:thermometer", `${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}`, tr(hass, dual ? "zone_top" : "temperature"), tEntity, m.tempVal > max1 ? "warn" : "");
+      if (dual && m.zone2 != null) tile("mdi:thermometer-low", `${fmtNum(hass, m.zone2, 1)} ${m.zone2Ent?.attributes.unit_of_measurement || m.tempUnit}`, tr(hass, "zone_bottom"), c.zone2_temperature, m.zone2 > max2 ? "warn" : "");
     } else if (kind === "fridge") {
       if (m.tempVal != null) tile("mdi:thermometer", `${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}`, tr(hass, "fridge_temp"), tEntity,
         m.tempVal > (c.max_temperature ?? 8) ? "warn" : "");
@@ -3487,6 +3635,7 @@ const SEL = {
   pellet_level: { entity: { domain: ["sensor", "number", "input_number"] } },
   runtime: { entity: { domain: ["sensor"] } },
   light: { entity: { domain: ["light", "switch", "binary_sensor", "input_boolean"] } },
+  zone2_temperature: { entity: { domain: ["sensor", "input_number"], device_class: "temperature" } },
   battery_level: { entity: { domain: ["sensor", "number", "input_number"] } },
   keg_level: { entity: { domain: ["sensor", "number", "input_number"] } },
   pouring: { entity: { domain: ["binary_sensor", "input_boolean", "switch"] } },
@@ -3514,8 +3663,12 @@ function buildForm(kind) {
           ] : []),
           ...(kind === "wine_cooler" ? [
             { name: "max_temperature", selector: { number: { min: 5, max: 25, step: 0.5, mode: "box" } } },
+            { name: "max_temperature_2", selector: { number: { min: 3, max: 25, step: 0.5, mode: "box" } } },
           ] : []),
           ...(kind === "fridge" ? [
+            { name: "style", selector: { select: { mode: "dropdown", options: [
+              { value: "top", label: "Congélateur en haut / Top freezer" }, { value: "bottom", label: "Congélateur en bas / Bottom freezer" },
+              { value: "french", label: "French door" }, { value: "american", label: "Américain / Side-by-side" }] } } },
             { name: "max_temperature", selector: { number: { min: 0, max: 15, step: 0.5, mode: "box" } } },
             { name: "freezer_max_temperature", selector: { number: { min: -30, max: 0, step: 0.5, mode: "box" } } },
           ] : []),
@@ -3580,7 +3733,7 @@ function buildForm(kind) {
         ],
       },
     ],
-    computeLabel: (s) => (s.name ? tr(null, kind === "solar" && s.name === "max_power" ? "f_max_power_solar" : kind === "wine_cooler" && s.name === "max_temperature" ? "f_max_temperature_wine" : kind === "server_rack" && s.name === "max_power" ? "f_max_power_rack" : kind === "radiator" && s.name === "max_power" ? "f_max_power_rad" : `f_${s.name}`) : undefined),
+    computeLabel: (s) => (s.name ? tr(null, kind === "solar" && s.name === "max_power" ? "f_max_power_solar" : kind === "wine_cooler" && s.name === "max_temperature" ? "f_max_temperature_wine" : kind === "fridge" && s.name === "style" ? "f_fridge_style" : kind === "server_rack" && s.name === "max_power" ? "f_max_power_rack" : kind === "radiator" && s.name === "max_power" ? "f_max_power_rad" : `f_${s.name}`) : undefined),
   };
 }
 
@@ -3982,6 +4135,18 @@ svg { width: 100%; height: 100%; display: block; overflow: visible; }
 .fz-door, .fr-door { transform-origin: 26px 0; transition: transform .6s cubic-bezier(.3,.7,.3,1); }
 .door-open .fr-door { transform: scaleX(.16) skewY(-6deg); }
 .fz-open .fz-door { transform: scaleX(.16) skewY(-6deg); }
+/* variantes : French door / américain (porte droite pivotant à droite), tiroirs de congélation */
+.k-fridge .fr-l { transform-origin: 16px 0; }
+.k-fridge .fz-l { transform-origin: 12px 0; }
+.k-fridge .fr-r { transform-origin: 108px 0; }
+.door-open .fr-r { transform: scaleX(.16) skewY(6deg); }
+.fzd { transform-box: view-box; transform-origin: 60px 96px; transition: transform .6s ease, filter .6s; }
+.fz-open .fzd-pull { transform: translateY(5px) scale(1.06); filter: drop-shadow(0 3px 3px rgba(0,0,0,.25)); }
+/* distributeur glaçons / eau du modèle américain */
+.ib-light { opacity: .15; transition: opacity .6s; }
+.k-fridge.st-cooling .ib-light { opacity: .9; animation: ac-pulse 3s ease-in-out infinite; }
+.ib-drop { opacity: 0; }
+.k-fridge.st-cooling .ib-drop { animation: ac-fall 2.6s ease-in infinite; }
 .flight { transition: opacity .4s; } .door-open .flight { opacity: .35; }
 .flake { stroke: var(--ac-cold); transform-origin: 39.5px 60px; }
 .k-fridge.st-cooling .flake, .k-chest_freezer.st-cooling .flake, .k-drawer_freezer.st-cooling .flake { animation: ac-pulse 2.4s ease-in-out infinite; }
@@ -4265,6 +4430,11 @@ svg { width: 100%; height: 100%; display: block; overflow: visible; }
 .wn-door { transform-box: view-box; transform-origin: 26px 76px; transition: transform .6s cubic-bezier(.3,.7,.3,1); }
 .door-open .wn-door { transform: scaleX(.2) skewY(-5deg); }
 .k-wine_cooler .lcd { fill: #6fd8ff; }
+/* bi-zone : zone basse (blancs) plus froide, voile bleuté */
+.wn-cold { opacity: 0; transition: opacity .8s; }
+.k-wine_cooler.st-standby .wn-cold { opacity: .07; }
+.k-wine_cooler.st-cooling .wn-cold { opacity: .14; animation: wn-chill 4s ease-in-out infinite; }
+@keyframes wn-chill { 0%, 100% { opacity: .08; } 50% { opacity: .18; } }
 .k-wine_cooler.st-off .lcd { fill: #24404f; }
 .k-wine_cooler.warm .lcd { fill: var(--ac-alert); }
 .no-anim *, .no-anim { animation: none !important; }
