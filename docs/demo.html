@@ -264,6 +264,13 @@ const SCEN = [
       set('sensor.wine_energy', 0.9, KWH);
       checks(ctl, [['Porte ouverte', 'binary_sensor.wine_door', false]]);
     } },
+  { kind: 'wine-cooler', title: 'Cave à vin bi-zone',
+    cfg: { power: 'sensor.wine2_power', temperature: 'sensor.wine2_red', zone2_temperature: 'sensor.wine2_white', max_temperature_2: 12 },
+    build(ctl) {
+      range(ctl, 'Puissance', 'sensor.wine2_power', 0, 150, 1, 70, 'W', W);
+      range(ctl, 'Zone haute', 'sensor.wine2_red', 4, 22, 0.5, 15, '°C', T);
+      range(ctl, 'Zone basse', 'sensor.wine2_white', 4, 22, 0.5, 8, '°C', T);
+    } },
   { kind: 'ac-split', title: 'Climatiseur (split)',
     cfg: { entity: 'climate.ac' },
     build(ctl) {
@@ -385,6 +392,20 @@ const SCEN = [
       range(ctl, 'Congélateur', 'sensor.freezer_temp', -30, 0, 0.5, -18, '°C', T);
       set('sensor.fridge_energy', 1.1, KWH);
       checks(ctl, [['Porte frigo', 'binary_sensor.fridge_door', false], ['Porte congélateur', 'binary_sensor.freezer_door', false]]);
+    } },
+  { kind: 'fridge', title: 'Réfrigérateur américain',
+    cfg: { style: 'american', power: 'sensor.us_fridge_power', temperature: 'sensor.us_fridge_temp', door: 'binary_sensor.us_fridge_door', freezer_door: 'binary_sensor.us_freezer_door' },
+    build(ctl) {
+      range(ctl, 'Puissance', 'sensor.us_fridge_power', 0, 250, 1, 110, 'W', W);
+      range(ctl, 'Frigo', 'sensor.us_fridge_temp', -2, 15, 0.5, 4, '°C', T);
+      checks(ctl, [['Porte frigo', 'binary_sensor.us_fridge_door', false], ['Porte congélateur', 'binary_sensor.us_freezer_door', false]]);
+    } },
+  { kind: 'fridge', title: 'Réfrigérateur French door',
+    cfg: { style: 'french', power: 'sensor.fd_fridge_power', temperature: 'sensor.fd_fridge_temp', door: 'binary_sensor.fd_fridge_door', freezer_door: 'binary_sensor.fd_freezer_door' },
+    build(ctl) {
+      range(ctl, 'Puissance', 'sensor.fd_fridge_power', 0, 250, 1, 95, 'W', W);
+      range(ctl, 'Frigo', 'sensor.fd_fridge_temp', -2, 15, 0.5, 4, '°C', T);
+      checks(ctl, [['Portes frigo', 'binary_sensor.fd_fridge_door', false], ['Tiroir congélateur', 'binary_sensor.fd_freezer_door', false]]);
     } },
   /* ---------- cartes autonomes (options entity_…, langue via `language`) ---------- */
   { kind: 'aquarium', title: 'Aquarium', lang: true,

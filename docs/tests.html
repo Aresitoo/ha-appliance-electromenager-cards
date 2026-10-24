@@ -206,6 +206,22 @@ ok('fridge door transform applied',getComputedStyle(c.sr.querySelector('.fr-door
 c=card('fridge',{temperature:'sensor.t',freezer_temperature:'sensor.f',max_temperature:3},[mk('sensor.t',4,T),mk('sensor.f',-8,T)]);
 ok('fridge custom thresholds alert',has(c,'warm'),c.wrap.className);
 c=card('fridge',{power:'sensor.p',freezer_door:'binary_sensor.fz'},[mk('sensor.p',1,W),mk('binary_sensor.fz','on')]); ok('freezer door open',has(c,'fz-open'));
+// fridge layouts
+['top','bottom','french','american'].forEach(st=>{c=card('fridge',{style:st,power:'sensor.p',temperature:'sensor.t',door:'binary_sensor.d'},[mk('sensor.p',90,W),mk('sensor.t',4,T),mk('binary_sensor.d','on')]);
+  ok(`fridge ${st} cooling + LCD`,has(c,'st-cooling')&&c.lcd()==='4°',c.lcd()); ok(`fridge ${st} door opens`,[...c.sr.querySelectorAll('.fr-door')].every(d=>getComputedStyle(d).transform!=='none'));});
+c=card('fridge',{style:'bottom',power:'sensor.p',freezer_door:'binary_sensor.fz'},[mk('sensor.p',1,W),mk('binary_sensor.fz','on')]); ok('fridge bottom drawer pulled out',getComputedStyle(c.sr.querySelector('.fzd-pull')).transform!=='none');
+c=card('fridge',{style:'american',power:'sensor.p'},[mk('sensor.p',90,W)]); ok('fridge american dispenser',!!c.sr.querySelector('.ib-light')&&!!c.sr.querySelector('.fz-l'));
+c=card('fridge',{style:'nope',power:'sensor.p'},[mk('sensor.p',90,W)]); ok('fridge unknown style falls back to top',!c.sr.querySelector('.fzd')&&!!c.sr.querySelector('.fz-door'));
+// dual-zone wine cooler
+c=card('wine-cooler',{power:'sensor.p',temperature:'sensor.t',zone2_temperature:'sensor.t2'},[mk('sensor.p',70,W),mk('sensor.t',14,T),mk('sensor.t2',8,T)]);
+ok('wine dual LCDs',c.lcd()==='14°'&&c.sr.querySelector('.lcd2').textContent==='8°',c.sr.querySelector('.lcd2').textContent); ok('wine dual tiles',/Zonehaute/.test(stx(c))&&/Zonebasse/.test(stx(c)),stx(c));
+c=card('wine-cooler',{power:'sensor.p',temperature:'sensor.t',zone2_temperature:'sensor.t2',max_temperature_2:10},[mk('sensor.p',70,W),mk('sensor.t',14,T),mk('sensor.t2',12,T)]); ok('wine dual lower zone alert',has(c,'warm'),c.wrap.className);
+// several cards of the same kind stay independent
+{const a=card('washer',{power:'sensor.w1',remaining:'sensor.r1'},[mk('sensor.w1',500,W),mk('sensor.r1',30),mk('sensor.w2',0,W)]);
+ const b=card('washer',{power:'sensor.w2'},[mk('sensor.w1',500,W),mk('sensor.r1',30),mk('sensor.w2',0,W)]);
+ const ids=(x)=>[...x.sr.querySelectorAll('[id]')].map(e=>e.id).filter(i=>/^ac\d+-/.test(i));
+ ok('two washers independent',has(a,'st-running')&&!has(b,'st-running')&&!/Fin/.test(b.txt()),a.wrap.className+' / '+b.wrap.className);
+ ok('two washers unique SVG ids',ids(a).length>0&&ids(a).every(i=>!ids(b).includes(i)));}
 
 // language
 c=card('washer',{entity:'input_boolean.w'},[mk('input_boolean.w','on')],'en'); ok('English name',/Washing machine/.test(c.txt())&&/Washing/.test(c.txt()),c.txt());
