@@ -345,5 +345,41 @@
     "heat_energy": "Warmte-energie",
     "scop": "SCOP",
     "buffer": "Buffervat"
+  },
+  "diesel_heater": {
+    "name": "Dieselkachel",
+    "off": "Uit",
+    "standby": "Stand-by",
+    "ignition": "Ontsteking",
+    "heating": "Verwarmt",
+    "cooldown": "Ventilatorspoeling",
+    "alarm": "Storing",
+    "power": "Elektrisch",
+    "energy": "Elek. energie",
+    "fuel": "Diesel",
+    "used": "Verbruikt",
+    "cost": "Kosten",
+    "temp": "Ruimte",
+    "flue": "Rookgas",
+    "lowfuel": "Diesel bijna op",
+    "hotflue": "Rookgas te heet"
+  },
+  "jacuzzi": {
+    "name": "Jacuzzi",
+    "off": "Uit",
+    "standby": "Stand-by",
+    "filtering": "Filteren",
+    "heating": "Verwarmt",
+    "jets": "Jets",
+    "alarm": "Storing",
+    "power": "Elektrisch",
+    "energy": "Elek. energie",
+    "temp": "Water",
+    "target": "Streef",
+    "ph": "pH",
+    "cost": "Kosten",
+    "lowph": "pH te laag",
+    "highph": "pH te hoog",
+    "hot": "Water te heet"
   }
 }

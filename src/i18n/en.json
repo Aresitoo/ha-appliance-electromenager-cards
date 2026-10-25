@@ -345,5 +345,41 @@
     "heat_energy": "Heat energy",
     "scop": "SCOP",
     "buffer": "Buffer tank"
+  },
+  "diesel_heater": {
+    "name": "Diesel heater",
+    "off": "Off",
+    "standby": "Standby",
+    "ignition": "Igniting",
+    "heating": "Heating",
+    "cooldown": "Blower purge",
+    "alarm": "Fault",
+    "power": "Electric",
+    "energy": "Elec. energy",
+    "fuel": "Diesel",
+    "used": "Used",
+    "cost": "Cost",
+    "temp": "Room",
+    "flue": "Flue",
+    "lowfuel": "Low diesel",
+    "hotflue": "Flue too hot"
+  },
+  "jacuzzi": {
+    "name": "Hot tub",
+    "off": "Off",
+    "standby": "Standby",
+    "filtering": "Filtering",
+    "heating": "Heating",
+    "jets": "Jets",
+    "alarm": "Fault",
+    "power": "Electric",
+    "energy": "Elec. energy",
+    "temp": "Water",
+    "target": "Target",
+    "ph": "pH",
+    "cost": "Cost",
+    "lowph": "pH too low",
+    "highph": "pH too high",
+    "hot": "Water too hot"
   }
 }
