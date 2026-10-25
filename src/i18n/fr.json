@@ -345,5 +345,41 @@
     "heat_energy": "Énergie chaleur",
     "scop": "SCOP",
     "buffer": "Ballon tampon"
+  },
+  "diesel_heater": {
+    "name": "Chauffage diesel",
+    "off": "Arrêt",
+    "standby": "Veille",
+    "ignition": "Allumage",
+    "heating": "Chauffe",
+    "cooldown": "Purge souffleur",
+    "alarm": "Défaut",
+    "power": "Électrique",
+    "energy": "Énergie élec.",
+    "fuel": "Gazole",
+    "used": "Consommé",
+    "cost": "Coût",
+    "temp": "Pièce",
+    "flue": "Fumées",
+    "lowfuel": "Gazole bas",
+    "hotflue": "Fumées trop chaudes"
+  },
+  "jacuzzi": {
+    "name": "Jacuzzi",
+    "off": "Arrêt",
+    "standby": "Veille",
+    "filtering": "Filtration",
+    "heating": "Chauffe",
+    "jets": "Jets",
+    "alarm": "Défaut",
+    "power": "Électrique",
+    "energy": "Énergie élec.",
+    "temp": "Eau",
+    "target": "Consigne",
+    "ph": "pH",
+    "cost": "Coût",
+    "lowph": "pH trop bas",
+    "highph": "pH trop élevé",
+    "hot": "Eau trop chaude"
   }
 }

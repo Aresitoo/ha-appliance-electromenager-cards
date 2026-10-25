@@ -345,5 +345,41 @@
     "heat_energy": "Energie termică",
     "scop": "SCOP",
     "buffer": "Rezervor tampon"
+  },
+  "diesel_heater": {
+    "name": "Sobă pe motorină",
+    "off": "Oprit",
+    "standby": "Standby",
+    "ignition": "Aprindere",
+    "heating": "Încălzește",
+    "cooldown": "Purjare ventilator",
+    "alarm": "Defecțiune",
+    "power": "Electric",
+    "energy": "Energie el.",
+    "fuel": "Motorină",
+    "used": "Consumat",
+    "cost": "Cost",
+    "temp": "Cameră",
+    "flue": "Gaze arse",
+    "lowfuel": "Motorină puțină",
+    "hotflue": "Gaze arse prea fierbinți"
+  },
+  "jacuzzi": {
+    "name": "Jacuzzi",
+    "off": "Oprit",
+    "standby": "Standby",
+    "filtering": "Filtrare",
+    "heating": "Încălzește",
+    "jets": "Jeturi",
+    "alarm": "Defecțiune",
+    "power": "Electric",
+    "energy": "Energie el.",
+    "temp": "Apă",
+    "target": "Țintă",
+    "ph": "pH",
+    "cost": "Cost",
+    "lowph": "pH prea scăzut",
+    "highph": "pH prea ridicat",
+    "hot": "Apă prea fierbinte"
   }
 }
