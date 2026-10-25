@@ -537,6 +537,27 @@ const SCEN = [
       set('sensor.whp_energy', 12.4, KWH); set('sensor.whp_heat_energy', 43.1, KWH);
       ctl.append(document.createElement('span'), Object.assign(document.createElement('span'), { textContent: 'COP calculé = thermique / électrique · débit à 0 = l’eau s’arrête · élec. > 150 W : pompes de captage, > 800 W : compresseur · ballon tampon : le circulateur alimente les émetteurs même compresseur arrêté', style: 'color:var(--secondary-text-color);font-size:12px' }), document.createElement('span'));
     } },
+  { kind: 'diesel-heater', title: 'Chauffage diesel', lang: true,
+    cfg: { entity_status: 'sensor.diesel_status', entity_power: 'sensor.diesel_power', entity_fuel_level: 'sensor.diesel_fuel', entity_fuel_used: 'sensor.diesel_used', entity_temp: 'sensor.diesel_room', entity_flue_temp: 'sensor.diesel_flue', entity_energy: 'sensor.diesel_energy', price_per_liter: 1.6 },
+    build(ctl) {
+      select(ctl, 'État', 'sensor.diesel_status', [['heating', 'Chauffe / Heating'], ['ignition', 'Allumage / Igniting'], ['cooldown', 'Purge souffleur / Cooldown'], ['standby', 'Veille / Standby'], ['off', 'Arrêt / Off'], ['fault', 'Défaut / Fault']], 'heating');
+      range(ctl, 'Puissance élec.', 'sensor.diesel_power', 0, 150, 1, 25, 'W', W);
+      range(ctl, 'Niveau gazole', 'sensor.diesel_fuel', 0, 100, 1, 60, '%', { unit_of_measurement: '%' });
+      range(ctl, 'Température pièce', 'sensor.diesel_room', 5, 30, 0.5, 19, '°C', T);
+      range(ctl, 'Fumées', 'sensor.diesel_flue', 20, 350, 5, 180, '°C', T);
+      set('sensor.diesel_used', 14.2, { unit_of_measurement: 'L' }); set('sensor.diesel_energy', 2.1, KWH);
+    } },
+  { kind: 'jacuzzi', title: 'Jacuzzi', lang: true,
+    cfg: { entity_status: 'sensor.spa_status', entity_power: 'sensor.spa_power', entity_temp: 'sensor.spa_temp', entity_target_temp: 'sensor.spa_target', entity_ph: 'sensor.spa_ph', entity_light: 'light.spa', entity_energy: 'sensor.spa_energy', price_per_kwh: 0.2 },
+    build(ctl) {
+      select(ctl, 'État', 'sensor.spa_status', [['filtering', 'Filtration / Filtering'], ['heating', 'Chauffe / Heating'], ['jets', 'Jets / Jets'], ['standby', 'Veille / Standby'], ['off', 'Arrêt / Off'], ['fault', 'Défaut / Fault']], 'jets');
+      range(ctl, 'Puissance', 'sensor.spa_power', 0, 3000, 10, 1400, 'W', W);
+      range(ctl, 'Température eau', 'sensor.spa_temp', 15, 45, 0.5, 37, '°C', T);
+      range(ctl, 'Consigne', 'sensor.spa_target', 15, 40, 0.5, 38, '°C', T);
+      range(ctl, 'pH', 'sensor.spa_ph', 6, 9, 0.1, 7.4, '', {});
+      select(ctl, 'Éclairage LED', 'light.spa', [['on', 'Allumé / On'], ['off', 'Éteint / Off']], 'on');
+      set('sensor.spa_energy', 6.8, KWH);
+    } },
 ];
 const ROBOT_SEL = {};
 
