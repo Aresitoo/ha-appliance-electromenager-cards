@@ -14,6 +14,12 @@ Une simple prise connectée avec un capteur de puissance suffit. Les appareils c
 
 **▶ [Essayer en ligne](https://skyrotter.github.io/ha-appliance-electromenager-cards/docs/demo.html)** (données simulées, sans Home Assistant) · [Voir la vidéo](https://github.com/skyrotter/ha-appliance-electromenager-cards/blob/main/docs/electromenager-43-cartes-facebook.mp4) · [Tests automatiques](https://skyrotter.github.io/ha-appliance-electromenager-cards/docs/tests.html)
 
+### ❤️ Soutenir le projet
+
+Ce projet est gratuit et open source, développé sur mon temps libre. Si les cartes embellissent ton tableau de bord, un petit don m'aide à ajouter de nouvelles cartes et à maintenir les existantes. Il manque un appareil ? [Propose-le dans les issues](https://github.com/skyrotter/ha-appliance-electromenager-cards/issues) : c'est comme ça que le chauffage diesel et le jacuzzi sont arrivés.
+
+[❤️ Sponsor sur GitHub](https://github.com/sponsors/skyrotter) · [☕ Don via PayPal.me](https://paypal.me/skyrotter)
+
 ## Installation
 
 **HACS (recommandé)**
