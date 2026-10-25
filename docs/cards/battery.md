@@ -1,0 +1,25 @@
+# Home battery
+
+`custom:appliance-battery-card`
+
+<p align="center"><img src="../battery.gif" width="300" alt="Home battery card"></p>
+
+**Home battery**: three modules wired with orange cables, no background. The charge level rises in the modules (green → orange → red), energy flows along the cables in one direction when charging and the other when discharging, with time to full / empty.
+
+## Options
+
+Every value tile can be hidden with its `show_…` option, and `language: fr|en|de|nb|nl|ro` forces the language.
+
+- `entity_soc` (%)
+- `entity_power` (positive = charging, `invert_power: true` if yours is reversed)
+- `entity_energy`
+- `entity_temperature`
+- `capacity_kwh` (default 10)
+- `max_power`
+- `low_threshold` (default 15 %)
+- `show_power`
+- `show_energy`
+- `show_temperature`
+- `show_time`
+
+[← All cards](../../README.md#the-cards)
