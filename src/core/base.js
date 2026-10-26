@@ -387,6 +387,22 @@ class ApplianceCardBase extends HTMLElement {
       m.status = base;
     }
 
+    // For dishwashers on smart plugs: track recent cycle activity to detect the low-power drying phase
+    if (kind === "dishwasher") {
+      if (watts !== null && watts > threshold) {
+        this._dwLastActive = Date.now();
+      }
+      const dryingTimeout = 20 * 60 * 1000; // 20 minutes
+      const recentlyActive = this._dwLastActive && (Date.now() - this._dwLastActive < dryingTimeout);
+      if (base === "running" && watts !== null && watts <= threshold) {
+        m.status = "running";
+        m.phase = "dry";
+      } else if (base !== "running" && !explicitState && recentlyActive && (watts === null || watts <= threshold)) {
+        m.status = "running";
+        m.phase = "dry";
+      }
+    }
+
     // phase detection (washer / dryer / dishwasher) from status or program text, with smart-plug power inference fallback
     if (m.status === "running" && ["washer", "dryer", "dishwasher"].includes(kind)) {
       const txt = `${main ? main.state : ""} ${m.program ? m.program.state : ""}`.toLowerCase();
@@ -395,8 +411,10 @@ class ApplianceCardBase extends HTMLElement {
       else if (/refroid|cool|anti.?froiss|wrinkle/.test(txt)) m.phase = "cool";
       // en début de mot : les clés Home Connect « laundry_care_washer_program_… » contiennent « dry »
       else if (/(^|[^a-zà-ÿ])(s[eé]ch|dry)/.test(txt)) m.phase = "dry";
-      else if (/heat|chauff|warm/.test(txt)) m.phase = "heat";
-      else if (watts !== null) {
+      else if (/(^|[^a-zà-ÿ])(heat|chauff)/.test(txt)) m.phase = "heat";
+      else if (kind === "dryer") {
+        m.phase = "dry";
+      } else if (watts !== null && ["washer", "dishwasher"].includes(kind)) {
         // Fallback: infer phase from power draw on smart plugs when text entity gives no phase
         const heatThreshold = c.heating_power ?? this._def.heating_power ?? 1000;
         const spinThreshold = c.spin_power ?? this._def.spin_power ?? 200;
@@ -404,13 +422,11 @@ class ApplianceCardBase extends HTMLElement {
           m.phase = "heat";
         } else if (kind === "washer" && spinThreshold > 0 && watts >= spinThreshold) {
           m.phase = "spin";
-        } else if (kind === "dishwasher" && watts < (c.drying_threshold ?? 15) && (explicitState || m.status === "running")) {
-          m.phase = "dry";
-        } else {
-          m.phase = kind === "dryer" ? "dry" : "wash";
+        } else if (!m.phase) {
+          m.phase = "wash";
         }
-      } else {
-        m.phase = kind === "dryer" ? "dry" : "wash";
+      } else if (!m.phase) {
+        m.phase = "wash";
       }
     }
     if (isOn(m.door) || isOn(m.fdoor)) m.alerts.unshift("door_open");
