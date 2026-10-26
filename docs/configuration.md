@@ -13,6 +13,7 @@ All cards have a visual editor. When added from the card picker, entities are de
 | `cost` | Cost sensor (any currency) |
 | `switch` | Switch controlled by the power button (button hidden if unset) |
 | `threshold` | Power above which the appliance is considered running (W). Defaults: 10 (washer/dryer/dishwasher), 20 (fridge), 50 (others) |
+| `layout` | Layout mode: `default` (vertical on narrow viewports) or `split` (compact horizontal side-by-side layout, keeps illustration beside telemetry even in narrow columns) |
 | `name` | Custom name |
 | `color` | Accent color (any CSS color) |
 | `show_toggle` | `false` to hide the power button |
