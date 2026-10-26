@@ -2967,11 +2967,13 @@ class ApplianceCardBase extends HTMLElement {
         <div class="wrap" id="wrap">
           <div class="top">
             <div class="illus"><svg viewBox="0 0 120 140" aria-hidden="true">${svg}</svg></div>
-            <div class="head">
-              <div class="info" id="info"></div>
-              <div class="actions" id="actions"></div>
+            <div class="right-col" id="right-col">
+              <div class="head">
+                <div class="info" id="info"></div>
+                <div class="actions" id="actions"></div>
+              </div>
+              <div class="stats" id="stats"></div>
             </div>
-            <div class="stats" id="stats"></div>
           </div>
           <div class="modes" id="modes"></div>
           <div class="bar" id="bar"><div class="bar-fill" id="barfill"></div></div>
@@ -3430,7 +3432,7 @@ class ApplianceCardBase extends HTMLElement {
     const $ = (i) => this.shadowRoot.getElementById(i);
     const active = ["running", "heating", "preheating", "cooling", "ignition", "filtering", "printing", "producing", "low", "speed1", "speed2", "cooking", "brewing", "keep_warm", "screen_on", "online", "ac_dry", "ac_fan", "defrost", "pouring", "playing", "muted", "fan_1", "fan_2", "fan_3", "charging"].includes(m.status);
     $("wrap").className = [
-      "wrap", `k-${kind}`, `st-${m.status}`, `accent-${m.accent || this._def.accent}`,
+      "wrap", c.layout === "split" ? "layout-split" : "", `k-${kind}`, `st-${m.status}`, `accent-${m.accent || this._def.accent}`,
       active ? "active" : "", m.phase ? `ph-${m.phase}` : "",
       m.alerts.length ? "alert" : "", isOn(m.door) ? "door-open" : "", isOn(m.fdoor) ? "fz-open" : "",
       m.alerts.includes("too_warm") ? "warm" : "", m.alerts.includes("humid") ? "humid" : "", c.animations === false ? "no-anim" : "", m.lights ? "lights-on" : "", m.solarHeat ? "solar-heat" : "", m.acMode ? `mode-${m.acMode}` : "", m.osc ? "osc" : "",
@@ -3539,11 +3541,34 @@ class ApplianceCardBase extends HTMLElement {
       sub = `${tr(hass, "ends_at")} ${fmtClock(hass, new Date(Date.now() + m.remaining * 60000))}`;
     }
     const alertTxt = m.alerts.map((a) => tr(hass, a)).join(" · ");
-    $("info").innerHTML = `
-      <div class="name">${esc(name)}</div>
-      <div class="status"><span class="dot"></span><span>${esc(statusTxt)}${prog && prog !== statusTxt ? ` · ${esc(prog)}` : ""}</span></div>
-      ${alertTxt ? `<div class="alert-line"><ha-icon icon="mdi:alert-circle-outline"></ha-icon>${esc(alertTxt)}</div>` : ""}
-      ${sub ? `<div class="sub">${esc(sub)}</div>` : ""}`;
+    let frPill = "";
+    if (kind === "fridge" && m.tempVal != null) {
+      let tCol = "color: #4caf50; border-color: rgba(76, 175, 80, 0.45); background: rgba(76, 175, 80, 0.15); box-shadow: 0 0 8px rgba(76, 175, 80, 0.2);";
+      if (m.tempVal >= 10) {
+        tCol = "color: #ff5252; border-color: rgba(244, 67, 54, 0.5); background: rgba(244, 67, 54, 0.18); box-shadow: 0 0 8px rgba(244, 67, 54, 0.3);";
+      } else if (m.tempVal >= 8) {
+        tCol = "color: #ff9800; border-color: rgba(255, 152, 0, 0.5); background: rgba(255, 152, 0, 0.18); box-shadow: 0 0 8px rgba(255, 152, 0, 0.25);";
+      } else if (m.tempVal >= 6) {
+        tCol = "color: #ffeb3b; border-color: rgba(255, 235, 59, 0.45); background: rgba(255, 235, 59, 0.15); box-shadow: 0 0 8px rgba(255, 235, 59, 0.2);";
+      }
+      frPill = `<span class="fr-pill" style="${tCol}"><ha-icon icon="mdi:thermometer" style="color: inherit;"></ha-icon>${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}</span>`;
+    }
+    if (c.layout === "split") {
+      $("info").innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:4px;">
+          <div class="name">${esc(name)}</div>
+          ${frPill}
+        </div>
+        <div class="status"><span class="dot"></span><span>${esc(statusTxt)}${prog && prog !== statusTxt ? ` · ${esc(prog)}` : ""}</span></div>
+        ${alertTxt ? `<div class="alert-line"><ha-icon icon="mdi:alert-circle-outline"></ha-icon>${esc(alertTxt)}</div>` : ""}
+        ${sub ? `<div class="sub">${esc(sub)}</div>` : ""}`;
+    } else {
+      $("info").innerHTML = `
+        <div class="name">${esc(name)}</div>
+        <div class="status"><span class="dot"></span><span>${esc(statusTxt)}${prog && prog !== statusTxt ? ` · ${esc(prog)}` : ""}</span>${frPill}</div>
+        ${alertTxt ? `<div class="alert-line"><ha-icon icon="mdi:alert-circle-outline"></ha-icon>${esc(alertTxt)}</div>` : ""}
+        ${sub ? `<div class="sub">${esc(sub)}</div>` : ""}`;
+    }
 
     if (c.switch && c.show_toggle !== false) {
       const on = isOn(m.sw);
@@ -3616,7 +3641,7 @@ class ApplianceCardBase extends HTMLElement {
       if (m.tempVal != null) tile("mdi:thermometer", `${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}`, tr(hass, dual ? "zone_top" : "temperature"), tEntity, m.tempVal > max1 ? "warn" : "");
       if (dual && m.zone2 != null) tile("mdi:thermometer-low", `${fmtNum(hass, m.zone2, 1)} ${m.zone2Ent?.attributes.unit_of_measurement || m.tempUnit}`, tr(hass, "zone_bottom"), c.zone2_temperature, m.zone2 > max2 ? "warn" : "");
     } else if (kind === "fridge") {
-      if (m.tempVal != null) tile("mdi:thermometer", `${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}`, tr(hass, "fridge_temp"), tEntity,
+      if ((!c.energy || c.layout !== "split") && m.tempVal != null) tile("mdi:thermometer", `${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}`, tr(hass, "fridge_temp"), tEntity,
         m.tempVal > (c.max_temperature ?? 8) ? "warn" : "");
       if (m.ftemp) tile("mdi:snowflake", fmtUnit(hass, m.ftemp, 1), tr(hass, "freezer_temp"), c.freezer_temperature,
         num(m.ftemp) > (c.freezer_max_temperature ?? -12) ? "warn" : "");
@@ -3656,7 +3681,16 @@ class ApplianceCardBase extends HTMLElement {
     const dual = kind === "water_heater" && (m.pwS || m.energyS);
     if (m.pw && c.show_power !== false) tile(solar ? "mdi:solar-power" : "mdi:flash", fmtPower(hass, m.pw) ?? "—", tr(hass, solar ? "production" : dual ? "grid" : "power"), c.power);
     if (m.pwS) tile("mdi:solar-power", fmtPower(hass, m.pwS) ?? "—", tr(hass, "solar_surplus"), c.power_solar);
-    if (m.energy) tile("mdi:lightning-bolt-circle", fmtEnergy(hass, m.energy) ?? "—", tr(hass, solar ? "today" : dual ? "energy_grid" : "energy"), c.energy);
+    if (m.energy) {
+      const eVal = fmtEnergy(hass, m.energy) ?? "—";
+      const yp = m.energy.attributes && m.energy.attributes.last_period;
+      if (yp !== undefined && yp !== null && !isNaN(parseFloat(yp))) {
+        const ydayStr = parseFloat(yp).toFixed(1);
+        tile("mdi:history", eVal, `Yday ${ydayStr} kWh`, c.energy);
+      } else {
+        tile("mdi:lightning-bolt-circle", eVal, tr(hass, solar ? "today" : dual ? "energy_grid" : "energy"), c.energy);
+      }
+    }
     if (m.energyS) tile("mdi:solar-power-variant", fmtEnergy(hass, m.energyS) ?? "—", tr(hass, "energy_solar"), c.energy_solar);
     if (m.cost) tile(solar ? "mdi:piggy-bank-outline" : "mdi:cash", fmtUnit(hass, m.cost, 2, 2) ?? "—", tr(hass, solar ? "savings" : "cost"), c.cost);
     if (solar && m.status !== "night" && m.frac != null && m.pw && !BAD.includes(String(m.pw.state).toLowerCase())) tile("mdi:white-balance-sunny", `${Math.round(m.frac * 100)} %`, tr(hass, "of_peak"), c.power);
@@ -3906,6 +3940,145 @@ svg { width: 100%; height: 100%; display: block; overflow: visible; }
   .name { white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; }
   .status { justify-content: center; flex-wrap: wrap; }
   .status span:last-child { white-space: normal; overflow: visible; text-overflow: clip; }
+}
+
+/* Icon colors for power, yesterday energy, today energy and temperature */
+.lbl ha-icon[icon="mdi:flash"] {
+  color: #ffb74d !important;
+}
+.lbl ha-icon[icon="mdi:history"] {
+  color: #64b5f6 !important;
+}
+.lbl ha-icon[icon="mdi:lightning-bolt-circle"] {
+  color: #00e676 !important;
+}
+.lbl ha-icon[icon="mdi:thermometer"] {
+  color: #00e5ff !important;
+}
+
+.fr-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 6px;
+  padding: 1.5px 7px;
+  border-radius: 7px;
+  font-weight: 700;
+  font-size: 11px;
+  background: rgba(0, 229, 255, 0.12);
+  color: #00e5ff;
+  border: 1px solid rgba(0, 229, 255, 0.35);
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.2);
+}
+.fr-pill ha-icon { --mdc-icon-size: 12px; color: #00e5ff; }
+.fr-pill.warn {
+  background: rgba(244, 67, 54, 0.15);
+  color: #ff5252;
+  border-color: rgba(244, 67, 54, 0.4);
+  box-shadow: 0 0 8px rgba(244, 67, 54, 0.25);
+}
+.fr-pill.warn ha-icon { color: #ff5252; }
+
+.right-col { display: contents; }
+
+/* Split Layout: Full height appliance on left, compact stacked telemetry on right */
+.wrap.layout-split {
+  padding: 8px 9px 8px 8px;
+}
+.wrap.layout-split .top {
+  display: grid !important;
+  grid-template-columns: 74px minmax(0, 1fr) !important;
+  grid-template-areas: "illus right" !important;
+  column-gap: 8px !important;
+  row-gap: 0 !important;
+  align-items: stretch !important;
+}
+.wrap.layout-split .illus {
+  grid-area: illus !important;
+  width: 78px !important;
+  height: 100% !important;
+  min-height: 126px !important;
+  max-height: 136px !important;
+  padding: 0px !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 14px !important;
+  overflow: hidden !important;
+  background: radial-gradient(circle at 50% 40%, rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0.32) 75%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: inset 0 0 14px rgba(0, 0, 0, 0.4) !important;
+}
+.wrap.layout-split .illus svg {
+  width: 100% !important;
+  height: 100% !important;
+  max-height: 132px !important;
+  transform: scale(1.18);
+  transform-origin: center center;
+  transition: transform .3s ease;
+}
+.wrap.layout-split.k-fridge .illus svg {
+  transform: scale(1.30);
+  transform-origin: center center;
+}
+.wrap.layout-split.k-dishwasher .illus svg {
+  transform: scale(1.22);
+  transform-origin: center center;
+}
+.wrap.layout-split.k-washer .illus svg, .wrap.layout-split.k-dryer .illus svg {
+  transform: scale(1.18);
+  transform-origin: center center;
+}
+.wrap.layout-split .right-col {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  gap: 4px !important;
+  min-width: 0 !important;
+}
+.wrap.layout-split .head {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+  min-width: 0 !important;
+}
+.wrap.layout-split .name {
+  font-size: 13.5px !important;
+  font-weight: 800 !important;
+  line-height: 1.15 !important;
+}
+.wrap.layout-split .status {
+  font-size: 10.5px !important;
+  gap: 3px !important;
+  flex-wrap: wrap !important;
+}
+.wrap.layout-split .fr-pill {
+  padding: 0.5px 4px !important;
+  font-size: 9px !important;
+  margin-left: 0 !important;
+  margin-top: 2px !important;
+}
+.wrap.layout-split .stats {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+  width: 100% !important;
+}
+.wrap.layout-split .tile {
+  padding: 4px 6px !important;
+  border-radius: 8px !important;
+}
+.wrap.layout-split .val {
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  line-height: 1.1 !important;
+}
+.wrap.layout-split .lbl {
+  font-size: 8px !important;
+  gap: 2.5px !important;
+  line-height: 1 !important;
+  margin-top: 1.5px !important;
 }
 
 /* ---------- illustration: shared ---------- */
