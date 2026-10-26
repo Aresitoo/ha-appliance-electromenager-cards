@@ -1,5 +1,5 @@
-/* style de réfrigérateur : congélateur en haut (défaut), en bas, French door, américain */
-const fridgeStyle = (c) => ({ top: "top", haut: "top", bottom: "bottom", bas: "bottom", combi: "bottom", french: "french", french_door: "french", american: "american", americain: "american", side_by_side: "american", us: "american" }[String(c?.style || "top").toLowerCase()] || "top");
+/* style de réfrigérateur : congélateur en haut (défaut), en bas (tiroirs ou porte), French door, 4 portes, américain */
+const fridgeStyle = (c) => ({ top: "top", haut: "top", bottom: "bottom", bas: "bottom", combi: "bottom", french: "french", french_door: "french", bottom_door: "bottom_door", "bottom-door": "bottom_door", combi_door: "bottom_door", combi_porte: "bottom_door", four_door: "four_door", "4_door": "four_door", "4-door": "four_door", cross_door: "four_door", american: "american", americain: "american", side_by_side: "american", us: "american" }[String(c?.style || "top").toLowerCase()] || "top");
 
 // contenu du compartiment frigo (bouteilles, pots, fruits, bac à légumes), dessiné dans la zone x, y, w, h
 const fridgeFood = (x, y, w, h) => {
@@ -18,6 +18,12 @@ const fzDrawer = (x, y, w, h, cls) => `
   <rect x="${x + w * 0.25}" y="${y + 3.5}" width="${w * 0.5}" height="3.2" rx="1.6" fill="url(#ID-chrome)" stroke="#6f7781" stroke-width=".4"/>
   <path d="M${x + 4} ${y + h - 2}h${w - 8}" stroke="#fff" stroke-opacity=".45" stroke-width="1"/>
 </g>`;
+// intérieur de congélateur à porte battante : clayettes givrées et bacs, dessiné dans la zone x, y, w, h
+const fzInside = (x, y, w, h) => `
+<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="3" fill="url(#ID-frost)"/>
+<path d="M${x + 2} ${y + h * 0.36}h${w - 4}M${x + 2} ${y + h * 0.68}h${w - 4}" stroke="#a9cbe2" stroke-width="1"/>
+<rect x="${x + 5}" y="${y + h * 0.36 - 9}" width="${w * 0.4}" height="9" rx="2" fill="#d9eefb" stroke="#a9cbe2" stroke-width=".6"/><rect x="${x + w * 0.55}" y="${y + h * 0.36 - 7}" width="${w * 0.33}" height="7" rx="2" fill="#d9eefb" stroke="#a9cbe2" stroke-width=".6"/>
+<rect x="${x + 5}" y="${y + h * 0.68 - 9}" width="${w * 0.5}" height="9" rx="2" fill="#d9eefb" stroke="#a9cbe2" stroke-width=".6"/>`;
 // afficheur température + flocon
 const fridgeLcd = (x, y) => `
 <rect x="${x}" y="${y}" width="24" height="12" rx="2" fill="#0c1720" stroke="#7d868f" stroke-width=".5"/>
@@ -73,6 +79,56 @@ ${fzDrawer(26, 85, 68, 22, "fzd fzd-pull")}
   <rect x="84" y="40" width="3.4" height="38" rx="1.7" fill="url(#ID-chrome)" stroke="#6f7781" stroke-width=".4"/>
   ${fridgeLcd(35, 12)}
   <path d="M30 8v71" stroke="#fff" stroke-opacity=".55" stroke-width="2"/>
+</g>`,
+
+  // combiné classique : porte de frigo en haut, porte battante de congélateur en bas
+  bottom_door: () => `
+<ellipse cx="60" cy="134" rx="40" ry="4.5" fill="url(#ID-shadow)"/>
+<rect x="26" y="4" width="68" height="126" rx="6" fill="#9aa2ab"/>
+<rect x="29" y="7" width="62" height="74" rx="3" fill="url(#ID-in)"/>
+${fridgeFood(29, 7, 62, 74)}
+<rect class="flight" x="29" y="7" width="62" height="74" fill="#fffbe6" opacity="0"/>
+${fzInside(29, 86, 62, 41)}
+<g class="fz-door">
+  <rect x="26" y="84" width="68" height="46" rx="6" fill="url(#ID-inox)" stroke="#8f979f" stroke-width=".7"/>
+  <rect x="84" y="90" width="3.4" height="26" rx="1.7" fill="url(#ID-chrome)" stroke="#6f7781" stroke-width=".4"/>
+  <path d="M30 88v38" stroke="#fff" stroke-opacity=".55" stroke-width="2"/>
+</g>
+<g class="fr-door">
+  <rect x="26" y="4" width="68" height="79" rx="6" fill="url(#ID-inox)" stroke="#8f979f" stroke-width=".7"/>
+  <rect x="84" y="40" width="3.4" height="38" rx="1.7" fill="url(#ID-chrome)" stroke="#6f7781" stroke-width=".4"/>
+  ${fridgeLcd(35, 12)}
+  <path d="M30 8v71" stroke="#fff" stroke-opacity=".55" stroke-width="2"/>
+</g>`,
+
+  // 4 portes (cross door) : deux portes battantes en haut, deux portes battantes de congélateur en bas
+  four_door: () => `
+<ellipse cx="60" cy="134" rx="50" ry="4.5" fill="url(#ID-shadow)"/>
+<rect x="16" y="4" width="88" height="126" rx="6" fill="#9aa2ab"/>
+<rect x="19" y="7" width="82" height="70" rx="3" fill="url(#ID-in)"/>
+${fridgeFood(19, 7, 82, 70)}
+<rect class="flight" x="19" y="7" width="82" height="70" fill="#fffbe6" opacity="0"/>
+${fzInside(19, 82, 40, 45)}${fzInside(61, 82, 40, 45)}
+<g class="fz-door fz-l" style="transform-origin: 16px 0">
+  <rect x="16" y="80" width="43.6" height="50" rx="5" fill="url(#ID-inox)" stroke="#8f979f" stroke-width=".7"/>
+  <rect x="53" y="88" width="3.2" height="30" rx="1.6" fill="url(#ID-chrome)" stroke="#6f7781" stroke-width=".4"/>
+  <path d="M20 84v42" stroke="#fff" stroke-opacity=".55" stroke-width="2"/>
+</g>
+<g class="fz-door fz-r" style="transform-origin: 104px 0">
+  <rect x="60.4" y="80" width="43.6" height="50" rx="5" fill="url(#ID-inox)" stroke="#8f979f" stroke-width=".7"/>
+  <rect x="63.8" y="88" width="3.2" height="30" rx="1.6" fill="url(#ID-chrome)" stroke="#6f7781" stroke-width=".4"/>
+  <path d="M71 84v42" stroke="#fff" stroke-opacity=".4" stroke-width="2"/>
+</g>
+<g class="fr-door fr-l">
+  <rect x="16" y="4" width="43.6" height="75" rx="5" fill="url(#ID-inox)" stroke="#8f979f" stroke-width=".7"/>
+  <rect x="53" y="16" width="3.2" height="46" rx="1.6" fill="url(#ID-chrome)" stroke="#6f7781" stroke-width=".4"/>
+  ${fridgeLcd(22, 12)}
+  <path d="M20 8v67" stroke="#fff" stroke-opacity=".55" stroke-width="2"/>
+</g>
+<g class="fr-door fr-r" style="transform-origin: 104px 0">
+  <rect x="60.4" y="4" width="43.6" height="75" rx="5" fill="url(#ID-inox)" stroke="#8f979f" stroke-width=".7"/>
+  <rect x="63.8" y="16" width="3.2" height="46" rx="1.6" fill="url(#ID-chrome)" stroke="#6f7781" stroke-width=".4"/>
+  <path d="M71 8v67" stroke="#fff" stroke-opacity=".4" stroke-width="2"/>
 </g>`,
 
   // French door : deux portes battantes en haut, deux tiroirs de congélation en bas
