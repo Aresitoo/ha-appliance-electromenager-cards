@@ -1,0 +1,49 @@
+name: Bug report
+description: Something does not display or behave as expected
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! English or French are both fine.
+        Please check the [configuration docs](https://github.com/skyrotter/ha-appliance-electromenager-cards/blob/main/docs/configuration.md) first.
+  - type: dropdown
+    id: card
+    attributes:
+      label: Which card?
+      options:
+        - Washer / dryer / dishwasher
+        - Fridge / freezer / wine cooler
+        - Oven / microwave / cooktop / air fryer
+        - Water heater / heat pump / boiler
+        - TV / AV receiver / PC / server rack
+        - Battery / solar / EV charger / Linky
+        - Robot / fan / other
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Card version
+      description: Shown in the browser console when the card loads, or in HACS.
+      placeholder: "1.27.0"
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: What happens, and what did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: config
+    attributes:
+      label: Card YAML
+      render: yaml
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Environment and screenshot
+      description: Home Assistant version, browser or Companion app, and a screenshot if useful.
