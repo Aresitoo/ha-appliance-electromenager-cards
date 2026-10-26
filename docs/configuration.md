@@ -52,6 +52,8 @@ All cards have a visual editor. When added from the card picker, entities are de
 
 **Phases** (washer, dryer, dishwasher): if the status entity or `program` contains *wash/lavage*, *rinse/rinçage*, *spin/essorage*, *dry/séchage* or *cool/refroidissement*, the illustration and LCD follow that phase (water, foam, fast spin…). Otherwise the default phase is used.
 
+**Detecting the state without the power sensor**: when `entity` is a `binary_sensor` or an `input_boolean`, its state wins over the power sensor on the **laptop and desktop PC** cards (since 1.23.1). Useful when a charging automation cuts the plug while the machine is still running: a `ping` binary sensor then reports the real state, and the power tile keeps showing the plug's consumption. In that case do not set `switch:` to that plug — a plug reported `off` forces the off state.
+
 Tip: for washers, a cycle-detection automation driving an `input_boolean` is more reliable than raw power (soaking phases drop to a few watts). Ready-to-use example below.
 
 ## Several appliances of the same kind
