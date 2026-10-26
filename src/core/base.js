@@ -57,11 +57,13 @@ class ApplianceCardBase extends HTMLElement {
         <div class="wrap" id="wrap">
           <div class="top">
             <div class="illus"><svg viewBox="0 0 120 140" aria-hidden="true">${svg}</svg></div>
-            <div class="head">
-              <div class="info" id="info"></div>
-              <div class="actions" id="actions"></div>
+            <div class="right-col" id="right-col">
+              <div class="head">
+                <div class="info" id="info"></div>
+                <div class="actions" id="actions"></div>
+              </div>
+              <div class="stats" id="stats"></div>
             </div>
-            <div class="stats" id="stats"></div>
           </div>
           <div class="modes" id="modes"></div>
           <div class="bar" id="bar"><div class="bar-fill" id="barfill"></div></div>
@@ -141,6 +143,8 @@ class ApplianceCardBase extends HTMLElement {
       // input_boolean / binary_sensor "on", or a descriptive sensor state, means running
       else base = "running";
     }
+    /* un état explicite (binary_sensor / input_boolean) prime sur la puissance : la prise peut être coupée alors que l'appareil tourne */
+    const explicitState = !!main && ["input_boolean", "binary_sensor"].includes(domainOf(c.entity)) && !BAD.includes(String(main.state).toLowerCase());
     if (base === null && !pw && !pwS && ref) base = "unavailable";
     const powered = watts !== null && watts > threshold;
     if (base === "on" || base === null) {
@@ -350,6 +354,7 @@ class ApplianceCardBase extends HTMLElement {
       m.load = watts !== null ? Math.max(0, Math.min(1, watts / (c.max_power || 300))) : 0.4;
     } else if (kind === "desktop_pc" || kind === "laptop") {
       if (base === "off" || base === "unavailable") m.status = base;
+      else if (explicitState) m.status = base === "running" ? "screen_on" : powered ? "standby" : "off";
       else if (watts !== null) m.status = powered ? "screen_on" : watts >= (c.standby_threshold ?? 0.5) ? "standby" : "off";
       else m.status = base === "running" ? "screen_on" : "standby";
     } else if (kind === "tool_charger") {
@@ -520,7 +525,7 @@ class ApplianceCardBase extends HTMLElement {
     const $ = (i) => this.shadowRoot.getElementById(i);
     const active = ["running", "heating", "preheating", "cooling", "ignition", "filtering", "printing", "producing", "low", "speed1", "speed2", "cooking", "brewing", "keep_warm", "screen_on", "online", "ac_dry", "ac_fan", "defrost", "pouring", "playing", "muted", "fan_1", "fan_2", "fan_3", "charging"].includes(m.status);
     $("wrap").className = [
-      "wrap", `k-${kind}`, `st-${m.status}`, `accent-${m.accent || this._def.accent}`,
+      "wrap", c.layout === "split" ? "layout-split" : "", `k-${kind}`, `st-${m.status}`, `accent-${m.accent || this._def.accent}`,
       active ? "active" : "", m.phase ? `ph-${m.phase}` : "",
       m.alerts.length ? "alert" : "", isOn(m.door) ? "door-open" : "", isOn(m.fdoor) ? "fz-open" : "",
       m.alerts.includes("too_warm") ? "warm" : "", m.alerts.includes("humid") ? "humid" : "", c.animations === false ? "no-anim" : "", m.lights ? "lights-on" : "", m.solarHeat ? "solar-heat" : "", m.acMode ? `mode-${m.acMode}` : "", m.osc ? "osc" : "",
@@ -629,11 +634,34 @@ class ApplianceCardBase extends HTMLElement {
       sub = `${tr(hass, "ends_at")} ${fmtClock(hass, new Date(Date.now() + m.remaining * 60000))}`;
     }
     const alertTxt = m.alerts.map((a) => tr(hass, a)).join(" · ");
-    $("info").innerHTML = `
-      <div class="name">${esc(name)}</div>
-      <div class="status"><span class="dot"></span><span>${esc(statusTxt)}${prog && prog !== statusTxt ? ` · ${esc(prog)}` : ""}</span></div>
-      ${alertTxt ? `<div class="alert-line"><ha-icon icon="mdi:alert-circle-outline"></ha-icon>${esc(alertTxt)}</div>` : ""}
-      ${sub ? `<div class="sub">${esc(sub)}</div>` : ""}`;
+    let frPill = "";
+    if (kind === "fridge" && m.tempVal != null) {
+      let tCol = "color: #4caf50; border-color: rgba(76, 175, 80, 0.45); background: rgba(76, 175, 80, 0.15); box-shadow: 0 0 8px rgba(76, 175, 80, 0.2);";
+      if (m.tempVal >= 10) {
+        tCol = "color: #ff5252; border-color: rgba(244, 67, 54, 0.5); background: rgba(244, 67, 54, 0.18); box-shadow: 0 0 8px rgba(244, 67, 54, 0.3);";
+      } else if (m.tempVal >= 8) {
+        tCol = "color: #ff9800; border-color: rgba(255, 152, 0, 0.5); background: rgba(255, 152, 0, 0.18); box-shadow: 0 0 8px rgba(255, 152, 0, 0.25);";
+      } else if (m.tempVal >= 6) {
+        tCol = "color: #ffeb3b; border-color: rgba(255, 235, 59, 0.45); background: rgba(255, 235, 59, 0.15); box-shadow: 0 0 8px rgba(255, 235, 59, 0.2);";
+      }
+      frPill = `<span class="fr-pill" style="${tCol}"><ha-icon icon="mdi:thermometer" style="color: inherit;"></ha-icon>${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}</span>`;
+    }
+    if (c.layout === "split") {
+      $("info").innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:4px;">
+          <div class="name">${esc(name)}</div>
+          ${frPill}
+        </div>
+        <div class="status"><span class="dot"></span><span>${esc(statusTxt)}${prog && prog !== statusTxt ? ` · ${esc(prog)}` : ""}</span></div>
+        ${alertTxt ? `<div class="alert-line"><ha-icon icon="mdi:alert-circle-outline"></ha-icon>${esc(alertTxt)}</div>` : ""}
+        ${sub ? `<div class="sub">${esc(sub)}</div>` : ""}`;
+    } else {
+      $("info").innerHTML = `
+        <div class="name">${esc(name)}</div>
+        <div class="status"><span class="dot"></span><span>${esc(statusTxt)}${prog && prog !== statusTxt ? ` · ${esc(prog)}` : ""}</span>${frPill}</div>
+        ${alertTxt ? `<div class="alert-line"><ha-icon icon="mdi:alert-circle-outline"></ha-icon>${esc(alertTxt)}</div>` : ""}
+        ${sub ? `<div class="sub">${esc(sub)}</div>` : ""}`;
+    }
 
     if (c.switch && c.show_toggle !== false) {
       const on = isOn(m.sw);
@@ -706,7 +734,7 @@ class ApplianceCardBase extends HTMLElement {
       if (m.tempVal != null) tile("mdi:thermometer", `${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}`, tr(hass, dual ? "zone_top" : "temperature"), tEntity, m.tempVal > max1 ? "warn" : "");
       if (dual && m.zone2 != null) tile("mdi:thermometer-low", `${fmtNum(hass, m.zone2, 1)} ${m.zone2Ent?.attributes.unit_of_measurement || m.tempUnit}`, tr(hass, "zone_bottom"), c.zone2_temperature, m.zone2 > max2 ? "warn" : "");
     } else if (kind === "fridge") {
-      if (m.tempVal != null) tile("mdi:thermometer", `${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}`, tr(hass, "fridge_temp"), tEntity,
+      if ((!c.energy || c.layout !== "split") && m.tempVal != null) tile("mdi:thermometer", `${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}`, tr(hass, "fridge_temp"), tEntity,
         m.tempVal > (c.max_temperature ?? 8) ? "warn" : "");
       if (m.ftemp) tile("mdi:snowflake", fmtUnit(hass, m.ftemp, 1), tr(hass, "freezer_temp"), c.freezer_temperature,
         num(m.ftemp) > (c.freezer_max_temperature ?? -12) ? "warn" : "");
@@ -746,7 +774,16 @@ class ApplianceCardBase extends HTMLElement {
     const dual = kind === "water_heater" && (m.pwS || m.energyS);
     if (m.pw && c.show_power !== false) tile(solar ? "mdi:solar-power" : "mdi:flash", fmtPower(hass, m.pw) ?? "—", tr(hass, solar ? "production" : dual ? "grid" : "power"), c.power);
     if (m.pwS) tile("mdi:solar-power", fmtPower(hass, m.pwS) ?? "—", tr(hass, "solar_surplus"), c.power_solar);
-    if (m.energy) tile("mdi:lightning-bolt-circle", fmtEnergy(hass, m.energy) ?? "—", tr(hass, solar ? "today" : dual ? "energy_grid" : "energy"), c.energy);
+    if (m.energy) {
+      const eVal = fmtEnergy(hass, m.energy) ?? "—";
+      const yp = m.energy.attributes && m.energy.attributes.last_period;
+      if (yp !== undefined && yp !== null && !isNaN(parseFloat(yp))) {
+        const ydayStr = parseFloat(yp).toFixed(1);
+        tile("mdi:history", eVal, `Yday ${ydayStr} kWh`, c.energy);
+      } else {
+        tile("mdi:lightning-bolt-circle", eVal, tr(hass, solar ? "today" : dual ? "energy_grid" : "energy"), c.energy);
+      }
+    }
     if (m.energyS) tile("mdi:solar-power-variant", fmtEnergy(hass, m.energyS) ?? "—", tr(hass, "energy_solar"), c.energy_solar);
     if (m.cost) tile(solar ? "mdi:piggy-bank-outline" : "mdi:cash", fmtUnit(hass, m.cost, 2, 2) ?? "—", tr(hass, solar ? "savings" : "cost"), c.cost);
     if (solar && m.status !== "night" && m.frac != null && m.pw && !BAD.includes(String(m.pw.state).toLowerCase())) tile("mdi:white-balance-sunny", `${Math.round(m.frac * 100)} %`, tr(hass, "of_peak"), c.power);

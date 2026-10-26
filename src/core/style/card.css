@@ -71,3 +71,142 @@ svg { width: 100%; height: 100%; display: block; overflow: visible; }
   .status { justify-content: center; flex-wrap: wrap; }
   .status span:last-child { white-space: normal; overflow: visible; text-overflow: clip; }
 }
+
+/* Icon colors for power, yesterday energy, today energy and temperature */
+.lbl ha-icon[icon="mdi:flash"] {
+  color: #ffb74d !important;
+}
+.lbl ha-icon[icon="mdi:history"] {
+  color: #64b5f6 !important;
+}
+.lbl ha-icon[icon="mdi:lightning-bolt-circle"] {
+  color: #00e676 !important;
+}
+.lbl ha-icon[icon="mdi:thermometer"] {
+  color: #00e5ff !important;
+}
+
+.fr-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 6px;
+  padding: 1.5px 7px;
+  border-radius: 7px;
+  font-weight: 700;
+  font-size: 11px;
+  background: rgba(0, 229, 255, 0.12);
+  color: #00e5ff;
+  border: 1px solid rgba(0, 229, 255, 0.35);
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.2);
+}
+.fr-pill ha-icon { --mdc-icon-size: 12px; color: #00e5ff; }
+.fr-pill.warn {
+  background: rgba(244, 67, 54, 0.15);
+  color: #ff5252;
+  border-color: rgba(244, 67, 54, 0.4);
+  box-shadow: 0 0 8px rgba(244, 67, 54, 0.25);
+}
+.fr-pill.warn ha-icon { color: #ff5252; }
+
+.right-col { display: contents; }
+
+/* Split Layout: Full height appliance on left, compact stacked telemetry on right */
+.wrap.layout-split {
+  padding: 8px 9px 8px 8px;
+}
+.wrap.layout-split .top {
+  display: grid !important;
+  grid-template-columns: 74px minmax(0, 1fr) !important;
+  grid-template-areas: "illus right" !important;
+  column-gap: 8px !important;
+  row-gap: 0 !important;
+  align-items: stretch !important;
+}
+.wrap.layout-split .illus {
+  grid-area: illus !important;
+  width: 78px !important;
+  height: 100% !important;
+  min-height: 126px !important;
+  max-height: 136px !important;
+  padding: 0px !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 14px !important;
+  overflow: hidden !important;
+  background: radial-gradient(circle at 50% 40%, rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0.32) 75%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: inset 0 0 14px rgba(0, 0, 0, 0.4) !important;
+}
+.wrap.layout-split .illus svg {
+  width: 100% !important;
+  height: 100% !important;
+  max-height: 132px !important;
+  transform: scale(1.18);
+  transform-origin: center center;
+  transition: transform .3s ease;
+}
+.wrap.layout-split.k-fridge .illus svg {
+  transform: scale(1.30);
+  transform-origin: center center;
+}
+.wrap.layout-split.k-dishwasher .illus svg {
+  transform: scale(1.22);
+  transform-origin: center center;
+}
+.wrap.layout-split.k-washer .illus svg, .wrap.layout-split.k-dryer .illus svg {
+  transform: scale(1.18);
+  transform-origin: center center;
+}
+.wrap.layout-split .right-col {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  gap: 4px !important;
+  min-width: 0 !important;
+}
+.wrap.layout-split .head {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+  min-width: 0 !important;
+}
+.wrap.layout-split .name {
+  font-size: 13.5px !important;
+  font-weight: 800 !important;
+  line-height: 1.15 !important;
+}
+.wrap.layout-split .status {
+  font-size: 10.5px !important;
+  gap: 3px !important;
+  flex-wrap: wrap !important;
+}
+.wrap.layout-split .fr-pill {
+  padding: 0.5px 4px !important;
+  font-size: 9px !important;
+  margin-left: 0 !important;
+  margin-top: 2px !important;
+}
+.wrap.layout-split .stats {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+  width: 100% !important;
+}
+.wrap.layout-split .tile {
+  padding: 4px 6px !important;
+  border-radius: 8px !important;
+}
+.wrap.layout-split .val {
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  line-height: 1.1 !important;
+}
+.wrap.layout-split .lbl {
+  font-size: 8px !important;
+  gap: 2.5px !important;
+  line-height: 1 !important;
+  margin-top: 1.5px !important;
+}

@@ -345,5 +345,41 @@
     "heat_energy": "Wärmeenergie",
     "scop": "SCOP",
     "buffer": "Pufferspeicher"
+  },
+  "diesel_heater": {
+    "name": "Dieselheizung",
+    "off": "Aus",
+    "standby": "Bereitschaft",
+    "ignition": "Zündung",
+    "heating": "Heizt",
+    "cooldown": "Gebläse-Nachlauf",
+    "alarm": "Störung",
+    "power": "Elektrisch",
+    "energy": "Elektr. Energie",
+    "fuel": "Diesel",
+    "used": "Verbraucht",
+    "cost": "Kosten",
+    "temp": "Raum",
+    "flue": "Abgas",
+    "lowfuel": "Diesel niedrig",
+    "hotflue": "Abgas zu heiß"
+  },
+  "jacuzzi": {
+    "name": "Whirlpool",
+    "off": "Aus",
+    "standby": "Bereitschaft",
+    "filtering": "Filterung",
+    "heating": "Heizt",
+    "jets": "Düsen",
+    "alarm": "Störung",
+    "power": "Elektrisch",
+    "energy": "Elektr. Energie",
+    "temp": "Wasser",
+    "target": "Soll",
+    "ph": "pH",
+    "cost": "Kosten",
+    "lowph": "pH zu niedrig",
+    "highph": "pH zu hoch",
+    "hot": "Wasser zu heiß"
   }
 }

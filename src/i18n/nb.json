@@ -345,5 +345,41 @@
 "heat_energy": "Varmeenergi",
 "scop": "SCOP",
 "buffer": "Buffertank"
+},
+"diesel_heater": {
+"name": "Dieselvarmer",
+"off": "Av",
+"standby": "Hvilemodus",
+"ignition": "Tenning",
+"heating": "Varmer",
+"cooldown": "Viftespyling",
+"alarm": "Feil",
+"power": "Elektrisk",
+"energy": "Elektr. energi",
+"fuel": "Diesel",
+"used": "Brukt",
+"cost": "Kostnad",
+"temp": "Rom",
+"flue": "Avgass",
+"lowfuel": "Lite diesel",
+"hotflue": "For varm avgass"
+},
+"jacuzzi": {
+"name": "Boblebad",
+"off": "Av",
+"standby": "Hvilemodus",
+"filtering": "Filtrerer",
+"heating": "Varmer",
+"jets": "Dyser",
+"alarm": "Feil",
+"power": "Elektrisk",
+"energy": "Elektr. energi",
+"temp": "Vann",
+"target": "Mål",
+"ph": "pH",
+"cost": "Kostnad",
+"lowph": "For lav pH",
+"highph": "For høy pH",
+"hot": "For varmt vann"
 }
 }
