@@ -21,5 +21,7 @@ Every value tile can be hidden with its `show_…` option, and `language: fr|en|
 - `show_energy`
 - `show_temperature`
 - `show_time`
+- `layout`: `default` or `split` (illustration on the left, name, status and values on the right; useful in narrow or 2-column grids)
+- `status_position`: `auto` (default, status moves below the illustration on narrow cards), `inside` or `below`
 
 [← All cards](../../README.md#the-cards)

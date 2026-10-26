@@ -5684,6 +5684,7 @@ class ApplianceBatteryCard extends HTMLElement {
           { name: 'show_temperature', selector: { boolean: {} }, default: true },
           { name: 'show_time', selector: { boolean: {} }, default: true },
         ] },
+        { name: 'layout', selector: { select: { mode: 'dropdown', options: ['default', 'split'] } } },
         { name: 'status_position', selector: { select: { mode: 'dropdown', options: ['auto', 'inside', 'below'] } } },
         { name: 'language', selector: { select: { options: Object.keys(I18N_BAT) } } },
       ],
@@ -5693,7 +5694,7 @@ class ApplianceBatteryCard extends HTMLElement {
   setConfig(config) {
     // Convention : puissance > 0 = charge (inverser avec invert_power si ton capteur est l'inverse)
     this._config = { show_power: true, show_energy: true, show_temperature: true, show_time: true,
-      capacity_kwh: 10, max_power: 5000, low_threshold: 15, invert_power: false, status_position: 'auto', ...config };
+      capacity_kwh: 10, max_power: 5000, low_threshold: 15, invert_power: false, status_position: 'auto', layout: 'default', ...config };
     this._built = false; this._build();
   }
   set hass(h) {
@@ -5755,6 +5756,16 @@ class ApplianceBatteryCard extends HTMLElement {
       .status-line { display:none; text-align:center; font-weight:700; font-size:max(11px, .75em); letter-spacing:.08em; text-transform:uppercase; color:var(--secondary-text-color); margin:2px 0 4px; }
       .sp-below .status-line { display:block; } .sp-below #state { display:none; }
       @container (max-width:260px) { .sp-auto .status-line { display:block; } .sp-auto #state { display:none; } }
+      .layout-split { display:grid; grid-template-columns:minmax(0, .8fr) minmax(0, 1.2fr); grid-template-rows:auto auto 1fr; column-gap:8px; align-content:center; }
+      .layout-split svg { grid-column:1; grid-row:1 / 4; align-self:center; transform:none; }
+      .layout-split .title { grid-column:2; grid-row:1; flex-wrap:wrap; gap:4px; margin:0 0 2px; font-size:.95em; }
+      .layout-split .title span { min-width:0; overflow-wrap:anywhere; }
+      .layout-split .status-line { grid-column:2; grid-row:2; display:block; text-align:left; margin:0 0 4px; }
+      .layout-split #state { display:none; }
+      .layout-split .stats { grid-column:2; grid-row:3; grid-template-columns:minmax(0, 1fr); min-width:0; align-self:start; gap:4px; margin-top:0; }
+      .layout-split .stat { padding:4px 6px; text-align:left; }
+      .layout-split .stat { min-width:0; overflow-wrap:anywhere; }
+      .layout-split .stat .v { font-size:.95em; }
       .bolt { fill:#ffb300; opacity:0; } .charging .bolt { opacity:1; animation:blink 1.2s infinite; }
       .arrow { fill:#00acc1; opacity:0; } .discharging .arrow { opacity:1; animation:blink 1.2s infinite; }
       .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(78px,1fr)); gap:8px; margin-top:6px; }
@@ -5763,7 +5774,7 @@ class ApplianceBatteryCard extends HTMLElement {
       @keyframes dash { to { stroke-dashoffset:-11; } } @keyframes blink { 50% { opacity:.35; } }
       @keyframes wave { from { transform:translate(-12px, var(--wy,0px)); } to { transform:translate(8px, var(--wy,0px)); } }
     </style>
-    <ha-card id="card" class="sp-${['inside', 'below'].includes(this._config.status_position) ? this._config.status_position : 'auto'}">
+    <ha-card id="card" class="sp-${['inside', 'below'].includes(this._config.status_position) ? this._config.status_position : 'auto'}${this._config.layout === 'split' ? ' layout-split' : ''}">
       <div class="title"><span>${esc(this._config.name || this._t('name'))}</span><span class="badge">${this._t('low')}</span></div>
       <svg viewBox="0 -6 320 176" id="svg">
         <defs>
