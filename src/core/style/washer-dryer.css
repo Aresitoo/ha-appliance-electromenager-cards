@@ -3,16 +3,16 @@
 .water { opacity: 0; transition: opacity .8s; }
 .water path { fill: #3f9fe0; opacity: .5; }
 .ph-rinse .water path { fill: #8fd4ff; opacity: .45; }
-.ph-wash .water, .ph-rinse .water { opacity: 1; }
+.ph-wash .water, .ph-rinse .water, .ph-heat .water { opacity: 1; }
 .wave { animation: ac-wave 2.4s linear infinite; animation-play-state: paused; }
-.ph-wash .wave, .ph-rinse .wave { animation-play-state: running; }
+.ph-wash .wave, .ph-rinse .wave, .ph-heat .wave { animation-play-state: running; }
 .ph-rinse .wave { animation-duration: 3.2s; }
 .foam circle { fill: #fff; opacity: 0; }
-.ph-wash .foam circle { animation: ac-bubble 2.6s ease-in infinite; }
-.ph-wash .foam circle:nth-child(2) { animation-delay: .5s; } .ph-wash .foam circle:nth-child(3) { animation-delay: 1s; }
-.ph-wash .foam circle:nth-child(4) { animation-delay: 1.5s; } .ph-wash .foam circle:nth-child(5) { animation-delay: .8s; }
-.ph-wash .foam circle:nth-child(6) { animation-delay: 1.9s; }
-.ph-wash .drum { animation: ac-tumble 3.4s ease-in-out infinite; }
+.ph-wash .foam circle, .ph-heat .foam circle { animation: ac-bubble 2.6s ease-in infinite; }
+.ph-wash .foam circle:nth-child(2), .ph-heat .foam circle:nth-child(2) { animation-delay: .5s; } .ph-wash .foam circle:nth-child(3), .ph-heat .foam circle:nth-child(3) { animation-delay: 1s; }
+.ph-wash .foam circle:nth-child(4), .ph-heat .foam circle:nth-child(4) { animation-delay: 1.5s; } .ph-wash .foam circle:nth-child(5), .ph-heat .foam circle:nth-child(5) { animation-delay: .8s; }
+.ph-wash .foam circle:nth-child(6), .ph-heat .foam circle:nth-child(6) { animation-delay: 1.9s; }
+.ph-wash .drum, .ph-heat .drum { animation: ac-tumble 3.4s ease-in-out infinite; }
 .ph-rinse .drum { animation: ac-tumble 4.6s ease-in-out infinite; }
 .ph-spin .drum { animation: ac-rot .32s linear infinite; }
 .ph-spin .clothes { opacity: .85; }

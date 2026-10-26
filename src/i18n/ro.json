@@ -191,7 +191,10 @@
     "fan_2": "Viteză 2",
     "fan_3": "Viteză 3",
     "f_oscillating": "Oscilație",
-    "f_mid_threshold": "Viteză 2 peste (W)"
+    "f_mid_threshold": "Viteză 2 peste (W)",
+    "ph_heat": "Încălzire",
+    "f_heating_power": "Prag de putere pentru încălzire (W)",
+    "f_spin_power": "Prag de putere pentru centrifugare (W)"
   },
   "aquarium": {
     "power": "Putere",

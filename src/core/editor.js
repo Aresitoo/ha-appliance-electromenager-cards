@@ -44,6 +44,12 @@ function buildForm(kind) {
       {
         type: "expandable", name: "", title: "Options", flatten: true, schema: [
           { name: "threshold", selector: { number: { min: 0, max: 3000, step: 1, mode: "box", unit_of_measurement: "W" } } },
+          ...(["washer", "dishwasher"].includes(kind) ? [
+            { name: "heating_power", selector: { number: { min: 100, max: 4000, step: 50, mode: "box", unit_of_measurement: "W" } } },
+          ] : []),
+          ...(kind === "washer" ? [
+            { name: "spin_power", selector: { number: { min: 50, max: 2000, step: 25, mode: "box", unit_of_measurement: "W" } } },
+          ] : []),
           ...(["chest_freezer", "drawer_freezer"].includes(kind) ? [
             { name: "freezer_max_temperature", selector: { number: { min: -30, max: 0, step: 0.5, mode: "box" } } },
           ] : []),
@@ -54,7 +60,8 @@ function buildForm(kind) {
           ...(kind === "fridge" ? [
             { name: "style", selector: { select: { mode: "dropdown", options: [
               { value: "top", label: "Congélateur en haut / Top freezer" }, { value: "bottom", label: "Congélateur en bas / Bottom freezer" },
-              { value: "french", label: "French door" }, { value: "american", label: "Américain / Side-by-side" }] } } },
+              { value: "bottom_door", label: "Combiné, porte en bas / Bottom freezer door" },
+              { value: "french", label: "French door" }, { value: "four_door", label: "4 portes / 4-door" }, { value: "american", label: "Américain / Side-by-side" }] } } },
             { name: "max_temperature", selector: { number: { min: 0, max: 15, step: 0.5, mode: "box" } } },
             { name: "freezer_max_temperature", selector: { number: { min: -30, max: 0, step: 0.5, mode: "box" } } },
           ] : []),

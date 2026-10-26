@@ -191,7 +191,10 @@
     "fan_2": "Stufe 2",
     "fan_3": "Stufe 3",
     "f_oscillating": "Oszillation",
-    "f_mid_threshold": "Stufe 2 ab (W)"
+    "f_mid_threshold": "Stufe 2 ab (W)",
+    "ph_heat": "Aufheizen",
+    "f_heating_power": "Schwellenwert für Heizphase (W)",
+    "f_spin_power": "Schwellenwert für Schleuderphase (W)"
   },
   "aquarium": {
     "power": "Leistung",

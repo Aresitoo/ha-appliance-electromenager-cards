@@ -13,6 +13,8 @@ All cards have a visual editor. When added from the card picker, entities are de
 | `cost` | Cost sensor (any currency) |
 | `switch` | Switch controlled by the power button (button hidden if unset) |
 | `threshold` | Power above which the appliance is considered running (W). Defaults: 10 (washer/dryer/dishwasher), 20 (fridge), 50 (others) |
+| `heating_power` | Washer and dishwasher: power draw threshold (W) above which the cycle phase is inferred as `heat` (default: `1000`) |
+| `spin_power` | Washer: power draw threshold (W) above which the cycle phase is inferred as `spin` (default: `200`) |
 | `layout` | Layout mode: `default` (vertical on narrow viewports) or `split` (compact horizontal side-by-side layout, keeps illustration beside telemetry even in narrow columns) |
 | `name` | Custom name |
 | `color` | Accent color (any CSS color) |
@@ -40,7 +42,7 @@ All cards have a visual editor. When added from the card picker, entities are de
 | `zone_1`…`zone_4` (level 0–9, W or %), `zone_power` (default 1500 W), `residual_minutes` (default 10) | cooktop |
 | `mode` (pilot wire / select: comfort, eco, frost, off), `window`, `temperature`, `target_temperature`, `max_power` (default 1500 W) | electric radiator |
 | `max_temperature` (default 8), `freezer_max_temperature` (default −12) | fridge alerts |
-| `style`: `top` (default), `bottom`, `french`, `american` | fridge layout |
+| `style`: `top` (default), `bottom`, `bottom_door`, `french`, `four_door`, `american` | fridge layout |
 | `zone2_temperature`, `max_temperature_2` (default = `max_temperature`) | dual-zone wine cooler |
 
 ## How the status is computed

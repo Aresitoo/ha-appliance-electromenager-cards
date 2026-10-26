@@ -191,7 +191,10 @@
     "fan_2": "Stand 2",
     "fan_3": "Stand 3",
     "f_oscillating": "Zwenken",
-    "f_mid_threshold": "Stand 2 boven (W)"
+    "f_mid_threshold": "Stand 2 boven (W)",
+    "ph_heat": "Verwarmen",
+    "f_heating_power": "Drempelwaarde verwarmingsfase (W)",
+    "f_spin_power": "Drempelwaarde centrifugeerfase (W)"
   },
   "aquarium": {
     "power": "Vermogen",

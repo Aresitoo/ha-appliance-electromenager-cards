@@ -8,7 +8,7 @@
  */
 (() => {
 "use strict";
-const VERSION = "1.24.0";
+const VERSION = "1.26.0";
 
 /* ------------------------------------------------------------------ */
 /* i18n — strings live in src/i18n/<lang>.json, inlined by build.js    */
@@ -206,7 +206,10 @@ const STRINGS = {
     "fan_2": "Speed 2",
     "fan_3": "Speed 3",
     "f_oscillating": "Oscillation",
-    "f_mid_threshold": "Speed 2 above (W)"
+    "f_mid_threshold": "Speed 2 above (W)",
+    "ph_heat": "Heating",
+    "f_heating_power": "Heating phase threshold (W)",
+    "f_spin_power": "Spinning phase threshold (W)"
   },
   "de": {
     "washer": "Waschmaschine",
@@ -400,7 +403,10 @@ const STRINGS = {
     "fan_2": "Stufe 2",
     "fan_3": "Stufe 3",
     "f_oscillating": "Oszillation",
-    "f_mid_threshold": "Stufe 2 ab (W)"
+    "f_mid_threshold": "Stufe 2 ab (W)",
+    "ph_heat": "Aufheizen",
+    "f_heating_power": "Schwellenwert für Heizphase (W)",
+    "f_spin_power": "Schwellenwert für Schleuderphase (W)"
   },
   "fr": {
     "washer": "Lave-linge",
@@ -594,7 +600,10 @@ const STRINGS = {
     "fan_2": "Vitesse 2",
     "fan_3": "Vitesse 3",
     "f_oscillating": "Oscillation",
-    "f_mid_threshold": "Vitesse 2 au-dessus de (W)"
+    "f_mid_threshold": "Vitesse 2 au-dessus de (W)",
+    "ph_heat": "Chauffe",
+    "f_heating_power": "Seuil de phase de chauffe (W)",
+    "f_spin_power": "Seuil de phase d'essorage (W)"
   },
   "nb": {
     "washer": "Vaskemaskin",
@@ -788,7 +797,10 @@ const STRINGS = {
     "fan_2": "Hastighet 2",
     "fan_3": "Hastighet 3",
     "f_oscillating": "Svinging",
-    "f_mid_threshold": "Hastighet 2 over (W)"
+    "f_mid_threshold": "Hastighet 2 over (W)",
+    "ph_heat": "Oppvarming",
+    "f_heating_power": "Effektterskel for oppvarming (W)",
+    "f_spin_power": "Effektterskel for sentrifugering (W)"
   },
   "nl": {
     "washer": "Wasmachine",
@@ -982,7 +994,10 @@ const STRINGS = {
     "fan_2": "Stand 2",
     "fan_3": "Stand 3",
     "f_oscillating": "Zwenken",
-    "f_mid_threshold": "Stand 2 boven (W)"
+    "f_mid_threshold": "Stand 2 boven (W)",
+    "ph_heat": "Verwarmen",
+    "f_heating_power": "Drempelwaarde verwarmingsfase (W)",
+    "f_spin_power": "Drempelwaarde centrifugeerfase (W)"
   },
   "ro": {
     "washer": "Mașină de spălat rufe",
@@ -1176,7 +1191,10 @@ const STRINGS = {
     "fan_2": "Viteză 2",
     "fan_3": "Viteză 3",
     "f_oscillating": "Oscilație",
-    "f_mid_threshold": "Viteză 2 peste (W)"
+    "f_mid_threshold": "Viteză 2 peste (W)",
+    "ph_heat": "Încălzire",
+    "f_heating_power": "Prag de putere pentru încălzire (W)",
+    "f_spin_power": "Prag de putere pentru centrifugare (W)"
   }
 };
 const lang = (hass) => {
@@ -1738,8 +1756,8 @@ SVG.fan = () => `
   <g class="fn-ribbon"><path d="M93 44q8 2 12 -2q-4 6 -12 6z" fill="#ff7a59"/></g>
 </g>`;
 
-/* style de réfrigérateur : congélateur en haut (défaut), en bas, French door, américain */
-const fridgeStyle = (c) => ({ top: "top", haut: "top", bottom: "bottom", bas: "bottom", combi: "bottom", french: "french", french_door: "french", american: "american", americain: "american", side_by_side: "american", us: "american" }[String(c?.style || "top").toLowerCase()] || "top");
+/* style de réfrigérateur : congélateur en haut (défaut), en bas (tiroirs ou porte), French door, 4 portes, américain */
+const fridgeStyle = (c) => ({ top: "top", haut: "top", bottom: "bottom", bas: "bottom", combi: "bottom", french: "french", french_door: "french", bottom_door: "bottom_door", "bottom-door": "bottom_door", combi_door: "bottom_door", combi_porte: "bottom_door", four_door: "four_door", "4_door": "four_door", "4-door": "four_door", cross_door: "four_door", american: "american", americain: "american", side_by_side: "american", us: "american" }[String(c?.style || "top").toLowerCase()] || "top");
 
 // contenu du compartiment frigo (bouteilles, pots, fruits, bac à légumes), dessiné dans la zone x, y, w, h
 const fridgeFood = (x, y, w, h) => {
@@ -1758,6 +1776,12 @@ const fzDrawer = (x, y, w, h, cls) => `
   <rect x="${x + w * 0.25}" y="${y + 3.5}" width="${w * 0.5}" height="3.2" rx="1.6" fill="url(#ID-chrome)" stroke="#6f7781" stroke-width=".4"/>
   <path d="M${x + 4} ${y + h - 2}h${w - 8}" stroke="#fff" stroke-opacity=".45" stroke-width="1"/>
 </g>`;
+// intérieur de congélateur à porte battante : clayettes givrées et bacs, dessiné dans la zone x, y, w, h
+const fzInside = (x, y, w, h) => `
+<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="3" fill="url(#ID-frost)"/>
+<path d="M${x + 2} ${y + h * 0.36}h${w - 4}M${x + 2} ${y + h * 0.68}h${w - 4}" stroke="#a9cbe2" stroke-width="1"/>
+<rect x="${x + 5}" y="${y + h * 0.36 - 9}" width="${w * 0.4}" height="9" rx="2" fill="#d9eefb" stroke="#a9cbe2" stroke-width=".6"/><rect x="${x + w * 0.55}" y="${y + h * 0.36 - 7}" width="${w * 0.33}" height="7" rx="2" fill="#d9eefb" stroke="#a9cbe2" stroke-width=".6"/>
+<rect x="${x + 5}" y="${y + h * 0.68 - 9}" width="${w * 0.5}" height="9" rx="2" fill="#d9eefb" stroke="#a9cbe2" stroke-width=".6"/>`;
 // afficheur température + flocon
 const fridgeLcd = (x, y) => `
 <rect x="${x}" y="${y}" width="24" height="12" rx="2" fill="#0c1720" stroke="#7d868f" stroke-width=".5"/>
@@ -1813,6 +1837,56 @@ ${fzDrawer(26, 85, 68, 22, "fzd fzd-pull")}
   <rect x="84" y="40" width="3.4" height="38" rx="1.7" fill="url(#ID-chrome)" stroke="#6f7781" stroke-width=".4"/>
   ${fridgeLcd(35, 12)}
   <path d="M30 8v71" stroke="#fff" stroke-opacity=".55" stroke-width="2"/>
+</g>`,
+
+  // combiné classique : porte de frigo en haut, porte battante de congélateur en bas
+  bottom_door: () => `
+<ellipse cx="60" cy="134" rx="40" ry="4.5" fill="url(#ID-shadow)"/>
+<rect x="26" y="4" width="68" height="126" rx="6" fill="#9aa2ab"/>
+<rect x="29" y="7" width="62" height="74" rx="3" fill="url(#ID-in)"/>
+${fridgeFood(29, 7, 62, 74)}
+<rect class="flight" x="29" y="7" width="62" height="74" fill="#fffbe6" opacity="0"/>
+${fzInside(29, 86, 62, 41)}
+<g class="fz-door">
+  <rect x="26" y="84" width="68" height="46" rx="6" fill="url(#ID-inox)" stroke="#8f979f" stroke-width=".7"/>
+  <rect x="84" y="90" width="3.4" height="26" rx="1.7" fill="url(#ID-chrome)" stroke="#6f7781" stroke-width=".4"/>
+  <path d="M30 88v38" stroke="#fff" stroke-opacity=".55" stroke-width="2"/>
+</g>
+<g class="fr-door">
+  <rect x="26" y="4" width="68" height="79" rx="6" fill="url(#ID-inox)" stroke="#8f979f" stroke-width=".7"/>
+  <rect x="84" y="40" width="3.4" height="38" rx="1.7" fill="url(#ID-chrome)" stroke="#6f7781" stroke-width=".4"/>
+  ${fridgeLcd(35, 12)}
+  <path d="M30 8v71" stroke="#fff" stroke-opacity=".55" stroke-width="2"/>
+</g>`,
+
+  // 4 portes (cross door) : deux portes battantes en haut, deux portes battantes de congélateur en bas
+  four_door: () => `
+<ellipse cx="60" cy="134" rx="50" ry="4.5" fill="url(#ID-shadow)"/>
+<rect x="16" y="4" width="88" height="126" rx="6" fill="#9aa2ab"/>
+<rect x="19" y="7" width="82" height="70" rx="3" fill="url(#ID-in)"/>
+${fridgeFood(19, 7, 82, 70)}
+<rect class="flight" x="19" y="7" width="82" height="70" fill="#fffbe6" opacity="0"/>
+${fzInside(19, 82, 40, 45)}${fzInside(61, 82, 40, 45)}
+<g class="fz-door fz-l" style="transform-origin: 16px 0">
+  <rect x="16" y="80" width="43.6" height="50" rx="5" fill="url(#ID-inox)" stroke="#8f979f" stroke-width=".7"/>
+  <rect x="53" y="88" width="3.2" height="30" rx="1.6" fill="url(#ID-chrome)" stroke="#6f7781" stroke-width=".4"/>
+  <path d="M20 84v42" stroke="#fff" stroke-opacity=".55" stroke-width="2"/>
+</g>
+<g class="fz-door fz-r" style="transform-origin: 104px 0">
+  <rect x="60.4" y="80" width="43.6" height="50" rx="5" fill="url(#ID-inox)" stroke="#8f979f" stroke-width=".7"/>
+  <rect x="63.8" y="88" width="3.2" height="30" rx="1.6" fill="url(#ID-chrome)" stroke="#6f7781" stroke-width=".4"/>
+  <path d="M71 84v42" stroke="#fff" stroke-opacity=".4" stroke-width="2"/>
+</g>
+<g class="fr-door fr-l">
+  <rect x="16" y="4" width="43.6" height="75" rx="5" fill="url(#ID-inox)" stroke="#8f979f" stroke-width=".7"/>
+  <rect x="53" y="16" width="3.2" height="46" rx="1.6" fill="url(#ID-chrome)" stroke="#6f7781" stroke-width=".4"/>
+  ${fridgeLcd(22, 12)}
+  <path d="M20 8v67" stroke="#fff" stroke-opacity=".55" stroke-width="2"/>
+</g>
+<g class="fr-door fr-r" style="transform-origin: 104px 0">
+  <rect x="60.4" y="4" width="43.6" height="75" rx="5" fill="url(#ID-inox)" stroke="#8f979f" stroke-width=".7"/>
+  <rect x="63.8" y="16" width="3.2" height="46" rx="1.6" fill="url(#ID-chrome)" stroke="#6f7781" stroke-width=".4"/>
+  <path d="M71 8v67" stroke="#fff" stroke-opacity=".4" stroke-width="2"/>
 </g>`,
 
   // French door : deux portes battantes en haut, deux tiroirs de congélation en bas
@@ -2708,11 +2782,11 @@ ${dual ? `
 /* ------------------------------------------------------------------ */
 const CYCLE_FIELDS = ["entity", "power", "energy", "cost", "remaining", "progress", "program", "door", "switch"];
 const DEF = {
-  washer: { accent: "active", threshold: 10, fields: CYCLE_FIELDS,
+  washer: { accent: "active", threshold: 10, heating_power: 1000, spin_power: 200, fields: CYCLE_FIELDS,
     keys: ["lave_linge", "lavelinge", "washing_machine", "washer", "machine_a_laver"] },
   dryer: { accent: "active", threshold: 10, fields: CYCLE_FIELDS,
     keys: ["seche_linge", "sechelinge", "tumble_dryer", "dryer"] },
-  dishwasher: { accent: "active", threshold: 10, fields: CYCLE_FIELDS,
+  dishwasher: { accent: "active", threshold: 10, heating_power: 1000, fields: CYCLE_FIELDS,
     keys: ["lave_vaisselle", "lavevaisselle", "dishwasher"] },
   water_heater: { accent: "heat", threshold: 50,
     fields: ["entity", "power", "power_solar", "energy", "energy_solar", "cost", "temperature", "target_temperature", "switch"],
@@ -3297,7 +3371,23 @@ class ApplianceCardBase extends HTMLElement {
       m.status = base;
     }
 
-    // phase detection (washer / dryer / dishwasher) from status or program text
+    // For dishwashers on smart plugs: track recent cycle activity to detect the low-power drying phase
+    if (kind === "dishwasher") {
+      if (watts !== null && watts > threshold) {
+        this._dwLastActive = Date.now();
+      }
+      const dryingTimeout = 20 * 60 * 1000; // 20 minutes
+      const recentlyActive = this._dwLastActive && (Date.now() - this._dwLastActive < dryingTimeout);
+      if (base === "running" && watts !== null && watts <= threshold) {
+        m.status = "running";
+        m.phase = "dry";
+      } else if (base !== "running" && !explicitState && recentlyActive && (watts === null || watts <= threshold)) {
+        m.status = "running";
+        m.phase = "dry";
+      }
+    }
+
+    // phase detection (washer / dryer / dishwasher) from status or program text, with smart-plug power inference fallback
     if (m.status === "running" && ["washer", "dryer", "dishwasher"].includes(kind)) {
       const txt = `${main ? main.state : ""} ${m.program ? m.program.state : ""}`.toLowerCase();
       if (/rin[cç]|rinse/.test(txt)) m.phase = "rinse";
@@ -3305,7 +3395,23 @@ class ApplianceCardBase extends HTMLElement {
       else if (/refroid|cool|anti.?froiss|wrinkle/.test(txt)) m.phase = "cool";
       // en début de mot : les clés Home Connect « laundry_care_washer_program_… » contiennent « dry »
       else if (/(^|[^a-zà-ÿ])(s[eé]ch|dry)/.test(txt)) m.phase = "dry";
-      else m.phase = kind === "dryer" ? "dry" : "wash";
+      else if (/(^|[^a-zà-ÿ])(heat|chauff)/.test(txt)) m.phase = "heat";
+      else if (kind === "dryer") {
+        m.phase = "dry";
+      } else if (watts !== null && ["washer", "dishwasher"].includes(kind)) {
+        // Fallback: infer phase from power draw on smart plugs when text entity gives no phase
+        const heatThreshold = c.heating_power ?? this._def.heating_power ?? 1000;
+        const spinThreshold = c.spin_power ?? this._def.spin_power ?? 200;
+        if (heatThreshold > 0 && watts >= heatThreshold) {
+          m.phase = "heat";
+        } else if (kind === "washer" && spinThreshold > 0 && watts >= spinThreshold) {
+          m.phase = "spin";
+        } else if (!m.phase) {
+          m.phase = "wash";
+        }
+      } else if (!m.phase) {
+        m.phase = "wash";
+      }
     }
     if (isOn(m.door) || isOn(m.fdoor)) m.alerts.unshift("door_open");
     m.alerts = [...new Set(m.alerts)];
@@ -3427,7 +3533,7 @@ class ApplianceCardBase extends HTMLElement {
     if (m.status === "finished") return "END";
     if (!active) return "OFF";
     if (m.remaining != null && m.remaining > 0) return lcdDuration(m.remaining);
-    return { wash: "WASH", rinse: "RINSE", spin: "SPIN", dry: "DRY", cool: "COOL" }[m.phase] || "RUN";
+    return { wash: "WASH", rinse: "RINSE", spin: "SPIN", dry: "DRY", cool: "COOL", heat: "HEAT" }[m.phase] || "RUN";
   }
 
   _render(m) {
@@ -3748,6 +3854,12 @@ function buildForm(kind) {
       {
         type: "expandable", name: "", title: "Options", flatten: true, schema: [
           { name: "threshold", selector: { number: { min: 0, max: 3000, step: 1, mode: "box", unit_of_measurement: "W" } } },
+          ...(["washer", "dishwasher"].includes(kind) ? [
+            { name: "heating_power", selector: { number: { min: 100, max: 4000, step: 50, mode: "box", unit_of_measurement: "W" } } },
+          ] : []),
+          ...(kind === "washer" ? [
+            { name: "spin_power", selector: { number: { min: 50, max: 2000, step: 25, mode: "box", unit_of_measurement: "W" } } },
+          ] : []),
           ...(["chest_freezer", "drawer_freezer"].includes(kind) ? [
             { name: "freezer_max_temperature", selector: { number: { min: -30, max: 0, step: 0.5, mode: "box" } } },
           ] : []),
@@ -3758,7 +3870,8 @@ function buildForm(kind) {
           ...(kind === "fridge" ? [
             { name: "style", selector: { select: { mode: "dropdown", options: [
               { value: "top", label: "Congélateur en haut / Top freezer" }, { value: "bottom", label: "Congélateur en bas / Bottom freezer" },
-              { value: "french", label: "French door" }, { value: "american", label: "Américain / Side-by-side" }] } } },
+              { value: "bottom_door", label: "Combiné, porte en bas / Bottom freezer door" },
+              { value: "french", label: "French door" }, { value: "four_door", label: "4 portes / 4-door" }, { value: "american", label: "Américain / Side-by-side" }] } } },
             { name: "max_temperature", selector: { number: { min: 0, max: 15, step: 0.5, mode: "box" } } },
             { name: "freezer_max_temperature", selector: { number: { min: -30, max: 0, step: 0.5, mode: "box" } } },
           ] : []),
@@ -3902,6 +4015,7 @@ svg { width: 100%; height: 100%; display: block; overflow: visible; }
 .status span:last-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; background: var(--disabled-text-color, #9e9e9e); }
 .active .dot { background: var(--c); box-shadow: 0 0 0 3px rgba(127,127,127,.2); box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 25%, transparent); }
+.ph-heat .dot { background: var(--ac-heat, #ff8a3d); }
 .active .status { color: var(--primary-text-color); }
 .st-finished .dot { background: var(--ac-ok); }
 .alert-line { display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; color: var(--ac-alert); }
@@ -4091,7 +4205,7 @@ svg { width: 100%; height: 100%; display: block; overflow: visible; }
 .k-oven .lcd, .k-microwave .lcd { fill: #6fd8ff; }
 .warm .fr-temp { fill: var(--ac-alert); }
 .led { fill: #5a636d; transition: fill .3s; }
-.ph-wash .l1, .ph-dry .l1, .k-dishwasher.active .l1, .k-oven.active .l1,
+.ph-wash .l1, .ph-heat .l1, .ph-dry .l1, .k-dishwasher.active .l1, .k-oven.active .l1,
 .ph-rinse .l2, .ph-cool .l2, .ph-spin .l3 { fill: var(--ac-lcd); }
 .st-finished .l4 { fill: #3ddc84; }
 .knob, .drum, .clothes, .bowl, .arm, .needle, .fz-door, .fr-door, .flake { transform-box: view-box; }
@@ -4109,16 +4223,16 @@ svg { width: 100%; height: 100%; display: block; overflow: visible; }
 .water { opacity: 0; transition: opacity .8s; }
 .water path { fill: #3f9fe0; opacity: .5; }
 .ph-rinse .water path { fill: #8fd4ff; opacity: .45; }
-.ph-wash .water, .ph-rinse .water { opacity: 1; }
+.ph-wash .water, .ph-rinse .water, .ph-heat .water { opacity: 1; }
 .wave { animation: ac-wave 2.4s linear infinite; animation-play-state: paused; }
-.ph-wash .wave, .ph-rinse .wave { animation-play-state: running; }
+.ph-wash .wave, .ph-rinse .wave, .ph-heat .wave { animation-play-state: running; }
 .ph-rinse .wave { animation-duration: 3.2s; }
 .foam circle { fill: #fff; opacity: 0; }
-.ph-wash .foam circle { animation: ac-bubble 2.6s ease-in infinite; }
-.ph-wash .foam circle:nth-child(2) { animation-delay: .5s; } .ph-wash .foam circle:nth-child(3) { animation-delay: 1s; }
-.ph-wash .foam circle:nth-child(4) { animation-delay: 1.5s; } .ph-wash .foam circle:nth-child(5) { animation-delay: .8s; }
-.ph-wash .foam circle:nth-child(6) { animation-delay: 1.9s; }
-.ph-wash .drum { animation: ac-tumble 3.4s ease-in-out infinite; }
+.ph-wash .foam circle, .ph-heat .foam circle { animation: ac-bubble 2.6s ease-in infinite; }
+.ph-wash .foam circle:nth-child(2), .ph-heat .foam circle:nth-child(2) { animation-delay: .5s; } .ph-wash .foam circle:nth-child(3), .ph-heat .foam circle:nth-child(3) { animation-delay: 1s; }
+.ph-wash .foam circle:nth-child(4), .ph-heat .foam circle:nth-child(4) { animation-delay: 1.5s; } .ph-wash .foam circle:nth-child(5), .ph-heat .foam circle:nth-child(5) { animation-delay: .8s; }
+.ph-wash .foam circle:nth-child(6), .ph-heat .foam circle:nth-child(6) { animation-delay: 1.9s; }
+.ph-wash .drum, .ph-heat .drum { animation: ac-tumble 3.4s ease-in-out infinite; }
 .ph-rinse .drum { animation: ac-tumble 4.6s ease-in-out infinite; }
 .ph-spin .drum { animation: ac-rot .32s linear infinite; }
 .ph-spin .clothes { opacity: .85; }
@@ -4134,12 +4248,14 @@ svg { width: 100%; height: 100%; display: block; overflow: visible; }
 .wash-light { opacity: 0; transition: opacity .6s; }
 .k-dishwasher.active .wash-light { opacity: 1; }
 .arm { transform-origin: 60px 0; transform-box: fill-box; }
-.k-dishwasher.ph-wash .arm, .k-dishwasher.ph-rinse .arm { animation: ac-arm 1.2s linear infinite; }
+.k-dishwasher.ph-heat .wash-light rect { fill: #ff5722; opacity: .28; }
+.k-dishwasher.ph-heat .steam-in path { animation: ac-steam 2s ease-out infinite; }
+.k-dishwasher.ph-wash .arm, .k-dishwasher.ph-rinse .arm, .k-dishwasher.ph-heat .arm { animation: ac-arm 1.2s linear infinite; }
 .k-dishwasher .arm-top { animation-delay: -.4s !important; }
 .jets path { stroke: #bfe8ff; stroke-width: 1; stroke-dasharray: 2 4; opacity: 0; fill: none; }
-.k-dishwasher.ph-wash .jets path, .k-dishwasher.ph-rinse .jets path { opacity: .85; animation: ac-jet .5s linear infinite; }
+.k-dishwasher.ph-wash .jets path, .k-dishwasher.ph-rinse .jets path, .k-dishwasher.ph-heat .jets path { opacity: .85; animation: ac-jet .5s linear infinite; }
 .drops circle { fill: #bfe8ff; opacity: 0; }
-.k-dishwasher.ph-wash .drops circle, .k-dishwasher.ph-rinse .drops circle { animation: ac-fall 1.1s ease-in infinite; }
+.k-dishwasher.ph-wash .drops circle, .k-dishwasher.ph-rinse .drops circle, .k-dishwasher.ph-heat .drops circle { animation: ac-fall 1.1s ease-in infinite; }
 .drops circle:nth-child(2) { animation-delay: .3s !important; } .drops circle:nth-child(3) { animation-delay: .6s !important; }
 .drops circle:nth-child(4) { animation-delay: .85s !important; }
 .steam-in path { fill: none; stroke: #fff; stroke-width: 2.4; stroke-linecap: round; opacity: 0; }
@@ -4373,6 +4489,7 @@ svg { width: 100%; height: 100%; display: block; overflow: visible; }
 .k-fridge .fz-l { transform-origin: 12px 0; }
 .k-fridge .fr-r { transform-origin: 108px 0; }
 .door-open .fr-r { transform: scaleX(.16) skewY(6deg); }
+.fz-open .fz-r { transform: scaleX(.16) skewY(6deg); }
 .fzd { transform-box: view-box; transform-origin: 60px 96px; transition: transform .6s ease, filter .6s; }
 .fz-open .fzd-pull { transform: translateY(5px) scale(1.06); filter: drop-shadow(0 3px 3px rgba(0,0,0,.25)); }
 /* distributeur glaçons / eau du modèle américain */
