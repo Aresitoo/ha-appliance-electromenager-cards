@@ -5684,6 +5684,7 @@ class ApplianceBatteryCard extends HTMLElement {
           { name: 'show_temperature', selector: { boolean: {} }, default: true },
           { name: 'show_time', selector: { boolean: {} }, default: true },
         ] },
+        { name: 'status_position', selector: { select: { mode: 'dropdown', options: ['auto', 'inside', 'below'] } } },
         { name: 'language', selector: { select: { options: Object.keys(I18N_BAT) } } },
       ],
     };
@@ -5692,7 +5693,7 @@ class ApplianceBatteryCard extends HTMLElement {
   setConfig(config) {
     // Convention : puissance > 0 = charge (inverser avec invert_power si ton capteur est l'inverse)
     this._config = { show_power: true, show_energy: true, show_temperature: true, show_time: true,
-      capacity_kwh: 10, max_power: 5000, low_threshold: 15, invert_power: false, ...config };
+      capacity_kwh: 10, max_power: 5000, low_threshold: 15, invert_power: false, status_position: 'auto', ...config };
     this._built = false; this._build();
   }
   set hass(h) {
@@ -5736,7 +5737,7 @@ class ApplianceBatteryCard extends HTMLElement {
     this.shadowRoot.innerHTML = `
     <style>
       :host { display:block; }
-      ha-card { padding:12px; overflow:hidden; }
+      ha-card { padding:12px; overflow:hidden; container-type:inline-size; }
       .title { font-weight:600; margin:0 4px 4px; display:flex; justify-content:space-between; align-items:center; }
       .badge { font-size:.75em; color:#fff; background:#e53935; border-radius:10px; padding:2px 8px; display:none; animation:blink 1s infinite; }
       .low .badge { display:inline-block; }
@@ -5751,6 +5752,9 @@ class ApplianceBatteryCard extends HTMLElement {
       .discharging .flow { stroke:#b3f5ff; opacity:1; animation:dash var(--fs,1s) linear infinite; }
       .soc { fill:#1d2733; font:800 26px system-ui,sans-serif; text-anchor:middle; }
       .state { fill:#4b5563; font:700 7.5px system-ui,sans-serif; text-anchor:middle; letter-spacing:.12em; }
+      .status-line { display:none; text-align:center; font-weight:700; font-size:max(11px, .75em); letter-spacing:.08em; text-transform:uppercase; color:var(--secondary-text-color); margin:2px 0 4px; }
+      .sp-below .status-line { display:block; } .sp-below #state { display:none; }
+      @container (max-width:260px) { .sp-auto .status-line { display:block; } .sp-auto #state { display:none; } }
       .bolt { fill:#ffb300; opacity:0; } .charging .bolt { opacity:1; animation:blink 1.2s infinite; }
       .arrow { fill:#00acc1; opacity:0; } .discharging .arrow { opacity:1; animation:blink 1.2s infinite; }
       .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(78px,1fr)); gap:8px; margin-top:6px; }
@@ -5759,7 +5763,7 @@ class ApplianceBatteryCard extends HTMLElement {
       @keyframes dash { to { stroke-dashoffset:-11; } } @keyframes blink { 50% { opacity:.35; } }
       @keyframes wave { from { transform:translate(-12px, var(--wy,0px)); } to { transform:translate(8px, var(--wy,0px)); } }
     </style>
-    <ha-card id="card">
+    <ha-card id="card" class="sp-${['inside', 'below'].includes(this._config.status_position) ? this._config.status_position : 'auto'}">
       <div class="title"><span>${esc(this._config.name || this._t('name'))}</span><span class="badge">${this._t('low')}</span></div>
       <svg viewBox="0 -6 320 176" id="svg">
         <defs>
@@ -5773,6 +5777,7 @@ class ApplianceBatteryCard extends HTMLElement {
         <path class="bolt" d="M${X[1] + 44} ${TOP + LID + 60} l-9 13 h6 l-3 11 l9 -13 h-6 z"/>
         <path class="arrow" d="M${X[1] + 40} ${TOP + LID + 84} l-7 -9 h4 v-9 h6 v9 h4 z"/>
       </svg>
+      <div class="status-line" id="statusline"></div>
       <div class="stats" id="stats"></div>
     </ha-card>`;
     this._built = true;
@@ -5802,7 +5807,7 @@ class ApplianceBatteryCard extends HTMLElement {
     const svg = r.getElementById('svg'); svg.style.setProperty('--lc', color);
     const mode = p === null || Math.abs(p) < 10 ? 'idle' : p > 0 ? 'charging' : 'discharging';
     svg.classList.remove('charging', 'discharging', 'idle'); svg.classList.add(mode);
-    r.getElementById('state').textContent = this._t(mode).toUpperCase();
+    r.getElementById('state').textContent = r.getElementById('statusline').textContent = this._t(mode).toUpperCase();
     const ratio = Math.min(Math.abs(p || 0) / c.max_power, 1);
     svg.style.setProperty('--fs', `${(1.4 - ratio * 1.1).toFixed(2)}s`);
     svg.style.setProperty('--bl', mode === 'idle' ? '3s' : '1s');
