@@ -5,7 +5,7 @@
 .k-oven .lcd, .k-microwave .lcd { fill: #6fd8ff; }
 .warm .fr-temp { fill: var(--ac-alert); }
 .led { fill: #5a636d; transition: fill .3s; }
-.ph-wash .l1, .ph-dry .l1, .k-dishwasher.active .l1, .k-oven.active .l1,
+.ph-wash .l1, .ph-heat .l1, .ph-dry .l1, .k-dishwasher.active .l1, .k-oven.active .l1,
 .ph-rinse .l2, .ph-cool .l2, .ph-spin .l3 { fill: var(--ac-lcd); }
 .st-finished .l4 { fill: #3ddc84; }
 .knob, .drum, .clothes, .bowl, .arm, .needle, .fz-door, .fr-door, .flake { transform-box: view-box; }

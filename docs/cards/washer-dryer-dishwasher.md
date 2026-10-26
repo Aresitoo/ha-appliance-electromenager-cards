@@ -64,4 +64,24 @@ energy: sensor.washer_plug_energy_today
 Suggested values: washer 100 W / 20 W / 8 min, dryer 100 W / 15 W / 5 min, dishwasher 50 W / 10 W / 10 min (dishwashers sit at a few watts while drying). Adjust them to your appliance by looking at its power history. Requires Home Assistant 2024.10 or newer for the `triggers:` / `actions:` syntax; on older versions, use `trigger:` / `platform:` / `action:` / `service:`.
 
 
+
+
+### Automatic cycle phase detection from power draw
+
+When monitoring an appliance through a smart plug without a smart cloud integration, the card automatically infers the cycle phase from live wattage:
+
+- **Heating (`heat`)**: power $\ge$ `heating_power` (default: `1000` W). The wash water heating element is active (shows steam and warm glow on dishwasher).
+- **Spinning (`spin`)**: power $\ge$ `spin_power` (default: `200` W on washing machines).
+- **Washing (`wash`)**: normal wash agitation (circulation pump / drum agitation).
+- **Drying (`dry`)**: on dishwashers, when power drops below 15 W during an active cycle (e.g. door auto-release air-dry).
+
+You can customize the power thresholds in YAML if your appliance runs at different wattages:
+
+```yaml
+type: custom:appliance-washer-card
+power: sensor.washer_plug_power
+heating_power: 1200
+spin_power: 250
+```
+
 [← All cards](../../README.md#the-cards)
