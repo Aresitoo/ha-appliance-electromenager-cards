@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Documentation
+    url: https://github.com/skyrotter/ha-appliance-electromenager-cards/blob/main/docs/configuration.md
+    about: Options, status detection and theming for every card.
+  - name: Online demo
+    url: https://skyrotter.github.io/ha-appliance-electromenager-cards/docs/demo.html
+    about: Try the cards with simulated data, no Home Assistant needed.

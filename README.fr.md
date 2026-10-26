@@ -130,7 +130,7 @@ Clique sur une carte pour ses options et ses exemples (pages en anglais).
 
 ## Contribuer
 
-Les signalements de bugs et les demandes de cartes sont les bienvenus dans les [issues](https://github.com/skyrotter/ha-appliance-electromenager-cards/issues). `dist/` est généré : modifie `src/`, lance `node build.js` et commite les deux (voir [développement](https://github.com/skyrotter/ha-appliance-electromenager-cards/blob/main/docs/development.md)).
+Voir [CONTRIBUTING.md](https://github.com/skyrotter/ha-appliance-electromenager-cards/blob/main/CONTRIBUTING.md) pour le guide complet (en anglais). Les signalements de bugs et les demandes de cartes sont les bienvenus dans les [issues](https://github.com/skyrotter/ha-appliance-electromenager-cards/issues). `dist/` est généré : modifie `src/`, lance `node build.js` et commite les deux (voir [développement](https://github.com/skyrotter/ha-appliance-electromenager-cards/blob/main/docs/development.md)).
 
 ## License
 
