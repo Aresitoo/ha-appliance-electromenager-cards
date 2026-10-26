@@ -2,7 +2,7 @@
 
 <p align="center"><img src="../tv-range-hood.gif" width="560" alt="TV and range hood cards"></p>
 
-**TV** (`custom:appliance-tv-card`): a wall-mounted flat screen, nothing around it.
+**TV** (`custom:appliance-tv-card`): a flat screen, wall-mounted by default (nothing around it). `style: stand` puts it on a central stand, `style: feet` on two angled feet (also in the visual editor).
 
 <p align="center"><img src="../tv.gif" width="300" alt="TV card"></p>
 

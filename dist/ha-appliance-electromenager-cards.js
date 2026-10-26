@@ -71,6 +71,7 @@ const STRINGS = {
     "brewing": "Brewing",
     "keep_warm": "Keeping warm",
     "f_style": "Coffee maker type",
+    "f_tv_style": "TV stand",
     "f_warm_threshold": "Keep-warm / ready above (W)",
     "fridge": "Refrigerator",
     "pellet_stove": "Pellet stove",
@@ -268,6 +269,7 @@ const STRINGS = {
     "brewing": "Brüht",
     "keep_warm": "Warmhalten",
     "f_style": "Kaffeemaschinentyp",
+    "f_tv_style": "Fernseher-Fuß",
     "f_warm_threshold": "Warmhalten / bereit über (W)",
     "fridge": "Kühlschrank",
     "pellet_stove": "Pelletofen",
@@ -465,6 +467,7 @@ const STRINGS = {
     "brewing": "Préparation du café",
     "keep_warm": "Maintien au chaud",
     "f_style": "Type de cafetière",
+    "f_tv_style": "Pied de la télé",
     "f_warm_threshold": "Maintien au chaud / prête au-dessus de (W)",
     "fridge": "Réfrigérateur",
     "pellet_stove": "Poêle à granulés",
@@ -662,6 +665,7 @@ const STRINGS = {
     "brewing": "Trakter",
     "keep_warm": "Holder varm",
     "f_style": "Type kaffetrakter",
+    "f_tv_style": "TV-fot",
     "f_warm_threshold": "Holder varm / klar over (W)",
     "fridge": "Kjøleskap",
     "pellet_stove": "Pelletsovn",
@@ -859,6 +863,7 @@ const STRINGS = {
     "brewing": "Koffie zetten",
     "keep_warm": "Warmhouden",
     "f_style": "Type koffiezetapparaat",
+    "f_tv_style": "Tv-voet",
     "f_warm_threshold": "Warmhouden / klaar boven (W)",
     "fridge": "Koelkast",
     "pellet_stove": "Pelletkachel",
@@ -1056,6 +1061,7 @@ const STRINGS = {
     "brewing": "Se prepară",
     "keep_warm": "Menținere la cald",
     "f_style": "Tip de aparat de cafea",
+    "f_tv_style": "Suport televizor",
     "f_warm_threshold": "Menținere la cald / gata peste (W)",
     "fridge": "Frigider",
     "pellet_stove": "Sobă pe peleți",
@@ -2568,12 +2574,31 @@ ${lcd(74, 110, 22, 10)}
 <circle class="td-led" cx="101" cy="115" r="1.4"/>
 <ellipse cx="60" cy="132" rx="46" ry="3" fill="url(#ID-shadow)"/>`;
 
-SVG.tv = () => `
+/* style de télé : murale (défaut, rien autour), sur pied central, sur deux pieds */
+const tvStyle = (c) => ({ wall: "wall", mural: "wall", stand: "stand", pied: "stand", base: "stand", feet: "feet", pieds: "feet", legs: "feet" }[String(c?.style || "wall").toLowerCase()] || "wall");
+const TV_STAND = {
+  wall: "",
+  // pied central trapézoïdal
+  stand: `
+<ellipse cx="60" cy="113.5" rx="30" ry="2.6" fill="url(#ID-shadow)"/>
+<rect x="53" y="102" width="14" height="7" fill="#15181d"/>
+<path d="M40 113l5-5h30l5 5z" fill="#0b0d10" stroke="#2c3138" stroke-width=".5"/>
+<path d="M45 108h30" stroke="#fff" stroke-opacity=".18" stroke-width=".6"/>`,
+  // deux pieds inclinés aux extrémités
+  feet: `
+<ellipse cx="60" cy="108.5" rx="46" ry="2.4" fill="url(#ID-shadow)"/>
+<path d="M13 102l-5 5.6q-.8 1 .5 1h10.5q1.5 0 2-1l3.5-5.6z" fill="#0b0d10" stroke="#2c3138" stroke-width=".5"/>
+<path d="M107 102l5 5.6q.8 1-.5 1h-10.5q-1.5 0-2-1l-3.5-5.6z" fill="#0b0d10" stroke="#2c3138" stroke-width=".5"/>`,
+};
+
+SVG.tv = (c) => `
 <defs>${DEFS}<clipPath id="ID-scr"><rect x="4" y="38" width="112" height="63" rx="1"/></clipPath>
 <linearGradient id="ID-off" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1b2027"/><stop offset=".6" stop-color="#0a0c0f"/><stop offset="1" stop-color="#14181d"/></linearGradient>
 <linearGradient id="ID-hero" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0f5a73"/><stop offset=".55" stop-color="#3b2a7a"/><stop offset="1" stop-color="#0f1420"/></linearGradient>
 <linearGradient id="ID-fade" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#0f1420" stop-opacity=".95"/><stop offset=".6" stop-color="#0f1420" stop-opacity="0"/></linearGradient>
+<linearGradient id="ID-gloss" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".16"/><stop offset=".7" stop-color="#fff" stop-opacity="0"/></linearGradient>
 <linearGradient id="ID-logo" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#38e1ff"/><stop offset="1" stop-color="#8a5cff"/></linearGradient></defs>
+${TV_STAND[tvStyle(c)]}
 <rect x="2.5" y="36.5" width="115" height="66" rx="2" fill="#0b0d10" stroke="#2c3138" stroke-width=".7"/>
 <rect x="4" y="38" width="112" height="63" rx="1" fill="url(#ID-off)"/>
 <g clip-path="url(#ID-scr)">
@@ -2618,6 +2643,7 @@ SVG.tv = () => `
   <rect class="tv-flash" x="4" y="38" width="112" height="63" fill="#eef6ff"/>
 </g>
 <path d="M4 38L46 38L4 78z" fill="#fff" opacity=".06"/>
+<path class="tv-gloss" d="M4 38L78 38L30 101H4z" fill="url(#ID-gloss)"/>
 <rect x="4" y="38" width="112" height="63" rx="1" fill="none" stroke="#000" stroke-opacity=".5"/>
 <circle class="tv-led" cx="60" cy="101.8" r=".7"/>`;
 
@@ -3900,6 +3926,10 @@ function buildForm(kind) {
           ...(kind === "av_receiver" ? [
             { name: "max_power", selector: { number: { min: 50, max: 2000, step: 10, mode: "box", unit_of_measurement: "W" } } },
           ] : []),
+          ...(kind === "tv" ? [
+            { name: "style", selector: { select: { mode: "dropdown", options: [
+              { value: "wall", label: "Murale / Wall-mounted" }, { value: "stand", label: "Pied central / Center stand" }, { value: "feet", label: "Deux pieds / Two feet" }] } } },
+          ] : []),
           ...(kind === "range_hood" ? [
             { name: "high_threshold", selector: { number: { min: 40, max: 600, step: 5, mode: "box", unit_of_measurement: "W" } } },
           ] : []),
@@ -3940,7 +3970,7 @@ function buildForm(kind) {
         ],
       },
     ],
-    computeLabel: (s) => (s.name ? tr(null, kind === "solar" && s.name === "max_power" ? "f_max_power_solar" : kind === "wine_cooler" && s.name === "max_temperature" ? "f_max_temperature_wine" : kind === "fridge" && s.name === "style" ? "f_fridge_style" : kind === "server_rack" && s.name === "max_power" ? "f_max_power_rack" : kind === "radiator" && s.name === "max_power" ? "f_max_power_rad" : `f_${s.name}`) : undefined),
+    computeLabel: (s) => (s.name ? tr(null, kind === "solar" && s.name === "max_power" ? "f_max_power_solar" : kind === "wine_cooler" && s.name === "max_temperature" ? "f_max_temperature_wine" : kind === "fridge" && s.name === "style" ? "f_fridge_style" : kind === "tv" && s.name === "style" ? "f_tv_style" : kind === "server_rack" && s.name === "max_power" ? "f_max_power_rack" : kind === "radiator" && s.name === "max_power" ? "f_max_power_rad" : `f_${s.name}`) : undefined),
   };
 }
 
@@ -4585,6 +4615,8 @@ svg { width: 100%; height: 100%; display: block; overflow: visible; }
 .tv-boot .tv-content { animation: tv-reveal 3.2s both; }
 .tv-flash { opacity: 0; transform-box: view-box; transform-origin: 60px 69.5px; }
 .tv-shut .tv-flash { animation: tv-shut .9s ease-in both; }
+.tv-gloss { transition: opacity .5s; }
+.k-tv.st-screen_on .tv-gloss { opacity: .35; }
 .tv-led { fill: #3a2222; transition: fill .4s; }
 .k-tv.st-standby .tv-led { fill: #ff3b30; filter: drop-shadow(0 0 1.2px #ff3b30); }
 .k-tv.st-screen_on .tv-led { fill: #ffffff; opacity: .45; }
