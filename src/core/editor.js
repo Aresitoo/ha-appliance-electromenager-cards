@@ -60,7 +60,8 @@ function buildForm(kind) {
           ...(kind === "fridge" ? [
             { name: "style", selector: { select: { mode: "dropdown", options: [
               { value: "top", label: "Congélateur en haut / Top freezer" }, { value: "bottom", label: "Congélateur en bas / Bottom freezer" },
-              { value: "french", label: "French door" }, { value: "american", label: "Américain / Side-by-side" }] } } },
+              { value: "bottom_door", label: "Combiné, porte en bas / Bottom freezer door" },
+              { value: "french", label: "French door" }, { value: "four_door", label: "4 portes / 4-door" }, { value: "american", label: "Américain / Side-by-side" }] } } },
             { name: "max_temperature", selector: { number: { min: 0, max: 15, step: 0.5, mode: "box" } } },
             { name: "freezer_max_temperature", selector: { number: { min: -30, max: 0, step: 0.5, mode: "box" } } },
           ] : []),
