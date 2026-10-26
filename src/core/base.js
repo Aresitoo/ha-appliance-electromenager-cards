@@ -387,7 +387,7 @@ class ApplianceCardBase extends HTMLElement {
       m.status = base;
     }
 
-    // phase detection (washer / dryer / dishwasher) from status or program text
+    // phase detection (washer / dryer / dishwasher) from status or program text, with smart-plug power inference fallback
     if (m.status === "running" && ["washer", "dryer", "dishwasher"].includes(kind)) {
       const txt = `${main ? main.state : ""} ${m.program ? m.program.state : ""}`.toLowerCase();
       if (/rin[cç]|rinse/.test(txt)) m.phase = "rinse";
@@ -395,7 +395,23 @@ class ApplianceCardBase extends HTMLElement {
       else if (/refroid|cool|anti.?froiss|wrinkle/.test(txt)) m.phase = "cool";
       // en début de mot : les clés Home Connect « laundry_care_washer_program_… » contiennent « dry »
       else if (/(^|[^a-zà-ÿ])(s[eé]ch|dry)/.test(txt)) m.phase = "dry";
-      else m.phase = kind === "dryer" ? "dry" : "wash";
+      else if (/heat|chauff|warm/.test(txt)) m.phase = "heat";
+      else if (watts !== null) {
+        // Fallback: infer phase from power draw on smart plugs when text entity gives no phase
+        const heatThreshold = c.heating_power ?? this._def.heating_power ?? 1000;
+        const spinThreshold = c.spin_power ?? this._def.spin_power ?? 200;
+        if (heatThreshold > 0 && watts >= heatThreshold) {
+          m.phase = "heat";
+        } else if (kind === "washer" && spinThreshold > 0 && watts >= spinThreshold) {
+          m.phase = "spin";
+        } else if (kind === "dishwasher" && watts < (c.drying_threshold ?? 15) && (explicitState || m.status === "running")) {
+          m.phase = "dry";
+        } else {
+          m.phase = kind === "dryer" ? "dry" : "wash";
+        }
+      } else {
+        m.phase = kind === "dryer" ? "dry" : "wash";
+      }
     }
     if (isOn(m.door) || isOn(m.fdoor)) m.alerts.unshift("door_open");
     m.alerts = [...new Set(m.alerts)];
@@ -517,7 +533,7 @@ class ApplianceCardBase extends HTMLElement {
     if (m.status === "finished") return "END";
     if (!active) return "OFF";
     if (m.remaining != null && m.remaining > 0) return lcdDuration(m.remaining);
-    return { wash: "WASH", rinse: "RINSE", spin: "SPIN", dry: "DRY", cool: "COOL" }[m.phase] || "RUN";
+    return { wash: "WASH", rinse: "RINSE", spin: "SPIN", dry: "DRY", cool: "COOL", heat: "HEAT" }[m.phase] || "RUN";
   }
 
   _render(m) {

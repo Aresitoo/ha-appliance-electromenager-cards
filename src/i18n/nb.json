@@ -191,7 +191,10 @@
 "fan_2": "Hastighet 2",
 "fan_3": "Hastighet 3",
 "f_oscillating": "Svinging",
-"f_mid_threshold": "Hastighet 2 over (W)"
+"f_mid_threshold": "Hastighet 2 over (W)",
+    "ph_heat": "Oppvarming",
+    "f_heating_power": "Effektterskel for oppvarming (W)",
+    "f_spin_power": "Effektterskel for sentrifugering (W)" 
 },
 "aquarium": {
 "power": "Effekt",

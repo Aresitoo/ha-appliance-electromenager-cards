@@ -191,7 +191,10 @@
     "fan_2": "Vitesse 2",
     "fan_3": "Vitesse 3",
     "f_oscillating": "Oscillation",
-    "f_mid_threshold": "Vitesse 2 au-dessus de (W)"
+    "f_mid_threshold": "Vitesse 2 au-dessus de (W)",
+    "ph_heat": "Chauffe",
+    "f_heating_power": "Seuil de phase de chauffe (W)",
+    "f_spin_power": "Seuil de phase d'essorage (W)"
   },
   "aquarium": {
     "power": "Puissance",
