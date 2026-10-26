@@ -14,12 +14,6 @@ A simple smart plug with a power sensor is enough. Connected appliances can add 
 
 **▶ [Try it online](https://skyrotter.github.io/ha-appliance-electromenager-cards/docs/demo.html)** (simulated data, no Home Assistant needed) · [Watch the video](https://github.com/skyrotter/ha-appliance-electromenager-cards/blob/main/docs/electromenager-43-cartes-facebook.mp4) · [Automated tests](https://skyrotter.github.io/ha-appliance-electromenager-cards/docs/tests.html)
 
-### ❤️ Support the project
-
-This project is free and open source, built in my spare time. If it makes your dashboard nicer, a small donation helps me add new cards and keep the existing ones up to date. Missing an appliance? [Suggest it in the issues](https://github.com/skyrotter/ha-appliance-electromenager-cards/issues), that is how the diesel heater and the hot tub got here.
-
-[❤️ Sponsor on GitHub](https://github.com/sponsors/skyrotter) · [☕ Donate with PayPal.me](https://paypal.me/skyrotter)
-
 ## Installation
 
 **HACS (recommended)**
@@ -47,6 +41,12 @@ cost: sensor.washer_cost_today
 ```
 
 All options, how the status is computed, theming and the power-button safety are in **[docs/configuration.md](https://github.com/skyrotter/ha-appliance-electromenager-cards/blob/main/docs/configuration.md)**.
+
+## ❤️ Support the project
+
+This project is free and open source, built in my spare time. If it makes your dashboard nicer, a small donation helps me add new cards and keep the existing ones up to date. Missing an appliance? [Suggest it in the issues](https://github.com/skyrotter/ha-appliance-electromenager-cards/issues), that is how the diesel heater and the hot tub got here.
+
+[❤️ Sponsor on GitHub](https://github.com/sponsors/skyrotter) · [☕ Donate with PayPal.me](https://paypal.me/skyrotter)
 
 ## The cards
 
