@@ -143,6 +143,8 @@ class ApplianceCardBase extends HTMLElement {
       // input_boolean / binary_sensor "on", or a descriptive sensor state, means running
       else base = "running";
     }
+    /* un état explicite (binary_sensor / input_boolean) prime sur la puissance : la prise peut être coupée alors que l'appareil tourne */
+    const explicitState = !!main && ["input_boolean", "binary_sensor"].includes(domainOf(c.entity)) && !BAD.includes(String(main.state).toLowerCase());
     if (base === null && !pw && !pwS && ref) base = "unavailable";
     const powered = watts !== null && watts > threshold;
     if (base === "on" || base === null) {
@@ -352,6 +354,7 @@ class ApplianceCardBase extends HTMLElement {
       m.load = watts !== null ? Math.max(0, Math.min(1, watts / (c.max_power || 300))) : 0.4;
     } else if (kind === "desktop_pc" || kind === "laptop") {
       if (base === "off" || base === "unavailable") m.status = base;
+      else if (explicitState) m.status = base === "running" ? "screen_on" : powered ? "standby" : "off";
       else if (watts !== null) m.status = powered ? "screen_on" : watts >= (c.standby_threshold ?? 0.5) ? "standby" : "off";
       else m.status = base === "running" ? "screen_on" : "standby";
     } else if (kind === "tool_charger") {
