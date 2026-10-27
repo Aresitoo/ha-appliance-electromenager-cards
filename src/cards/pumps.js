@@ -1,5 +1,5 @@
-/* Cartes « Pompes » — pompe à eau et pompe industrielle
- * custom:appliance-water-pump-card, appliance-industrial-pump-card.
+/* Cartes « Pompes » — pompe à eau, pompe industrielle et pompe de relevage
+ * custom:appliance-water-pump-card, appliance-industrial-pump-card, appliance-sump-pump-card.
  * Pompe à eau : style sobre, cuve source dont le niveau suit entity_level, roue à aubes visible
  * dans la volute, eau qui circule dans les tuyaux, jet et vagues dans le bassin de sortie.
  * Pompe industrielle : groupe moteur + pompe à engrenage interne sur châssis, finition métal,
@@ -7,7 +7,9 @@
  * La vitesse des animations suit le débit (ou la puissance) : --spd, 0 → 1 de 0 à max_flow.
  * Le débit est lu en L/min, m³/h, L/h, L/s ou gal/min et converti en L/min pour la vitesse et
  * les seuils (max_flow, no_flow_threshold) ; la tuile garde l'unité du capteur.
- * États : off, running, warning (marche avec alerte), fault, unavailable.
+ * Pompe de relevage : fosse en coupe, eau qui arrive par le drain, niveau (entity_level) et flotteur,
+ * pompe immergée, refoulement vers l'égout, repère « max » et gyrophare si le niveau est trop haut.
+ * États : off, running, warning (marche avec alerte), alarm (niveau haut, pompe arrêtée), fault, unavailable.
  */
 (() => {
   if (customElements.get('appliance-water-pump-card')) return;
@@ -24,6 +26,7 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--pp-ok:var(--appli
 .badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:12px;background:var(--secondary-background-color);color:var(--secondary-text-color);white-space:nowrap}
 .running .badge{background:color-mix(in srgb,var(--pp-ok) 22%,transparent);color:var(--pp-ok)}
 .warning .badge{background:color-mix(in srgb,var(--pp-warn) 22%,transparent);color:var(--pp-warn)}
+.alarm .badge{background:color-mix(in srgb,var(--pp-alert) 22%,transparent);color:var(--pp-alert)}
 .fault .badge{background:color-mix(in srgb,var(--pp-alert) 22%,transparent);color:var(--pp-alert)}
 .alert{display:none;margin-top:4px;font-size:11px;color:var(--pp-alert);font-weight:500;text-align:center}
 .alert.on{display:block}
@@ -104,6 +107,27 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
 .ip.warning .led.wrn{fill:#ffb31a;filter:drop-shadow(0 0 3px #ffb31a);animation:ppblink 1s steps(2) infinite}
 .ip.fault .led.flt{fill:#ff3b30;filter:drop-shadow(0 0 3px #ff3b30);animation:ppblink .5s steps(2) infinite}
 .ip .plate{fill:#1d2125;font:700 7px/1 var(--paper-font-body1_-_font-family,Roboto,sans-serif);text-anchor:middle}
+
+/* ---- pompe de relevage ---- */
+.sp{--fd:.8s;--dl:24px}
+.sp .pitw,.sp .floatg{transform:translateY(calc((1 - var(--lvl)) * 104px));transition:transform 1.5s ease-out}
+.sp .wave{animation:ppwave 3.2s linear infinite}
+.sp.running .wave,.sp.warning .wave{animation-duration:1.2s}
+.sp .drop{fill:var(--fluid);opacity:0;animation:ppdrop 1.6s ease-in infinite}
+.sp .drop:nth-of-type(2){animation-delay:-.55s}.sp .drop:nth-of-type(3){animation-delay:-1.1s}
+@keyframes ppdrop{0%{opacity:0;transform:translateY(0)}10%{opacity:.9}100%{opacity:0;transform:translateY(46px)}}
+.sp .rig{transform-box:view-box}
+.sp.running .rig,.sp.warning .rig{animation:ppvib .12s linear infinite}
+.sp .sbub{fill:#fff;opacity:0}
+.sp.running .sbub,.sp.warning .sbub{animation:ppsbub 1.4s ease-in infinite}
+.sp .sbub:nth-of-type(2){animation-delay:-.45s!important}.sp .sbub:nth-of-type(3){animation-delay:-.9s!important}
+@keyframes ppsbub{0%{opacity:0;transform:translateY(0)}20%{opacity:.8}100%{opacity:0;transform:translateY(-34px)}}
+.sp .beacon{fill:#5a2a26;transition:fill .3s}
+.sp.hi .beacon{fill:#ff3b30;filter:drop-shadow(0 0 5px #ff3b30);animation:ppblink .6s steps(2) infinite}
+.sp .maxl{stroke:var(--pp-alert);stroke-width:1.2;stroke-dasharray:3 2}
+.sp .maxt{fill:var(--pp-alert);font:600 7px/1 var(--paper-font-body1_-_font-family,Roboto,sans-serif)}
+.sp.running .led,.sp.warning .led{fill:var(--pp-ok)}
+.sp.fault .led,.sp.alarm .led{fill:var(--pp-alert);animation:ppblink .5s steps(2) infinite}
 .noanim *{animation:none!important}
 `;
 
@@ -239,11 +263,64 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
 </svg>`;
   };
 
+  /* Pompe de relevage : fosse enterrée vue en coupe, drain d'arrivée, pompe immergée et flotteur */
+  const SVG_SUMP = (label) => {
+    const wave = `M60 58 q6 -3 12 0 t12 0 t12 0 t12 0 t12 0 t12 0 t12 0 t12 0 t12 0 t12 0 t12 0 V200 H60 Z`;
+    const grill = Array.from({ length: 6 }, (_, i) => `M${92 + i * 4} 161 V167`).join(' ');
+    return `
+<svg viewBox="0 0 260 180" role="img" aria-label="${esc(label)}">
+ <defs>
+  <linearGradient id="spsoil" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8a6a4a"/><stop offset="1" stop-color="#5b4430"/></linearGradient>
+  <linearGradient id="spwater" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--fluid)" stop-opacity=".7"/><stop offset="1" stop-color="#1b4f7a" stop-opacity=".95"/></linearGradient>
+  <linearGradient id="spbody" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5f7f99"/><stop offset=".45" stop-color="#a9c0d2"/><stop offset="1" stop-color="#4a647a"/></linearGradient>
+  <clipPath id="sppit"><rect x="70" y="46" width="100" height="124"/></clipPath>
+ </defs>
+ <!-- sol en coupe et pelouse -->
+ <rect x="0" y="40" width="260" height="138" fill="url(#spsoil)"/>
+ <g fill="#6f5338" opacity=".6"><circle cx="20" cy="70" r="2"/><circle cx="40" cy="120" r="2.5"/><circle cx="210" cy="100" r="2"/><circle cx="240" cy="150" r="3"/><circle cx="30" cy="160" r="2"/><circle cx="200" cy="160" r="2.4"/></g>
+ <rect x="0" y="34" width="260" height="7" fill="#5aa046"/>
+ <!-- fosse béton -->
+ <rect x="62" y="34" width="116" height="144" fill="#a7adb2"/>
+ <rect x="70" y="46" width="100" height="124" fill="#2b3238"/>
+ <g clip-path="url(#sppit)"><g class="pitw"><path class="wave" d="${wave}" fill="url(#spwater)"/></g></g>
+ <path class="maxl" id="spmax" d="M70 0 H170"/><text class="maxt" id="spmaxt" x="166" y="0" text-anchor="end">max</text>
+ <!-- drain d'arrivée et gouttes -->
+ <path d="M0 78 H74" stroke="#7d868e" stroke-width="9" fill="none"/><path d="M0 78 H74" stroke="#3b4248" stroke-width="5" fill="none"/>
+ <g><circle class="drop" cx="76" cy="82" r="2"/><circle class="drop" cx="77" cy="82" r="1.6"/><circle class="drop" cx="75" cy="82" r="1.8"/></g>
+ <!-- flotteur : suit la surface -->
+ <g clip-path="url(#sppit)"><g class="floatg">
+  <path d="M150 62 C150 90 128 100 116 118" fill="none" stroke="#1d2125" stroke-width="1.4"/>
+  <ellipse cx="150" cy="58" rx="9" ry="5" fill="#f2a516" stroke="#a86f0c"/>
+ </g></g>
+ <!-- refoulement vers l'égout -->
+ <g fill="none" stroke-linecap="round">
+  <path d="M104 120 V68 Q104 60 112 60 H260" stroke="#7d868e" stroke-width="10"/>
+  <path d="M104 120 V68 Q104 60 112 60 H260" stroke="#3b4248" stroke-width="6"/>
+  <path class="flow" d="M104 120 V68 Q104 60 112 60 H260" stroke-width="4" stroke-dasharray="5 7"/>
+ </g>
+ <rect x="97" y="86" width="14" height="10" rx="2" fill="#4c555c" stroke="#2b3238"/>
+ <!-- pompe immergée -->
+ <g class="rig">
+  <rect x="88" y="118" width="32" height="44" rx="7" fill="url(#spbody)" stroke="#2f4558"/>
+  <rect x="86" y="160" width="36" height="9" rx="2" fill="#2f4558"/>
+  <path d="${grill}" stroke="#a9c0d2" stroke-width="1.6"/>
+  <rect x="96" y="114" width="16" height="6" rx="2" fill="#4a647a"/>
+  <circle class="led" cx="104" cy="132" r="2.4"/>
+  <circle class="sbub" cx="90" cy="158" r="1.6"/><circle class="sbub" cx="118" cy="156" r="1.3"/><circle class="sbub" cx="104" cy="160" r="1.8"/>
+ </g>
+ <!-- gyrophare d'alarme niveau haut -->
+ <rect x="214" y="26" width="16" height="9" rx="1.5" fill="#3b4248"/>
+ <path class="beacon" d="M216 26 V18 Q222 10 228 18 V26 Z"/>
+</svg>`;
+  };
+
   const KINDS = {
     water_pump: { cls: 'wp', svg: SVG_WATER, re: /pomp|pump|arros|forage|puits|well|irrig/i,
       d: { max_flow: 40, max_power: 1200, run_threshold: 15, max_pressure: 6, pressure_max: 5, temp_max: 70, level_min: 15 } },
     industrial_pump: { cls: 'ip', svg: SVG_INDUSTRIAL, re: /pomp|pump|surpress|booster|process/i,
       d: { max_flow: 200, max_power: 7500, run_threshold: 100, max_pressure: 16, pressure_max: 12, temp_max: 85, level_min: 10 } },
+    sump_pump: { cls: 'sp', svg: SVG_SUMP, sump: true, re: /relevage|sump|fosse|puisard|cuve.?eaux/i,
+      d: { max_flow: 150, max_power: 800, run_threshold: 20, max_pressure: 2, pressure_max: 2, temp_max: 70, level_min: 0, level_max: 80 } },
   };
   const TILES = [
     ['flow', 'mdi:waves-arrow-right', 'show_flow'],
@@ -252,6 +329,7 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
     ['temp', 'mdi:thermometer', 'show_temp'],
     ['level', 'mdi:storage-tank-outline', 'show_level'],
     ['runtime', 'mdi:timer-outline', 'show_runtime'],
+    ['starts', 'mdi:counter', 'show_starts'],
     ['energy', 'mdi:lightning-bolt-circle', 'show_energy'],
     ['cost', 'mdi:cash', 'show_cost'],
   ];
@@ -260,7 +338,7 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
     setConfig(c) {
       if (!c || typeof c !== 'object') throw new Error('Invalid configuration');
       this._c = { show_status: true, show_controls: true, show_flow: true, show_pressure: true, show_power: true, show_temp: true, show_level: true,
-        show_runtime: true, show_energy: true, show_cost: true, no_flow_threshold: 0.5, ...KINDS[this.kind].d, ...c };
+        show_runtime: true, show_starts: true, show_energy: true, show_cost: true, no_flow_threshold: 0.5, ...KINDS[this.kind].d, ...c };
       this._built = false;
       if (this._hass) this._render();
     }
@@ -313,8 +391,8 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
       });
       root.querySelectorAll('.tile').forEach((el) => el.addEventListener('click', () => {
         const cc = this._c, k = el.dataset.k;
-        this._more({ flow: cc.entity_flow, pressure: cc.entity_pressure, power: cc.entity_power, temp: cc.entity_temp, level: cc.entity_level,
-          runtime: cc.entity_runtime, energy: cc.entity_energy, cost: cc.entity_cost || cc.entity_energy }[k]);
+        this._more({ flow: cc.entity_flow, pressure: cc.entity_pressure, power: cc.entity_power, temp: cc.entity_temp, level: cc.entity_level || cc.entity_float,
+          runtime: cc.entity_runtime, starts: cc.entity_starts, energy: cc.entity_energy, cost: cc.entity_cost || cc.entity_energy }[k]);
       }));
       this._root = root; this._card = root.querySelector('ha-card'); this._built = true;
     }
@@ -336,7 +414,12 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
       if (on && !isNaN(flow) && flow < Number(c.no_flow_threshold)) v.alerts.push('no_flow');
       if (!isNaN(pres) && pres > Number(c.pressure_max)) v.alerts.push('overpressure');
       if (!isNaN(temp) && temp > Number(c.temp_max)) v.alerts.push('overheat');
-      if (!isNaN(level) && level < Number(c.level_min)) v.alerts.push('low_level');
+      if (KINDS[this.kind].sump) {
+        // relevage : c'est le niveau HAUT qui est dangereux (débordement), signalé par le capteur ou le flotteur d'alarme
+        const fl = this._st(c.entity_float);
+        if ((!isNaN(level) && level > Number(c.level_max)) || (fl && fl.state === 'on')) v.alerts.push('high_level');
+        if (!on && v.alerts.includes('high_level')) return { ...v, st: 'alarm' };
+      } else if (!isNaN(level) && level < Number(c.level_min)) v.alerts.push('low_level');
       return { ...v, st: !on ? 'off' : v.alerts.length ? 'warning' : 'running' };
     }
 
@@ -350,9 +433,19 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
       // vitesse d'animation : débit sinon puissance, au moins 0,25 pour que ça reste lisible
       let spd = !isNaN(flow) ? flow / Number(c.max_flow) : !isNaN(pw) ? pw / Number(c.max_power) : 0.7;
       spd = on ? Math.max(0.25, clamp(spd)) : 0.25;
-      card.className = `${K.cls} ${st} ${c.animations === false ? 'noanim' : ''}`;
+      card.className = `${K.cls} ${st}${alerts.includes('high_level') ? ' hi' : ''} ${c.animations === false ? 'noanim' : ''}`;
       card.style.setProperty('--spd', spd.toFixed(3));
-      card.style.setProperty('--lvl', (isNaN(level) ? 0.6 : clamp(level / 100)).toFixed(3));
+      // sans capteur de niveau, la fosse se vide pendant que la pompe tourne
+      const lvl0 = K.sump ? (alerts.includes('high_level') ? 0.9 : on ? 0.3 : 0.55) : 0.6;
+      card.style.setProperty('--lvl', (isNaN(level) ? lvl0 : clamp(level / 100)).toFixed(3));
+      const mx = r.getElementById('spmax');
+      if (mx) {
+        // repère « max » : surface de l'eau au niveau level_max (même formule que .pitw)
+        const y = 58 + (1 - clamp(Number(c.level_max) / 100)) * 104;
+        mx.setAttribute('d', `M70 ${y.toFixed(1)} H170`);
+        r.getElementById('spmaxt').setAttribute('y', (y - 2).toFixed(1));
+        mx.style.display = r.getElementById('spmaxt').style.display = c.entity_level ? '' : 'none';
+      }
       card.style.setProperty('--pr', (isNaN(pres) ? (on ? 0.5 : 0) : clamp(pres / Number(c.max_pressure))).toFixed(3));
       if (c.fluid_color) card.style.setProperty('--fluid', String(c.fluid_color)); else card.style.removeProperty('--fluid');
 
@@ -367,7 +460,7 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
       ctl.classList.toggle('hide', c.show_controls === false || !['switch', 'input_boolean', 'fan'].includes(d));
       ctl.querySelector('span').textContent = this._t(on ? 'turn_off' : 'turn_on');
 
-      const energy = this._num(c.entity_energy), run = this._num(c.entity_runtime);
+      const energy = this._num(c.entity_energy), run = this._num(c.entity_runtime), starts = this._num(c.entity_starts);
       let cost = this._num(c.entity_cost), costU = this._unit(c.entity_cost, c.currency || '€');
       if (isNaN(cost) && c.price_per_kwh && !isNaN(energy)) { cost = energy * Number(c.price_per_kwh); costU = c.currency || '€'; }
       const V = {
@@ -377,15 +470,16 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
         temp: [c.entity_temp, this._fmt(temp, 0), this._unit(c.entity_temp, '°C')],
         level: [c.entity_level, this._fmt(level, 0), this._unit(c.entity_level, '%')],
         runtime: [c.entity_runtime, this._fmt(run, 1), this._unit(c.entity_runtime, 'h')],
+        starts: [c.entity_starts, this._fmt(starts, 0), ''],
         energy: [c.entity_energy, this._fmt(energy, 2), this._unit(c.entity_energy, 'kWh')],
         cost: [c.entity_cost || (c.price_per_kwh && c.entity_energy), this._fmt(cost, 2), costU],
       };
-      const bad = { flow: alerts.includes('no_flow'), pressure: alerts.includes('overpressure'), temp: alerts.includes('overheat'), level: alerts.includes('low_level') };
+      const bad = { flow: alerts.includes('no_flow'), pressure: alerts.includes('overpressure'), temp: alerts.includes('overheat'), level: alerts.includes('low_level') || alerts.includes('high_level') };
       TILES.forEach(([k, , opt]) => {
         const el = r.querySelector(`.tile[data-k="${k}"]`); const [show, val, unit] = V[k];
         el.classList.toggle('hide', !show || c[opt] === false);
         el.classList.toggle('bad', !!bad[k]);
-        el.querySelector('.lbl').textContent = this._t(k);
+        el.querySelector('.lbl').textContent = this._t(K.sump && k === 'level' ? 'pit' : k);
         const small = document.createElement('small'); small.textContent = unit ?? '';
         el.querySelector('.v').replaceChildren(String(val ?? ''), small);
       });
@@ -415,17 +509,18 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
         { name: 'name', selector: { text: {} } },
         ent('entity'), ent('entity_power', 'sensor'), ent('entity_flow', 'sensor'), ent('entity_pressure', 'sensor'),
         ent('entity_temp', 'sensor'), ent('entity_level', 'sensor'), ent('entity_fault', 'binary_sensor'), ent('entity_runtime', 'sensor'),
+        ...(KINDS[this.kind].sump ? [ent('entity_float', 'binary_sensor'), ent('entity_starts', 'sensor')] : []),
         ent('entity_energy', 'sensor'), ent('entity_cost', 'sensor'),
         { name: 'price_per_kwh', selector: { number: { min: 0, step: 0.0001, mode: 'box' } } },
         { name: 'fluid_color', selector: { text: {} } },
         { type: 'grid', name: '', schema: [
           num('max_flow', 1, 10000, 1, 'L/min'), num('max_power', 10, 100000, 10, 'W'), num('run_threshold', 0, 5000, 1, 'W'),
-          num('max_pressure', 1, 100, 0.5, 'bar'), num('pressure_max', 0, 100, 0.1, 'bar'), num('temp_max', 20, 150, 1, '°C'), num('level_min', 0, 100, 1, '%'),
+          num('max_pressure', 1, 100, 0.5, 'bar'), num('pressure_max', 0, 100, 0.1, 'bar'), num('temp_max', 20, 150, 1, '°C'), KINDS[this.kind].sump ? num('level_max', 0, 100, 1, '%') : num('level_min', 0, 100, 1, '%'),
         ] },
         { name: 'language', selector: { select: { options: Object.keys(T).map((value) => ({ value, label: { fr: 'Français', en: 'English', de: 'Deutsch', nb: 'Norsk bokmål', ro: 'Română', nl: 'Nederlands' }[value] || value })) } } },
         { type: 'grid', name: '', schema: [
           bool('show_status'), bool('show_controls'), bool('show_flow'), bool('show_pressure'), bool('show_power'), bool('show_temp'),
-          bool('show_level'), bool('show_runtime'), bool('show_energy'), bool('show_cost'), bool('animations'),
+          bool('show_level'), bool('show_runtime'), bool('show_starts'), bool('show_energy'), bool('show_cost'), bool('animations'),
         ] },
       ];
       this._form.computeLabel = (s) => s.name;
@@ -435,6 +530,7 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
   const DESC = {
     water_pump: 'Pompe à eau sobre (arrosage, puits, piscine) : roue à aubes, eau qui circule, vagues, niveau de cuve, débit et pression.',
     industrial_pump: 'Pompe industrielle robuste : finition métal, voyants, manomètre, pulsations et vibrations selon le débit.',
+    sump_pump: 'Pompe de relevage : fosse en coupe, niveau et flotteur, pompe immergée, refoulement, alarme de niveau haut.',
   };
   window.customCards = window.customCards || [];
   for (const kind of Object.keys(KINDS)) {

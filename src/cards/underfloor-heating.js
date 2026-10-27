@@ -1,0 +1,324 @@
+/* Carte « Plancher chauffant » — custom:appliance-underfloor-heating-card
+ * Pièce vue en coupe : dalle en perspective dont le carrelage est retiré à gauche pour montrer
+ * le circuit en serpentin, collecteur départ / retour au mur (hydraulique) ou câble chauffant
+ * (heating_type: electric), thermostat mural. En chauffe, l'eau ou le courant circule, la dalle
+ * rougeoit (--heat) et des ondes de chaleur montent du sol.
+ * États : off, heating, idle (allumé, consigne atteinte), fault. Entité climate (consigne ± et
+ * marche / arrêt), switch / input_boolean / binary_sensor (vanne, circulateur) ou puissance seule.
+ */
+(() => {
+  const TAG = 'appliance-underfloor-heating-card';
+  if (customElements.get(TAG)) return;
+
+  const T = /*@i18n underfloor*/{};
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); // texte → HTML sûr
+
+  const CSS = `
+:host{display:block}
+ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--uf-heat-c:var(--appliance-heat-color,#ff8a3d);--uf-ok:var(--appliance-ok-color,#43a047);
+  --uf-alert:var(--appliance-alert-color,#db4437);--heat:0}
+.head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.title{font-size:14px;font-weight:500;color:var(--primary-text-color);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:12px;background:var(--secondary-background-color);color:var(--secondary-text-color);white-space:nowrap}
+.heating .badge{background:color-mix(in srgb,var(--uf-heat-c) 22%,transparent);color:var(--uf-heat-c)}
+.idle .badge{background:color-mix(in srgb,var(--uf-ok) 22%,transparent);color:var(--uf-ok)}
+.fault .badge{background:color-mix(in srgb,var(--uf-alert) 22%,transparent);color:var(--uf-alert)}
+.alert{display:none;margin-top:4px;font-size:11px;color:var(--uf-alert);font-weight:500;text-align:center}
+.alert.on{display:block}
+svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration-height,auto);margin:2px auto 0;overflow:visible;cursor:pointer}
+.ctl{display:flex;justify-content:center;gap:6px;margin-top:6px}
+.ctl.hide,.ctl button.hide{display:none}
+.ctl button{flex:1 1 0;max-width:120px;display:flex;align-items:center;justify-content:center;gap:4px;border:0;border-radius:10px;padding:6px 4px;cursor:pointer;
+  background:var(--secondary-background-color);color:var(--primary-text-color);font:500 12px/16px var(--paper-font-body1_-_font-family,Roboto,sans-serif)}
+.ctl button.sm{flex:0 0 40px}
+.ctl button ha-icon{--mdc-icon-size:16px}
+.ctl button:hover{filter:brightness(1.12)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(76px,1fr));gap:6px;margin-top:6px}
+.tile{box-sizing:border-box;background:var(--secondary-background-color);border-radius:10px;padding:5px 7px;min-width:0;overflow:hidden;text-align:center;cursor:pointer}
+.tile .l{display:flex;align-items:center;justify-content:center;gap:3px;font-size:10px;line-height:14px;color:var(--secondary-text-color);min-width:0}
+.tile .l span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tile .l ha-icon{--mdc-icon-size:13px;flex:none}
+.tile .v{font-size:14px;line-height:18px;font-weight:600;color:var(--primary-text-color);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile .v small{font-size:10px;font-weight:400;color:var(--secondary-text-color);margin-left:2px}
+.tile.hide{display:none}
+.tile.bad .v{color:var(--uf-alert)}
+
+/* ---- illustration ---- */
+/* circuit : gris à l'arrêt, rouge (eau chaude) ou orange (câble) en chauffe */
+.pipe{fill:none;stroke:#8d969e;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;transition:stroke .8s}
+.heating .pipe{stroke:#d9483b}.idle .pipe{stroke:#c47a6e}
+.elec .pipe{stroke-width:2.6}.elec.heating .pipe{stroke:#ff8a1f;filter:drop-shadow(0 0 2px #ffb15c)}
+.flow{fill:none;stroke:#ffd0c4;stroke-width:2;stroke-linecap:round;stroke-dasharray:4 10;opacity:0}
+.heating .flow{opacity:.9;animation:ufflow 1.2s linear infinite}
+.elec .flow{stroke:#fff3c4;stroke-width:1.2;stroke-dasharray:2 8}
+@keyframes ufflow{to{stroke-dashoffset:-28}}
+.glow{opacity:calc(var(--heat) * .75);transition:opacity 1.5s}
+.wave{fill:none;stroke:var(--uf-heat-c);stroke-width:1.6;stroke-linecap:round;opacity:0}
+.heating .wave{animation:ufwave 3s ease-in infinite}
+.idle .wave{animation:ufwave 5s ease-in infinite;stroke-opacity:.5}
+.wave:nth-of-type(2){animation-delay:-.6s!important}.wave:nth-of-type(3){animation-delay:-1.2s!important}.wave:nth-of-type(4){animation-delay:-1.8s!important}.wave:nth-of-type(5){animation-delay:-2.4s!important}
+@keyframes ufwave{0%{opacity:0;transform:translateY(6px)}30%{opacity:.8}100%{opacity:0;transform:translateY(-40px)}}
+.hyd{display:inline}.elec .hyd{display:none}
+.cab{display:none}.elec .cab{display:inline}
+.dsp{fill:#ff9f43;font:700 8px/1 var(--paper-font-body1_-_font-family,Roboto,sans-serif);text-anchor:middle}
+.off .dsp{fill:#5a6470}.fault .dsp{fill:#ff5a4e}.idle .dsp{fill:#7dff9a}
+.led{fill:#5b6570}
+.heating .led{fill:#ff8a3d;animation:ufblink 1.2s steps(2) infinite}.idle .led{fill:#43a047}.fault .led{fill:#db4437;animation:ufblink .6s steps(2) infinite}
+@keyframes ufblink{50%{opacity:.25}}
+.noanim *{animation:none!important}
+`;
+
+  // serpentin en vue de dessus (0 → 220 × 0 → 80), projeté en perspective par la matrice du groupe
+  const COIL = 'M-8 8 H200 Q210 8 210 18 Q210 28 200 28 H20 Q10 28 10 38 Q10 48 20 48 H200 Q210 48 210 58 Q210 68 200 68 H-8';
+  const SVG = (label) => `
+<svg viewBox="0 0 270 170" role="img" aria-label="${esc(label)}">
+ <defs>
+  <linearGradient id="ufwall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef1f4"/><stop offset="1" stop-color="#d9dfe4"/></linearGradient>
+  <linearGradient id="ufglow" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff7a3d" stop-opacity=".1"/><stop offset="1" stop-color="#ff5a2a" stop-opacity=".75"/></linearGradient>
+  <pattern id="uftile" width="27.5" height="20" patternUnits="userSpaceOnUse"><rect width="27.5" height="20" fill="#e9e2d6"/><path d="M0 0 H27.5 M0 0 V20" stroke="#c7bca9" stroke-width="1.4"/></pattern>
+  <clipPath id="ufslab"><rect x="0" y="0" width="220" height="80"/></clipPath>
+ </defs>
+ <ellipse cx="135" cy="164" rx="128" ry="4" fill="#000" opacity=".15"/>
+ <!-- mur du fond, fenêtre, thermostat -->
+ <path d="M40 18 H262 V118 H40 Z" fill="url(#ufwall)" stroke="#c3cad1"/>
+ <rect x="96" y="32" width="58" height="50" rx="2" fill="#bfe0f5" stroke="#9fb3c3" stroke-width="2"/>
+ <path d="M125 32 V82 M96 57 H154" stroke="#9fb3c3" stroke-width="2"/>
+ <rect x="206" y="44" width="30" height="36" rx="4" fill="#f9fafb" stroke="#b9c1c8"/>
+ <rect x="210" y="49" width="22" height="13" rx="2" fill="#1b1e22"/>
+ <text class="dsp" id="ufdsp" x="221" y="58.5">--</text>
+ <circle class="led" cx="221" cy="71" r="2.2"/>
+ <!-- ondes de chaleur qui montent du sol -->
+ <g><path class="wave" d="M70 112 q4 -5 0 -10 t0 -10"/><path class="wave" d="M110 112 q4 -5 0 -10 t0 -10"/><path class="wave" d="M150 112 q4 -5 0 -10 t0 -10"/>
+  <path class="wave" d="M190 112 q4 -5 0 -10 t0 -10"/><path class="wave" d="M230 112 q4 -5 0 -10 t0 -10"/></g>
+ <!-- dalle en perspective : chape et serpentin, carrelage posé à droite -->
+ <g transform="matrix(1 0 -.4 .5 40 118)">
+  <rect x="0" y="0" width="220" height="80" fill="#cdc6ba"/>
+  <g clip-path="url(#ufslab)">
+   <path class="pipe" d="${COIL}"/>
+   <path class="flow" d="${COIL}"/>
+  </g>
+  <path d="M120 0 L100 80 H220 V0 Z" fill="url(#uftile)"/>
+  <path d="M120 0 L100 80" stroke="#a89c86" stroke-width="2"/>
+  <rect class="glow" x="0" y="0" width="220" height="80" fill="url(#ufglow)"/>
+ </g>
+ <!-- épaisseur de la dalle -->
+ <path d="M8 158 H228 L232 158 V164 H8 Z" fill="#9c9486"/>
+ <path d="M228 158 L260 118 V124 L232 164 Z" fill="#8a8274"/>
+ <!-- collecteur départ / retour (hydraulique) -->
+ <g class="hyd">
+  <rect x="6" y="64" width="30" height="48" rx="3" fill="#f4f6f8" stroke="#b9c1c8"/>
+  <rect x="10" y="74" width="22" height="4" rx="2" fill="#d9483b"/><rect x="10" y="94" width="22" height="4" rx="2" fill="#2b7fd9"/>
+  <g fill="#5b636b"><circle cx="15" cy="76" r="2.4"/><circle cx="27" cy="76" r="2.4"/><circle cx="15" cy="96" r="2.4"/><circle cx="27" cy="96" r="2.4"/></g>
+  <path d="M15 112 V122 M27 112 V128" stroke="#8d969e" stroke-width="3"/>
+ </g>
+ <!-- boîtier du câble chauffant (électrique) -->
+ <g class="cab">
+  <rect x="10" y="84" width="22" height="26" rx="3" fill="#f4f6f8" stroke="#b9c1c8"/>
+  <path d="M21 90 l-4 7 h4 l-2 6 l6 -9 h-4 l2 -4 z" fill="#ff8a1f"/>
+  <path d="M21 110 V124" stroke="#ff8a1f" stroke-width="2"/>
+ </g>
+</svg>`;
+
+  const TILES = [
+    ['temp', 'mdi:home-thermometer', 'show_temp'],
+    ['target', 'mdi:thermometer-check', 'show_temp'],
+    ['floor', 'mdi:heating-coil', 'show_floor'],
+    ['water', 'mdi:coolant-temperature', 'show_water'],
+    ['power', 'mdi:flash', 'show_power'],
+    ['energy', 'mdi:lightning-bolt-circle', 'show_energy'],
+    ['cost', 'mdi:cash', 'show_cost'],
+  ];
+
+  class ApplianceUnderfloorHeatingCard extends HTMLElement {
+    static getConfigElement() { return document.createElement(TAG + '-editor'); }
+    static getStubConfig(hass) {
+      const ids = Object.keys((hass && hass.states) || {});
+      const re = /plancher|underfloor|floor_heat|fussboden|vloerverwarming/i;
+      const f = (r, dom) => ids.find((i) => (!dom || i.startsWith(dom + '.')) && r.test(i)) || '';
+      return { entity: f(re, 'climate') || f(re, 'switch'), entity_floor_temp: f(/(plancher|floor|sol).*temp/i, 'sensor') };
+    }
+    setConfig(c) {
+      if (!c || typeof c !== 'object') throw new Error('Invalid configuration');
+      this._c = { show_status: true, show_controls: true, show_temp: true, show_floor: true, show_water: true, show_power: true, show_energy: true, show_cost: true,
+        heating_type: 'water', floor_max: 29, water_max: 45, heat_threshold: 20, ...c };
+      this._built = false;
+      if (this._hass) this._render();
+    }
+    set hass(h) { this._hass = h; if (this._c) this._render(); }
+    getCardSize() { return 5; }
+    getGridOptions() { return { columns: 12, min_columns: 6, rows: 'auto' }; }
+
+    _t(k) { return T[this._lang()][k] ?? T.en[k] ?? k; }
+    _lang() { const l = (this._c.language || (this._hass && this._hass.language) || 'en').slice(0, 2); return T[l] ? l : 'en'; }
+    _st(id) { return id && this._hass.states[id]; }
+    _num(id) {
+      const s = this._st(id); if (!s) return NaN;
+      const v = parseFloat(String(s.state).replace(',', '.'));
+      return isFinite(v) ? v : NaN;
+    }
+    _watts(id) {
+      const v = this._num(id); if (isNaN(v)) return NaN;
+      const u = ((this._st(id).attributes || {}).unit_of_measurement || '').toLowerCase();
+      return u === 'kw' ? v * 1000 : v;
+    }
+    _unit(id, d) { const s = this._st(id); return (s && s.attributes && s.attributes.unit_of_measurement) || d; }
+    _fmt(v, d = 0) { return isNaN(v) ? '--' : v.toLocaleString(this._lang() === 'fr' ? 'fr-FR' : 'en-US', { maximumFractionDigits: d, minimumFractionDigits: 0 }); }
+    _more(id) { if (id) this.dispatchEvent(new CustomEvent('hass-more-info', { detail: { entityId: id }, bubbles: true, composed: true })); }
+
+    _build() {
+      const root = this.shadowRoot || this.attachShadow({ mode: 'open' });
+      const c = this._c;
+      root.innerHTML = `<style>${CSS}</style><ha-card>
+        <div class="head"><div class="title" id="uftitle"></div><div class="badge" id="ufbadge"></div></div>
+        ${SVG(c.name || this._t('name'))}
+        <div class="alert" id="ufalert"></div>
+        <div class="ctl" id="ufctl">
+          <button class="sm" data-a="down"><ha-icon icon="mdi:minus"></ha-icon></button>
+          <button data-a="power"><ha-icon icon="mdi:power"></ha-icon><span></span></button>
+          <button class="sm" data-a="up"><ha-icon icon="mdi:plus"></ha-icon></button>
+        </div>
+        <div class="tiles">${TILES.map(([k, ic]) => `<div class="tile hide" data-k="${esc(k)}"><div class="l"><ha-icon icon="${esc(ic)}"></ha-icon><span class="lbl"></span></div><div class="v"></div></div>`).join('')}</div>
+      </ha-card>`;
+      root.querySelector('svg').addEventListener('click', () => this._more(this._c.entity || this._c.entity_floor_temp));
+      root.querySelectorAll('.ctl button').forEach((b) => b.addEventListener('click', () => this._action(b.dataset.a)));
+      root.querySelectorAll('.tile').forEach((el) => el.addEventListener('click', () => {
+        const cc = this._c, k = el.dataset.k;
+        this._more({ temp: cc.entity_temp || cc.entity, target: cc.entity_target_temp || cc.entity, floor: cc.entity_floor_temp, water: cc.entity_water_temp,
+          power: cc.entity_power, energy: cc.entity_energy, cost: cc.entity_cost || cc.entity_energy }[k]);
+      }));
+      this._root = root; this._card = root.querySelector('ha-card'); this._built = true;
+    }
+
+    _action(a) {
+      const c = this._c, h = this._hass, s = this._st(c.entity); if (!h || !c.entity) return;
+      const d = c.entity.split('.')[0];
+      if (a === 'power') {
+        if (d === 'climate') h.callService('climate', 'set_hvac_mode', { entity_id: c.entity, hvac_mode: s && s.state !== 'off' ? 'off' : 'heat' });
+        else h.callService('homeassistant', 'toggle', { entity_id: c.entity });
+      } else if (d === 'climate' && s) {
+        const a2 = s.attributes || {}, step = Number(a2.target_temp_step) || 0.5, cur = Number(a2.temperature);
+        if (!isFinite(cur)) return;
+        const lim = (v) => Math.max(Number(a2.min_temp) || -Infinity, Math.min(Number(a2.max_temp) || Infinity, v));
+        h.callService('climate', 'set_temperature', { entity_id: c.entity, temperature: lim(cur + (a === 'up' ? step : -step)) });
+      }
+    }
+
+    _compute() {
+      const c = this._c, s = this._st(c.entity), a = (s && s.attributes) || {};
+      const pw = this._watts(c.entity_power);
+      let temp = this._num(c.entity_temp);
+      if (isNaN(temp) && isFinite(Number(a.current_temperature))) temp = Number(a.current_temperature);
+      let target = this._num(c.entity_target_temp);
+      if (isNaN(target) && isFinite(Number(a.temperature))) target = Number(a.temperature);
+      const floor = this._num(c.entity_floor_temp), water = this._num(c.entity_water_temp);
+      const v = { pw, temp, target, floor, water };
+      const txt = s ? String(s.state).toLowerCase() : '';
+      if (/error|erreur|fault|défaut|defaut|alarm/.test(txt)) return { ...v, st: 'fault' };
+      if (s && !/^(unavailable|unknown)$/.test(txt)) {
+        if (/^(off|false|0|arr[eê]t|éteint|eteint)$/.test(txt)) return { ...v, st: 'off' };
+        if (s.entity_id.startsWith('climate.')) {
+          // hvac_action fait foi, sinon on compare la pièce à la consigne
+          if (a.hvac_action) return { ...v, st: /heat/.test(String(a.hvac_action)) ? 'heating' : /off/.test(String(a.hvac_action)) ? 'off' : 'idle' };
+          if (!isNaN(pw)) return { ...v, st: pw > Number(c.heat_threshold) ? 'heating' : 'idle' };
+          return { ...v, st: !isNaN(temp) && !isNaN(target) && temp >= target - 0.2 ? 'idle' : 'heating' };
+        }
+        if (!isNaN(pw)) return { ...v, st: pw > Number(c.heat_threshold) ? 'heating' : 'idle' };
+        return { ...v, st: 'heating' };
+      }
+      return { ...v, st: !isNaN(pw) && pw > Number(c.heat_threshold) ? 'heating' : 'off' };
+    }
+
+    _render() {
+      if (!this._built) this._build();
+      const c = this._c, r = this._root, card = this._card;
+      const { st, pw, temp, target, floor, water } = this._compute();
+      const clamp = (x) => Math.max(0, Math.min(1, x));
+      // lueur de la dalle : température du sol si connue (20 °C → floor_max), sinon selon l'état
+      const heat = !isNaN(floor) ? clamp((floor - 20) / Math.max(1, Number(c.floor_max) - 20)) : ({ heating: 0.8, idle: 0.3 }[st] || 0);
+      const elec = String(c.heating_type).toLowerCase() === 'electric';
+      card.className = `${st}${elec ? ' elec' : ''} ${c.animations === false ? 'noanim' : ''}`;
+      card.style.setProperty('--heat', (st === 'off' || st === 'fault' ? 0 : heat).toFixed(3));
+
+      r.getElementById('uftitle').textContent = c.name || this._t('name');
+      const badge = r.getElementById('ufbadge'); badge.textContent = this._t(st); badge.style.display = c.show_status === false ? 'none' : '';
+      r.getElementById('ufdsp').textContent = st === 'off' ? 'OFF' : st === 'fault' ? 'Err' : !isNaN(temp) ? `${this._fmt(temp, 1)}°` : 'ON';
+      const alerts = [];
+      if (!isNaN(floor) && floor > Number(c.floor_max)) alerts.push(this._t('floor_hot'));
+      if (!isNaN(water) && water > Number(c.water_max)) alerts.push(this._t('water_hot'));
+      const al = r.getElementById('ufalert'); al.textContent = alerts.join(' · '); al.classList.toggle('on', alerts.length > 0);
+
+      // commandes : marche/arrêt, et consigne ± seulement pour une entité climate
+      const d = (c.entity || '').split('.')[0];
+      const ctl = r.getElementById('ufctl');
+      ctl.classList.toggle('hide', c.show_controls === false || !['climate', 'switch', 'input_boolean'].includes(d));
+      ctl.querySelector('[data-a="power"] span').textContent = this._t(st === 'off' ? 'turn_on' : 'turn_off');
+      ctl.querySelectorAll('.sm').forEach((b) => b.classList.toggle('hide', d !== 'climate'));
+
+      const energy = this._num(c.entity_energy);
+      let cost = this._num(c.entity_cost), costU = this._unit(c.entity_cost, c.currency || '€');
+      if (isNaN(cost) && c.price_per_kwh && !isNaN(energy)) { cost = energy * Number(c.price_per_kwh); costU = c.currency || '€'; }
+      const V = {
+        temp: [!isNaN(temp), this._fmt(temp, 1), '°C'],
+        target: [!isNaN(target), this._fmt(target, 1), '°C'],
+        floor: [c.entity_floor_temp, this._fmt(floor, 1), '°C'],
+        water: [c.entity_water_temp, this._fmt(water, 0), '°C'],
+        power: [c.entity_power, isNaN(pw) ? '--' : (pw >= 1000 ? this._fmt(pw / 1000, 2) : this._fmt(pw, 0)), isNaN(pw) ? '' : (pw >= 1000 ? 'kW' : 'W')],
+        energy: [c.entity_energy, this._fmt(energy, 2), this._unit(c.entity_energy, 'kWh')],
+        cost: [c.entity_cost || (c.price_per_kwh && c.entity_energy), this._fmt(cost, 2), costU],
+      };
+      const bad = { floor: !isNaN(floor) && floor > Number(c.floor_max), water: !isNaN(water) && water > Number(c.water_max) };
+      TILES.forEach(([k, , opt]) => {
+        const el = r.querySelector(`.tile[data-k="${k}"]`); const [show, val, unit] = V[k];
+        el.classList.toggle('hide', !show || c[opt] === false);
+        el.classList.toggle('bad', !!bad[k]);
+        el.querySelector('.lbl').textContent = this._t(k);
+        const small = document.createElement('small'); small.textContent = unit ?? '';
+        el.querySelector('.v').replaceChildren(String(val ?? ''), small);
+      });
+    }
+  }
+  customElements.define(TAG, ApplianceUnderfloorHeatingCard);
+
+  /* ---- éditeur visuel ---- */
+  class ApplianceUnderfloorHeatingCardEditor extends HTMLElement {
+    setConfig(c) { this._c = c; this._draw(); }
+    set hass(h) { this._hass = h; if (this._form) this._form.hass = h; }
+    _draw() {
+      if (!this._form) {
+        this._form = document.createElement('ha-form');
+        this._form.addEventListener('value-changed', (e) => {
+          this._c = e.detail.value;
+          this.dispatchEvent(new CustomEvent('config-changed', { detail: { config: this._c }, bubbles: true, composed: true }));
+        });
+        this.appendChild(this._form);
+      }
+      const ent = (name, domain) => ({ name, selector: { entity: domain ? { domain } : {} } });
+      const num = (name, min, max, step, def, unit) => ({ name, default: def, selector: { number: { min, max, step, mode: 'box', ...(unit ? { unit_of_measurement: unit } : {}) } } });
+      const bool = (name) => ({ name, selector: { boolean: {} }, default: true });
+      this._form.hass = this._hass;
+      this._form.data = this._c;
+      this._form.schema = [
+        { name: 'name', selector: { text: {} } },
+        ent('entity'), ent('entity_temp', 'sensor'), ent('entity_target_temp'), ent('entity_floor_temp', 'sensor'), ent('entity_water_temp', 'sensor'),
+        ent('entity_power', 'sensor'), ent('entity_energy', 'sensor'), ent('entity_cost', 'sensor'),
+        { name: 'price_per_kwh', selector: { number: { min: 0, step: 0.0001, mode: 'box' } } },
+        { name: 'heating_type', selector: { select: { options: ['water', 'electric'] } } },
+        { type: 'grid', name: '', schema: [num('floor_max', 20, 40, 0.5, 29, '°C'), num('water_max', 25, 70, 1, 45, '°C'), num('heat_threshold', 0, 5000, 1, 20, 'W')] },
+        { name: 'language', selector: { select: { options: Object.keys(T).map((value) => ({ value, label: { fr: 'Français', en: 'English', de: 'Deutsch', nb: 'Norsk bokmål', ro: 'Română', nl: 'Nederlands' }[value] || value })) } } },
+        { type: 'grid', name: '', schema: [
+          bool('show_status'), bool('show_controls'), bool('show_temp'), bool('show_floor'), bool('show_water'),
+          bool('show_power'), bool('show_energy'), bool('show_cost'), bool('animations'),
+        ] },
+      ];
+      this._form.computeLabel = (s) => s.name;
+    }
+  }
+  customElements.define(TAG + '-editor', ApplianceUnderfloorHeatingCardEditor);
+
+  window.customCards = window.customCards || [];
+  window.customCards.push({
+    type: TAG, name: 'Appliance – Underfloor heating / Plancher chauffant',
+    description: 'Plancher chauffant animé (hydraulique ou électrique) : serpentin, collecteur, sol qui rougeoit, ondes de chaleur, thermostat.', preview: true,
+    documentationURL: 'https://github.com/skyrotter/ha-appliance-electromenager-cards',
+  });
+})();

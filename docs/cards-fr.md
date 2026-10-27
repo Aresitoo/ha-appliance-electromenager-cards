@@ -129,4 +129,37 @@ entity_time: sensor.robot_piscine_temps_restant
 entity_mode: select.robot_piscine_mode
 ```
 
+**Pompe de relevage** : `custom:appliance-sump-pump-card`, fosse enterrée vue en coupe. L'eau arrive goutte à goutte par le drain, le niveau suit `entity_level` (%) avec un repère rouge **max** à `level_max` (80 %), le flotteur flotte à la surface, la pompe immergée vibre et refoule l'eau vers l'égout. Au-dessus de `level_max` ou quand le flotteur d'alarme `entity_float` est à `on`, la carte affiche **Niveau d'eau trop haut** et un gyrophare clignote au sol ; si la pompe est arrêtée à ce moment-là, l'état passe à **Niveau haut**. Sans capteur de niveau, la fosse se vide pendant que la pompe tourne. `entity_starts` affiche le nombre de démarrages (compteur `history_stats` par exemple). Options : voir [pumps.md](cards/pumps.md).
+
+```yaml
+type: custom:appliance-sump-pump-card
+entity: switch.pompe_relevage
+entity_power: sensor.pompe_relevage_puissance
+entity_level: sensor.fosse_niveau
+entity_float: binary_sensor.fosse_niveau_haut
+entity_starts: sensor.pompe_relevage_demarrages_jour
+```
+
+**Onduleur** : `custom:appliance-ups-card`, prise murale → onduleur tour → box internet et NAS protégés. Sur secteur, le courant circule de la prise vers les appareils ; sur batterie, la prise s'éteint (éclair barré), l'écran passe à l'orange, l'onduleur bipe et le courant part de la batterie. La batterie visible sur le flanc suit `entity_charge`, la barre de 5 LED suit `entity_load`. L'état vient de l'intégration **NUT** : codes bruts de `sensor.<onduleur>_status_data` (`OL`, `OB`, `LB`, `CHRG`, `RB`, `OVER`, `OFF`…) ou texte de `sensor.<onduleur>_status`, sinon un `binary_sensor` (on = secteur présent) ou la tension d'entrée. Alertes : batterie faible, surcharge, batterie à remplacer. Tuiles : batterie, autonomie, charge, puissance, tensions d'entrée et de sortie, énergie. Options : voir [ups.md](cards/ups.md).
+
+```yaml
+type: custom:appliance-ups-card
+entity: sensor.onduleur_status_data
+entity_charge: sensor.onduleur_battery_charge
+entity_runtime: sensor.onduleur_battery_runtime
+entity_load: sensor.onduleur_load
+entity_input_voltage: sensor.onduleur_input_voltage
+```
+
+**Plancher chauffant** : `custom:appliance-underfloor-heating-card`, pièce en coupe avec la dalle en perspective. Le carrelage est retiré à gauche pour montrer le serpentin : circuit d'eau avec collecteur départ / retour au mur, ou câble chauffant (`heating_type: electric`). En chauffe, l'eau ou le courant circule, la dalle rougeoit selon la température du sol (de 20 °C à `floor_max`) et des ondes de chaleur montent du sol. États : arrêt, chauffe, en veille (consigne atteinte), défaut. Avec une entité `climate`, `hvac_action` décide entre chauffe et veille, et les boutons **− / Allumer-Éteindre / +** pilotent le thermostat. Alertes : sol trop chaud (au-dessus de `floor_max`, 29 °C) et eau trop chaude (au-dessus de `water_max`, 45 °C). Tuiles : pièce, consigne, sol, départ d'eau, puissance, énergie, coût. Options : voir [underfloor-heating.md](cards/underfloor-heating.md).
+
+```yaml
+type: custom:appliance-underfloor-heating-card
+name: Plancher séjour
+entity: climate.plancher_sejour
+entity_floor_temp: sensor.sejour_temperature_sol
+entity_water_temp: sensor.plancher_temperature_depart
+price_per_kwh: 0.2516
+```
+
 **Développement et traductions** : `dist/` est généré, on modifie `src/` puis on lance `node build.js` (sans dépendance). Le code est découpé en petits fichiers : `src/core/` pour les 28 cartes de base (un dessin par appareil dans `svg/`, un fichier CSS par appareil dans `style/`), `src/cards/` pour les cartes autonomes, et les textes dans un fichier par langue (`src/i18n/en.json`, `src/i18n/fr.json`, `src/i18n/de.json`, `src/i18n/nb.json`, `src/i18n/nl.json`, `src/i18n/ro.json`). Voir *Development and translations* plus haut.

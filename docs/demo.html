@@ -656,6 +656,35 @@ const SCEN = [
       range(ctl, 'Puissance', 'sensor.pool_robot_power', 0, 250, 5, 160, 'W', W);
       set('sensor.pool_water_temp', 26.5, T); set('select.pool_robot_mode', 'Fond + parois');
     } },
+  { kind: 'sump-pump', title: 'Pompe de relevage', lang: true,
+    cfg: { entity: 'switch.sump_pump', entity_power: 'sensor.sump_pump_power', entity_level: 'sensor.sump_pit_level', entity_float: 'binary_sensor.sump_high_float', entity_starts: 'sensor.sump_pump_starts_today', entity_energy: 'sensor.sump_pump_energy', price_per_kwh: 0.2 },
+    build(ctl) {
+      select(ctl, 'État', 'switch.sump_pump', [['on', 'Marche / On'], ['off', 'Arrêt / Off']], 'on');
+      range(ctl, 'Niveau fosse', 'sensor.sump_pit_level', 0, 100, 1, 45, '%', { unit_of_measurement: '%' });
+      select(ctl, 'Flotteur alarme', 'binary_sensor.sump_high_float', [['off', 'Bas / Low'], ['on', 'Haut / High']], 'off');
+      range(ctl, 'Puissance', 'sensor.sump_pump_power', 0, 800, 10, 420, 'W', W);
+      set('sensor.sump_pump_starts_today', 14, {}); set('sensor.sump_pump_energy', 0.35, KWH);
+    } },
+  { kind: 'ups', title: 'Onduleur', lang: true,
+    cfg: { entity: 'sensor.ups_status_data', entity_charge: 'sensor.ups_battery_charge', entity_runtime: 'sensor.ups_battery_runtime', entity_load: 'sensor.ups_load', entity_power: 'sensor.ups_power', entity_input_voltage: 'sensor.ups_input_voltage' },
+    build(ctl) {
+      select(ctl, 'Statut NUT', 'sensor.ups_status_data', [['OL', 'OL (secteur)'], ['OL CHRG', 'OL CHRG (charge)'], ['OB DISCHRG', 'OB (sur batterie)'], ['OB LB', 'OB LB (batterie faible)'], ['OL RB', 'OL RB (batterie à remplacer)'], ['OFF', 'OFF']], 'OL');
+      range(ctl, 'Batterie', 'sensor.ups_battery_charge', 0, 100, 1, 100, '%', { unit_of_measurement: '%', device_class: 'battery' });
+      range(ctl, 'Autonomie', 'sensor.ups_battery_runtime', 0, 7200, 60, 2460, 's', { unit_of_measurement: 's' }, (v) => `${Math.round(v / 60)} min`);
+      range(ctl, 'Charge', 'sensor.ups_load', 0, 100, 1, 34, '%', { unit_of_measurement: '%' });
+      range(ctl, 'Tension entrée', 'sensor.ups_input_voltage', 0, 250, 1, 231, 'V', { unit_of_measurement: 'V' });
+      set('sensor.ups_power', 145, W);
+    } },
+  { kind: 'underfloor-heating', title: 'Plancher chauffant', lang: true,
+    cfg: { entity: 'climate.underfloor', entity_floor_temp: 'sensor.floor_temp', entity_water_temp: 'sensor.underfloor_flow_temp', entity_power: 'sensor.underfloor_power', entity_energy: 'sensor.underfloor_energy', price_per_kwh: 0.2 },
+    build(ctl) {
+      select(ctl, 'Mode', 'climate.underfloor', [['heat', 'Chauffe / Heat'], ['off', 'Arrêt / Off']], 'heat');
+      states['climate.underfloor'].attributes = { current_temperature: 19.6, temperature: 21, hvac_action: 'heating', min_temp: 5, max_temp: 30, target_temp_step: 0.5 };
+      range(ctl, 'Température sol', 'sensor.floor_temp', 15, 35, 0.5, 25.5, '°C', T);
+      range(ctl, 'Départ eau', 'sensor.underfloor_flow_temp', 20, 55, 1, 34, '°C', T);
+      range(ctl, 'Puissance', 'sensor.underfloor_power', 0, 3000, 10, 1200, 'W', W);
+      set('sensor.underfloor_energy', 9.4, KWH);
+    } },
 ];
 const ROBOT_SEL = {};
 
