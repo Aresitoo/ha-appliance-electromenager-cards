@@ -687,6 +687,32 @@
 "travel_time": "Gangtid (s)",
 "water_level_full": "Vannstand «full»",
 "water_level_min": "Minimum vannstand",
-"water_max": "Maks vanntemperatur (°C)"
+"water_max": "Maks vanntemperatur (°C)",
+"color": "Lysfarge",
+"follow_light_color": "Følg pærens farge",
+"color_cycle": "Fargesyklus",
+"multicolor": "Flerfarget lysslynge",
+"show_brightness": "Vis lysstyrke"
+},
+"light": {
+"light_bulb": "Lyspære",
+"color_bulb": "Fargepære",
+"filament_bulb": "Glødetrådpære",
+"pendant_light": "Taklampe",
+"pendant_cluster": "Taklampeklynge",
+"desk_lamp": "Skrivebordslampe",
+"floor_lamp": "Gulvlampe",
+"chandelier": "Lysekrone",
+"garden_spotlight": "Hagespot",
+"christmas_tree": "Juletre",
+"on": "På",
+"off": "Av",
+"unavailable": "Utilgjengelig",
+"turn_on": "På",
+"turn_off": "Av",
+"color": "Farge",
+"brightness": "Lysstyrke",
+"power": "Effekt",
+"energy": "Energi"
 }
 }

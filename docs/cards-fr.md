@@ -162,4 +162,13 @@ entity_water_temp: sensor.plancher_temperature_depart
 price_per_kwh: 0.2516
 ```
 
+**Éclairage** : 10 luminaires animés, `custom:appliance-light-bulb-card` (ampoule), `-color-bulb-` (ampoule couleur), `-filament-bulb-` (ampoule à filament), `-pendant-light-` (suspension), `-pendant-cluster-` (suspensions en grappe), `-desk-lamp-` (lampe de bureau), `-floor-lamp-` (lampadaire), `-chandelier-` (lustre), `-garden-spotlight-` (spot de jardin), `-christmas-tree-card` (sapin de Noël). Éteints, on voit le luminaire nu ; allumés, ils rayonnent dans la couleur de la lumière, à la luminosité de l'ampoule : verre qui se remplit de lumière, filament incandescent, cône de lumière, globes qui se balancent, bougies qui vacillent, cristaux qui scintillent, faisceau du spot, guirlande qui clignote. **Couleur** : par défaut celle de l'ampoule dans Home Assistant (RVB ou température de blanc) ; décoche `follow_light_color` pour utiliser la couleur choisie dans l'éditeur (`color`). L'ampoule couleur a un bouton **Couleur** et un défilement des teintes (`color_cycle`), le sapin une guirlande multicolore ou d'une seule couleur (`multicolor: false`). Boutons Allumer / Éteindre, tuiles luminosité, puissance, énergie. Options : voir [lights.md](cards/lights.md).
+
+```yaml
+type: custom:appliance-chandelier-card
+entity: light.salle_a_manger
+follow_light_color: false
+color: [255, 190, 110]
+```
+
 **Développement et traductions** : `dist/` est généré, on modifie `src/` puis on lance `node build.js` (sans dépendance). Le code est découpé en petits fichiers : `src/core/` pour les 28 cartes de base (un dessin par appareil dans `svg/`, un fichier CSS par appareil dans `style/`), `src/cards/` pour les cartes autonomes, et les textes dans un fichier par langue (`src/i18n/en.json`, `src/i18n/fr.json`, `src/i18n/de.json`, `src/i18n/nb.json`, `src/i18n/nl.json`, `src/i18n/ro.json`). Voir *Development and translations* plus haut.
