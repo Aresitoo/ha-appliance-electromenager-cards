@@ -9185,3 +9185,1090 @@ svg{display:block;width:100%;max-width:230px;height:var(--appliance-illustration
     description: 'Spa animé vu du dessus : jets, bulles, vapeur, cascade, éclairage LED, température et alertes pH.', preview: true,
   });
 })();
+
+/* Cartes « Accès » — barrière levante, portail coulissant, portail battant, porte de garage
+ * custom:appliance-barrier-card, appliance-sliding-gate-card, appliance-swing-gate-card,
+ * appliance-garage-door-card. Une entité cover (ou binary_sensor / switch / input_boolean / sensor
+ * texte) donne l'état ; current_position pilote l'illustration quand elle existe.
+ * La position est une propriété CSS enregistrée (--acc-p, 0 fermé → 100 ouvert) : sa transition
+ * dure le temps de course réel du moteur, et lisse les mises à jour de current_position.
+ * États : open, closed, opening, closing, partial, unavailable. Gyrophare pendant le mouvement,
+ * boutons ouvrir / stop / fermer (ou impulsion), puissance, énergie et coût du moteur.
+ */
+(() => {
+  if (customElements.get('appliance-barrier-card')) return;
+
+  const T = {
+    "en": {
+      "barrier": "Barrier",
+      "sliding_gate": "Sliding gate",
+      "swing_gate": "Swing gate",
+      "garage_door": "Garage door",
+      "open": "Open",
+      "closed": "Closed",
+      "opening": "Opening",
+      "closing": "Closing",
+      "partial": "Partly open",
+      "unavailable": "Unavailable",
+      "position": "Position",
+      "power": "Motor",
+      "energy": "Energy",
+      "cost": "Cost",
+      "since": "Last change",
+      "btn_open": "Open",
+      "btn_stop": "Stop",
+      "btn_close": "Close",
+      "btn_command": "Command"
+    },
+    "de": {
+      "barrier": "Schranke",
+      "sliding_gate": "Schiebetor",
+      "swing_gate": "Flügeltor",
+      "garage_door": "Garagentor",
+      "open": "Offen",
+      "closed": "Geschlossen",
+      "opening": "Öffnet",
+      "closing": "Schließt",
+      "partial": "Teilweise offen",
+      "unavailable": "Nicht verfügbar",
+      "position": "Position",
+      "power": "Motor",
+      "energy": "Energie",
+      "cost": "Kosten",
+      "since": "Letzte Änderung",
+      "btn_open": "Öffnen",
+      "btn_stop": "Stopp",
+      "btn_close": "Schließen",
+      "btn_command": "Befehl"
+    },
+    "fr": {
+      "barrier": "Barrière",
+      "sliding_gate": "Portail coulissant",
+      "swing_gate": "Portail battant",
+      "garage_door": "Porte de garage",
+      "open": "Ouvert",
+      "closed": "Fermé",
+      "opening": "Ouverture",
+      "closing": "Fermeture",
+      "partial": "Entrouvert",
+      "unavailable": "Indisponible",
+      "position": "Position",
+      "power": "Moteur",
+      "energy": "Énergie",
+      "cost": "Coût",
+      "since": "Dernier mouvement",
+      "btn_open": "Ouvrir",
+      "btn_stop": "Stop",
+      "btn_close": "Fermer",
+      "btn_command": "Commande"
+    },
+    "nb": {
+      "barrier": "Bom",
+      "sliding_gate": "Skyveport",
+      "swing_gate": "Slagport",
+      "garage_door": "Garasjeport",
+      "open": "Åpen",
+      "closed": "Lukket",
+      "opening": "Åpner",
+      "closing": "Lukker",
+      "partial": "Delvis åpen",
+      "unavailable": "Utilgjengelig",
+      "position": "Posisjon",
+      "power": "Motor",
+      "energy": "Energi",
+      "cost": "Kostnad",
+      "since": "Sist endret",
+      "btn_open": "Åpne",
+      "btn_stop": "Stopp",
+      "btn_close": "Lukk",
+      "btn_command": "Kommando"
+    },
+    "nl": {
+      "barrier": "Slagboom",
+      "sliding_gate": "Schuifpoort",
+      "swing_gate": "Draaipoort",
+      "garage_door": "Garagedeur",
+      "open": "Open",
+      "closed": "Gesloten",
+      "opening": "Gaat open",
+      "closing": "Gaat dicht",
+      "partial": "Half open",
+      "unavailable": "Niet beschikbaar",
+      "position": "Positie",
+      "power": "Motor",
+      "energy": "Energie",
+      "cost": "Kosten",
+      "since": "Laatste wijziging",
+      "btn_open": "Openen",
+      "btn_stop": "Stop",
+      "btn_close": "Sluiten",
+      "btn_command": "Bediening"
+    },
+    "ro": {
+      "barrier": "Barieră",
+      "sliding_gate": "Poartă culisantă",
+      "swing_gate": "Poartă batantă",
+      "garage_door": "Ușă de garaj",
+      "open": "Deschis",
+      "closed": "Închis",
+      "opening": "Se deschide",
+      "closing": "Se închide",
+      "partial": "Parțial deschis",
+      "unavailable": "Indisponibil",
+      "position": "Poziție",
+      "power": "Motor",
+      "energy": "Energie",
+      "cost": "Cost",
+      "since": "Ultima schimbare",
+      "btn_open": "Deschide",
+      "btn_stop": "Stop",
+      "btn_close": "Închide",
+      "btn_command": "Comandă"
+    }
+  };
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); // texte → HTML sûr
+
+  // --acc-p animable seulement si enregistrée comme <number> ; sinon repli sur une transition de transform
+  let typed = false;
+  try { CSS.registerProperty({ name: '--acc-p', syntax: '<number>', inherits: true, initialValue: '0' }); typed = true; }
+  catch (e) { typed = !!e && e.name === 'InvalidModificationError'; } // déjà enregistrée par une autre copie
+
+  const CSS_TXT = `
+:host{display:block}
+ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--acc-move:var(--appliance-heat-color,#ff8a3d);--acc-ok:var(--appliance-ok-color,#43a047);
+  --acc-cold:var(--appliance-cold-color,#2b9af9);--acc-beacon:#ffa31a}
+.head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.title{font-size:14px;font-weight:500;color:var(--primary-text-color);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:12px;background:var(--secondary-background-color);color:var(--secondary-text-color);white-space:nowrap}
+.open .badge{background:color-mix(in srgb,var(--acc-ok) 22%,transparent);color:var(--acc-ok)}
+.opening .badge,.closing .badge{background:color-mix(in srgb,var(--acc-move) 22%,transparent);color:var(--acc-move)}
+.partial .badge{background:color-mix(in srgb,var(--acc-cold) 22%,transparent);color:var(--acc-cold)}
+.scene{position:relative;width:100%;max-width:260px;height:var(--appliance-illustration-height,auto);margin:4px auto 0;cursor:pointer;
+  --acc-p:0;transition:--acc-p var(--acc-t,0s) linear}
+.scene>svg,.scene>.leaf{position:absolute}
+.scene>svg{inset:0;width:100%;height:100%;overflow:visible}
+.notyped .mv{transition:transform var(--acc-t,0s) linear}
+.ctl{display:flex;justify-content:center;gap:6px;margin-top:6px}
+.ctl.hide{display:none}
+.ctl button{flex:1 1 0;max-width:110px;display:flex;align-items:center;justify-content:center;gap:4px;border:0;border-radius:10px;padding:6px 4px;cursor:pointer;
+  background:var(--secondary-background-color);color:var(--primary-text-color);font:500 12px/16px var(--paper-font-body1_-_font-family,Roboto,sans-serif)}
+.ctl button ha-icon{--mdc-icon-size:16px}
+.ctl button:hover{filter:brightness(1.12)}
+.ctl button:disabled{opacity:.4;cursor:default;filter:none}
+.ctl button.hide{display:none}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(76px,1fr));gap:6px;margin-top:6px}
+.tile{box-sizing:border-box;background:var(--secondary-background-color);border-radius:10px;padding:5px 7px;min-width:0;overflow:hidden;text-align:center;cursor:pointer}
+.tile .l{display:flex;align-items:center;justify-content:center;gap:3px;font-size:10px;line-height:14px;color:var(--secondary-text-color);min-width:0}
+.tile .l span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tile .l ha-icon{--mdc-icon-size:13px;flex:none}
+.tile .v{font-size:14px;line-height:18px;font-weight:600;color:var(--primary-text-color);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile .v small{font-size:10px;font-weight:400;color:var(--secondary-text-color);margin-left:2px}
+.tile.hide{display:none}
+
+/* ---- éléments communs ---- */
+/* gyrophare orange : clignote pendant le mouvement */
+.lamp{fill:#8a6a3a}
+.halo{opacity:0;transform-box:fill-box;transform-origin:center}
+.moving .lamp{fill:var(--acc-beacon);animation:accblink .7s steps(2) infinite}
+.moving .halo{animation:accflash .7s ease-out infinite}
+@keyframes accblink{50%{fill:#8a6a3a}}
+@keyframes accflash{0%{opacity:.85;transform:scale(.6)}100%{opacity:0;transform:scale(1.5)}}
+.led{fill:#5b6570}
+.closed .led{fill:#db4437}.open .led,.partial .led{fill:#43a047}.moving .led{fill:var(--acc-beacon);animation:accblinkled .5s steps(2) infinite}
+@keyframes accblinkled{50%{opacity:.25}}
+.unavailable .scene{filter:grayscale(.7) opacity(.7)}
+/* roues du portail coulissant */
+.wheel{transform-box:fill-box;transform-origin:center}
+.opening .wheel{animation:accspin .9s linear infinite}.closing .wheel{animation:accspin .9s linear infinite reverse}
+@keyframes accspin{to{transform:rotate(360deg)}}
+
+/* ---- barrière : le bras pivote de 0 à 90° ---- */
+.arm{transform-box:view-box;transform-origin:49px 150px;transform:rotate(calc(var(--acc-p) * -0.9deg))}
+.armled{fill:#ff4b3e}
+.open .armled,.partial .armled{fill:#58e06a}
+.moving .armled{fill:var(--acc-beacon);animation:accblinkled .5s steps(2) infinite}
+/* ---- portail coulissant : le vantail glisse derrière le pilier ---- */
+.slide{transform:translateX(calc(var(--acc-p) * 1.06px))}
+/* ---- portail battant : vantaux en 3D, pivot sur les piliers, ouverture vers l'intérieur ---- */
+.leaf{top:33.5%;height:52%;transform-style:preserve-3d}
+.leaf svg{display:block;width:100%;height:100%;overflow:visible}
+.swing{perspective:520px;perspective-origin:50% 35%}
+.leaf.l{transform-origin:0 50%;transform:rotateY(calc(var(--acc-p) * 0.82deg))}
+.leaf.r{transform-origin:100% 50%;transform:rotateY(calc(var(--acc-p) * -0.82deg))}
+.leaf .shade{opacity:calc(var(--acc-p) * .005)}
+/* ---- porte de garage : les sections remontent sous le linteau ---- */
+.door{transform:translateY(calc(var(--acc-p) * -1.02px))}
+.bulb{opacity:0;transition:opacity .6s}
+.open .bulb,.partial .bulb,.opening .bulb,.closing .bulb{opacity:1}
+.noanim *{animation:none!important}
+`;
+
+  const GROUND = (w, y) => `<ellipse cx="${w / 2}" cy="${y + 6}" rx="${w / 2 - 8}" ry="5" fill="#000" opacity=".16"/>`;
+  const BEACON = (x, y) => `
+ <circle class="halo" cx="${x}" cy="${y - 3}" r="11" fill="#ffb84d"/>
+ <rect x="${x - 6}" y="${y + 1}" width="12" height="4" rx="1" fill="#30363d"/>
+ <path class="lamp" d="M${x - 5} ${y + 1} V${y - 3} A5 5 0 0 1 ${x + 5} ${y - 3} V${y + 1} Z"/>
+ <path d="M${x - 2.5} ${y - 4} A2.5 2.5 0 0 1 ${x} ${y - 6.5}" fill="none" stroke="#fff" stroke-width="1.2" opacity=".55"/>`;
+  const DEFS = `
+  <linearGradient id="accstone" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#f4f6f8"/><stop offset=".6" stop-color="#dfe4e8"/><stop offset="1" stop-color="#b9c1c9"/></linearGradient>
+  <linearGradient id="accmetal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5d6670"/><stop offset="1" stop-color="#2d333a"/></linearGradient>
+  <linearGradient id="accroad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a5059"/><stop offset="1" stop-color="#363b42"/></linearGradient>
+  <radialGradient id="accchrome" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#ffffff"/><stop offset=".5" stop-color="#bfc8d0"/><stop offset="1" stop-color="#6c7782"/></radialGradient>`;
+  const PILLAR = (x, w, top, bot) => `
+ <rect x="${x}" y="${top}" width="${w}" height="${bot - top}" fill="url(#accstone)" stroke="#9aa5ae" stroke-width=".8"/>
+ <rect x="${x - 3}" y="${top - 6}" width="${w + 6}" height="7" rx="1.5" fill="#cfd6dc" stroke="#9aa5ae" stroke-width=".8"/>
+ <rect x="${x - 2}" y="${bot - 6}" width="${w + 4}" height="6" fill="#c3cad0"/>`;
+
+  // barrière levante : armoire à gauche, bras rayé rouge et blanc, fourche d'appui à droite
+  const SVG_BARRIER = () => `
+<svg viewBox="0 0 260 200" aria-hidden="true">
+ <defs>${DEFS}
+  <linearGradient id="acccab" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ffd54a"/><stop offset=".55" stop-color="#f2b705"/><stop offset="1" stop-color="#c98f00"/></linearGradient>
+ </defs>
+ ${GROUND(260, 186)}
+ <rect x="0" y="176" width="260" height="14" rx="3" fill="url(#accroad)"/>
+ <path d="M10 183 H250" stroke="#f5f5f5" stroke-width="1.6" stroke-dasharray="14 10" opacity=".7"/>
+ <!-- fourche d'appui -->
+ <rect x="203" y="152" width="7" height="26" fill="url(#accmetal)"/>
+ <path d="M200 142 V155 H213 V142" fill="none" stroke="#3a4148" stroke-width="3" stroke-linejoin="round"/>
+ <rect x="199" y="175" width="15" height="4" rx="1" fill="#2d333a"/>
+ <!-- bras (pivote autour du moyeu) -->
+ <g class="arm mv">
+  <rect x="44" y="145" width="160" height="10" rx="5" fill="#fafafa" stroke="#aab2ba" stroke-width=".8"/>
+  <g fill="#d8322b"><rect x="66" y="145" width="14" height="10"/><rect x="94" y="145" width="14" height="10"/><rect x="122" y="145" width="14" height="10"/><rect x="150" y="145" width="14" height="10"/><path d="M178 145 H192 V155 H178 Z"/></g>
+  <g class="armled"><circle cx="73" cy="150" r="1.4"/><circle cx="115" cy="150" r="1.4"/><circle cx="157" cy="150" r="1.4"/><circle cx="198" cy="150" r="1.4"/></g>
+  <path d="M50 147 H200" stroke="#fff" stroke-width="1.2" opacity=".6"/>
+ </g>
+ <!-- armoire -->
+ <rect x="30" y="124" width="38" height="54" rx="3" fill="url(#acccab)" stroke="#9c7200" stroke-width=".8"/>
+ <rect x="26" y="118" width="46" height="8" rx="2" fill="#3a4148"/>
+ <rect x="35" y="160" width="28" height="14" rx="2" fill="none" stroke="#9c7200" stroke-width=".8" opacity=".7"/>
+ <circle cx="58" cy="167" r="1.5" fill="#5a4400"/>
+ <rect x="26" y="176" width="46" height="5" rx="1" fill="#2d333a"/>
+ <circle cx="49" cy="150" r="8.5" fill="url(#accchrome)" stroke="#555e68" stroke-width=".8"/>
+ <circle cx="49" cy="150" r="2.4" fill="#3a4148"/>
+ <circle class="led" cx="38" cy="131" r="2"/>
+ ${BEACON(49, 112)}
+</svg>`;
+
+  // portail coulissant : vantail à barreaux sur rail, devant un muret, moteur au sol
+  const SVG_SLIDING = () => {
+    let bars = '';
+    for (let x = 42; x <= 140; x += 7) bars += `<rect x="${x}" y="70" width="3" height="72" rx="1"/>`;
+    let spikes = '';
+    for (let x = 43.5; x <= 141.5; x += 7) spikes += `<path d="M${x - 2.4} 70 L${x} 64 L${x + 2.4} 70 Z"/>`;
+    const wheel = (cx) => `<g class="wheel"><circle cx="${cx}" cy="145" r="4.5" fill="#2d333a"/><path d="M${cx - 3} 145 H${cx + 3} M${cx} 142 V148" stroke="#9aa3ab" stroke-width="1"/></g>`;
+    return `
+<svg viewBox="0 0 260 170" aria-hidden="true">
+ <defs>${DEFS}
+  <linearGradient id="accwall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e3dccf"/><stop offset="1" stop-color="#c9c0b0"/></linearGradient>
+ </defs>
+ ${GROUND(260, 150)}
+ <rect x="0" y="148" width="260" height="12" rx="2" fill="url(#accroad)"/>
+ <path d="M20 149 H252" stroke="#a9b1b8" stroke-width="2"/>
+ <!-- muret le long duquel le vantail glisse -->
+ <rect x="160" y="104" width="94" height="44" fill="url(#accwall)" stroke="#a89f8f" stroke-width=".8"/>
+ <rect x="157" y="99" width="100" height="6" rx="1.5" fill="#d7d0c3" stroke="#a89f8f" stroke-width=".8"/>
+ <g stroke="#b3a996" stroke-width=".7" opacity=".7"><path d="M160 118 H254 M160 133 H254 M190 104 V118 M226 104 V118 M174 118 V133 M210 118 V133 M244 118 V133 M190 133 V148 M226 133 V148"/></g>
+ <!-- vantail -->
+ <g class="slide mv">
+  <g fill="#2f353c">${bars}${spikes}</g>
+  <rect x="36" y="68" width="110" height="5" rx="1.5" fill="#3a4148"/>
+  <rect x="36" y="104" width="110" height="4" rx="1.5" fill="#3a4148"/>
+  <rect x="36" y="138" width="110" height="5" rx="1.5" fill="#3a4148"/>
+  <rect x="36" y="68" width="4" height="75" fill="#3a4148"/><rect x="142" y="68" width="4" height="75" fill="#3a4148"/>
+  <path d="M38 70 H144" stroke="#fff" stroke-width=".8" opacity=".25"/>
+  ${wheel(52)}${wheel(130)}
+ </g>
+ <!-- moteur -->
+ <rect x="168" y="130" width="24" height="18" rx="3" fill="url(#accmetal)"/>
+ <rect x="171" y="133" width="18" height="3" rx="1" fill="#8b949c" opacity=".6"/>
+ <circle class="led" cx="186" cy="141" r="1.8"/>
+ <!-- piliers -->
+ ${PILLAR(146, 16, 56, 150)}
+ ${PILLAR(16, 18, 56, 150)}
+ <rect x="20" y="90" width="9" height="14" rx="1.5" fill="#2d333a"/><circle cx="24.5" cy="95" r="1.6" fill="#7fe3ff"/><rect x="22" y="99" width="5" height="2.5" rx=".8" fill="#8b949c"/>
+ ${BEACON(25, 44)}
+</svg>`;
+  };
+
+  // portail battant : décor (allée, haie) / deux vantaux HTML en 3D / piliers devant
+  const SVG_SWING_BACK = () => `
+<svg viewBox="0 0 260 170" aria-hidden="true">
+ <defs>${DEFS}</defs>
+ ${GROUND(260, 150)}
+ <path d="M0 94 H260 V150 H0 Z" fill="#5f8f4e" opacity=".55"/>
+ <path d="M0 86 Q40 78 80 86 T160 84 T260 86 V98 H0 Z" fill="#3f6b38" opacity=".8"/>
+ <path d="M100 96 H160 L232 150 H28 Z" fill="#9aa1a8" opacity=".85"/>
+ <g stroke="#7f878f" stroke-width=".7" opacity=".7"><path d="M90 104 H170 M78 114 H182 M62 126 H198 M44 139 H216"/></g>
+ <rect x="0" y="148" width="260" height="12" rx="2" fill="url(#accroad)"/>
+</svg>`;
+  // un vantail : viewBox w×88, barreaux sous une crête courbe qui monte vers le milieu
+  const LEAF = (w, mirror) => {
+    const top = (x) => { const u = mirror ? 1 - x / w : x / w; return 16 - 11 * u * u; };
+    let bars = '', spikes = '';
+    for (let x = 7; x <= w - 6; x += 7) {
+      const y = top(x);
+      bars += `<rect x="${x - 1.5}" y="${y.toFixed(1)}" width="3" height="${(82 - y).toFixed(1)}" rx="1"/>`;
+      spikes += `<circle cx="${x}" cy="${(y - 2).toFixed(1)}" r="2.2"/>`;
+    }
+    let rail = `M0 ${top(0).toFixed(1)}`;
+    for (let x = 4; x <= w; x += 4) rail += ` L${x} ${top(x).toFixed(1)}`;
+    const lockX = mirror ? 3 : w - 11;
+    return `<svg viewBox="0 0 ${w} 88" preserveAspectRatio="none">
+  <g fill="#2f353c">${bars}${spikes}</g>
+  <path d="${rail}" fill="none" stroke="#3a4148" stroke-width="5" stroke-linejoin="round"/>
+  <rect x="0" y="44" width="${w}" height="4" rx="1.5" fill="#3a4148"/>
+  <rect x="0" y="78" width="${w}" height="6" rx="1.5" fill="#3a4148"/>
+  <rect x="0" y="${top(0) - 2}" width="4" height="${86 - top(0)}" fill="#3a4148"/><rect x="${w - 4}" y="${top(w) - 2}" width="4" height="${86 - top(w)}" fill="#3a4148"/>
+  <rect x="${lockX}" y="50" width="8" height="12" rx="1.5" fill="#1f2429" stroke="#555e68" stroke-width=".6"/><rect x="${lockX + 2.5}" y="54" width="3" height="1.6" fill="url(#accchrome)"/>
+  <rect class="shade" x="0" y="0" width="${w}" height="88" fill="#000"/>
+ </svg>`;
+  };
+  const SVG_SWING_FRONT = () => `
+<svg viewBox="0 0 260 170" aria-hidden="true" style="pointer-events:none">
+ <defs>${DEFS}</defs>
+ ${PILLAR(14, 22, 48, 150)}
+ ${PILLAR(224, 22, 48, 150)}
+ <g fill="#3a4148"><rect x="35" y="66" width="4" height="7" rx="1"/><rect x="35" y="124" width="4" height="7" rx="1"/><rect x="221" y="66" width="4" height="7" rx="1"/><rect x="221" y="124" width="4" height="7" rx="1"/></g>
+ <rect x="19" y="88" width="11" height="16" rx="1.5" fill="#2d333a"/><circle cx="24.5" cy="93" r="1.8" fill="#7fe3ff"/><rect x="21.5" y="98" width="6" height="2.5" rx=".8" fill="#8b949c"/>
+ <circle class="led" cx="235" cy="96" r="1.8"/>
+ ${BEACON(235, 36)}
+</svg>`;
+
+  // porte de garage sectionnelle : façade, intérieur avec voiture et plafonnier, sections qui remontent
+  const SVG_GARAGE = () => {
+    let panels = '';
+    for (let i = 0; i < 4; i++) {
+      const y = 46 + i * 26;
+      panels += `<rect x="42" y="${y}" width="176" height="26" fill="url(#accpanel)" stroke="#9aa5ae" stroke-width=".8"/>
+   <path d="M44 ${y + 9} H216 M44 ${y + 17} H216" stroke="#b7c0c8" stroke-width=".8"/>
+   <path d="M44 ${y + 1.5} H216" stroke="#fff" stroke-width=".8" opacity=".7"/>`;
+    }
+    let wins = '';
+    for (let i = 0; i < 5; i++) wins += `<rect x="${56 + i * 31}" y="50" width="24" height="10" rx="1.5" fill="#2b3640" stroke="#8d969e" stroke-width=".8"/><path d="M${58 + i * 31} 52 L${64 + i * 31} 52" stroke="#9fd3ff" stroke-width="1" opacity=".55"/>`;
+    return `
+<svg viewBox="0 0 260 170" aria-hidden="true">
+ <defs>${DEFS}
+  <linearGradient id="accpanel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f4f6"/><stop offset="1" stop-color="#cdd4da"/></linearGradient>
+  <linearGradient id="accfacade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e2ddd5"/><stop offset="1" stop-color="#cfc8bd"/></linearGradient>
+  <linearGradient id="accinside" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1a1f25"/><stop offset="1" stop-color="#2b3138"/></linearGradient>
+  <radialGradient id="acclight" cx=".5" cy="0" r="1"><stop offset="0" stop-color="#fff3c4" stop-opacity=".75"/><stop offset="1" stop-color="#fff3c4" stop-opacity="0"/></radialGradient>
+  <clipPath id="accgap"><rect x="42" y="46" width="176" height="104"/></clipPath>
+ </defs>
+ ${GROUND(260, 152)}
+ <rect x="8" y="22" width="244" height="130" fill="url(#accfacade)" stroke="#b3ab9e" stroke-width=".8"/>
+ <rect x="2" y="14" width="256" height="10" rx="2" fill="#4a5058"/>
+ <rect x="0" y="150" width="260" height="12" rx="2" fill="url(#accroad)"/>
+ <!-- intérieur visible quand la porte remonte -->
+ <rect x="42" y="46" width="176" height="104" fill="url(#accinside)"/>
+ <g class="bulb"><path d="M130 50 L60 150 H200 Z" fill="url(#acclight)"/><circle cx="130" cy="50" r="3" fill="#fff6d0"/></g>
+ <g>
+  <path d="M84 146 V112 Q86 98 100 96 H160 Q174 98 176 112 V146 Z" fill="#2f6db5"/>
+  <path d="M96 99 Q100 88 110 86 H150 Q160 88 164 99 Z" fill="#1d4a80"/>
+  <path d="M100 98 Q104 90 112 89 H148 Q156 90 160 98 Z" fill="#9cc6ea" opacity=".55"/>
+  <rect x="88" y="114" width="16" height="6" rx="2" fill="#e53935"/><rect x="156" y="114" width="16" height="6" rx="2" fill="#e53935"/>
+  <rect x="116" y="124" width="28" height="8" rx="1" fill="#f2f2f2"/>
+  <rect x="84" y="136" width="92" height="8" rx="2" fill="#1f3f66"/>
+  <rect x="88" y="142" width="14" height="8" rx="2" fill="#15191d"/><rect x="158" y="142" width="14" height="8" rx="2" fill="#15191d"/>
+ </g>
+ <!-- porte -->
+ <g clip-path="url(#accgap)"><g class="door mv">
+  ${panels}${wins}
+  <rect x="122" y="136" width="16" height="3" rx="1.5" fill="url(#accchrome)"/>
+  <rect x="42" y="146" width="176" height="4" fill="#2d333a"/>
+ </g></g>
+ <!-- encadrement et linteau -->
+ <rect x="38" y="42" width="184" height="108" fill="none" stroke="#9aa1a8" stroke-width="5"/>
+ <rect x="34" y="38" width="192" height="6" rx="1" fill="#8d949b"/>
+ <!-- applique et voyant -->
+ <rect x="230" y="60" width="10" height="16" rx="2" fill="#2d333a"/><circle class="led" cx="235" cy="70" r="2"/>
+ ${BEACON(235, 54)}
+</svg>`;
+  };
+
+  const KINDS = {
+    barrier: { travel: 4, vb: [260, 200], re: /barri|boom|schranke|slagboom/i, ico: ['mdi:boom-gate-up-outline', 'mdi:boom-gate-outline'], svg: SVG_BARRIER },
+    sliding_gate: { travel: 15, vb: [260, 170], re: /portail|gate|tor\b|poort/i, ico: ['mdi:gate-open', 'mdi:gate'], svg: SVG_SLIDING },
+    swing_gate: { travel: 14, vb: [260, 170], re: /portail|gate|tor\b|poort/i, ico: ['mdi:gate-open', 'mdi:gate'], svg: null },
+    garage_door: { travel: 14, vb: [260, 170], re: /garage/i, ico: ['mdi:garage-open-variant', 'mdi:garage-variant'], svg: SVG_GARAGE },
+  };
+  const TILES = [
+    ['position', 'mdi:arrow-expand-horizontal', 'show_position'],
+    ['power', 'mdi:flash', 'show_power'],
+    ['energy', 'mdi:lightning-bolt-circle', 'show_energy'],
+    ['cost', 'mdi:cash', 'show_cost'],
+    ['since', 'mdi:history', 'show_since'],
+  ];
+
+  class ApplianceAccessCard extends HTMLElement {
+    setConfig(c) {
+      if (!c || typeof c !== 'object') throw new Error('Invalid configuration');
+      this._c = { show_status: true, show_controls: true, show_position: true, show_power: true, show_energy: true, show_cost: true, show_since: true,
+        travel_time: KINDS[this.kind].travel, moving_threshold: 15, invert: false, leaves: 2, ...c };
+      this._built = false; this._pos = null;
+      if (this._hass) this._render();
+    }
+    set hass(h) { this._hass = h; if (this._c) this._render(); }
+    getCardSize() { return 5; }
+    getGridOptions() { return { columns: 12, min_columns: 6, rows: 'auto' }; }
+
+    _t(k) { return T[this._lang()][k] ?? T.en[k] ?? k; }
+    _lang() { const l = (this._c.language || (this._hass && this._hass.language) || 'en').slice(0, 2); return T[l] ? l : 'en'; }
+    _st(id) { return id && this._hass.states[id]; }
+    _num(id) {
+      const s = this._st(id); if (!s) return NaN;
+      const v = parseFloat(String(s.state).replace(',', '.'));
+      return isFinite(v) ? v : NaN;
+    }
+    _watts(id) {
+      const v = this._num(id); if (isNaN(v)) return NaN;
+      const u = ((this._st(id).attributes || {}).unit_of_measurement || '').toLowerCase();
+      return u === 'kw' ? v * 1000 : v;
+    }
+    _unit(id, d) { const s = this._st(id); return (s && s.attributes && s.attributes.unit_of_measurement) || d; }
+    _fmt(v, d = 0) { return isNaN(v) ? '--' : v.toLocaleString(this._lang() === 'fr' ? 'fr-FR' : 'en-US', { maximumFractionDigits: d, minimumFractionDigits: 0 }); }
+    _more(id) { if (id) this.dispatchEvent(new CustomEvent('hass-more-info', { detail: { entityId: id }, bubbles: true, composed: true })); }
+
+    _scene() {
+      const K = KINDS[this.kind], [w, h] = K.vb;
+      if (this.kind !== 'swing_gate') return `<div class="scene" style="aspect-ratio:${w}/${h}">${K.svg()}</div>`;
+      // vantaux entre les piliers (x 36 → 224) : un seul vantail pleine largeur ou deux demi-vantaux
+      const one = Number(this._c.leaves) === 1, lw = one ? 188 : 94;
+      return `<div class="scene swing" style="aspect-ratio:${w}/${h}">${SVG_SWING_BACK()}
+        <div class="leaf l mv" style="left:${(36 / w * 100).toFixed(3)}%;width:${(lw / w * 100).toFixed(3)}%">${LEAF(lw, false)}</div>
+        ${one ? '' : `<div class="leaf r mv" style="left:${(130 / w * 100).toFixed(3)}%;width:${(lw / w * 100).toFixed(3)}%">${LEAF(lw, true)}</div>`}
+        ${SVG_SWING_FRONT()}</div>`;
+    }
+
+    _build() {
+      const root = this.shadowRoot || this.attachShadow({ mode: 'open' });
+      const K = KINDS[this.kind];
+      root.innerHTML = `<style>${CSS_TXT}</style><ha-card class="${typed ? '' : 'notyped'}">
+        <div class="head"><div class="title" id="acctitle"></div><div class="badge" id="accbadge"></div></div>
+        ${this._scene()}
+        <div class="ctl" id="accctl">
+          <button data-a="open"><ha-icon icon="${esc(K.ico[0])}"></ha-icon><span></span></button>
+          <button data-a="stop"><ha-icon icon="mdi:stop"></ha-icon><span></span></button>
+          <button data-a="close"><ha-icon icon="${esc(K.ico[1])}"></ha-icon><span></span></button>
+          <button data-a="command"><ha-icon icon="mdi:gesture-tap-button"></ha-icon><span></span></button>
+        </div>
+        <div class="tiles">${TILES.map(([k, ic]) => `<div class="tile hide" data-k="${esc(k)}"><div class="l"><ha-icon icon="${esc(ic)}"></ha-icon><span class="lbl"></span></div><div class="v"></div></div>`).join('')}</div>
+      </ha-card>`;
+      root.querySelector('.scene').addEventListener('click', () => this._more(this._c.entity));
+      root.querySelectorAll('.ctl button').forEach((b) => b.addEventListener('click', (e) => { e.stopPropagation(); this._action(b.dataset.a); }));
+      root.querySelectorAll('.tile').forEach((el) => el.addEventListener('click', () => {
+        const k = el.dataset.k, cc = this._c;
+        this._more({ power: cc.entity_power, energy: cc.entity_energy, cost: cc.entity_cost || cc.entity_energy }[k] || cc.entity);
+      }));
+      this._root = root; this._card = root.querySelector('ha-card'); this._sceneEl = root.querySelector('.scene'); this._built = true;
+    }
+
+    _action(a) {
+      const c = this._c, h = this._hass; if (!h) return;
+      if (a === 'command') {
+        const id = c.entity_control || c.entity, d = id.split('.')[0];
+        if (d === 'button' || d === 'input_button') h.callService(d, 'press', { entity_id: id });
+        else if (d === 'script') h.callService('script', 'turn_on', { entity_id: id });
+        else h.callService('homeassistant', 'toggle', { entity_id: id });
+        return;
+      }
+      h.callService('cover', `${a}_cover`, { entity_id: c.entity });
+    }
+
+    _compute() {
+      const c = this._c, s = this._st(c.entity);
+      let st = 'unavailable', pos = NaN;
+      if (s && !/^(unavailable|unknown)$/i.test(String(s.state))) {
+        const d = c.entity.split('.')[0], v = String(s.state).toLowerCase(), a = s.attributes || {};
+        if (d === 'cover') {
+          st = ['open', 'closed', 'opening', 'closing'].includes(v) ? v : 'closed';
+          const p = Number(a.current_position);
+          if (a.current_position != null && isFinite(p)) pos = Math.max(0, Math.min(100, p));
+        } else if (/clos(ing)|fermeture|schlie(ß|ss)t|sluit|lukker|închide/.test(v)) st = 'closing';
+        else if (/opening|ouverture|öffnet|gaat open|åpner|deschide/.test(v)) st = 'opening';
+        else {
+          const on = /^(on|open|opened|ouvert|ouverte|offen|true|1|unlocked)$/.test(v);
+          st = on !== !!c.invert ? 'open' : 'closed';
+        }
+      }
+      const known = !isNaN(pos); // position réelle fournie par la cover
+      if (!known) pos = st === 'open' || st === 'opening' ? 100 : 0;
+      else if (st === 'open' && pos > 0 && pos < 100) st = 'partial';
+      const pw = this._watts(c.entity_power);
+      const moving = st === 'opening' || st === 'closing' || (!isNaN(pw) && pw > Number(c.moving_threshold));
+      return { st, pos, known, pw, moving, s };
+    }
+
+    _since(s) {
+      const t = s && Date.parse(s.last_changed); if (!t) return '--';
+      const sec = Math.max(0, (Date.now() - t) / 1000);
+      // moins de 45 s : « maintenant » (numeric auto) ; style short car narrow donne « -1 s » en français
+      const [n, u] = sec < 45 ? [0, 'second'] : sec < 3600 ? [Math.max(1, sec / 60), 'minute'] : sec < 86400 ? [sec / 3600, 'hour'] : [sec / 86400, 'day'];
+      try { return new Intl.RelativeTimeFormat(this._lang(), { numeric: 'auto', style: 'short' }).format(n ? -Math.floor(n) : 0, u); }
+      catch (e) { return `${Math.floor(n)} ${u[0]}`; }
+    }
+
+    _render() {
+      if (!this._built) this._build();
+      const c = this._c, r = this._root, K = KINDS[this.kind];
+      const { st, pos, known, pw, moving, s } = this._compute();
+      this._card.className = `${typed ? '' : 'notyped'} ${st} ${moving ? 'moving' : ''} ${c.animations === false ? 'noanim' : ''}`;
+
+      // course : la transition dure le temps que met le moteur à parcourir l'écart
+      if (pos !== this._pos) {
+        const dur = this._pos == null || c.animations === false ? 0 : Math.abs(pos - this._pos) / 100 * Math.max(0, Number(c.travel_time) || 0);
+        this._sceneEl.style.setProperty('--acc-t', `${dur.toFixed(2)}s`);
+        this._sceneEl.style.setProperty('--acc-p', String(pos));
+        this._pos = pos;
+      }
+
+      const name = c.name || this._t(this.kind);
+      r.getElementById('acctitle').textContent = name;
+      this._sceneEl.setAttribute('role', 'img'); this._sceneEl.setAttribute('aria-label', `${name} – ${this._t(st)}`);
+      const badge = r.getElementById('accbadge');
+      badge.textContent = st === 'partial' ? `${this._t('partial')} ${Math.round(pos)} %` : this._t(st);
+      badge.style.display = c.show_status === false ? 'none' : '';
+
+      // commandes : ouvrir / stop / fermer pour une cover, sinon un bouton d'impulsion
+      const d = (c.entity || '').split('.')[0], isCover = d === 'cover' && !c.entity_control;
+      const canCmd = !!c.entity_control || ['switch', 'input_boolean', 'button', 'input_button', 'script'].includes(d);
+      const sf = s && s.attributes && Number(s.attributes.supported_features);
+      const ctl = r.getElementById('accctl');
+      ctl.classList.toggle('hide', c.show_controls === false || (!isCover && !canCmd));
+      ctl.querySelectorAll('button').forEach((b) => {
+        const a = b.dataset.a;
+        b.querySelector('span').textContent = this._t(`btn_${a}`);
+        b.classList.toggle('hide', a === 'command' ? isCover : !isCover || (a === 'stop' && isFinite(sf) && sf > 0 && !(sf & 8)));
+        b.disabled = st === 'unavailable' || (a === 'open' && (st === 'open' || st === 'opening')) || (a === 'close' && (st === 'closed' || st === 'closing'));
+      });
+      if (K.ico) ctl.querySelector('[data-a="command"] ha-icon').setAttribute('icon', st === 'closed' ? K.ico[0] : K.ico[1]);
+
+      // tuiles : position, consommation du moteur, coût, dernier mouvement
+      const energy = this._num(c.entity_energy);
+      let cost = this._num(c.entity_cost), costU = this._unit(c.entity_cost, c.currency || '€');
+      if (isNaN(cost) && c.price_per_kwh && !isNaN(energy)) { cost = energy * Number(c.price_per_kwh); costU = c.currency || '€'; }
+      const V = {
+        position: [known && st !== 'unavailable', this._fmt(pos, 0), '%'],
+        power: [c.entity_power, isNaN(pw) ? '--' : (pw >= 1000 ? this._fmt(pw / 1000, 2) : this._fmt(pw, 0)), isNaN(pw) ? '' : (pw >= 1000 ? 'kW' : 'W')],
+        energy: [c.entity_energy, this._fmt(energy, 2), this._unit(c.entity_energy, 'kWh')],
+        cost: [c.entity_cost || (c.price_per_kwh && c.entity_energy), this._fmt(cost, 2), costU],
+        since: [s, this._since(s), ''],
+      };
+      TILES.forEach(([k, , opt]) => {
+        const el = r.querySelector(`.tile[data-k="${k}"]`); const [show, val, unit] = V[k];
+        el.classList.toggle('hide', !show || c[opt] === false);
+        el.querySelector('.lbl').textContent = this._t(k);
+        const small = document.createElement('small'); small.textContent = unit ?? '';
+        el.querySelector('.v').replaceChildren(String(val ?? ''), small);
+      });
+    }
+  }
+
+  /* ---- éditeur visuel ---- */
+  class ApplianceAccessCardEditor extends HTMLElement {
+    setConfig(c) { this._c = c; this._draw(); }
+    set hass(h) { this._hass = h; if (this._form) this._form.hass = h; }
+    _draw() {
+      if (!this._form) {
+        this._form = document.createElement('ha-form');
+        this._form.addEventListener('value-changed', (e) => {
+          this._c = e.detail.value;
+          this.dispatchEvent(new CustomEvent('config-changed', { detail: { config: this._c }, bubbles: true, composed: true }));
+        });
+        this.appendChild(this._form);
+      }
+      const ent = (name, domain) => ({ name, selector: { entity: domain ? { domain } : {} } });
+      const num = (name, min, max, step, unit) => ({ name, selector: { number: { min, max, step, mode: 'box', ...(unit ? { unit_of_measurement: unit } : {}) } } });
+      const bool = (name) => ({ name, selector: { boolean: {} }, default: true });
+      this._form.hass = this._hass;
+      this._form.data = this._c;
+      this._form.schema = [
+        { name: 'name', selector: { text: {} } },
+        ent('entity'), ent('entity_control'),
+        ent('entity_power', 'sensor'), ent('entity_energy', 'sensor'), ent('entity_cost', 'sensor'),
+        { name: 'price_per_kwh', selector: { number: { min: 0, step: 0.0001, mode: 'box' } } },
+        { type: 'grid', name: '', schema: [
+          num('travel_time', 0, 120, 0.5, 's'), num('moving_threshold', 0, 2000, 1, 'W'),
+          ...(this.kind === 'swing_gate' ? [{ name: 'leaves', selector: { select: { options: [{ value: 1, label: '1' }, { value: 2, label: '2' }] } } }] : []),
+          { name: 'invert', selector: { boolean: {} } },
+        ] },
+        { name: 'language', selector: { select: { options: Object.keys(T).map((value) => ({ value, label: { fr: 'Français', en: 'English', de: 'Deutsch', nb: 'Norsk bokmål', ro: 'Română', nl: 'Nederlands' }[value] || value })) } } },
+        { type: 'grid', name: '', schema: [
+          bool('show_status'), bool('show_controls'), bool('show_position'), bool('show_power'),
+          bool('show_energy'), bool('show_cost'), bool('show_since'), bool('animations'),
+        ] },
+      ];
+      this._form.computeLabel = (s) => s.name;
+    }
+  }
+
+  window.customCards = window.customCards || [];
+  const DESC = {
+    barrier: 'Barrière levante animée : le bras se lève et s\'abaisse, gyrophare, position, consommation du moteur.',
+    sliding_gate: 'Portail coulissant animé : le vantail glisse sur son rail, gyrophare, position, consommation du moteur.',
+    swing_gate: 'Portail battant animé en 3D : les vantaux pivotent vers l\'intérieur, gyrophare, consommation du moteur.',
+    garage_door: 'Porte de garage sectionnelle animée : la porte remonte et dévoile le garage éclairé, consommation du moteur.',
+  };
+  for (const kind of Object.keys(KINDS)) {
+    const tag = `appliance-${kind.replace('_', '-')}-card`;
+    const K = KINDS[kind];
+    customElements.define(tag, class extends ApplianceAccessCard {
+      get kind() { return kind; }
+      static getConfigElement() { return document.createElement(tag + '-editor'); }
+      static getStubConfig(hass) {
+        const ids = Object.keys((hass && hass.states) || {});
+        const f = (re, dom) => ids.find((i) => (!dom || i.startsWith(dom + '.')) && re.test(i)) || '';
+        const src = K.re.source;
+        return {
+          entity: f(K.re, 'cover') || f(K.re, 'binary_sensor'),
+          entity_power: f(new RegExp(`(${src}).*(power|puissance)`, 'i'), 'sensor'),
+          entity_energy: f(new RegExp(`(${src}).*(energy|energie|énergie)`, 'i'), 'sensor'),
+        };
+      }
+    });
+    customElements.define(tag + '-editor', class extends ApplianceAccessCardEditor { get kind() { return kind; } });
+    window.customCards.push({ type: tag, name: `Appliance – ${T.en[kind]} / ${T.fr[kind]}`, description: DESC[kind], preview: true,
+      documentationURL: 'https://github.com/skyrotter/ha-appliance-electromenager-cards' });
+  }
+})();
+
+/* Carte « Sauna » — custom:appliance-sauna-card
+ * Cabine en lames de bois vue de face : porte vitrée teintée, poêle et pierres visibles à travers
+ * la vitre, banquette, plafonnier, conduit de ventilation sur le toit, thermomètre et panneau.
+ * États : off, heating, ready, cooling, fault. La lueur du poêle suit la température
+ * (--heat, 0 → 1 de 25 °C à la consigne), ondes de chaleur en chauffe, vapeur au conduit,
+ * thermomètre animé, boutons marche/arrêt et consigne ± pour une entité climate.
+ */
+(() => {
+  const TAG = 'appliance-sauna-card';
+  if (customElements.get(TAG)) return;
+
+  const T = {
+    "en": {
+      "name": "Sauna",
+      "off": "Off",
+      "heating": "Heating",
+      "ready": "Ready",
+      "cooling": "Cooling down",
+      "fault": "Fault",
+      "temp": "Cabin",
+      "target": "Target",
+      "humidity": "Humidity",
+      "power": "Heater",
+      "energy": "Energy",
+      "cost": "Cost",
+      "turn_on": "Turn on",
+      "turn_off": "Turn off",
+      "overheat": "Too hot"
+    },
+    "de": {
+      "name": "Sauna",
+      "off": "Aus",
+      "heating": "Heizt auf",
+      "ready": "Bereit",
+      "cooling": "Kühlt ab",
+      "fault": "Störung",
+      "temp": "Kabine",
+      "target": "Soll",
+      "humidity": "Feuchte",
+      "power": "Ofen",
+      "energy": "Energie",
+      "cost": "Kosten",
+      "turn_on": "Einschalten",
+      "turn_off": "Ausschalten",
+      "overheat": "Zu heiß"
+    },
+    "fr": {
+      "name": "Sauna",
+      "off": "Arrêt",
+      "heating": "Chauffe",
+      "ready": "Prêt",
+      "cooling": "Refroidissement",
+      "fault": "Défaut",
+      "temp": "Cabine",
+      "target": "Consigne",
+      "humidity": "Humidité",
+      "power": "Poêle",
+      "energy": "Énergie",
+      "cost": "Coût",
+      "turn_on": "Allumer",
+      "turn_off": "Éteindre",
+      "overheat": "Trop chaud"
+    },
+    "nb": {
+      "name": "Badstue",
+      "off": "Av",
+      "heating": "Varmer opp",
+      "ready": "Klar",
+      "cooling": "Kjøler ned",
+      "fault": "Feil",
+      "temp": "Rom",
+      "target": "Mål",
+      "humidity": "Fuktighet",
+      "power": "Ovn",
+      "energy": "Energi",
+      "cost": "Kostnad",
+      "turn_on": "Slå på",
+      "turn_off": "Slå av",
+      "overheat": "For varmt"
+    },
+    "nl": {
+      "name": "Sauna",
+      "off": "Uit",
+      "heating": "Opwarmen",
+      "ready": "Klaar",
+      "cooling": "Afkoelen",
+      "fault": "Storing",
+      "temp": "Cabine",
+      "target": "Doel",
+      "humidity": "Vochtigheid",
+      "power": "Kachel",
+      "energy": "Energie",
+      "cost": "Kosten",
+      "turn_on": "Aanzetten",
+      "turn_off": "Uitzetten",
+      "overheat": "Te heet"
+    },
+    "ro": {
+      "name": "Saună",
+      "off": "Oprit",
+      "heating": "Se încălzește",
+      "ready": "Gata",
+      "cooling": "Se răcește",
+      "fault": "Defect",
+      "temp": "Cabină",
+      "target": "Țintă",
+      "humidity": "Umiditate",
+      "power": "Sobă",
+      "energy": "Energie",
+      "cost": "Cost",
+      "turn_on": "Pornește",
+      "turn_off": "Oprește",
+      "overheat": "Prea cald"
+    }
+  };
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); // texte → HTML sûr
+
+  const CSS = `
+:host{display:block}
+ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--sn-heat-c:var(--appliance-heat-color,#ff8a3d);--sn-ok:var(--appliance-ok-color,#43a047);
+  --sn-cold:var(--appliance-cold-color,#2b9af9);--sn-alert:var(--appliance-alert-color,#db4437);--heat:0;--tf:0}
+.head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.title{font-size:14px;font-weight:500;color:var(--primary-text-color);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:12px;background:var(--secondary-background-color);color:var(--secondary-text-color);white-space:nowrap}
+.heating .badge{background:color-mix(in srgb,var(--sn-heat-c) 22%,transparent);color:var(--sn-heat-c)}
+.ready .badge{background:color-mix(in srgb,var(--sn-ok) 22%,transparent);color:var(--sn-ok)}
+.cooling .badge{background:color-mix(in srgb,var(--sn-cold) 22%,transparent);color:var(--sn-cold)}
+.fault .badge{background:color-mix(in srgb,var(--sn-alert) 22%,transparent);color:var(--sn-alert)}
+.alert{display:none;margin-top:4px;font-size:11px;color:var(--sn-alert);font-weight:500;text-align:center}
+.alert.on{display:block}
+svg{display:block;width:100%;max-width:250px;height:var(--appliance-illustration-height,auto);margin:2px auto 0;overflow:visible;cursor:pointer}
+.ctl{display:flex;justify-content:center;gap:6px;margin-top:6px}
+.ctl.hide,.ctl button.hide{display:none}
+.ctl button{flex:1 1 0;max-width:120px;display:flex;align-items:center;justify-content:center;gap:4px;border:0;border-radius:10px;padding:6px 4px;cursor:pointer;
+  background:var(--secondary-background-color);color:var(--primary-text-color);font:500 12px/16px var(--paper-font-body1_-_font-family,Roboto,sans-serif)}
+.ctl button.sm{flex:0 0 40px}
+.ctl button ha-icon{--mdc-icon-size:16px}
+.ctl button:hover{filter:brightness(1.12)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(76px,1fr));gap:6px;margin-top:6px}
+.tile{box-sizing:border-box;background:var(--secondary-background-color);border-radius:10px;padding:5px 7px;min-width:0;overflow:hidden;text-align:center;cursor:pointer}
+.tile .l{display:flex;align-items:center;justify-content:center;gap:3px;font-size:10px;line-height:14px;color:var(--secondary-text-color);min-width:0}
+.tile .l span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tile .l ha-icon{--mdc-icon-size:13px;flex:none}
+.tile .v{font-size:14px;line-height:18px;font-weight:600;color:var(--primary-text-color);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile .v small{font-size:10px;font-weight:400;color:var(--secondary-text-color);margin-left:2px}
+.tile.hide{display:none}
+.tile.bad .v{color:var(--sn-alert)}
+
+/* ---- illustration ---- */
+/* lueur du poêle et de la cabine : proportionnelle à --heat */
+.glow{opacity:calc(var(--heat) * .9);transition:opacity 1.5s}
+.stones{fill:#5e5a57;transition:fill 1.5s}
+.heating .stones,.ready .stones{fill:#7a4a3a}
+.ember{opacity:0;transform-box:fill-box;transform-origin:center}
+.heating .ember,.ready .ember{opacity:calc(.35 + var(--heat) * .65);animation:snember 1.6s ease-in-out infinite alternate}
+.ember:nth-child(2n){animation-delay:-.7s!important}.ember:nth-child(3n){animation-delay:-1.1s!important}
+@keyframes snember{to{opacity:.25}}
+/* ondes de chaleur au-dessus des pierres */
+.wave{fill:none;stroke:#ffd9a0;stroke-width:1.4;stroke-linecap:round;opacity:0}
+.heating .wave,.ready .wave{animation:snwave 2.4s ease-in infinite}
+.wave:nth-child(2){animation-delay:-.8s!important}.wave:nth-child(3){animation-delay:-1.6s!important}
+@keyframes snwave{0%{opacity:0;transform:translateY(0)}30%{opacity:.75}100%{opacity:0;transform:translateY(-34px)}}
+/* vapeur au conduit du toit */
+.steam{fill:#fff;opacity:0;transform-box:fill-box;transform-origin:center}
+.heating .steam,.ready .steam{animation:snsteam 3.2s ease-out infinite}
+.cooling .steam{animation:snsteam 5s ease-out infinite}
+.steam:nth-child(2){animation-delay:-.8s!important}.steam:nth-child(3){animation-delay:-1.6s!important}.steam:nth-child(4){animation-delay:-2.4s!important}
+@keyframes snsteam{0%{opacity:0;transform:translate(0,4px) scale(.4)}25%{opacity:.55}100%{opacity:0;transform:translate(10px,-34px) scale(2)}}
+.cooling .steam{fill:#cfd8e0}
+.lightbulb{opacity:0;transition:opacity .6s}
+.heating .lightbulb,.ready .lightbulb{opacity:1}
+.therm{transform-box:fill-box;transform-origin:50% 100%;transform:scaleY(var(--tf));transition:transform 1.2s ease-out}
+.led{fill:#5b6570}
+.heating .led{fill:#ff8a3d;animation:snblink 1.2s steps(2) infinite}.ready .led{fill:#43a047}.cooling .led{fill:#3fa3ff}.fault .led{fill:#db4437;animation:snblink .6s steps(2) infinite}
+@keyframes snblink{50%{opacity:.25}}
+.dsp{fill:#ff9f43;font:700 9px/1 var(--paper-font-body1_-_font-family,Roboto,sans-serif);text-anchor:middle}
+.off .dsp{fill:#5a6470}.fault .dsp{fill:#ff5a4e}
+.off .glass{filter:brightness(.8)}
+.noanim *{animation:none!important}
+`;
+
+  const SVG = (label) => `
+<svg viewBox="0 0 260 190" role="img" aria-label="${esc(label)}">
+ <defs>
+  <linearGradient id="snwood" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#b8743b"/><stop offset=".5" stop-color="#d39457"/><stop offset="1" stop-color="#a9672f"/></linearGradient>
+  <linearGradient id="snglass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2a2420"/><stop offset="1" stop-color="#14110f"/></linearGradient>
+  <radialGradient id="snglow" cx=".5" cy=".85" r=".8"><stop offset="0" stop-color="#ff9a3c" stop-opacity=".95"/><stop offset=".55" stop-color="#ff6a1f" stop-opacity=".4"/><stop offset="1" stop-color="#ff6a1f" stop-opacity="0"/></radialGradient>
+  <linearGradient id="snroof" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8d959c"/><stop offset="1" stop-color="#5d656c"/></linearGradient>
+  <linearGradient id="snstove" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3a3f45"/><stop offset=".5" stop-color="#5b626a"/><stop offset="1" stop-color="#2c3136"/></linearGradient>
+  <clipPath id="sndoor"><rect x="98" y="52" width="58" height="114" rx="3"/></clipPath>
+ </defs>
+ <ellipse cx="130" cy="180" rx="104" ry="6" fill="#000" opacity=".18"/>
+ <!-- vapeur au conduit -->
+ <g><ellipse class="steam" cx="196" cy="10" rx="7" ry="5"/><ellipse class="steam" cx="200" cy="8" rx="6" ry="4"/><ellipse class="steam" cx="193" cy="12" rx="8" ry="5"/><ellipse class="steam" cx="198" cy="9" rx="6" ry="4"/></g>
+ <rect x="190" y="12" width="12" height="16" rx="1.5" fill="#6d757c"/><rect x="187" y="10" width="18" height="4" rx="1" fill="#4a5158"/>
+ <!-- cabine en lames verticales -->
+ <rect x="44" y="30" width="172" height="144" fill="url(#snwood)"/>
+ <g stroke="#8a5528" stroke-width="1" opacity=".6"><path id="snslats"/></g>
+ <rect x="44" y="30" width="172" height="144" fill="none" stroke="#7a4a22" stroke-width="1"/>
+ <!-- toit en débord -->
+ <rect x="34" y="22" width="192" height="10" rx="2" fill="url(#snroof)"/>
+ <path d="M36 23 H224" stroke="#fff" stroke-width="1" opacity=".35"/>
+ <!-- socle -->
+ <rect x="38" y="172" width="184" height="7" rx="2" fill="#a7afb6"/>
+ <!-- applique au-dessus de la porte -->
+ <rect x="119" y="36" width="16" height="6" rx="2" fill="#3a3f45"/>
+ <ellipse class="lightbulb" cx="127" cy="44" rx="16" ry="6" fill="#ffd27a" opacity=".6"/>
+ <!-- porte vitrée : intérieur visible -->
+ <rect x="94" y="48" width="66" height="122" rx="4" fill="#3a3f45"/>
+ <g clip-path="url(#sndoor)" class="glass">
+  <rect x="98" y="52" width="58" height="114" fill="url(#snglass)"/>
+  <rect class="glow" x="80" y="52" width="94" height="114" fill="url(#snglow)"/>
+  <!-- banquettes -->
+  <rect x="98" y="96" width="58" height="6" fill="#6b4524" opacity=".85"/><rect x="98" y="122" width="58" height="6" fill="#6b4524" opacity=".85"/>
+  <!-- poêle et pierres -->
+  <rect x="112" y="138" width="30" height="28" rx="2" fill="url(#snstove)"/>
+  <g class="stones"><circle cx="117" cy="137" r="5"/><circle cx="126" cy="135" r="6"/><circle cx="136" cy="137" r="5"/><circle cx="121" cy="131" r="4"/><circle cx="132" cy="131" r="4.5"/></g>
+  <g fill="#ff7a2a"><circle class="ember" cx="119" cy="136" r="1.6"/><circle class="ember" cx="127" cy="133" r="1.8"/><circle class="ember" cx="134" cy="136" r="1.5"/><circle class="ember" cx="124" cy="139" r="1.3"/><circle class="ember" cx="131" cy="131" r="1.4"/></g>
+  <g><path class="wave" d="M118 126 q3 -4 0 -8 t0 -8"/><path class="wave" d="M127 124 q3 -4 0 -8 t0 -8"/><path class="wave" d="M136 126 q3 -4 0 -8 t0 -8"/></g>
+  <path d="M102 56 L118 56 L104 120 Z" fill="#fff" opacity=".07"/>
+ </g>
+ <rect x="98" y="52" width="58" height="114" rx="3" fill="none" stroke="#1d2125" stroke-width="1.5"/>
+ <rect x="148" y="94" width="4" height="30" rx="2" fill="#c9a06a" stroke="#7a4a22" stroke-width=".6"/>
+ <!-- thermomètre -->
+ <rect x="62" y="62" width="14" height="86" rx="7" fill="#f3efe8" stroke="#7a4a22" stroke-width=".8"/>
+ <rect x="67" y="68" width="4" height="70" rx="2" fill="#d9d2c6"/>
+ <rect class="therm" x="67" y="68" width="4" height="70" rx="2" fill="#e53935"/>
+ <circle cx="69" cy="141" r="4.5" fill="#e53935"/>
+ <g stroke="#7a4a22" stroke-width=".7"><path d="M72 76 H75 M72 90 H75 M72 104 H75 M72 118 H75 M72 132 H75"/></g>
+ <!-- panneau de commande -->
+ <rect x="172" y="84" width="30" height="34" rx="4" fill="#1b1e22" stroke="#3a3f45"/>
+ <rect x="176" y="89" width="22" height="13" rx="2" fill="#0d0f11"/>
+ <text class="dsp" x="187" y="99" id="sndsp">--</text>
+ <circle class="led" cx="181" cy="110" r="2.2"/><circle cx="193" cy="110" r="2.6" fill="#3a3f45" stroke="#6d757c" stroke-width=".6"/>
+</svg>`;
+
+  const TILES = [
+    ['temp', 'mdi:thermometer', 'show_temp'],
+    ['target', 'mdi:thermometer-check', 'show_temp'],
+    ['humidity', 'mdi:water-percent', 'show_humidity'],
+    ['power', 'mdi:flash', 'show_power'],
+    ['energy', 'mdi:lightning-bolt-circle', 'show_energy'],
+    ['cost', 'mdi:cash', 'show_cost'],
+  ];
+
+  class ApplianceSaunaCard extends HTMLElement {
+    static getConfigElement() { return document.createElement(TAG + '-editor'); }
+    static getStubConfig(hass) {
+      const ids = Object.keys((hass && hass.states) || {});
+      const f = (re, dom) => ids.find((i) => (!dom || i.startsWith(dom + '.')) && re.test(i)) || '';
+      return {
+        entity: f(/sauna/i, 'climate') || f(/sauna/i, 'switch'),
+        entity_power: f(/sauna.*(power|puissance)/i, 'sensor'),
+        entity_temp: f(/sauna.*temp/i, 'sensor'),
+      };
+    }
+    setConfig(c) {
+      if (!c || typeof c !== 'object') throw new Error('Invalid configuration');
+      this._c = { show_status: true, show_controls: true, show_temp: true, show_humidity: true, show_power: true, show_energy: true, show_cost: true,
+        target_temp: 80, ready_margin: 3, heater_threshold: 300, off_threshold: 5, temp_max: 110, temp_scale: 120, ...c };
+      this._built = false;
+      if (this._hass) this._render();
+    }
+    set hass(h) { this._hass = h; if (this._c) this._render(); }
+    getCardSize() { return 5; }
+    getGridOptions() { return { columns: 12, min_columns: 6, rows: 'auto' }; }
+
+    _t(k) { return T[this._lang()][k] ?? T.en[k] ?? k; }
+    _lang() { const l = (this._c.language || (this._hass && this._hass.language) || 'en').slice(0, 2); return T[l] ? l : 'en'; }
+    _st(id) { return id && this._hass.states[id]; }
+    _num(id) {
+      const s = this._st(id); if (!s) return NaN;
+      const v = parseFloat(String(s.state).replace(',', '.'));
+      return isFinite(v) ? v : NaN;
+    }
+    _watts(id) {
+      const v = this._num(id); if (isNaN(v)) return NaN;
+      const u = ((this._st(id).attributes || {}).unit_of_measurement || '').toLowerCase();
+      return u === 'kw' ? v * 1000 : v;
+    }
+    _unit(id, d) { const s = this._st(id); return (s && s.attributes && s.attributes.unit_of_measurement) || d; }
+    _fmt(v, d = 0) { return isNaN(v) ? '--' : v.toLocaleString(this._lang() === 'fr' ? 'fr-FR' : 'en-US', { maximumFractionDigits: d, minimumFractionDigits: 0 }); }
+    _more(id) { if (id) this.dispatchEvent(new CustomEvent('hass-more-info', { detail: { entityId: id }, bubbles: true, composed: true })); }
+
+    _build() {
+      const root = this.shadowRoot || this.attachShadow({ mode: 'open' });
+      const c = this._c;
+      root.innerHTML = `<style>${CSS}</style><ha-card>
+        <div class="head"><div class="title" id="sntitle"></div><div class="badge" id="snbadge"></div></div>
+        ${SVG(c.name || this._t('name'))}
+        <div class="alert" id="snalert"></div>
+        <div class="ctl" id="snctl">
+          <button class="sm" data-a="down"><ha-icon icon="mdi:minus"></ha-icon></button>
+          <button data-a="power"><ha-icon icon="mdi:power"></ha-icon><span></span></button>
+          <button class="sm" data-a="up"><ha-icon icon="mdi:plus"></ha-icon></button>
+        </div>
+        <div class="tiles">${TILES.map(([k, ic]) => `<div class="tile hide" data-k="${esc(k)}"><div class="l"><ha-icon icon="${esc(ic)}"></ha-icon><span class="lbl"></span></div><div class="v"></div></div>`).join('')}</div>
+      </ha-card>`;
+      // lames de bois verticales de part et d'autre de la porte
+      let d = '';
+      for (let x = 54; x < 216; x += 10) if (x < 94 || x > 160) d += `M${x} 32 V172 `;
+      root.getElementById('snslats').setAttribute('d', d);
+      root.querySelector('svg').addEventListener('click', () => this._more(this._c.entity || this._c.entity_temp));
+      root.querySelectorAll('.ctl button').forEach((b) => b.addEventListener('click', () => this._action(b.dataset.a)));
+      root.querySelectorAll('.tile').forEach((el) => el.addEventListener('click', () => {
+        const cc = this._c, k = el.dataset.k;
+        this._more({ temp: cc.entity_temp || cc.entity, target: cc.entity_target_temp || cc.entity, humidity: cc.entity_humidity, power: cc.entity_power,
+          energy: cc.entity_energy, cost: cc.entity_cost || cc.entity_energy }[k]);
+      }));
+      this._root = root; this._card = root.querySelector('ha-card'); this._built = true;
+    }
+
+    _action(a) {
+      const c = this._c, h = this._hass, s = this._st(c.entity); if (!h || !c.entity) return;
+      const d = c.entity.split('.')[0];
+      if (a === 'power') {
+        if (d === 'climate') h.callService('climate', 'set_hvac_mode', { entity_id: c.entity, hvac_mode: s && s.state !== 'off' ? 'off' : 'heat' });
+        else h.callService('homeassistant', 'toggle', { entity_id: c.entity });
+      } else if (d === 'climate' && s) {
+        const a2 = s.attributes || {}, step = Number(a2.target_temp_step) || 1, cur = Number(a2.temperature);
+        if (!isFinite(cur)) return;
+        const lim = (v) => Math.max(Number(a2.min_temp) || -Infinity, Math.min(Number(a2.max_temp) || Infinity, v));
+        h.callService('climate', 'set_temperature', { entity_id: c.entity, temperature: lim(cur + (a === 'up' ? step : -step)) });
+      }
+    }
+
+    _compute() {
+      const c = this._c, s = this._st(c.entity), a = (s && s.attributes) || {};
+      const pw = this._watts(c.entity_power);
+      let temp = this._num(c.entity_temp);
+      if (isNaN(temp) && isFinite(Number(a.current_temperature))) temp = Number(a.current_temperature);
+      let target = this._num(c.entity_target_temp);
+      if (isNaN(target) && isFinite(Number(a.temperature))) target = Number(a.temperature);
+      if (isNaN(target)) target = Number(c.target_temp);
+      const txt = s ? String(s.state).toLowerCase() : '';
+      let on;
+      if (/error|erreur|fault|défaut|defaut|alarm/.test(txt)) return { st: 'fault', pw, temp, target };
+      if (s && !/^(unavailable|unknown)$/.test(txt)) on = !/^(off|false|0|arr[eê]t|éteint|eteint)$/.test(txt);
+      else on = !isNaN(pw) && pw > Number(c.off_threshold);
+      let st;
+      if (!on) st = !isNaN(temp) && temp > 40 ? 'cooling' : 'off';
+      else if (!isNaN(temp)) st = temp >= target - Number(c.ready_margin) ? 'ready' : 'heating';
+      else if (a.hvac_action) st = /heat/.test(String(a.hvac_action)) ? 'heating' : 'ready';
+      else st = !isNaN(pw) && pw < Number(c.heater_threshold) ? 'ready' : 'heating';
+      return { st, pw, temp, target };
+    }
+
+    _render() {
+      if (!this._built) this._build();
+      const c = this._c, r = this._root, card = this._card;
+      const { st, pw, temp, target } = this._compute();
+      const clamp = (v) => Math.max(0, Math.min(1, v));
+      const heat = !isNaN(temp) ? clamp((temp - 25) / Math.max(1, target - 25)) : ({ heating: 0.6, ready: 1, cooling: 0.3 }[st] || 0);
+      card.className = `${st} ${c.animations === false ? 'noanim' : ''}`;
+      card.style.setProperty('--heat', (st === 'off' || st === 'fault' ? 0 : heat).toFixed(3));
+      card.style.setProperty('--tf', (isNaN(temp) ? 0 : clamp(temp / Number(c.temp_scale || 120))).toFixed(3));
+
+      r.getElementById('sntitle').textContent = c.name || this._t('name');
+      const badge = r.getElementById('snbadge'); badge.textContent = this._t(st); badge.style.display = c.show_status === false ? 'none' : '';
+      r.getElementById('sndsp').textContent = st === 'off' ? 'OFF' : st === 'fault' ? 'Err' : !isNaN(temp) ? `${this._fmt(temp, 0)}°` : 'ON';
+      const hot = !isNaN(temp) && temp > Number(c.temp_max);
+      const al = r.getElementById('snalert'); al.textContent = hot ? `${this._t('overheat')} (${this._fmt(temp, 0)} °C)` : ''; al.classList.toggle('on', hot);
+
+      // commandes : marche/arrêt, et consigne ± seulement pour une entité climate
+      const d = (c.entity || '').split('.')[0];
+      const ctl = r.getElementById('snctl');
+      ctl.classList.toggle('hide', c.show_controls === false || !['climate', 'switch', 'input_boolean'].includes(d));
+      const isOn = st === 'heating' || st === 'ready';
+      ctl.querySelector('[data-a="power"] span').textContent = this._t(isOn ? 'turn_off' : 'turn_on');
+      ctl.querySelectorAll('.sm').forEach((b) => b.classList.toggle('hide', d !== 'climate'));
+
+      const energy = this._num(c.entity_energy), hum = this._num(c.entity_humidity);
+      let cost = this._num(c.entity_cost), costU = this._unit(c.entity_cost, c.currency || '€');
+      if (isNaN(cost) && c.price_per_kwh && !isNaN(energy)) { cost = energy * Number(c.price_per_kwh); costU = c.currency || '€'; }
+      const V = {
+        temp: [!isNaN(temp), this._fmt(temp, 0), '°C'],
+        target: [!isNaN(target), this._fmt(target, 0), '°C'],
+        humidity: [c.entity_humidity, this._fmt(hum, 0), '%'],
+        power: [c.entity_power, isNaN(pw) ? '--' : (pw >= 1000 ? this._fmt(pw / 1000, 2) : this._fmt(pw, 0)), isNaN(pw) ? '' : (pw >= 1000 ? 'kW' : 'W')],
+        energy: [c.entity_energy, this._fmt(energy, 2), this._unit(c.entity_energy, 'kWh')],
+        cost: [c.entity_cost || (c.price_per_kwh && c.entity_energy), this._fmt(cost, 2), costU],
+      };
+      TILES.forEach(([k, , opt]) => {
+        const el = r.querySelector(`.tile[data-k="${k}"]`); const [show, val, unit] = V[k];
+        el.classList.toggle('hide', !show || c[opt] === false);
+        el.classList.toggle('bad', k === 'temp' && hot);
+        el.querySelector('.lbl').textContent = this._t(k);
+        const small = document.createElement('small'); small.textContent = unit ?? '';
+        el.querySelector('.v').replaceChildren(String(val ?? ''), small);
+      });
+    }
+  }
+  customElements.define(TAG, ApplianceSaunaCard);
+
+  /* ---- éditeur visuel ---- */
+  class ApplianceSaunaCardEditor extends HTMLElement {
+    setConfig(c) { this._c = c; this._draw(); }
+    set hass(h) { this._hass = h; if (this._form) this._form.hass = h; }
+    _draw() {
+      if (!this._form) {
+        this._form = document.createElement('ha-form');
+        this._form.addEventListener('value-changed', (e) => {
+          this._c = e.detail.value;
+          this.dispatchEvent(new CustomEvent('config-changed', { detail: { config: this._c }, bubbles: true, composed: true }));
+        });
+        this.appendChild(this._form);
+      }
+      const ent = (name, domain) => ({ name, selector: { entity: domain ? { domain } : {} } });
+      const num = (name, min, max, step, unit) => ({ name, selector: { number: { min, max, step, mode: 'box', ...(unit ? { unit_of_measurement: unit } : {}) } } });
+      const bool = (name) => ({ name, selector: { boolean: {} }, default: true });
+      this._form.hass = this._hass;
+      this._form.data = this._c;
+      this._form.schema = [
+        { name: 'name', selector: { text: {} } },
+        ent('entity'), ent('entity_temp', 'sensor'), ent('entity_target_temp'), ent('entity_humidity', 'sensor'),
+        ent('entity_power', 'sensor'), ent('entity_energy', 'sensor'), ent('entity_cost', 'sensor'),
+        { name: 'price_per_kwh', selector: { number: { min: 0, step: 0.0001, mode: 'box' } } },
+        { type: 'grid', name: '', schema: [
+          num('target_temp', 40, 120, 1, '°C'), num('ready_margin', 0, 20, 0.5, '°C'),
+          num('heater_threshold', 0, 15000, 10, 'W'), num('off_threshold', 0, 500, 0.5, 'W'),
+          num('temp_max', 60, 140, 1, '°C'), num('temp_scale', 60, 150, 1, '°C'),
+        ] },
+        { name: 'language', selector: { select: { options: Object.keys(T).map((value) => ({ value, label: { fr: 'Français', en: 'English', de: 'Deutsch', nb: 'Norsk bokmål', ro: 'Română', nl: 'Nederlands' }[value] || value })) } } },
+        { type: 'grid', name: '', schema: [
+          bool('show_status'), bool('show_controls'), bool('show_temp'), bool('show_humidity'),
+          bool('show_power'), bool('show_energy'), bool('show_cost'), bool('animations'),
+        ] },
+      ];
+      this._form.computeLabel = (s) => s.name;
+    }
+  }
+  customElements.define(TAG + '-editor', ApplianceSaunaCardEditor);
+
+  window.customCards = window.customCards || [];
+  window.customCards.push({
+    type: TAG, name: 'Appliance – Sauna',
+    description: 'Cabine de sauna animée : lueur du poêle selon la température, ondes de chaleur, vapeur, thermomètre, consommation.', preview: true,
+  });
+})();

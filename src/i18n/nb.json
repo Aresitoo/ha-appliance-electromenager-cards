@@ -195,7 +195,7 @@
 "f_mid_threshold": "Hastighet 2 over (W)",
     "ph_heat": "Oppvarming",
     "f_heating_power": "Effektterskel for oppvarming (W)",
-    "f_spin_power": "Effektterskel for sentrifugering (W)" 
+    "f_spin_power": "Effektterskel for sentrifugering (W)"
 },
 "aquarium": {
 "power": "Effekt",
@@ -385,5 +385,43 @@
 "lowph": "For lav pH",
 "highph": "For høy pH",
 "hot": "For varmt vann"
+},
+"access": {
+"barrier": "Bom",
+"sliding_gate": "Skyveport",
+"swing_gate": "Slagport",
+"garage_door": "Garasjeport",
+"open": "Åpen",
+"closed": "Lukket",
+"opening": "Åpner",
+"closing": "Lukker",
+"partial": "Delvis åpen",
+"unavailable": "Utilgjengelig",
+"position": "Posisjon",
+"power": "Motor",
+"energy": "Energi",
+"cost": "Kostnad",
+"since": "Sist endret",
+"btn_open": "Åpne",
+"btn_stop": "Stopp",
+"btn_close": "Lukk",
+"btn_command": "Kommando"
+},
+"sauna": {
+"name": "Badstue",
+"off": "Av",
+"heating": "Varmer opp",
+"ready": "Klar",
+"cooling": "Kjøler ned",
+"fault": "Feil",
+"temp": "Rom",
+"target": "Mål",
+"humidity": "Fuktighet",
+"power": "Ovn",
+"energy": "Energi",
+"cost": "Kostnad",
+"turn_on": "Slå på",
+"turn_off": "Slå av",
+"overheat": "For varmt"
 }
 }

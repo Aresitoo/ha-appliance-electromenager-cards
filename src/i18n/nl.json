@@ -385,5 +385,43 @@
     "lowph": "pH te laag",
     "highph": "pH te hoog",
     "hot": "Water te heet"
+  },
+  "access": {
+    "barrier": "Slagboom",
+    "sliding_gate": "Schuifpoort",
+    "swing_gate": "Draaipoort",
+    "garage_door": "Garagedeur",
+    "open": "Open",
+    "closed": "Gesloten",
+    "opening": "Gaat open",
+    "closing": "Gaat dicht",
+    "partial": "Half open",
+    "unavailable": "Niet beschikbaar",
+    "position": "Positie",
+    "power": "Motor",
+    "energy": "Energie",
+    "cost": "Kosten",
+    "since": "Laatste wijziging",
+    "btn_open": "Openen",
+    "btn_stop": "Stop",
+    "btn_close": "Sluiten",
+    "btn_command": "Bediening"
+  },
+  "sauna": {
+    "name": "Sauna",
+    "off": "Uit",
+    "heating": "Opwarmen",
+    "ready": "Klaar",
+    "cooling": "Afkoelen",
+    "fault": "Storing",
+    "temp": "Cabine",
+    "target": "Doel",
+    "humidity": "Vochtigheid",
+    "power": "Kachel",
+    "energy": "Energie",
+    "cost": "Kosten",
+    "turn_on": "Aanzetten",
+    "turn_off": "Uitzetten",
+    "overheat": "Te heet"
   }
 }

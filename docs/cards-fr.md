@@ -74,4 +74,27 @@ cost: sensor.lave_linge_cout_jour
 
 **Jacuzzi** : `custom:appliance-jacuzzi-card`, spa vu en plongée avec l'épaisseur d'acrylique au rebord, l'eau en dégradé de profondeur, la banquette immergée, les buses chromées, les appuie-têtes, le bec de cascade et la trappe du spa pack. États : arrêt, veille, filtration, chauffe, jets, défaut. Bulles, jets et cascade accélèrent avec la puissance, la vapeur monte en chauffe, l'éclairage LED suit `entity_light` (couleur `rgb_color` si disponible). Alertes pH hors de `ph_min`–`ph_max` et eau au-dessus de `temp_max` (40 °C). Sans entité d'état, il se déduit de la puissance (30 W filtration, 700 W jets, 1800 W chauffe). Options : voir le tableau en anglais.
 
+**Barrière, portail coulissant, portail battant, porte de garage** : `custom:appliance-barrier-card`, `custom:appliance-sliding-gate-card`, `custom:appliance-swing-gate-card`, `custom:appliance-garage-door-card`, sans fond. Barrière : armoire jaune, bras rayé rouge et blanc qui se lève à 90° puis redescend, LED du bras rouges fermé et vertes ouvert. Portail coulissant : le vantail à barreaux glisse sur son rail derrière le pilier, les roues tournent. Portail battant : un ou deux vantaux (`leaves`) dessinés en 3D qui pivotent **vers l'intérieur** de la propriété. Porte de garage : la porte sectionnelle remonte sous le linteau et dévoile le garage éclairé et la voiture. États : ouvert, fermé, ouverture, fermeture, entrouvert (`current_position` entre 1 et 99), indisponible. Le gyrophare orange clignote pendant le mouvement ou dès que le moteur dépasse `moving_threshold` (15 W). Le mouvement dure le temps de course réel (`travel_time`) ; avec une cover qui fournit `current_position`, le dessin suit la position. Boutons **Ouvrir / Stop / Fermer** pour une `cover`, ou un bouton **Commande** pour une entité d'impulsion (`entity_control` : `button`, `script`, `switch`…). `entity` accepte aussi un `binary_sensor` / `input_boolean` (on = ouvert, `invert: true` pour l'inverse). Tuiles : position, puissance du moteur, énergie, coût et dernier mouvement. Options : voir [access.md](cards/access.md).
+
+```yaml
+type: custom:appliance-garage-door-card
+name: Garage
+entity: cover.porte_garage
+entity_power: sensor.prise_garage_puissance
+entity_energy: sensor.prise_garage_energie
+price_per_kwh: 0.2516
+travel_time: 14
+```
+
+**Sauna** : `custom:appliance-sauna-card`, cabine en lames de bois vue de face avec porte vitrée teintée (banquettes, poêle et pierres visibles), thermomètre mural, panneau de commande et conduit de ventilation. États : arrêt, chauffe, prêt (à `ready_margin` = 3 °C de la consigne), refroidissement (éteint mais au-dessus de 40 °C) et défaut. La lueur du poêle et les braises suivent la température, les ondes de chaleur montent au-dessus des pierres, la vapeur sort du conduit, le thermomètre se remplit ; alerte au-dessus de `temp_max` (110 °C). Avec une entité `climate`, la température et la consigne viennent de ses attributs et les boutons **− / Allumer-Éteindre / +** pilotent le thermostat. Tuiles : température, consigne, humidité, puissance du poêle, énergie, coût. Options : voir [sauna.md](cards/sauna.md).
+
+```yaml
+type: custom:appliance-sauna-card
+entity: climate.sauna
+entity_humidity: sensor.sauna_humidite
+entity_power: sensor.poele_sauna_puissance
+entity_energy: sensor.poele_sauna_energie
+price_per_kwh: 0.2516
+```
+
 **Développement et traductions** : `dist/` est généré, on modifie `src/` puis on lance `node build.js` (sans dépendance). Le code est découpé en petits fichiers : `src/core/` pour les 28 cartes de base (un dessin par appareil dans `svg/`, un fichier CSS par appareil dans `style/`), `src/cards/` pour les cartes autonomes, et les textes dans un fichier par langue (`src/i18n/en.json`, `src/i18n/fr.json`, `src/i18n/de.json`, `src/i18n/nb.json`, `src/i18n/nl.json`, `src/i18n/ro.json`). Voir *Development and translations* plus haut.
