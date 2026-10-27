@@ -24,6 +24,7 @@ class ApplianceAquariumCard extends HTMLElement {
       schema: [
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
+        { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
         { name: 'entity_power', selector: { entity: { domain: 'sensor', device_class: 'power' } } },
         { name: 'entity_energy', selector: { entity: { domain: 'sensor', device_class: 'energy' } } },
         { name: 'entity_temperature', selector: { entity: { domain: 'sensor', device_class: 'temperature' } } },
@@ -47,6 +48,7 @@ class ApplianceAquariumCard extends HTMLElement {
   }
 
   setConfig(config) {
+    if (window.applianceSize) window.applianceSize(this, config);
     this._config = {
       show_power: true, show_energy: true, show_temperature: true, show_cost: true,
       temp_min: 24, temp_max: 27, price_per_kwh: 0.2, max_power: 200,
@@ -66,6 +68,7 @@ class ApplianceAquariumCard extends HTMLElement {
   }
 
   getCardSize() { return 5; }
+  getGridOptions() { return { columns: 12, min_columns: 3, rows: 'auto', min_rows: 1 }; }
 
   _t(k) { return (I18N_AQUARIUM[this._config.language || lang(this._hass)] || I18N_AQUARIUM.en)[k] ?? I18N_AQUARIUM.en[k] ?? k; }
   // libellé perso (option labels) sinon traduction
@@ -100,12 +103,12 @@ class ApplianceAquariumCard extends HTMLElement {
     if (!this.shadowRoot) this.attachShadow({ mode: 'open' });
     this.shadowRoot.innerHTML = `
     <style>
-      :host { display:block; }
+      :host { display:block; }:host{height:100%} ha-card{height:100%;box-sizing:border-box}
       ha-card { padding:12px; overflow:hidden; }
       .title { font-weight:600; font-size:1.05em; margin:0 4px 8px; display:flex; justify-content:space-between; align-items:center; }
       .badge { font-size:.75em; color:#fff; background:#e53935; border-radius:10px; padding:2px 8px; display:none; animation:blink 1s infinite; }
       .alert .badge { display:inline-block; }
-      svg { width:100%; height:auto; display:block; border-radius:10px; transform:scale(0.8); transform-origin:top center; }
+      svg { width:100%; max-width:calc(100% * var(--illus-scale,1)); margin-left:auto; margin-right:auto; height:auto; display:block; border-radius:10px; transform:scale(0.8); transform-origin:top center; }
       .tint { fill:var(--water, #2a8fd6); opacity:.45; transition:fill 1.5s; }
       .night-overlay { fill:#050b24; opacity:0; transition:opacity 1.2s; }
       .night .night-overlay { opacity:.6; }

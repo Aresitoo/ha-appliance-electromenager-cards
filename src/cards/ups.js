@@ -15,7 +15,7 @@
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); // texte → HTML sûr
 
   const CSS = `
-:host{display:block}
+:host{display:block}:host{height:100%} ha-card{height:100%;box-sizing:border-box}
 ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--up-ok:var(--appliance-ok-color,#43a047);--up-warn:#ffa31a;
   --up-alert:var(--appliance-alert-color,#db4437);--up-cold:var(--appliance-cold-color,#2b9af9);--bat:1;--load:0}
 .head{display:flex;align-items:center;justify-content:space-between;gap:8px}
@@ -27,7 +27,7 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--up-ok:var(--appli
 .low_battery .badge,.offline .badge{background:color-mix(in srgb,var(--up-alert) 22%,transparent);color:var(--up-alert)}
 .alert{display:none;margin-top:4px;font-size:11px;color:var(--up-alert);font-weight:500;text-align:center}
 .alert.on{display:block}
-svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration-height,auto);margin:2px auto 0;overflow:visible;cursor:pointer}
+svg{display:block;width:100%;max-width:calc(270px * var(--illus-scale,1));height:var(--appliance-illustration-height,auto);margin:2px auto 0;overflow:visible;cursor:pointer}
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(76px,1fr));gap:6px;margin-top:6px}
 .tile{box-sizing:border-box;background:var(--secondary-background-color);border-radius:10px;padding:5px 7px;min-width:0;overflow:hidden;text-align:center;cursor:pointer}
 .tile .l{display:flex;align-items:center;justify-content:center;gap:3px;font-size:10px;line-height:14px;color:var(--secondary-text-color);min-width:0}
@@ -158,6 +158,7 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
       };
     }
     setConfig(c) {
+      if (window.applianceSize) window.applianceSize(this, c);
       if (!c || typeof c !== 'object') throw new Error('Invalid configuration');
       this._c = { show_status: true, show_charge: true, show_runtime: true, show_load: true, show_power: true, show_voltage: true, show_energy: true,
         battery_low: 20, load_max: 90, mains_min: 100, ...c };
@@ -166,7 +167,7 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
     }
     set hass(h) { this._hass = h; if (this._c) this._render(); }
     getCardSize() { return 5; }
-    getGridOptions() { return { columns: 12, min_columns: 6, rows: 'auto' }; }
+    getGridOptions() { return { columns: 12, min_columns: 3, rows: 'auto', min_rows: 1 }; }
 
     _t(k) { return T[this._lang()][k] ?? T.en[k] ?? k; }
     // libellé perso (option labels) sinon traduction
@@ -302,6 +303,7 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
       this._form.schema = [
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
+        { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
         ent('entity'), ent('entity_charge', 'sensor'), ent('entity_runtime', 'sensor'), ent('entity_load', 'sensor'), ent('entity_power', 'sensor'),
         ent('entity_input_voltage', 'sensor'), ent('entity_output_voltage', 'sensor'), ent('entity_energy', 'sensor'),
         { type: 'grid', name: '', schema: [num('battery_low', 0, 100, 1, 20, '%'), num('load_max', 10, 100, 1, 90, '%'), num('mains_min', 0, 250, 1, 100, 'V')] },

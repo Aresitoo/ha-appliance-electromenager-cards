@@ -12,13 +12,13 @@
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); // texte → HTML sûr
 
   const CSS = `
-:host{display:block}
+:host{display:block}:host{height:100%} ha-card{height:100%;box-sizing:border-box}
 ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--lc:#ffb347;--b:1;--lt-ok:#f5c45e}
 .head{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .title{font-size:14px;font-weight:500;color:var(--primary-text-color);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:12px;background:var(--secondary-background-color);color:var(--secondary-text-color);white-space:nowrap}
 .on .badge{background:color-mix(in srgb,var(--lc) 26%,transparent);color:color-mix(in srgb,var(--lc) 75%,var(--primary-text-color))}
-.stage{position:relative;margin:4px auto 0;max-width:240px;border-radius:14px;background:radial-gradient(ellipse at 50% 55%,#1d232b,#12161b 75%);overflow:hidden;cursor:pointer}
+.stage{position:relative;margin:4px auto 0;max-width:calc(240px * var(--illus-scale,1));border-radius:14px;background:radial-gradient(ellipse at 50% 55%,#1d232b,#12161b 75%);overflow:hidden;cursor:pointer}
 svg{display:block;width:100%;height:auto;overflow:visible}
 .ctl{display:flex;justify-content:center;gap:6px;margin-top:8px}
 .ctl.hide,.ctl button.hide{display:none}
@@ -241,6 +241,7 @@ svg{display:block;width:100%;height:auto;overflow:visible}
 
   class ApplianceLightCard extends HTMLElement {
     setConfig(c) {
+      if (window.applianceSize) window.applianceSize(this, c);
       if (!c || typeof c !== 'object') throw new Error('Invalid configuration');
       this._c = { show_status: true, show_controls: true, show_brightness: true, show_power: true, show_energy: true, follow_light_color: true, ...c };
       this._built = false;
@@ -248,7 +249,7 @@ svg{display:block;width:100%;height:auto;overflow:visible}
     }
     set hass(h) { this._hass = h; if (this._c) this._render(); }
     getCardSize() { return 5; }
-    getGridOptions() { return { columns: 6, min_columns: 4, rows: 'auto' }; }
+    getGridOptions() { return { columns: 6, min_columns: 3, rows: 'auto', min_rows: 1 }; }
 
     _t(k) { return T[this._lang()][k] ?? T.en[k] ?? k; }
     // libellé perso (option labels) sinon traduction
@@ -384,6 +385,7 @@ svg{display:block;width:100%;height:auto;overflow:visible}
       this._form.schema = [
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
+        { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
         ent('entity'), ent('entity_power', 'sensor'), ent('entity_energy', 'sensor'),
         { name: 'color', selector: { color_rgb: {} } },
         { type: 'grid', name: '', schema: [

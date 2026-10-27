@@ -203,7 +203,8 @@
     "f_energy_period": "Getoonde energie (teller of periode)",
     "flex_temp": "Flexzone",
     "f_flex_temperature": "Temperatuursensor flexzone",
-    "f_flex_max_temperature": "Alarm flexzone boven (°C)"
+    "f_flex_max_temperature": "Alarm flexzone boven (°C)",
+    "f_illustration_size": "Grootte van de illustratie"
   },
   "aquarium": {
     "power": "Vermogen",
@@ -706,7 +707,8 @@
     "shutter_color": "Kleur van het luik",
     "show_slider": "Schuifregelaars tonen",
     "show_tilt": "Kanteling tonen",
-    "image": "Eigen afbeelding (URL)"
+    "image": "Eigen afbeelding (URL)",
+    "illustration_size": "Grootte van de illustratie"
   },
   "light": {
     "light_bulb": "Lamp",

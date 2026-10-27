@@ -203,7 +203,8 @@
     "f_energy_period": "Angezeigte Energie (Zähler oder Zeitraum)",
     "flex_temp": "Flex-Zone",
     "f_flex_temperature": "Temperatursensor Flex-Zone",
-    "f_flex_max_temperature": "Alarm Flex-Zone über (°C)"
+    "f_flex_max_temperature": "Alarm Flex-Zone über (°C)",
+    "f_illustration_size": "Größe der Illustration"
   },
   "aquarium": {
     "power": "Leistung",
@@ -706,7 +707,8 @@
     "shutter_color": "Farbe des Ladens",
     "show_slider": "Schieberegler anzeigen",
     "show_tilt": "Neigung anzeigen",
-    "image": "Eigenes Bild (URL)"
+    "image": "Eigenes Bild (URL)",
+    "illustration_size": "Größe der Illustration"
   },
   "light": {
     "light_bulb": "Glühbirne",

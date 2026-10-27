@@ -203,7 +203,8 @@
     "f_energy_period": "Отображаемая энергия (счётчик или период)",
     "flex_temp": "Флекс-зона",
     "f_flex_temperature": "Датчик температуры флекс-зоны",
-    "f_flex_max_temperature": "Оповещать о флекс-зоне выше (°C)"
+    "f_flex_max_temperature": "Оповещать о флекс-зоне выше (°C)",
+    "f_illustration_size": "Размер иллюстрации"
   },
   "aquarium": {
     "power": "Мощность",
@@ -706,7 +707,8 @@
     "shutter_color": "Цвет ставней",
     "show_slider": "Показывать ползунки",
     "show_tilt": "Показывать наклон",
-    "image": "Своё изображение (URL)"
+    "image": "Своё изображение (URL)",
+    "illustration_size": "Размер иллюстрации"
   },
   "light": {
     "light_bulb": "Лампа",

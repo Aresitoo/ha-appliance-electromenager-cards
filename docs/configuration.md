@@ -22,6 +22,7 @@ All cards have a visual editor. When added from the card picker, entities are de
 | `show_toggle` | `false` to hide the power button |
 | `show_power` | `false` to hide the power chip (e.g. when `power` is an estimated sensor used only to detect the running state) |
 | `animations` | `false` to disable animations |
+| `illustration_size` | Size of the drawing in % (30–300, default 100), on every card. In a sections dashboard, every card can also be resized with the mouse, from 3 columns wide and in height |
 | `confirm_off` | Washer, dryer, dishwasher: `false` to turn off the safety confirmation (default `true`, see below) |
 
 ### Custom tile labels

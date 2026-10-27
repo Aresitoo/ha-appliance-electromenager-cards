@@ -21,6 +21,7 @@ class ApplianceEvChargerCard extends HTMLElement {
       schema: [
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
+        { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
         { name: 'entity_power', selector: { entity: { domain: 'sensor', device_class: 'power' } } },
         { name: 'entity_session_energy', selector: { entity: { domain: 'sensor', device_class: 'energy' } } },
         { name: 'entity_car_soc', selector: { entity: { domain: 'sensor' } } },
@@ -46,6 +47,7 @@ class ApplianceEvChargerCard extends HTMLElement {
   }
 
   setConfig(config) {
+    if (window.applianceSize) window.applianceSize(this, config);
     this._config = { show_power: true, show_energy: true, show_soc: true, show_status: true, show_duration: true, show_cost: true,
       max_power: 7400, price_per_kwh: 0.2, car_color: '#3d6fb6', ...config };
     this._built = false; this._build();
@@ -58,6 +60,7 @@ class ApplianceEvChargerCard extends HTMLElement {
     this._update();
   }
   getCardSize() { return 5; }
+  getGridOptions() { return { columns: 12, min_columns: 3, rows: 'auto', min_rows: 1 }; }
   connectedCallback() { this._timer = setInterval(() => this._update(), 30000); } // rafraîchit la durée
   disconnectedCallback() { clearInterval(this._timer); }
   _t(k) { return (I18N_EV[this._config.language || lang(this._hass)] || I18N_EV.en)[k] ?? I18N_EV.en[k] ?? k; }
@@ -70,10 +73,10 @@ class ApplianceEvChargerCard extends HTMLElement {
     const cable = 'M44 112 C 44 168, 112 170, 134 118';
     this.shadowRoot.innerHTML = `
     <style>
-      :host { display:block; }
+      :host { display:block; }:host{height:100%} ha-card{height:100%;box-sizing:border-box}
       ha-card { padding:12px; overflow:hidden; }
       .title { font-weight:600; margin:0 4px 4px; }
-      svg { width:100%; height:auto; display:block; overflow:visible; }
+      svg { width:100%; max-width:calc(100% * var(--illus-scale,1)); margin-left:auto; margin-right:auto; height:auto; display:block; overflow:visible; }
       .ledbar { fill:var(--st,#9e9e9e); filter:drop-shadow(0 0 4px var(--st,#9e9e9e)); transition:fill .6s; }
       .charging .ledbar { animation:breathe var(--sp,2s) ease-in-out infinite; }
       .scr { fill:#0c1a24; } .scrtxt { fill:#7fe0ff; font:700 8px 'Courier New',monospace; text-anchor:middle; }

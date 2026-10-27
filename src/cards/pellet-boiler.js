@@ -21,6 +21,7 @@ class AppliancePelletBoilerCard extends HTMLElement {
       schema: [
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
+        { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
         { name: 'entity_status', selector: { entity: { domain: ['sensor', 'select', 'climate', 'switch', 'binary_sensor'] } } },
         { name: 'entity_power', selector: { entity: { domain: 'sensor', device_class: 'power' } } },
         { name: 'entity_energy', selector: { entity: { domain: 'sensor', device_class: 'energy' } } },
@@ -50,6 +51,7 @@ class AppliancePelletBoilerCard extends HTMLElement {
   }
 
   setConfig(config) {
+    if (window.applianceSize) window.applianceSize(this, config);
     this._config = { show_power: true, show_energy: true, show_cost: true, show_temps: true, show_pellets: true, show_status: true,
       price_per_kwh: 0, threshold: 30, ignition_threshold: 300, pellet_alert: 15, flow_temp_max: 80, ...config };
     this._built = false; this._build();
@@ -60,6 +62,7 @@ class AppliancePelletBoilerCard extends HTMLElement {
     if (l && l !== this._lng) { this._lng = l; this._hass = h; this._built = false; this._build(); }
     this._hass = h; this._update(); }
   getCardSize() { return 6; }
+  getGridOptions() { return { columns: 12, min_columns: 3, rows: 'auto', min_rows: 1 }; }
   _t(k) { return (I18N_PB[this._config.language || lang(this._hass)] || I18N_PB.en)[k] ?? I18N_PB.en[k] ?? k; }
   // libellé perso (option labels) sinon traduction
   _l(k) { const L = this._config && this._config.labels; return L && L[k] != null && L[k] !== '' ? String(L[k]) : this._t(k); }
@@ -74,12 +77,12 @@ class AppliancePelletBoilerCard extends HTMLElement {
     const tube = 'M76 172 L136 112';
     this.shadowRoot.innerHTML = `
     <style>
-      :host { display:block; }
+      :host { display:block; }:host{height:100%} ha-card{height:100%;box-sizing:border-box}
       ha-card { padding:12px; overflow:hidden; }
       .title { font-weight:600; margin:0 4px 4px; display:flex; justify-content:space-between; align-items:center; gap:6px; }
       .badge { font-size:.75em; color:#fff; background:#e53935; border-radius:10px; padding:2px 8px; display:none; animation:blink 1s infinite; }
       .alarm .badge.al, .low .badge.lo { display:inline-block; } .badge.lo { background:#fb8c00; }
-      svg { width:100%; height:auto; display:block; overflow:visible; }
+      svg { width:100%; max-width:calc(100% * var(--illus-scale,1)); margin-left:auto; margin-right:auto; height:auto; display:block; overflow:visible; }
       /* Flamme dans le hublot */
       .flame { transform-box:fill-box; transform-origin:50% 100%; opacity:0; transition:opacity .8s; }
       .ignition .flame.small, .heating .flame, .extinguishing .flame.small { opacity:1; animation:flick .35s ease-in-out infinite alternate; }

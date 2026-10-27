@@ -203,7 +203,8 @@
     "f_energy_period": "Energie afișată (contor sau perioadă)",
     "flex_temp": "Zonă flex",
     "f_flex_temperature": "Senzor temperatură zonă flex",
-    "f_flex_max_temperature": "Alertă zonă flex peste (°C)"
+    "f_flex_max_temperature": "Alertă zonă flex peste (°C)",
+    "f_illustration_size": "Dimensiunea ilustrației"
   },
   "aquarium": {
     "power": "Putere",
@@ -706,7 +707,8 @@
     "shutter_color": "Culoarea obloanelor",
     "show_slider": "Afișează cursoarele",
     "show_tilt": "Afișează înclinarea",
-    "image": "Imagine proprie (URL)"
+    "image": "Imagine proprie (URL)",
+    "illustration_size": "Dimensiunea ilustrației"
   },
   "light": {
     "light_bulb": "Bec",

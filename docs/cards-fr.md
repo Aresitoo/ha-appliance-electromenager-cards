@@ -62,6 +62,8 @@ cost: sensor.lave_linge_cout_jour
 
 **Zone flex du frigo** : `flex_temperature` (capteur) ajoute une tuile « Zone flex » pour le 3e compartiment à température réglable, et un petit écran sur la porte basse droite (`style: four_door`) ou le tiroir du haut (`style: french`) ; `flex_max_temperature` déclenche l'alerte « Trop chaud ».
 
+**Taille des cartes** : dans un tableau de bord en sections, toutes les cartes se redimensionnent à la souris, en largeur (dès 3 colonnes) et en hauteur. `illustration_size` (en %, 30 à 300, champ « Taille de l'illustration » de l'éditeur) agrandit ou réduit le dessin, sur toutes les cartes et dans tous les types de tableau de bord.
+
 **Plusieurs appareils du même type** : chaque carte est indépendante (ses propres entités, son état, ses minuteries). Deux lave-linge ou plusieurs frigos peuvent cohabiter, il suffit de donner à chaque carte ses entités (et un `name`).
 
 **Consommation du jour** : avec un compteur d'énergie cumulé (la plupart des prises connectées), `energy_period: day` (ou `week`, `month`) affiche ce qui a été consommé depuis minuit au lieu du compteur total. Home Assistant le calcule à partir des statistiques longue durée, comme le tableau de bord Énergie : plus besoin de créer un Utility Meter par appareil. Il faut un capteur avec statistiques (`state_class: total_increasing`), sinon la carte affiche le compteur.

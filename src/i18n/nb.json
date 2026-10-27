@@ -1,5 +1,6 @@
 {
 "common": {
+"f_illustration_size": "Størrelse på illustrasjonen",
 "flex_temp": "Fleksisone",
 "f_flex_temperature": "Temperatursensor fleksisone",
 "f_flex_max_temperature": "Varsle fleksisone over (°C)",
@@ -522,6 +523,7 @@
 "water_hot": "Vannet er for varmt"
 },
 "editor": {
+"illustration_size": "Størrelse på illustrasjonen",
 "image": "Eget bilde (URL)",
 "sun_entity": "Sol-entitet (dag / natt)",
 "shutter_color": "Farge på skodden",
