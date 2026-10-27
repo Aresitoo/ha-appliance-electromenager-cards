@@ -7,7 +7,7 @@ SVG.dishwasher = () => `
   <rect x="14" y="8" width="92" height="120" rx="6" fill="url(#ID-inox)" stroke="#9aa2ab" stroke-width=".8"/>
   <rect x="14" y="8" width="92" height="15" rx="6" fill="url(#ID-dark)"/>
   <rect x="14" y="17" width="92" height="6" fill="url(#ID-dark)"/>
-  ${lcd(45, 11, 30, 9)}
+  ${lcd(45, 10, 30, 11)}
   <circle class="led l1" cx="22" cy="15.5" r="1.4"/><circle class="led l2" cx="28" cy="15.5" r="1.4"/>
   <circle class="led l4" cx="34" cy="15.5" r="1.4"/>
   <rect x="82" y="12.5" width="7" height="6" rx="1.5" fill="#3b424a" stroke="#58616b" stroke-width=".5"/>

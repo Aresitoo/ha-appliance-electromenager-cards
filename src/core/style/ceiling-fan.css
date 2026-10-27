@@ -25,3 +25,26 @@
 .k-ceiling_fan.lights-on .cf-beam { opacity: 1; }
 @keyframes cf-down { to { stroke-dashoffset: -22; } }
 @keyframes cf-sway { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }
+
+/* Global LCD & Screen Overrides: Maximum legibility on dark bezels across all cards */
+.wrap svg text.lcd, svg text.lcd, .lcd {
+  font-size: 8.5px !important;
+  letter-spacing: .25px !important;
+  fill: #7ec8e3 !important;
+  font-weight: 700 !important;
+  dominant-baseline: central;
+  opacity: 0.95 !important;
+}
+.wrap.active svg text.lcd, .wrap.active .lcd {
+  fill: var(--ac-lcd, #38d9ff) !important;
+  opacity: 1 !important;
+}
+.wrap.k-fridge svg text.lcd, .wrap.k-fridge .lcd {
+  font-size: 11.5px !important;
+  font-weight: 800 !important;
+  fill: var(--ac-lcd, #38d9ff) !important;
+  opacity: 1 !important;
+}
+.wrap.warm .fr-temp {
+  fill: var(--ac-alert, #ff3b30) !important;
+}
