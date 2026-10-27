@@ -693,7 +693,11 @@
     "color_cycle": "Colour cycle",
     "multicolor": "Multicolour lights",
     "show_brightness": "Show brightness",
-    "labels": "Custom tile labels (key: text)"
+    "labels": "Custom tile labels (key: text)",
+    "sun_entity": "Sun entity (day / night)",
+    "shutter_color": "Shutter colour",
+    "show_slider": "Show sliders",
+    "show_tilt": "Show tilt"
   },
   "light": {
     "light_bulb": "Bulb",
@@ -715,5 +719,23 @@
     "brightness": "Brightness",
     "power": "Power",
     "energy": "Energy"
+  },
+  "shutter": {
+    "roller_shutter": "Roller shutter",
+    "venetian_blind": "Venetian blind",
+    "swing_shutter": "Swing shutters",
+    "open": "Open",
+    "closed": "Closed",
+    "opening": "Opening",
+    "closing": "Closing",
+    "partial": "Open",
+    "unavailable": "Unavailable",
+    "btn_open": "Open",
+    "btn_stop": "Stop",
+    "btn_close": "Close",
+    "position": "Position",
+    "tilt": "Tilt",
+    "power": "Motor",
+    "since": "Last change"
   }
 }

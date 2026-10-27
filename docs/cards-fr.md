@@ -182,4 +182,14 @@ follow_light_color: false
 color: [255, 190, 110]
 ```
 
+**Volets et stores** : 3 cartes pilotées par une entité `cover`, `custom:appliance-roller-shutter-card` (volet roulant), `-venetian-blind-` (store vénitien), `-swing-shutter-card` (volets battants). La vue par la fenêtre suit le soleil : ciel de jour avec le soleil, ou ciel de nuit avec la lune et les étoiles quand `sun.sun` est sous l'horizon (`sun_entity` pour une autre entité). Volet roulant : les lames alu remontent dans le coffre selon `current_position`, avec des jours de lumière entre les lames et un faisceau dans la pièce quand il est ouvert. Store vénitien : les lamelles se tassent sous le caisson et pivotent selon `current_tilt_position`, avec un curseur **Inclinaison**. Volets battants : deux vantaux à persiennes qui pivotent en 3D et se rabattent contre le mur. Pendant le mouvement, le voyant du coffre clignote et une flèche suit le volet ; `travel_time` (s) règle la vitesse du dessin sur celle du moteur. Boutons Ouvrir / Stop / Fermer, curseur de position, tuiles position, inclinaison, moteur et dernier changement ; `color` change la couleur des lames ou des vantaux. Options : voir [shutters.md](cards/shutters.md).
+
+```yaml
+type: custom:appliance-roller-shutter-card
+name: Volet séjour
+entity: cover.volet_sejour
+entity_power: sensor.volet_sejour_puissance
+travel_time: 20
+```
+
 **Développement et traductions** : `dist/` est généré, on modifie `src/` puis on lance `node build.js` (sans dépendance). Le code est découpé en petits fichiers : `src/core/` pour les 28 cartes de base (un dessin par appareil dans `svg/`, un fichier CSS par appareil dans `style/`), `src/cards/` pour les cartes autonomes, et les textes dans un fichier par langue (`src/i18n/en.json`, `src/i18n/fr.json`, `src/i18n/de.json`, `src/i18n/nb.json`, `src/i18n/nl.json`, `src/i18n/ro.json`). Voir *Development and translations* plus haut.
