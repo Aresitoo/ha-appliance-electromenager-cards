@@ -211,7 +211,11 @@ const STRINGS = {
     "ph_heat": "Heating",
     "f_heating_power": "Heating phase threshold (W)",
     "f_spin_power": "Spinning phase threshold (W)",
-    "f_images": "Images by state (list: image + above / below / state)"
+    "f_images": "Images by state (list: image + above / below / state)",
+    "energy_day": "Today",
+    "energy_week": "This week",
+    "energy_month": "This month",
+    "f_energy_period": "Energy shown (counter or period)"
   },
   "de": {
     "washer": "Waschmaschine",
@@ -410,7 +414,11 @@ const STRINGS = {
     "ph_heat": "Aufheizen",
     "f_heating_power": "Schwellenwert für Heizphase (W)",
     "f_spin_power": "Schwellenwert für Schleuderphase (W)",
-    "f_images": "Bilder nach Zustand (Liste: image + above / below / state)"
+    "f_images": "Bilder nach Zustand (Liste: image + above / below / state)",
+    "energy_day": "Heute",
+    "energy_week": "Diese Woche",
+    "energy_month": "Dieser Monat",
+    "f_energy_period": "Angezeigte Energie (Zähler oder Zeitraum)"
   },
   "fr": {
     "washer": "Lave-linge",
@@ -609,9 +617,17 @@ const STRINGS = {
     "ph_heat": "Chauffe",
     "f_heating_power": "Seuil de phase de chauffe (W)",
     "f_spin_power": "Seuil de phase d'essorage (W)",
-    "f_images": "Images selon l'état (liste : image + above / below / state)"
+    "f_images": "Images selon l'état (liste : image + above / below / state)",
+    "energy_day": "Aujourd'hui",
+    "energy_week": "Cette semaine",
+    "energy_month": "Ce mois",
+    "f_energy_period": "Énergie affichée (compteur ou période)"
   },
   "nb": {
+    "energy_day": "I dag",
+    "energy_week": "Denne uken",
+    "energy_month": "Denne måneden",
+    "f_energy_period": "Vist energi (teller eller periode)",
     "washer": "Vaskemaskin",
     "dryer": "Tørketrommel",
     "dishwasher": "Oppvaskmaskin",
@@ -1007,7 +1023,11 @@ const STRINGS = {
     "ph_heat": "Verwarmen",
     "f_heating_power": "Drempelwaarde verwarmingsfase (W)",
     "f_spin_power": "Drempelwaarde centrifugeerfase (W)",
-    "f_images": "Afbeeldingen per toestand (lijst: image + above / below / state)"
+    "f_images": "Afbeeldingen per toestand (lijst: image + above / below / state)",
+    "energy_day": "Vandaag",
+    "energy_week": "Deze week",
+    "energy_month": "Deze maand",
+    "f_energy_period": "Getoonde energie (teller of periode)"
   },
   "ro": {
     "washer": "Mașină de spălat rufe",
@@ -1206,7 +1226,11 @@ const STRINGS = {
     "ph_heat": "Încălzire",
     "f_heating_power": "Prag de putere pentru încălzire (W)",
     "f_spin_power": "Prag de putere pentru centrifugare (W)",
-    "f_images": "Imagini după stare (listă: image + above / below / state)"
+    "f_images": "Imagini după stare (listă: image + above / below / state)",
+    "energy_day": "Azi",
+    "energy_week": "Săptămâna aceasta",
+    "energy_month": "Luna aceasta",
+    "f_energy_period": "Energie afișată (contor sau perioadă)"
   },
   "ru": {
     "washer": "Стиральная машина",
@@ -1405,7 +1429,11 @@ const STRINGS = {
     "ph_heat": "Нагрев",
     "f_heating_power": "Порог фазы нагрева (Вт)",
     "f_spin_power": "Порог фазы отжима (Вт)",
-    "f_images": "Изображения по состоянию (список: image + above / below / state)"
+    "f_images": "Изображения по состоянию (список: image + above / below / state)",
+    "energy_day": "Сегодня",
+    "energy_week": "На этой неделе",
+    "energy_month": "В этом месяце",
+    "f_energy_period": "Отображаемая энергия (счётчик или период)"
   }
 };
 const lang = (hass) => {
@@ -3298,8 +3326,23 @@ class ApplianceCardBase extends HTMLElement {
     if (this._config.color) this.style.setProperty("--ac-accent", this._config.color);
   }
 
+  // energy_period (day / week / month) : consommation de la période d'après les statistiques de Home Assistant
+  // (même calcul que le tableau de bord Énergie), relue au plus toutes les 5 min ou quand le compteur bouge
+  _fetchPeriod() {
+    const c = this._config, hass = this._hass, per = c.energy_period;
+    if (!["day", "week", "month"].includes(per) || !c.energy || !hass || typeof hass.callWS !== "function") return;
+    const st = hass.states[c.energy], sig = `${per}|${c.energy}|${st ? st.state : ""}`, now = Date.now();
+    if (this._perBusy || (sig === this._perSig && now - (this._perAt || 0) < 300000) || (this._perAt && now - this._perAt < 60000)) return;
+    this._perBusy = true; this._perSig = sig; this._perAt = now;
+    hass.callWS({ type: "recorder/statistic_during_period", statistic_id: c.energy, calendar: { period: per }, types: ["change"], units: { energy: "kWh" } })
+      .then((r) => { this._perKwh = r && Number.isFinite(r.change) ? r.change : null; })
+      .catch(() => { this._perKwh = null; })
+      .finally(() => { this._perBusy = false; if (this._hass) this._render(this._compute()); });
+  }
+
   _update(force) {
     const hass = this._hass;
+    this._fetchPeriod();
     const key = this._ids().map((i) => {
       const s = hass.states[i];
       return s ? `${s.state}|${s.attributes.temperature ?? ""}|${s.attributes.current_temperature ?? ""}` : "x";
@@ -4043,7 +4086,10 @@ class ApplianceCardBase extends HTMLElement {
     const dual = kind === "water_heater" && (m.pwS || m.energyS);
     if (m.pw && c.show_power !== false) tile(solar ? "mdi:solar-power" : "mdi:flash", fmtPower(hass, m.pw) ?? "—", lb(solar ? "production" : dual ? "grid" : "power"), c.power);
     if (m.pwS) tile("mdi:solar-power", fmtPower(hass, m.pwS) ?? "—", lb("solar_surplus"), c.power_solar);
-    if (m.energy) {
+    const per = ["day", "week", "month"].includes(c.energy_period) && this._perKwh != null ? c.energy_period : null;
+    if (m.energy && per && !dual && !solar) {
+      tile("mdi:calendar-today", `${fmtNum(hass, this._perKwh, 2)} kWh`, c.labels && c.labels.energy ? lb("energy") : tr(hass, `energy_${per}`), c.energy);
+    } else if (m.energy) {
       const eVal = fmtEnergy(hass, m.energy) ?? "—";
       const yp = m.energy.attributes && m.energy.attributes.last_period;
       if (yp !== undefined && yp !== null && !isNaN(parseFloat(yp))) {
@@ -4129,6 +4175,8 @@ function buildForm(kind) {
             { name: "max_temperature", selector: { number: { min: 0, max: 15, step: 0.5, mode: "box" } } },
             { name: "freezer_max_temperature", selector: { number: { min: -30, max: 0, step: 0.5, mode: "box" } } },
           ] : []),
+          ...(d.fields.includes("energy") ? [{ name: "energy_period", selector: { select: { mode: "dropdown", options: [
+            { value: "", label: tr(null, "energy") }, ...["day", "week", "month"].map((value) => ({ value, label: tr(null, `energy_${value}`) }))] } } }] : []),
           { name: "animations", selector: { boolean: {} }, default: true },
           ...(kind === "generic" ? [{ name: "image", selector: { text: {} } }, { name: "images", selector: { object: {} } }] : []),
           ...(kind === "printer_3d" ? [

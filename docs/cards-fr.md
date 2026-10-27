@@ -62,6 +62,15 @@ cost: sensor.lave_linge_cout_jour
 
 **Plusieurs appareils du même type** : chaque carte est indépendante (ses propres entités, son état, ses minuteries). Deux lave-linge ou plusieurs frigos peuvent cohabiter, il suffit de donner à chaque carte ses entités (et un `name`).
 
+**Consommation du jour** : avec un compteur d'énergie cumulé (la plupart des prises connectées), `energy_period: day` (ou `week`, `month`) affiche ce qui a été consommé depuis minuit au lieu du compteur total. Home Assistant le calcule à partir des statistiques longue durée, comme le tableau de bord Énergie : plus besoin de créer un Utility Meter par appareil. Il faut un capteur avec statistiques (`state_class: total_increasing`), sinon la carte affiche le compteur.
+
+```yaml
+type: custom:appliance-washer-card
+power: sensor.prise_lave_linge_puissance
+energy: sensor.prise_lave_linge_energie
+energy_period: day
+```
+
 **Libellés perso des tuiles** : l'option `labels` renomme les tuiles sous le dessin, dans la langue de ton choix. Tu donnes la clé de la tuile et ton texte ; les tuiles non listées gardent la traduction. Le champ **Libellés perso des tuiles** de l'éditeur visuel prend les mêmes lignes `clé: texte`. La liste des clés par carte est dans [configuration.md](configuration.md#custom-tile-labels).
 
 ```yaml

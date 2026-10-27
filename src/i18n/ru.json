@@ -196,7 +196,11 @@
     "ph_heat": "Нагрев",
     "f_heating_power": "Порог фазы нагрева (Вт)",
     "f_spin_power": "Порог фазы отжима (Вт)",
-    "f_images": "Изображения по состоянию (список: image + above / below / state)"
+    "f_images": "Изображения по состоянию (список: image + above / below / state)",
+    "energy_day": "Сегодня",
+    "energy_week": "На этой неделе",
+    "energy_month": "В этом месяце",
+    "f_energy_period": "Отображаемая энергия (счётчик или период)"
   },
   "aquarium": {
     "power": "Мощность",
