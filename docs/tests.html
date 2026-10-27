@@ -723,6 +723,10 @@ ok('no page errors',__errors.length===0,__errors.join('; '));
  ok('labels: escaped',!c.sr.querySelector('.xss'),c.sr.innerHTML.slice(0,80));
  c=card('washer',{power:'sensor.p',labels:{power:'<b class="xss">x</b>'}},[mk('sensor.p',500,W)]);
  ok('labels: core escaped',!c.sr.querySelector('.xss'));}
+// russian
+{let c=card('washer',{power:'sensor.p'},[mk('sensor.p',500,W)],'ru'); ok('ru: core card',/Стиральная машина/.test(c.txt()),c.txt());
+ c=card('sauna',{entity:'switch.s',entity_power:'sensor.p'},[mk('switch.s','on'),mk('sensor.p',6000,W)],'ru'); ok('ru: sauna',/Нагреватель/.test(c.sr.textContent),c.sr.textContent.slice(0,120));
+ c=card('battery',{entity_soc:'sensor.b',entity_power:'sensor.p'},[mk('sensor.b',50,{unit_of_measurement:'%'}),mk('sensor.p',300,W)],'ru'); ok('ru: battery',/Мощность/.test(c.sr.textContent),c.sr.textContent.slice(0,120));}
 window.RESULTS=R;
 const fails=R.filter(r=>!r.pass).length;
 document.getElementById('sum').innerHTML=`<b class="${fails?'f':'p'}">${R.length-fails} / ${R.length} tests réussis</b> — fichier testé : <code>dist/ha-appliance-electromenager-cards.js</code>`;

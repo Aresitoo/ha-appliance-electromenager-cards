@@ -520,7 +520,7 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
           num('max_flow', 1, 10000, 1, 'L/min'), num('max_power', 10, 100000, 10, 'W'), num('run_threshold', 0, 5000, 1, 'W'),
           num('max_pressure', 1, 100, 0.5, 'bar'), num('pressure_max', 0, 100, 0.1, 'bar'), num('temp_max', 20, 150, 1, '°C'), KINDS[this.kind].sump ? num('level_max', 0, 100, 1, '%') : num('level_min', 0, 100, 1, '%'),
         ] },
-        { name: 'language', selector: { select: { options: Object.keys(T).map((value) => ({ value, label: { fr: 'Français', en: 'English', de: 'Deutsch', nb: 'Norsk bokmål', ro: 'Română', nl: 'Nederlands' }[value] || value })) } } },
+        { name: 'language', selector: { select: { options: Object.keys(T).map((value) => ({ value, label: { fr: 'Français', en: 'English', de: 'Deutsch', nb: 'Norsk bokmål', ro: 'Română', nl: 'Nederlands', ru: 'Русский' }[value] || value })) } } },
         { type: 'grid', name: '', schema: [
           bool('show_status'), bool('show_controls'), bool('show_flow'), bool('show_pressure'), bool('show_power'), bool('show_temp'),
           bool('show_level'), bool('show_runtime'), bool('show_starts'), bool('show_energy'), bool('show_cost'), bool('animations'),

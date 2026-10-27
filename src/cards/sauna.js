@@ -320,7 +320,7 @@ svg{display:block;width:100%;max-width:250px;height:var(--appliance-illustration
           num('heater_threshold', 0, 15000, 10, 'W'), num('off_threshold', 0, 500, 0.5, 'W'),
           num('temp_max', 60, 140, 1, '°C'), num('temp_scale', 60, 150, 1, '°C'),
         ] },
-        { name: 'language', selector: { select: { options: Object.keys(T).map((value) => ({ value, label: { fr: 'Français', en: 'English', de: 'Deutsch', nb: 'Norsk bokmål', ro: 'Română', nl: 'Nederlands' }[value] || value })) } } },
+        { name: 'language', selector: { select: { options: Object.keys(T).map((value) => ({ value, label: { fr: 'Français', en: 'English', de: 'Deutsch', nb: 'Norsk bokmål', ro: 'Română', nl: 'Nederlands', ru: 'Русский' }[value] || value })) } } },
         { type: 'grid', name: '', schema: [
           bool('show_status'), bool('show_controls'), bool('show_temp'), bool('show_humidity'),
           bool('show_power'), bool('show_energy'), bool('show_cost'), bool('animations'),

@@ -323,7 +323,7 @@ svg{display:block;width:100%;max-width:230px;height:var(--appliance-illustration
           num('off_threshold', 0, 500, 0.1, 'W'), num('temp_max', 20, 60, 0.5, '°C'),
           num('ph_min', 0, 14, 0.1), num('ph_max', 0, 14, 0.1),
         ] },
-        { name: 'language', selector: { select: { options: Object.keys(T).map((value) => ({ value, label: { fr: 'Français', en: 'English', de: 'Deutsch', nb: 'Norsk bokmål', ro: 'Română', nl: 'Nederlands' }[value] || value })) } } },
+        { name: 'language', selector: { select: { options: Object.keys(T).map((value) => ({ value, label: { fr: 'Français', en: 'English', de: 'Deutsch', nb: 'Norsk bokmål', ro: 'Română', nl: 'Nederlands', ru: 'Русский' }[value] || value })) } } },
         { type: 'grid', name: '', schema: [
           { name: 'show_status', selector: { boolean: {} }, default: true }, { name: 'show_power', selector: { boolean: {} }, default: true },
           { name: 'show_energy', selector: { boolean: {} }, default: true }, { name: 'show_temp', selector: { boolean: {} }, default: true },

@@ -357,7 +357,7 @@ svg{display:block;width:100%;max-width:280px;height:var(--appliance-illustration
         { type: 'grid', name: '', schema: [
           num('filter_alert', 0, 100, 1, 80), num('water_level_min', 0, 1000, 1, 70), num('water_level_full', 1, 1000, 1, 100), num('run_threshold', 0, 2000, 1, 30),
         ] },
-        { name: 'language', selector: { select: { options: Object.keys(T).map((value) => ({ value, label: { fr: 'Français', en: 'English', de: 'Deutsch', nb: 'Norsk bokmål', ro: 'Română', nl: 'Nederlands' }[value] || value })) } } },
+        { name: 'language', selector: { select: { options: Object.keys(T).map((value) => ({ value, label: { fr: 'Français', en: 'English', de: 'Deutsch', nb: 'Norsk bokmål', ro: 'Română', nl: 'Nederlands', ru: 'Русский' }[value] || value })) } } },
         { type: 'grid', name: '', schema: [
           bool('show_status'), bool('show_controls'), bool('show_status_tile'), bool('show_filter'), bool('show_water_level'), bool('show_water_temp'),
           bool('show_time'), bool('show_battery'), bool('show_mode'), bool('show_power'), bool('show_energy'), bool('animations'),
