@@ -693,7 +693,11 @@
     "color_cycle": "Kleurenwissel",
     "multicolor": "Veelkleurige lichtjes",
     "show_brightness": "Helderheid tonen",
-    "labels": "Eigen tegellabels (sleutel: tekst)"
+    "labels": "Eigen tegellabels (sleutel: tekst)",
+    "sun_entity": "Zon-entiteit (dag / nacht)",
+    "shutter_color": "Kleur van het luik",
+    "show_slider": "Schuifregelaars tonen",
+    "show_tilt": "Kanteling tonen"
   },
   "light": {
     "light_bulb": "Lamp",
@@ -715,5 +719,23 @@
     "brightness": "Helderheid",
     "power": "Vermogen",
     "energy": "Energie"
+  },
+  "shutter": {
+    "roller_shutter": "Rolluik",
+    "venetian_blind": "Jaloezie",
+    "swing_shutter": "Luiken",
+    "open": "Open",
+    "closed": "Gesloten",
+    "opening": "Gaat open",
+    "closing": "Sluit",
+    "partial": "Open",
+    "unavailable": "Niet beschikbaar",
+    "btn_open": "Openen",
+    "btn_stop": "Stop",
+    "btn_close": "Sluiten",
+    "position": "Positie",
+    "tilt": "Kanteling",
+    "power": "Motor",
+    "since": "Laatste wijziging"
   }
 }

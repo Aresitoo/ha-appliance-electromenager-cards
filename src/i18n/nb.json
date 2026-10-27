@@ -514,6 +514,10 @@
 "water_hot": "Vannet er for varmt"
 },
 "editor": {
+"sun_entity": "Sol-entitet (dag / natt)",
+"shutter_color": "Farge på skodden",
+"show_slider": "Vis glidebrytere",
+"show_tilt": "Vis vinkel",
 "labels": "Egne flisetiketter (nøkkel: tekst)",
 "animations": "Animasjoner",
 "battery_low": "Lavt batteri (%)",
@@ -715,5 +719,23 @@
 "brightness": "Lysstyrke",
 "power": "Effekt",
 "energy": "Energi"
+},
+"shutter": {
+"roller_shutter": "Rullegardin",
+"venetian_blind": "Persienne",
+"swing_shutter": "Vinduslemmer",
+"open": "Åpen",
+"closed": "Lukket",
+"opening": "Åpner",
+"closing": "Lukker",
+"partial": "Åpen",
+"unavailable": "Utilgjengelig",
+"btn_open": "Åpne",
+"btn_stop": "Stopp",
+"btn_close": "Lukk",
+"position": "Posisjon",
+"tilt": "Vinkel",
+"power": "Motor",
+"since": "Sist endret"
 }
 }

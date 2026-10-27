@@ -93,7 +93,7 @@ const hass = () => ({
     // robots : les boutons Démarrer / Pause / Base changent l'état simulé
     const robot = { start: 'cleaning', start_mowing: 'mowing', pause: 'paused', return_to_base: 'returning', dock: 'returning' }[service];
     if (cur && robot && (domain === 'vacuum' || domain === 'lawn_mower')) { set(data.entity_id, robot); if (ROBOT_SEL[data.entity_id]) ROBOT_SEL[data.entity_id].value = robot; refresh(); }
-    if (cur && domain === 'cover') simCover(data.entity_id, service);
+    if (cur && domain === 'cover') simCover(data.entity_id, service, data);
     // lumières : allumer / éteindre, et couleur choisie par la carte
     if (cur && domain === 'light') {
       const at = { ...cur.attributes, ...(data.rgb_color ? { rgb_color: data.rgb_color } : {}) };
@@ -110,17 +110,21 @@ const hass = () => ({
 const refresh = () => { const h = hass(); cards.forEach((c) => (c.hass = h)); };
 // portails, barrière, garage : les boutons font bouger la cover simulée (position pas à pas si elle en a une)
 const COVER = {}, COVER_SEL = {};
-function simCover(id, service) {
+function simCover(id, service, data = {}) {
   const cur = states[id], a = cur.attributes, travel = a._travel || 8;
   clearInterval(COVER[id]); clearTimeout(COVER[id]);
   const done = (st) => { set(id, st); if (COVER_SEL[id]) COVER_SEL[id].value = st; refresh(); };
   if (service === 'stop_cover') { done(a.current_position === 0 ? 'closed' : 'open'); return; }
-  const up = service === 'open_cover';
+  if (service === 'set_cover_tilt_position') { a.current_tilt_position = data.tilt_position; refresh(); return; }
+  const target = service === 'set_cover_position' ? data.position : service === 'open_cover' ? 100 : 0;
+  const up = a.current_position == null ? service === 'open_cover' : target > a.current_position;
+  if (a.current_position != null && target === a.current_position) return;
   done(up ? 'opening' : 'closing');
   if (a.current_position == null) { COVER[id] = setTimeout(() => done(up ? 'open' : 'closed'), travel * 1000); return; }
   COVER[id] = setInterval(() => {
-    a.current_position = Math.max(0, Math.min(100, Math.round(a.current_position + (up ? 100 : -100) / travel)));
-    if (a.current_position === 0 || a.current_position === 100) { clearInterval(COVER[id]); done(a.current_position ? 'open' : 'closed'); } else refresh();
+    const np = Math.round(a.current_position + (up ? 100 : -100) / travel);
+    a.current_position = up ? Math.min(target, np) : Math.max(target, np);
+    if (a.current_position === target) { clearInterval(COVER[id]); done(a.current_position ? 'open' : 'closed'); } else refresh();
   }, 1000);
 }
 const COVER_STATES = [['closed', 'Fermé / Closed'], ['open', 'Ouvert / Open'], ['opening', 'Ouverture / Opening'], ['closing', 'Fermeture / Closing'], ['unavailable', 'Indisponible']];
@@ -721,8 +725,24 @@ const SCEN = [
   { kind: 'christmas-tree', title: 'Sapin de Noël', lang: true,
     cfg: { entity: 'light.demo_christmas_tree', entity_power: 'sensor.demo_christmas_tree_power' },
     build(ctl) { lightCtl(ctl, 'light.demo_christmas_tree', 'sensor.demo_christmas_tree_power', { brightness: 255 }); } },
+  { kind: 'roller-shutter', title: 'Volet roulant', lang: true,
+    cfg: { entity: 'cover.demo_roller_shutter', entity_power: 'sensor.demo_roller_shutter_power', travel_time: 10 },
+    build(ctl) { shutterCtl(ctl, 'cover.demo_roller_shutter', 'sensor.demo_roller_shutter_power', 10, 40); } },
+  { kind: 'venetian-blind', title: 'Store vénitien', lang: true,
+    cfg: { entity: 'cover.demo_venetian_blind', entity_power: 'sensor.demo_venetian_blind_power', travel_time: 8 },
+    build(ctl) { shutterCtl(ctl, 'cover.demo_venetian_blind', 'sensor.demo_venetian_blind_power', 8, 0, 60); } },
+  { kind: 'swing-shutter', title: 'Volets battants', lang: true,
+    cfg: { entity: 'cover.demo_swing_shutter', entity_power: 'sensor.demo_swing_shutter_power', travel_time: 8 },
+    build(ctl) { shutterCtl(ctl, 'cover.demo_swing_shutter', 'sensor.demo_swing_shutter_power', 8, 100); } },
 ];
 const ROBOT_SEL = {}, LIGHT_SEL = {};
+// volets : cover positionnable (et inclinable pour le store vénitien), moteur, soleil jour / nuit
+function shutterCtl(ctl, id, pw, travel, pos, tilt) {
+  cover(ctl, id, travel, true, pos > 0 ? 'open' : 'closed');
+  Object.assign(states[id].attributes, { current_position: pos, supported_features: tilt == null ? 15 : 255 }, tilt == null ? {} : { current_tilt_position: tilt });
+  select(ctl, 'Soleil', 'sun.sun', [['above_horizon', 'Jour / Day'], ['below_horizon', 'Nuit / Night']], 'above_horizon');
+  range(ctl, 'Puissance moteur', pw, 0, 300, 1, 0, 'W', W);
+}
 // lumières : état, luminosité et couleur simulés
 function lightCtl(ctl, id, pw, attrs) {
   set(id, 'on', { ...attrs });

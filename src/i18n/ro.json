@@ -693,7 +693,11 @@
     "color_cycle": "Ciclu de culori",
     "multicolor": "Instalație multicoloră",
     "show_brightness": "Afișează luminozitatea",
-    "labels": "Etichete proprii pentru plăci (cheie: text)"
+    "labels": "Etichete proprii pentru plăci (cheie: text)",
+    "sun_entity": "Entitate soare (zi / noapte)",
+    "shutter_color": "Culoarea obloanelor",
+    "show_slider": "Afișează cursoarele",
+    "show_tilt": "Afișează înclinarea"
   },
   "light": {
     "light_bulb": "Bec",
@@ -715,5 +719,23 @@
     "brightness": "Luminozitate",
     "power": "Putere",
     "energy": "Energie"
+  },
+  "shutter": {
+    "roller_shutter": "Rulou exterior",
+    "venetian_blind": "Jaluzea",
+    "swing_shutter": "Obloane",
+    "open": "Deschis",
+    "closed": "Închis",
+    "opening": "Se deschide",
+    "closing": "Se închide",
+    "partial": "Deschis",
+    "unavailable": "Indisponibil",
+    "btn_open": "Deschide",
+    "btn_stop": "Stop",
+    "btn_close": "Închide",
+    "position": "Poziție",
+    "tilt": "Înclinare",
+    "power": "Motor",
+    "since": "Ultima schimbare"
   }
 }

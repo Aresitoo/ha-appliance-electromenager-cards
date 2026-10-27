@@ -693,7 +693,11 @@
     "color_cycle": "Farbwechsel",
     "multicolor": "Bunte Lichterkette",
     "show_brightness": "Helligkeit anzeigen",
-    "labels": "Eigene Kachelbeschriftungen (Schlüssel: Text)"
+    "labels": "Eigene Kachelbeschriftungen (Schlüssel: Text)",
+    "sun_entity": "Sonnen-Entität (Tag / Nacht)",
+    "shutter_color": "Farbe des Ladens",
+    "show_slider": "Schieberegler anzeigen",
+    "show_tilt": "Neigung anzeigen"
   },
   "light": {
     "light_bulb": "Glühbirne",
@@ -715,5 +719,23 @@
     "brightness": "Helligkeit",
     "power": "Leistung",
     "energy": "Energie"
+  },
+  "shutter": {
+    "roller_shutter": "Rollladen",
+    "venetian_blind": "Jalousie",
+    "swing_shutter": "Klappläden",
+    "open": "Offen",
+    "closed": "Geschlossen",
+    "opening": "Öffnet",
+    "closing": "Schließt",
+    "partial": "Offen",
+    "unavailable": "Nicht verfügbar",
+    "btn_open": "Öffnen",
+    "btn_stop": "Stopp",
+    "btn_close": "Schließen",
+    "position": "Position",
+    "tilt": "Neigung",
+    "power": "Motor",
+    "since": "Letzte Änderung"
   }
 }
