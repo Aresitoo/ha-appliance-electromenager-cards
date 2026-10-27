@@ -8,7 +8,7 @@
 
 <p align="center"><img src="https://raw.githubusercontent.com/skyrotter/ha-appliance-electromenager-cards/main/docs/43-cartes.gif" width="560" alt="Cartes animées pour Home Assistant"></p>
 
-**49 cartes Lovelace pour l'électroménager**, chacune avec une illustration animée réaliste : tambour de lave-linge, flamme de poêle à granulés, chauffage diesel et sa couronne bleue, jacuzzi et ses jets, robot aspirateur, compteur Linky, batterie domestique… Elles affichent l'état en direct, la puissance, l'énergie et le coût, suivent le thème de Home Assistant (clair/sombre) et parlent français, anglais, allemand, norvégien, néerlandais et roumain.
+**52 cartes Lovelace pour l'électroménager**, chacune avec une illustration animée réaliste : tambour de lave-linge, flamme de poêle à granulés, chauffage diesel et sa couronne bleue, jacuzzi et ses jets, robot aspirateur, compteur Linky, batterie domestique… Elles affichent l'état en direct, la puissance, l'énergie et le coût, suivent le thème de Home Assistant (clair/sombre) et parlent français, anglais, allemand, norvégien, néerlandais et roumain.
 
 Une simple prise connectée avec un capteur de puissance suffit. Les appareils connectés peuvent ajouter le programme, le temps restant, la progression, la porte, les températures…
 
@@ -96,6 +96,9 @@ Clique sur une carte pour ses options et ses exemples (pages en anglais).
 | [Borne de recharge (wallbox + voiture)](https://github.com/skyrotter/ha-appliance-electromenager-cards/blob/main/docs/cards/ev-charger.md) | `custom:appliance-ev-charger-card` |
 | [Compteur Linky](https://github.com/skyrotter/ha-appliance-electromenager-cards/blob/main/docs/cards/linky.md) | `custom:appliance-linky-card` |
 | [Pompe de piscine](https://github.com/skyrotter/ha-appliance-electromenager-cards/blob/main/docs/cards/pool-pump.md) | `custom:appliance-pool-pump-card` |
+| [Robot nettoyeur de piscine](https://github.com/skyrotter/ha-appliance-electromenager-cards/blob/main/docs/cards/pool-robot.md) | `custom:appliance-pool-robot-card` |
+| [Pompe à eau (arrosage, puits, cuve)](https://github.com/skyrotter/ha-appliance-electromenager-cards/blob/main/docs/cards/pumps.md) | `custom:appliance-water-pump-card` |
+| [Pompe industrielle](https://github.com/skyrotter/ha-appliance-electromenager-cards/blob/main/docs/cards/pumps.md) | `custom:appliance-industrial-pump-card` |
 | [Jacuzzi](https://github.com/skyrotter/ha-appliance-electromenager-cards/blob/main/docs/cards/jacuzzi.md) | `custom:appliance-jacuzzi-card` |
 | [Aquarium](https://github.com/skyrotter/ha-appliance-electromenager-cards/blob/main/docs/cards/aquarium.md) | `custom:appliance-aquarium-card` |
 

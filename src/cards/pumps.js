@@ -1,0 +1,447 @@
+/* Cartes « Pompes » — pompe à eau et pompe industrielle
+ * custom:appliance-water-pump-card, appliance-industrial-pump-card.
+ * Pompe à eau : style sobre, cuve source dont le niveau suit entity_level, roue à aubes visible
+ * dans la volute, eau qui circule dans les tuyaux, jet et vagues dans le bassin de sortie.
+ * Pompe industrielle : groupe moteur + pompe à engrenage interne sur châssis, finition métal,
+ * voyants RUN / ALERTE / DÉFAUT, manomètre, pulsations du tuyau de refoulement, vibrations.
+ * La vitesse des animations suit le débit (ou la puissance) : --spd, 0 → 1 de 0 à max_flow.
+ * États : off, running, warning (marche avec alerte), fault, unavailable.
+ */
+(() => {
+  if (customElements.get('appliance-water-pump-card')) return;
+
+  const T = /*@i18n pump*/{};
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); // texte → HTML sûr
+
+  const CSS = `
+:host{display:block}
+ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--pp-ok:var(--appliance-ok-color,#43a047);--pp-warn:#ffa31a;
+  --pp-alert:var(--appliance-alert-color,#db4437);--fluid:#3fa9f5;--spd:0;--lvl:.6;--pr:0}
+.head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.title{font-size:14px;font-weight:500;color:var(--primary-text-color);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:12px;background:var(--secondary-background-color);color:var(--secondary-text-color);white-space:nowrap}
+.running .badge{background:color-mix(in srgb,var(--pp-ok) 22%,transparent);color:var(--pp-ok)}
+.warning .badge{background:color-mix(in srgb,var(--pp-warn) 22%,transparent);color:var(--pp-warn)}
+.fault .badge{background:color-mix(in srgb,var(--pp-alert) 22%,transparent);color:var(--pp-alert)}
+.alert{display:none;margin-top:4px;font-size:11px;color:var(--pp-alert);font-weight:500;text-align:center}
+.alert.on{display:block}
+svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration-height,auto);margin:2px auto 0;overflow:visible;cursor:pointer}
+.ctl{display:flex;justify-content:center;gap:6px;margin-top:6px}
+.ctl.hide{display:none}
+.ctl button{flex:1 1 0;max-width:140px;display:flex;align-items:center;justify-content:center;gap:4px;border:0;border-radius:10px;padding:6px 4px;cursor:pointer;
+  background:var(--secondary-background-color);color:var(--primary-text-color);font:500 12px/16px var(--paper-font-body1_-_font-family,Roboto,sans-serif)}
+.ctl button ha-icon{--mdc-icon-size:16px}
+.ctl button:hover{filter:brightness(1.12)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(76px,1fr));gap:6px;margin-top:6px}
+.tile{box-sizing:border-box;background:var(--secondary-background-color);border-radius:10px;padding:5px 7px;min-width:0;overflow:hidden;text-align:center;cursor:pointer}
+.tile .l{display:flex;align-items:center;justify-content:center;gap:3px;font-size:10px;line-height:14px;color:var(--secondary-text-color);min-width:0}
+.tile .l span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tile .l ha-icon{--mdc-icon-size:13px;flex:none}
+.tile .v{font-size:14px;line-height:18px;font-weight:600;color:var(--primary-text-color);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile .v small{font-size:10px;font-weight:400;color:var(--secondary-text-color);margin-left:2px}
+.tile.hide{display:none}
+.tile.bad .v{color:var(--pp-alert)}
+
+/* ---- commun : le fluide circule dans les tuyaux, plus vite quand le débit monte ---- */
+.flow{fill:none;stroke:var(--fluid);stroke-linecap:round;opacity:0;transition:opacity .6s}
+.running .flow,.warning .flow{opacity:1;animation:ppflow calc(var(--fd) / var(--spd)) linear infinite}
+@keyframes ppflow{to{stroke-dashoffset:calc(var(--dl) * -1)}}
+.rot{transform:rotate(0)}
+.running .rot,.warning .rot{animation:ppspin calc(var(--rd) / var(--spd)) linear infinite}
+@keyframes ppspin{to{transform:rotate(360deg)}}
+.led{fill:#59636c;transition:fill .4s}
+.fluidfill{fill:var(--fluid)}
+
+/* ---- pompe à eau (sobre) ---- */
+.wp{--fd:.9s;--dl:24px;--rd:.5s}
+.wp .tankw{transform:translateY(calc((1 - var(--lvl)) * 80px));transition:transform 1.2s ease-out}
+.wp .wave{animation:ppwave 3s linear infinite}
+.wp.running .wave,.wp.warning .wave{animation-duration:1.4s}
+.wp .basin .wave{animation-duration:4s}
+.wp.running .basin .wave,.wp.warning .basin .wave{animation-duration:.9s}
+@keyframes ppwave{to{transform:translateX(-24px)}}
+.wp .jetd{stroke:#fff}
+.wp .jet{opacity:0;transition:opacity .5s}
+.wp.running .jet,.wp.warning .jet{opacity:.9}
+.wp .ripple{fill:none;stroke:#fff;stroke-width:1;opacity:0;transform-box:fill-box;transform-origin:center}
+.wp.running .ripple,.wp.warning .ripple{animation:ppripple 1.2s ease-out infinite}
+.wp .ripple:nth-of-type(2){animation-delay:-.6s!important}
+@keyframes ppripple{0%{opacity:.8;transform:scale(.3)}100%{opacity:0;transform:scale(1.6)}}
+.wp.running .led{fill:var(--pp-ok)}
+.wp.warning .led{fill:var(--pp-warn);animation:ppblink 1s steps(2) infinite}
+.wp.fault .led{fill:var(--pp-alert);animation:ppblink .5s steps(2) infinite}
+@keyframes ppblink{50%{opacity:.25}}
+
+/* ---- pompe industrielle (robuste) ---- */
+.ip{--fd:.45s;--dl:36px;--rd:.6s}
+.ip .rot.fast{--rd:.35s}
+.ip .rig{transform-box:view-box}
+.ip.running .rig,.ip.warning .rig{animation:ppvib .12s linear infinite}
+@keyframes ppvib{25%{transform:translate(.4px,-.3px)}75%{transform:translate(-.4px,.3px)}}
+/* pulsations : le tuyau de refoulement gonfle au rythme de la pompe, une onde de pression part de la bride */
+.ip .pipeo{stroke-width:15}
+.ip.running .pipeo,.ip.warning .pipeo{animation:pppulse calc(.5s / var(--spd)) ease-in-out infinite}
+@keyframes pppulse{50%{stroke-width:18}}
+.ip .wavep{fill:none;stroke:var(--fluid);stroke-width:2;opacity:0;transform-box:fill-box;transform-origin:center}
+.ip.running .wavep,.ip.warning .wavep{animation:ppring calc(.9s / var(--spd)) ease-out infinite}
+.ip .wavep:nth-of-type(2){animation-delay:calc(-.45s / var(--spd))!important}
+@keyframes ppring{0%{opacity:.9;transform:scale(.6)}100%{opacity:0;transform:scale(1.8)}}
+.ip .glow{opacity:0;transition:opacity .6s}
+.ip.running .glow,.ip.warning .glow{opacity:.55;animation:ppglow calc(.5s / var(--spd)) ease-in-out infinite}
+@keyframes ppglow{50%{opacity:.15}}
+/* manomètre : l'aiguille suit la pression et tremble en marche */
+.ip .needle{transform-box:view-box;transform-origin:124px 20px;transform:rotate(calc(var(--pr) * 240deg - 120deg));transition:transform 1s ease-out}
+.ip .needle g{transform-box:view-box;transform-origin:124px 20px}
+.ip.running .needle g,.ip.warning .needle g{animation:ppjit .18s ease-in-out infinite alternate}
+@keyframes ppjit{to{transform:rotate(4deg)}}
+.ip .shaft{stroke-dasharray:3 3}
+.ip.running .shaft,.ip.warning .shaft{animation:ppshaft .12s linear infinite}
+@keyframes ppshaft{to{stroke-dashoffset:-6}}
+.ip .led.run{fill:#1f4d24}.ip .led.wrn{fill:#5a4416}.ip .led.flt{fill:#4f1d19}
+.ip.running .led.run,.ip.warning .led.run{fill:#3ddc5a;filter:drop-shadow(0 0 3px #3ddc5a)}
+.ip.warning .led.wrn{fill:#ffb31a;filter:drop-shadow(0 0 3px #ffb31a);animation:ppblink 1s steps(2) infinite}
+.ip.fault .led.flt{fill:#ff3b30;filter:drop-shadow(0 0 3px #ff3b30);animation:ppblink .5s steps(2) infinite}
+.ip .plate{fill:#1d2125;font:700 7px/1 var(--paper-font-body1_-_font-family,Roboto,sans-serif);text-anchor:middle}
+.noanim *{animation:none!important}
+`;
+
+  /* Pompe à eau : cuve source à gauche, volute avec roue à aubes, moteur, refoulement vers un bassin */
+  const SVG_WATER = (label) => {
+    const blades = Array.from({ length: 6 }, (_, i) => `<path d="M0 0 Q7 -4 5 -13" transform="rotate(${i * 60})"/>`).join('');
+    const fins = Array.from({ length: 10 }, (_, i) => `M${124 + i * 6} 97 V135`).join(' ');
+    const wave = (x, y, w) => `M${x} ${y} q6 -3 12 0 t12 0 t12 0 t12 0 t12 0 t12 0 t12 0 t12 0 t12 0 t12 0 t12 0 t12 0 V${y + w} H${x} Z`;
+    return `
+<svg viewBox="0 0 260 170" role="img" aria-label="${esc(label)}">
+ <defs>
+  <linearGradient id="wpbody" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".6" stop-color="#dfe5ea"/><stop offset="1" stop-color="#b9c3cb"/></linearGradient>
+  <linearGradient id="wpvol" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5fb4ff"/><stop offset="1" stop-color="#1e6fc9"/></linearGradient>
+  <linearGradient id="wpwater" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--fluid)" stop-opacity=".75"/><stop offset="1" stop-color="var(--fluid)" stop-opacity=".95"/></linearGradient>
+  <clipPath id="wptank"><rect x="10" y="64" width="36" height="84" rx="2"/></clipPath>
+  <clipPath id="wpbasin"><rect x="198" y="128" width="52" height="24" rx="2"/></clipPath>
+ </defs>
+ <ellipse cx="130" cy="160" rx="122" ry="5" fill="#000" opacity=".15"/>
+ <!-- cuve source : niveau = entity_level -->
+ <rect x="8" y="60" width="40" height="92" rx="4" fill="#e9f0f5" opacity=".55" stroke="#9fb3c3" stroke-width="1.2"/>
+ <g clip-path="url(#wptank)"><g class="tankw"><path class="wave" d="${wave(-2, 66, 90)}" fill="url(#wpwater)"/></g></g>
+ <rect x="6" y="56" width="44" height="6" rx="2" fill="#9fb3c3"/>
+ <g stroke="#9fb3c3" stroke-width=".8"><path d="M40 80 H46 M40 100 H46 M40 120 H46 M40 140 H46"/></g>
+ <!-- tuyaux : enveloppe, intérieur, puis le fluide en tirets animés -->
+ <g fill="none" stroke-linecap="round">
+  <path d="M46 116 H62" stroke="#c3ced7" stroke-width="10"/>
+  <path d="M84 92 V42 Q84 34 92 34 H212 Q220 34 220 42 V58" stroke="#c3ced7" stroke-width="10"/>
+  <path d="M46 116 H62" stroke="#eef3f7" stroke-width="6"/>
+  <path d="M84 92 V42 Q84 34 92 34 H212 Q220 34 220 42 V58" stroke="#eef3f7" stroke-width="6"/>
+  <path class="flow" d="M46 116 H62" stroke-width="4" stroke-dasharray="5 7"/>
+  <path class="flow" d="M84 92 V42 Q84 34 92 34 H212 Q220 34 220 42 V58" stroke-width="4" stroke-dasharray="5 7"/>
+ </g>
+ <rect x="214" y="56" width="12" height="6" rx="1.5" fill="#9fb3c3"/>
+ <!-- jet qui tombe dans le bassin -->
+ <g class="jet"><rect x="217.5" y="62" width="5" height="70" rx="2.5" class="fluidfill" opacity=".55"/>
+  <path class="flow jetd" d="M220 62 V132" stroke-width="2.5" stroke-dasharray="4 8"/></g>
+ <!-- bassin de sortie avec vagues -->
+ <g class="basin" clip-path="url(#wpbasin)"><path class="wave" d="${wave(186, 134, 30)}" fill="url(#wpwater)"/></g>
+ <ellipse class="ripple" cx="220" cy="135" rx="9" ry="2.2"/><ellipse class="ripple" cx="220" cy="135" rx="9" ry="2.2"/>
+ <rect x="196" y="126" width="56" height="28" rx="4" fill="none" stroke="#9fb3c3" stroke-width="2"/>
+ <!-- socle -->
+ <rect x="74" y="138" width="20" height="9" rx="1.5" fill="#a9b4bd"/>
+ <rect x="104" y="140" width="92" height="7" rx="2" fill="#a9b4bd"/>
+ <!-- moteur à ailettes -->
+ <rect x="104" y="106" width="10" height="20" fill="#b9c3cb"/>
+ <rect x="110" y="92" width="78" height="48" rx="11" fill="url(#wpbody)" stroke="#aab6c0"/>
+ <path d="${fins}" stroke="#c4ced6" stroke-width="1.6"/>
+ <rect x="110" y="114" width="78" height="3" fill="var(--fluid)" opacity=".85"/>
+ <rect x="186" y="97" width="9" height="38" rx="4" fill="#aab6c0"/>
+ <rect x="134" y="82" width="28" height="12" rx="2" fill="#e8edf1" stroke="#aab6c0"/>
+ <circle class="led" cx="155" cy="88" r="2.4"/>
+ <!-- volute et roue à aubes -->
+ <circle cx="84" cy="116" r="24" fill="url(#wpvol)"/>
+ <circle cx="84" cy="116" r="16" fill="#0f2f52" opacity=".85"/>
+ <g transform="translate(84 116)"><g class="rot" fill="none" stroke="#bfe3ff" stroke-width="2.2" stroke-linecap="round">${blades}<circle r="3.2" fill="#bfe3ff" stroke="none"/></g></g>
+ <path d="M72 104 A16 16 0 0 1 92 102" stroke="#fff" stroke-width="1.5" fill="none" opacity=".35"/>
+</svg>`;
+  };
+
+  /* Pompe industrielle : châssis, pompe à engrenage interne à brides, accouplement protégé, moteur à ailettes */
+  const SVG_INDUSTRIAL = (label) => {
+    const teeth = (r, n, h) => Array.from({ length: n }, (_, i) => `<rect x="-2" y="${-r - h}" width="4" height="${h + 1}" rx="1" transform="rotate(${(360 / n) * i})"/>`).join('');
+    const ring = Array.from({ length: 12 }, (_, i) => `<rect x="-2" y="-21" width="4" height="5" rx="1" transform="rotate(${30 * i})"/>`).join('');
+    const bolts = Array.from({ length: 8 }, (_, i) => { const a = (i * 45 + 22.5) * Math.PI / 180;
+      return `<circle cx="${(78 + 31 * Math.cos(a)).toFixed(1)}" cy="${(112 + 31 * Math.sin(a)).toFixed(1)}" r="2.2"/>`; }).join('');
+    const fins = Array.from({ length: 8 }, (_, i) => `M152 ${80 + i * 8.5} H246`).join(' ');
+    // arc du manomètre entre deux angles (0° = aiguille verticale, sens horaire)
+    const pt = (a) => { const r = a * Math.PI / 180; return `${(124 + 10.5 * Math.sin(r)).toFixed(2)} ${(20 - 10.5 * Math.cos(r)).toFixed(2)}`; };
+    const arc = (a, b, col) => `<path d="M${pt(a)} A10.5 10.5 0 0 1 ${pt(b)}" stroke="${col}" stroke-width="2.2" fill="none"/>`;
+    const grill = Array.from({ length: 6 }, (_, i) => `M${252 + i * 2} 86 V138`).join(' ');
+    return `
+<svg viewBox="0 0 280 190" role="img" aria-label="${esc(label)}">
+ <defs>
+  <linearGradient id="ipsteel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d9dee2"/><stop offset=".45" stop-color="#8c969e"/><stop offset="1" stop-color="#4c555c"/></linearGradient>
+  <linearGradient id="ipmotor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7d8f9c"/><stop offset=".25" stop-color="#c4ced5"/><stop offset=".55" stop-color="#5d6f7c"/><stop offset="1" stop-color="#2f3b44"/></linearGradient>
+  <radialGradient id="ippump" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#7fa3c4"/><stop offset=".5" stop-color="#3b6488"/><stop offset="1" stop-color="#1d3550"/></radialGradient>
+  <pattern id="iphaz" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="8" height="8" fill="#f2a516"/><rect width="4" height="8" fill="#22262a"/></pattern>
+ </defs>
+ <ellipse cx="140" cy="180" rx="134" ry="5" fill="#000" opacity=".2"/>
+ <g class="rig">
+  <!-- châssis -->
+  <rect x="10" y="160" width="260" height="13" rx="2" fill="#3b4248"/><rect x="10" y="160" width="260" height="3" fill="#6b747c"/>
+  <g fill="#9aa3aa"><circle cx="22" cy="168" r="2.4"/><circle cx="96" cy="168" r="2.4"/><circle cx="184" cy="168" r="2.4"/><circle cx="258" cy="168" r="2.4"/></g>
+  <!-- tuyaux d'aspiration et de refoulement -->
+  <g fill="none">
+   <path d="M0 112 H40" stroke="#6c757d" stroke-width="15"/>
+   <path class="pipeo" d="M78 72 V50 Q78 42 86 42 H280" stroke="#6c757d"/>
+   <path d="M0 112 H40" stroke="#262b30" stroke-width="9"/>
+   <path d="M78 72 V50 Q78 42 86 42 H280" stroke="#262b30" stroke-width="9"/>
+   <path class="glow" d="M78 72 V50 Q78 42 86 42 H280" stroke="var(--fluid)" stroke-width="9"/>
+   <path class="flow" d="M0 112 H40" stroke-width="5" stroke-dasharray="10 8"/>
+   <path class="flow" d="M78 72 V50 Q78 42 86 42 H280" stroke-width="5" stroke-dasharray="10 8"/>
+  </g>
+  <!-- brides boulonnées -->
+  <rect x="38" y="96" width="7" height="32" rx="1.5" fill="url(#ipsteel)"/><rect x="62" y="66" width="32" height="7" rx="1.5" fill="url(#ipsteel)"/>
+  <rect x="196" y="28" width="7" height="28" rx="1.5" fill="url(#ipsteel)"/>
+  <g fill="#3b4248"><circle cx="41.5" cy="101" r="1.4"/><circle cx="41.5" cy="123" r="1.4"/><circle cx="67" cy="69.5" r="1.4"/><circle cx="89" cy="69.5" r="1.4"/><circle cx="199.5" cy="32" r="1.4"/><circle cx="199.5" cy="52" r="1.4"/></g>
+  <ellipse class="wavep" cx="78" cy="58" rx="9" ry="9"/><ellipse class="wavep" cx="78" cy="58" rx="9" ry="9"/>
+  <!-- manomètre -->
+  <rect x="122" y="32" width="4" height="6" fill="#8c969e"/>
+  <circle cx="124" cy="20" r="15" fill="url(#ipsteel)"/><circle cx="124" cy="20" r="12.5" fill="#f4f6f7"/>
+  ${arc(-120, 40, '#43a047')}${arc(40, 80, '#ffb31a')}${arc(80, 120, '#e53935')}
+  <g class="needle"><g><path d="M124 20 L124 9.5" stroke="#1d2125" stroke-width="1.4" stroke-linecap="round"/></g></g>
+  <circle cx="124" cy="20" r="1.8" fill="#1d2125"/>
+  <!-- pompe à engrenage interne -->
+  <path d="M58 140 L98 140 L104 160 L52 160 Z" fill="#3b4248"/>
+  <circle cx="78" cy="112" r="36" fill="url(#ippump)" stroke="#16283b" stroke-width="1.5"/>
+  <g fill="#c9d1d7">${bolts}</g>
+  <circle cx="78" cy="112" r="24" fill="#0e1a26"/>
+  <g transform="translate(78 112)">
+   <g class="rot" fill="#e8ecef"><circle r="21" fill="none" stroke="#e8ecef" stroke-width="2.5"/>${ring}</g>
+  </g>
+  <path d="M70 102 A11 11 0 0 0 70 122 A30 30 0 0 1 70 102 Z" fill="#f2a516"/>
+  <g transform="translate(83 112)"><g class="rot fast" fill="#bfc8cf"><circle r="8.5"/>${teeth(8.5, 8, 3.5)}<circle r="2.5" fill="#4c555c"/></g></g>
+  <path d="M56 96 A26 26 0 0 1 92 88" stroke="#fff" stroke-width="2" fill="none" opacity=".25"/>
+  <!-- arbre et carter d'accouplement -->
+  <path class="shaft" d="M114 112 H150" stroke="#cfd6db" stroke-width="6"/>
+  <rect x="116" y="98" width="32" height="28" rx="3" fill="url(#iphaz)" stroke="#22262a"/>
+  <rect x="122" y="108" width="20" height="8" rx="2" fill="#22262a"/>
+  <path class="shaft" d="M122 112 H142" stroke="#cfd6db" stroke-width="4"/>
+  <!-- moteur -->
+  <rect x="156" y="150" width="14" height="10" fill="#2f3b44"/><rect x="230" y="150" width="14" height="10" fill="#2f3b44"/>
+  <rect x="148" y="72" width="102" height="80" rx="12" fill="url(#ipmotor)" stroke="#232d35"/>
+  <path d="${fins}" stroke="#2f3b44" stroke-width="1.6" opacity=".55"/>
+  <rect x="248" y="80" width="18" height="64" rx="6" fill="url(#ipsteel)" stroke="#2f3b44"/>
+  <path d="${grill}" stroke="#2f3b44" stroke-width="1"/>
+  <rect x="160" y="104" width="38" height="17" rx="2" fill="#dfe4e8" stroke="#8c969e"/>
+  <text class="plate" id="ipplate" x="179" y="115.5">--</text>
+  <!-- boîte à bornes et voyants -->
+  <rect x="174" y="54" width="56" height="20" rx="3" fill="#1d2329" stroke="#4c555c"/>
+  <circle class="led run" cx="187" cy="64" r="3.6"/><circle class="led wrn" cx="202" cy="64" r="3.6"/><circle class="led flt" cx="217" cy="64" r="3.6"/>
+ </g>
+</svg>`;
+  };
+
+  const KINDS = {
+    water_pump: { cls: 'wp', svg: SVG_WATER, re: /pomp|pump|arros|forage|puits|well|irrig/i,
+      d: { max_flow: 40, max_power: 1200, run_threshold: 15, max_pressure: 6, pressure_max: 5, temp_max: 70, level_min: 15 } },
+    industrial_pump: { cls: 'ip', svg: SVG_INDUSTRIAL, re: /pomp|pump|surpress|booster|process/i,
+      d: { max_flow: 200, max_power: 7500, run_threshold: 100, max_pressure: 16, pressure_max: 12, temp_max: 85, level_min: 10 } },
+  };
+  const TILES = [
+    ['flow', 'mdi:waves-arrow-right', 'show_flow'],
+    ['pressure', 'mdi:gauge', 'show_pressure'],
+    ['power', 'mdi:flash', 'show_power'],
+    ['temp', 'mdi:thermometer', 'show_temp'],
+    ['level', 'mdi:storage-tank-outline', 'show_level'],
+    ['runtime', 'mdi:timer-outline', 'show_runtime'],
+    ['energy', 'mdi:lightning-bolt-circle', 'show_energy'],
+    ['cost', 'mdi:cash', 'show_cost'],
+  ];
+
+  class AppliancePumpCard extends HTMLElement {
+    setConfig(c) {
+      if (!c || typeof c !== 'object') throw new Error('Invalid configuration');
+      this._c = { show_status: true, show_controls: true, show_flow: true, show_pressure: true, show_power: true, show_temp: true, show_level: true,
+        show_runtime: true, show_energy: true, show_cost: true, no_flow_threshold: 0.5, ...KINDS[this.kind].d, ...c };
+      this._built = false;
+      if (this._hass) this._render();
+    }
+    set hass(h) { this._hass = h; if (this._c) this._render(); }
+    getCardSize() { return 5; }
+    getGridOptions() { return { columns: 12, min_columns: 6, rows: 'auto' }; }
+
+    _t(k) { return T[this._lang()][k] ?? T.en[k] ?? k; }
+    _lang() { const l = (this._c.language || (this._hass && this._hass.language) || 'en').slice(0, 2); return T[l] ? l : 'en'; }
+    _st(id) { return id && this._hass.states[id]; }
+    _num(id) {
+      const s = this._st(id); if (!s) return NaN;
+      const v = parseFloat(String(s.state).replace(',', '.'));
+      return isFinite(v) ? v : NaN;
+    }
+    _watts(id) {
+      const v = this._num(id); if (isNaN(v)) return NaN;
+      const u = ((this._st(id).attributes || {}).unit_of_measurement || '').toLowerCase();
+      return u === 'kw' ? v * 1000 : v;
+    }
+    _unit(id, d) { const s = this._st(id); return (s && s.attributes && s.attributes.unit_of_measurement) || d; }
+    _fmt(v, d = 0) { return isNaN(v) ? '--' : v.toLocaleString(this._lang() === 'fr' ? 'fr-FR' : 'en-US', { maximumFractionDigits: d, minimumFractionDigits: 0 }); }
+    _more(id) { if (id) this.dispatchEvent(new CustomEvent('hass-more-info', { detail: { entityId: id }, bubbles: true, composed: true })); }
+
+    _build() {
+      const root = this.shadowRoot || this.attachShadow({ mode: 'open' });
+      const c = this._c, K = KINDS[this.kind];
+      root.innerHTML = `<style>${CSS}</style><ha-card class="${K.cls}">
+        <div class="head"><div class="title" id="pptitle"></div><div class="badge" id="ppbadge"></div></div>
+        ${K.svg(c.name || this._t(this.kind))}
+        <div class="alert" id="ppalert"></div>
+        <div class="ctl" id="ppctl"><button data-a="power"><ha-icon icon="mdi:power"></ha-icon><span></span></button></div>
+        <div class="tiles">${TILES.map(([k, ic]) => `<div class="tile hide" data-k="${esc(k)}"><div class="l"><ha-icon icon="${esc(ic)}"></ha-icon><span class="lbl"></span></div><div class="v"></div></div>`).join('')}</div>
+      </ha-card>`;
+      root.querySelector('svg').addEventListener('click', () => this._more(this._c.entity || this._c.entity_power));
+      root.querySelector('[data-a="power"]').addEventListener('click', () => {
+        const id = this._c.entity; if (!id || !this._hass) return;
+        this._hass.callService('homeassistant', 'toggle', { entity_id: id });
+      });
+      root.querySelectorAll('.tile').forEach((el) => el.addEventListener('click', () => {
+        const cc = this._c, k = el.dataset.k;
+        this._more({ flow: cc.entity_flow, pressure: cc.entity_pressure, power: cc.entity_power, temp: cc.entity_temp, level: cc.entity_level,
+          runtime: cc.entity_runtime, energy: cc.entity_energy, cost: cc.entity_cost || cc.entity_energy }[k]);
+      }));
+      this._root = root; this._card = root.querySelector('ha-card'); this._built = true;
+    }
+
+    _compute() {
+      const c = this._c, s = this._st(c.entity);
+      const pw = this._watts(c.entity_power), flow = this._num(c.entity_flow), pres = this._num(c.entity_pressure);
+      const temp = this._num(c.entity_temp), level = this._num(c.entity_level);
+      const txt = s ? String(s.state).toLowerCase() : '';
+      const fault = this._st(c.entity_fault);
+      const v = { pw, flow, pres, temp, level, alerts: [] };
+      if ((fault && fault.state === 'on') || /error|erreur|fault|défaut|defaut|alarm|trip/.test(txt)) return { ...v, st: 'fault' };
+      let on;
+      if (s && !/^(unavailable|unknown)$/.test(txt)) on = !/^(off|false|0|arr[eê]t|éteint|eteint|idle|stopped)$/.test(txt);
+      else if (!isNaN(pw)) on = pw > Number(c.run_threshold);
+      else if (!isNaN(flow)) on = flow > Number(c.no_flow_threshold);
+      else return { ...v, st: c.entity || c.entity_power ? 'unavailable' : 'off' };
+      // alertes : marche à sec (pas de débit), surpression, moteur trop chaud, niveau bas
+      if (on && !isNaN(flow) && flow < Number(c.no_flow_threshold)) v.alerts.push('no_flow');
+      if (!isNaN(pres) && pres > Number(c.pressure_max)) v.alerts.push('overpressure');
+      if (!isNaN(temp) && temp > Number(c.temp_max)) v.alerts.push('overheat');
+      if (!isNaN(level) && level < Number(c.level_min)) v.alerts.push('low_level');
+      return { ...v, st: !on ? 'off' : v.alerts.length ? 'warning' : 'running' };
+    }
+
+    _render() {
+      if (!this._built) this._build();
+      const c = this._c, r = this._root, card = this._card, K = KINDS[this.kind];
+      const { st, pw, flow, pres, temp, level, alerts } = this._compute();
+      const clamp = (x) => Math.max(0, Math.min(1, x));
+      const on = st === 'running' || st === 'warning';
+      // vitesse d'animation : débit sinon puissance, au moins 0,25 pour que ça reste lisible
+      let spd = !isNaN(flow) ? flow / Number(c.max_flow) : !isNaN(pw) ? pw / Number(c.max_power) : 0.7;
+      spd = on ? Math.max(0.25, clamp(spd)) : 0.25;
+      card.className = `${K.cls} ${st} ${c.animations === false ? 'noanim' : ''}`;
+      card.style.setProperty('--spd', spd.toFixed(3));
+      card.style.setProperty('--lvl', (isNaN(level) ? 0.6 : clamp(level / 100)).toFixed(3));
+      card.style.setProperty('--pr', (isNaN(pres) ? (on ? 0.5 : 0) : clamp(pres / Number(c.max_pressure))).toFixed(3));
+      if (c.fluid_color) card.style.setProperty('--fluid', String(c.fluid_color)); else card.style.removeProperty('--fluid');
+
+      r.getElementById('pptitle').textContent = c.name || this._t(this.kind);
+      const badge = r.getElementById('ppbadge'); badge.textContent = this._t(st); badge.style.display = c.show_status === false ? 'none' : '';
+      const al = r.getElementById('ppalert'); al.textContent = alerts.map((a) => this._t(a)).join(' · '); al.classList.toggle('on', alerts.length > 0);
+      const plate = r.getElementById('ipplate');
+      if (plate) plate.textContent = isNaN(pw) ? (on ? 'RUN' : 'STOP') : pw >= 1000 ? `${this._fmt(pw / 1000, 1)} kW` : `${this._fmt(pw, 0)} W`;
+
+      const d = (c.entity || '').split('.')[0];
+      const ctl = r.getElementById('ppctl');
+      ctl.classList.toggle('hide', c.show_controls === false || !['switch', 'input_boolean', 'fan'].includes(d));
+      ctl.querySelector('span').textContent = this._t(on ? 'turn_off' : 'turn_on');
+
+      const energy = this._num(c.entity_energy), run = this._num(c.entity_runtime);
+      let cost = this._num(c.entity_cost), costU = this._unit(c.entity_cost, c.currency || '€');
+      if (isNaN(cost) && c.price_per_kwh && !isNaN(energy)) { cost = energy * Number(c.price_per_kwh); costU = c.currency || '€'; }
+      const V = {
+        flow: [c.entity_flow, this._fmt(flow, 1), this._unit(c.entity_flow, 'L/min')],
+        pressure: [c.entity_pressure, this._fmt(pres, 1), this._unit(c.entity_pressure, 'bar')],
+        power: [c.entity_power, isNaN(pw) ? '--' : (pw >= 1000 ? this._fmt(pw / 1000, 2) : this._fmt(pw, 0)), isNaN(pw) ? '' : (pw >= 1000 ? 'kW' : 'W')],
+        temp: [c.entity_temp, this._fmt(temp, 0), this._unit(c.entity_temp, '°C')],
+        level: [c.entity_level, this._fmt(level, 0), this._unit(c.entity_level, '%')],
+        runtime: [c.entity_runtime, this._fmt(run, 1), this._unit(c.entity_runtime, 'h')],
+        energy: [c.entity_energy, this._fmt(energy, 2), this._unit(c.entity_energy, 'kWh')],
+        cost: [c.entity_cost || (c.price_per_kwh && c.entity_energy), this._fmt(cost, 2), costU],
+      };
+      const bad = { flow: alerts.includes('no_flow'), pressure: alerts.includes('overpressure'), temp: alerts.includes('overheat'), level: alerts.includes('low_level') };
+      TILES.forEach(([k, , opt]) => {
+        const el = r.querySelector(`.tile[data-k="${k}"]`); const [show, val, unit] = V[k];
+        el.classList.toggle('hide', !show || c[opt] === false);
+        el.classList.toggle('bad', !!bad[k]);
+        el.querySelector('.lbl').textContent = this._t(k);
+        const small = document.createElement('small'); small.textContent = unit ?? '';
+        el.querySelector('.v').replaceChildren(String(val ?? ''), small);
+      });
+    }
+  }
+
+  /* ---- éditeur visuel ---- */
+  class AppliancePumpCardEditor extends HTMLElement {
+    setConfig(c) { this._c = c; this._draw(); }
+    set hass(h) { this._hass = h; if (this._form) this._form.hass = h; }
+    _draw() {
+      if (!this._form) {
+        this._form = document.createElement('ha-form');
+        this._form.addEventListener('value-changed', (e) => {
+          this._c = e.detail.value;
+          this.dispatchEvent(new CustomEvent('config-changed', { detail: { config: this._c }, bubbles: true, composed: true }));
+        });
+        this.appendChild(this._form);
+      }
+      const D = KINDS[this.kind].d;
+      const ent = (name, domain) => ({ name, selector: { entity: domain ? { domain } : {} } });
+      const num = (name, min, max, step, unit) => ({ name, default: D[name], selector: { number: { min, max, step, mode: 'box', ...(unit ? { unit_of_measurement: unit } : {}) } } });
+      const bool = (name) => ({ name, selector: { boolean: {} }, default: true });
+      this._form.hass = this._hass;
+      this._form.data = this._c;
+      this._form.schema = [
+        { name: 'name', selector: { text: {} } },
+        ent('entity'), ent('entity_power', 'sensor'), ent('entity_flow', 'sensor'), ent('entity_pressure', 'sensor'),
+        ent('entity_temp', 'sensor'), ent('entity_level', 'sensor'), ent('entity_fault', 'binary_sensor'), ent('entity_runtime', 'sensor'),
+        ent('entity_energy', 'sensor'), ent('entity_cost', 'sensor'),
+        { name: 'price_per_kwh', selector: { number: { min: 0, step: 0.0001, mode: 'box' } } },
+        { name: 'fluid_color', selector: { text: {} } },
+        { type: 'grid', name: '', schema: [
+          num('max_flow', 1, 10000, 1), num('max_power', 10, 100000, 10, 'W'), num('run_threshold', 0, 5000, 1, 'W'),
+          num('max_pressure', 1, 100, 0.5, 'bar'), num('pressure_max', 0, 100, 0.1, 'bar'), num('temp_max', 20, 150, 1, '°C'), num('level_min', 0, 100, 1, '%'),
+        ] },
+        { name: 'language', selector: { select: { options: Object.keys(T).map((value) => ({ value, label: { fr: 'Français', en: 'English', de: 'Deutsch', nb: 'Norsk bokmål', ro: 'Română', nl: 'Nederlands' }[value] || value })) } } },
+        { type: 'grid', name: '', schema: [
+          bool('show_status'), bool('show_controls'), bool('show_flow'), bool('show_pressure'), bool('show_power'), bool('show_temp'),
+          bool('show_level'), bool('show_runtime'), bool('show_energy'), bool('show_cost'), bool('animations'),
+        ] },
+      ];
+      this._form.computeLabel = (s) => s.name;
+    }
+  }
+
+  const DESC = {
+    water_pump: 'Pompe à eau sobre (arrosage, puits, piscine) : roue à aubes, eau qui circule, vagues, niveau de cuve, débit et pression.',
+    industrial_pump: 'Pompe industrielle robuste : finition métal, voyants, manomètre, pulsations et vibrations selon le débit.',
+  };
+  window.customCards = window.customCards || [];
+  for (const kind of Object.keys(KINDS)) {
+    const tag = `appliance-${kind.replace('_', '-')}-card`;
+    const K = KINDS[kind];
+    customElements.define(tag, class extends AppliancePumpCard {
+      get kind() { return kind; }
+      static getConfigElement() { return document.createElement(tag + '-editor'); }
+      static getStubConfig(hass) {
+        const ids = Object.keys((hass && hass.states) || {});
+        const f = (re, dom) => ids.find((i) => (!dom || i.startsWith(dom + '.')) && re.test(i)) || '';
+        const src = K.re.source;
+        return {
+          entity: f(K.re, 'switch') || f(K.re, 'binary_sensor'),
+          entity_power: f(new RegExp(`(${src}).*(power|puissance)`, 'i'), 'sensor'),
+          entity_flow: f(new RegExp(`(${src}).*(flow|debit|débit)`, 'i'), 'sensor'),
+        };
+      }
+    });
+    customElements.define(tag + '-editor', class extends AppliancePumpCardEditor { get kind() { return kind; } });
+    window.customCards.push({ type: tag, name: `Appliance – ${T.en[kind]} / ${T.fr[kind]}`, description: DESC[kind], preview: true,
+      documentationURL: 'https://github.com/skyrotter/ha-appliance-electromenager-cards' });
+  }
+})();
