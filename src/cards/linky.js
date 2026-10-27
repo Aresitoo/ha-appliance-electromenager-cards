@@ -25,6 +25,7 @@ class ApplianceLinkyCard extends HTMLElement {
       schema: [
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
+        { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
         { name: 'entity_power', selector: { entity: { domain: 'sensor' } } },
         { name: 'entity_active_power', selector: { entity: { domain: 'sensor', device_class: 'power' } } },
         { type: 'grid', name: '', schema: [
@@ -58,6 +59,7 @@ class ApplianceLinkyCard extends HTMLElement {
   }
 
   setConfig(config) {
+    if (window.applianceSize) window.applianceSize(this, config);
     this._config = {
       show_gauge: true, show_phases: true, show_index: true, show_injection: true, show_tariff: true, show_cost: true,
       phase_gauge: 'needles', subscribed_power: 9, hc_ranges: '', ...config,
@@ -72,6 +74,7 @@ class ApplianceLinkyCard extends HTMLElement {
     if (l && l !== this._lng) { this._lng = l; this._hass = hass; this._built = false; this._build(); }
     this._hass = hass; this._update(); }
   getCardSize() { return 5; }
+  getGridOptions() { return { columns: 12, min_columns: 3, rows: 'auto', min_rows: 1 }; }
   _t(k) { return (I18N_LINKY[this._config.language || lang(this._hass)] || I18N_LINKY.en)[k] ?? I18N_LINKY.en[k] ?? k; }
   // libellé perso (option labels) sinon traduction
   _l(k) { const L = this._config && this._config.labels; return L && L[k] != null && L[k] !== '' ? String(L[k]) : this._t(k); }
@@ -96,12 +99,13 @@ class ApplianceLinkyCard extends HTMLElement {
     }).join('');
     this.shadowRoot.innerHTML = `
     <style>
-      :host { display:block; }
+      :host { display:block; }:host{height:100%} ha-card{height:100%;box-sizing:border-box}
       ha-card { padding:12px; }
       .title { font-weight:600; margin:0 4px 10px; }
       .wrap { display:flex; gap:14px; align-items:center; flex-wrap:wrap; justify-content:center; }
       /* Boîtier : coque vert anis, cadre blanc, écran LCD vert sombre, 2 boutons, croix en bas */
-      .box { width:150px; background:linear-gradient(160deg,#d4ea35,#b5d11c); border-radius:10px; padding:16px 14px 14px;
+      /* illustration_size : le compteur (HTML) est agrandi d'un bloc avec zoom */
+      .box { zoom:var(--illus-scale,1); width:150px; background:linear-gradient(160deg,#d4ea35,#b5d11c); border-radius:10px; padding:16px 14px 14px;
         box-shadow:0 3px 10px rgba(0,0,0,.35), inset 0 0 0 2px rgba(255,255,255,.35); position:relative; }
       .eye { width:8px; height:8px; background:#1d2a05; border-radius:2px; margin:-6px auto 8px; }
       .bezel { background:linear-gradient(#f7f7f7,#dcdcdc); border-radius:12px; padding:10px 9px 8px; box-shadow:inset 0 0 0 1px #c9c9c9; }
@@ -119,7 +123,7 @@ class ApplianceLinkyCard extends HTMLElement {
       .led.conso { background:#ff3b30; box-shadow:0 0 8px #ff3b30; animation:pulse var(--pulse,2s) infinite; }
       .led.hc { background:#ffb300; box-shadow:0 0 8px #ffb300; } .led.hp { background:#f4511e; box-shadow:0 0 8px #f4511e; }
       .led.prod { background:#2a4a2a; } .led.prod.on { background:#43a047; box-shadow:0 0 8px #43a047; }
-      .gauge { flex:1; min-width:170px; max-width:260px; }
+      .gauge { flex:1; min-width:calc(170px * min(var(--illus-scale,1),1)); max-width:calc(260px * var(--illus-scale,1)); }
       .gauge svg { width:100%; display:block; transform:scale(0.8); transform-origin:top center; }
       .arc-bg { fill:none; stroke:rgba(127,127,127,.25); stroke-width:12; stroke-linecap:round; }
       .arc { fill:none; stroke:var(--gc,#43a047); stroke-width:12; stroke-linecap:round; transition:stroke-dashoffset 1s ease, stroke .6s; }

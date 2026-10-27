@@ -12,5 +12,11 @@
     return L[l] ? l : 'en';
   };
   const human = (n) => { const t = String(n).replace(/^entity_/, '').replace(/_/g, ' '); return t.charAt(0).toUpperCase() + t.slice(1); };
+  // illustration_size (en %, 30 à 300) : échelle du dessin, lue par chaque carte via --illus-scale
+  window.applianceSize = (el, cfg) => {
+    const n = Number(cfg && cfg.illustration_size);
+    if (n > 0) el.style.setProperty('--illus-scale', String(Math.max(0.3, Math.min(3, n / 100))));
+    else el.style.removeProperty('--illus-scale');
+  };
   window.applianceEditorLabel = (name, hass) => (name ? (L[lang(hass)] || L.en)[name] ?? L.en[name] ?? human(name) : '');
 })();

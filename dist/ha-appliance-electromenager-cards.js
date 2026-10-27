@@ -218,7 +218,8 @@ const STRINGS = {
     "f_energy_period": "Energy shown (counter or period)",
     "flex_temp": "Flex zone",
     "f_flex_temperature": "Flex zone temperature sensor",
-    "f_flex_max_temperature": "Alert flex zone above (°C)"
+    "f_flex_max_temperature": "Alert flex zone above (°C)",
+    "f_illustration_size": "Illustration size"
   },
   "de": {
     "washer": "Waschmaschine",
@@ -424,7 +425,8 @@ const STRINGS = {
     "f_energy_period": "Angezeigte Energie (Zähler oder Zeitraum)",
     "flex_temp": "Flex-Zone",
     "f_flex_temperature": "Temperatursensor Flex-Zone",
-    "f_flex_max_temperature": "Alarm Flex-Zone über (°C)"
+    "f_flex_max_temperature": "Alarm Flex-Zone über (°C)",
+    "f_illustration_size": "Größe der Illustration"
   },
   "fr": {
     "washer": "Lave-linge",
@@ -630,9 +632,11 @@ const STRINGS = {
     "f_energy_period": "Énergie affichée (compteur ou période)",
     "flex_temp": "Zone flex",
     "f_flex_temperature": "Capteur température zone flex",
-    "f_flex_max_temperature": "Alerte zone flex au-dessus de (°C)"
+    "f_flex_max_temperature": "Alerte zone flex au-dessus de (°C)",
+    "f_illustration_size": "Taille de l'illustration"
   },
   "nb": {
+    "f_illustration_size": "Størrelse på illustrasjonen",
     "flex_temp": "Fleksisone",
     "f_flex_temperature": "Temperatursensor fleksisone",
     "f_flex_max_temperature": "Varsle fleksisone over (°C)",
@@ -1042,7 +1046,8 @@ const STRINGS = {
     "f_energy_period": "Getoonde energie (teller of periode)",
     "flex_temp": "Flexzone",
     "f_flex_temperature": "Temperatuursensor flexzone",
-    "f_flex_max_temperature": "Alarm flexzone boven (°C)"
+    "f_flex_max_temperature": "Alarm flexzone boven (°C)",
+    "f_illustration_size": "Grootte van de illustratie"
   },
   "ro": {
     "washer": "Mașină de spălat rufe",
@@ -1248,7 +1253,8 @@ const STRINGS = {
     "f_energy_period": "Energie afișată (contor sau perioadă)",
     "flex_temp": "Zonă flex",
     "f_flex_temperature": "Senzor temperatură zonă flex",
-    "f_flex_max_temperature": "Alertă zonă flex peste (°C)"
+    "f_flex_max_temperature": "Alertă zonă flex peste (°C)",
+    "f_illustration_size": "Dimensiunea ilustrației"
   },
   "ru": {
     "washer": "Стиральная машина",
@@ -1454,7 +1460,8 @@ const STRINGS = {
     "f_energy_period": "Отображаемая энергия (счётчик или период)",
     "flex_temp": "Флекс-зона",
     "f_flex_temperature": "Датчик температуры флекс-зоны",
-    "f_flex_max_temperature": "Оповещать о флекс-зоне выше (°C)"
+    "f_flex_max_temperature": "Оповещать о флекс-зоне выше (°C)",
+    "f_illustration_size": "Размер иллюстрации"
   }
 };
 const lang = (hass) => {
@@ -3295,6 +3302,7 @@ class ApplianceCardBase extends HTMLElement {
 
   setConfig(config) {
     if (!config) throw new Error("Invalid configuration");
+    if (window.applianceSize) window.applianceSize(this, config);
     if (!["entity", "power", "power_solar", "switch", "temperature", "zone_1"].some((f) => config[f])) {
       throw new Error(tr(undefined, "err_need_entity"));
     }
@@ -3318,7 +3326,7 @@ class ApplianceCardBase extends HTMLElement {
   disconnectedCallback() { clearInterval(this._tick); }
 
   getCardSize() { return 4; }
-  getGridOptions() { return { columns: 12, min_columns: 6 }; }
+  getGridOptions() { return { columns: 12, min_columns: 3, rows: 'auto', min_rows: 1 }; }
 
   // liste des capteurs de buse (imprimante multi-buses) ; une simple chaîne est acceptée
   _nozzles() {
@@ -4230,6 +4238,7 @@ function buildForm(kind) {
           ] : []),
           ...(d.fields.includes("energy") ? [{ name: "energy_period", selector: { select: { mode: "dropdown", options: [
             { value: "", label: tr(null, "energy") }, ...["day", "week", "month"].map((value) => ({ value, label: tr(null, `energy_${value}`) }))] } } }] : []),
+          { name: "illustration_size", selector: { number: { min: 30, max: 300, step: 5, mode: "slider", unit_of_measurement: "%" } } },
           { name: "animations", selector: { boolean: {} }, default: true },
           ...(kind === "generic" ? [{ name: "image", selector: { text: {} } }, { name: "images", selector: { object: {} } }] : []),
           ...(kind === "printer_3d" ? [
@@ -4350,7 +4359,7 @@ const STYLE = `
   --ac-alert: var(--appliance-alert-color, var(--error-color, #db4437));
   --ac-ok: var(--appliance-ok-color, var(--success-color, #43a047));
   --ac-lcd: #38d9ff;
-  display: block;
+  display: block; height: 100%;
 }
 ha-card { display: block; height: 100%; cursor: pointer; overflow: hidden; container-type: inline-size; }
 .wrap { padding: 14px; display: flex; flex-direction: column; gap: 12px; --c: var(--ac-accent, var(--ac-active)); }
@@ -4362,7 +4371,7 @@ ha-card { display: block; height: 100%; cursor: pointer; overflow: hidden; conta
 }
 .illus { grid-area: illus; } .head { grid-area: head; } .stats { grid-area: stats; }
 .illus {
-  width: var(--appliance-illustration-size, 116px); flex: none; aspect-ratio: 120 / 140; border-radius: 16px; padding: 4px; box-sizing: content-box;
+  width: calc(var(--appliance-illustration-size, 116px) * var(--illus-scale, 1)); flex: none; aspect-ratio: 120 / 140; border-radius: 16px; padding: 4px; box-sizing: content-box;
   background: radial-gradient(circle at 50% 40%, rgba(127,127,127,.10), rgba(127,127,127,.03) 70%);
 }
 .st-unavailable .illus { opacity: .5; filter: grayscale(1); }
@@ -4405,7 +4414,7 @@ svg { width: 100%; height: 100%; display: block; overflow: visible; }
 .tile.warn .val, .tile.warn .lbl { color: var(--ac-alert); }
 @container (max-width: 400px) {
   .top { grid-template-areas: "illus head" "stats stats"; }
-  .illus { width: var(--appliance-illustration-size-small, 84px); }
+  .illus { width: calc(var(--appliance-illustration-size-small, 84px) * var(--illus-scale, 1)); }
   .stats { grid-template-columns: repeat(auto-fit, minmax(88px, 1fr)); }
 }
 /* carte très étroite (ex. 3 cartes côte à côte) : illustration au-dessus, titre et statut centrés et sur plusieurs lignes */
@@ -5539,7 +5548,8 @@ console.info(`%c HA-APPLIANCE-CARDS %c v${VERSION} `,
       "shutter_color": "Shutter colour",
       "show_slider": "Show sliders",
       "show_tilt": "Show tilt",
-      "image": "Your own image (URL)"
+      "image": "Your own image (URL)",
+      "illustration_size": "Illustration size"
     },
     "de": {
       "animations": "Animationen",
@@ -5726,7 +5736,8 @@ console.info(`%c HA-APPLIANCE-CARDS %c v${VERSION} `,
       "shutter_color": "Farbe des Ladens",
       "show_slider": "Schieberegler anzeigen",
       "show_tilt": "Neigung anzeigen",
-      "image": "Eigenes Bild (URL)"
+      "image": "Eigenes Bild (URL)",
+      "illustration_size": "Größe der Illustration"
     },
     "fr": {
       "animations": "Animations",
@@ -5913,9 +5924,11 @@ console.info(`%c HA-APPLIANCE-CARDS %c v${VERSION} `,
       "shutter_color": "Couleur du volet",
       "show_slider": "Afficher les curseurs",
       "show_tilt": "Afficher l'inclinaison",
-      "image": "Image perso (URL)"
+      "image": "Image perso (URL)",
+      "illustration_size": "Taille de l'illustration"
     },
     "nb": {
+      "illustration_size": "Størrelse på illustrasjonen",
       "image": "Eget bilde (URL)",
       "sun_entity": "Sol-entitet (dag / natt)",
       "shutter_color": "Farge på skodden",
@@ -6287,7 +6300,8 @@ console.info(`%c HA-APPLIANCE-CARDS %c v${VERSION} `,
       "shutter_color": "Kleur van het luik",
       "show_slider": "Schuifregelaars tonen",
       "show_tilt": "Kanteling tonen",
-      "image": "Eigen afbeelding (URL)"
+      "image": "Eigen afbeelding (URL)",
+      "illustration_size": "Grootte van de illustratie"
     },
     "ro": {
       "animations": "Animații",
@@ -6474,7 +6488,8 @@ console.info(`%c HA-APPLIANCE-CARDS %c v${VERSION} `,
       "shutter_color": "Culoarea obloanelor",
       "show_slider": "Afișează cursoarele",
       "show_tilt": "Afișează înclinarea",
-      "image": "Imagine proprie (URL)"
+      "image": "Imagine proprie (URL)",
+      "illustration_size": "Dimensiunea ilustrației"
     },
     "ru": {
       "animations": "Анимации",
@@ -6661,7 +6676,8 @@ console.info(`%c HA-APPLIANCE-CARDS %c v${VERSION} `,
       "shutter_color": "Цвет ставней",
       "show_slider": "Показывать ползунки",
       "show_tilt": "Показывать наклон",
-      "image": "Своё изображение (URL)"
+      "image": "Своё изображение (URL)",
+      "illustration_size": "Размер иллюстрации"
     }
   };
   const lang = (hass) => {
@@ -6671,6 +6687,12 @@ console.info(`%c HA-APPLIANCE-CARDS %c v${VERSION} `,
     return L[l] ? l : 'en';
   };
   const human = (n) => { const t = String(n).replace(/^entity_/, '').replace(/_/g, ' '); return t.charAt(0).toUpperCase() + t.slice(1); };
+  // illustration_size (en %, 30 à 300) : échelle du dessin, lue par chaque carte via --illus-scale
+  window.applianceSize = (el, cfg) => {
+    const n = Number(cfg && cfg.illustration_size);
+    if (n > 0) el.style.setProperty('--illus-scale', String(Math.max(0.3, Math.min(3, n / 100))));
+    else el.style.removeProperty('--illus-scale');
+  };
   window.applianceEditorLabel = (name, hass) => (name ? (L[lang(hass)] || L.en)[name] ?? L.en[name] ?? human(name) : '');
 })();
 
@@ -6764,6 +6786,7 @@ class ApplianceAquariumCard extends HTMLElement {
       schema: [
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
+        { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
         { name: 'entity_power', selector: { entity: { domain: 'sensor', device_class: 'power' } } },
         { name: 'entity_energy', selector: { entity: { domain: 'sensor', device_class: 'energy' } } },
         { name: 'entity_temperature', selector: { entity: { domain: 'sensor', device_class: 'temperature' } } },
@@ -6787,6 +6810,7 @@ class ApplianceAquariumCard extends HTMLElement {
   }
 
   setConfig(config) {
+    if (window.applianceSize) window.applianceSize(this, config);
     this._config = {
       show_power: true, show_energy: true, show_temperature: true, show_cost: true,
       temp_min: 24, temp_max: 27, price_per_kwh: 0.2, max_power: 200,
@@ -6806,6 +6830,7 @@ class ApplianceAquariumCard extends HTMLElement {
   }
 
   getCardSize() { return 5; }
+  getGridOptions() { return { columns: 12, min_columns: 3, rows: 'auto', min_rows: 1 }; }
 
   _t(k) { return (I18N_AQUARIUM[this._config.language || lang(this._hass)] || I18N_AQUARIUM.en)[k] ?? I18N_AQUARIUM.en[k] ?? k; }
   // libellé perso (option labels) sinon traduction
@@ -6840,12 +6865,12 @@ class ApplianceAquariumCard extends HTMLElement {
     if (!this.shadowRoot) this.attachShadow({ mode: 'open' });
     this.shadowRoot.innerHTML = `
     <style>
-      :host { display:block; }
+      :host { display:block; }:host{height:100%} ha-card{height:100%;box-sizing:border-box}
       ha-card { padding:12px; overflow:hidden; }
       .title { font-weight:600; font-size:1.05em; margin:0 4px 8px; display:flex; justify-content:space-between; align-items:center; }
       .badge { font-size:.75em; color:#fff; background:#e53935; border-radius:10px; padding:2px 8px; display:none; animation:blink 1s infinite; }
       .alert .badge { display:inline-block; }
-      svg { width:100%; height:auto; display:block; border-radius:10px; transform:scale(0.8); transform-origin:top center; }
+      svg { width:100%; max-width:calc(100% * var(--illus-scale,1)); margin-left:auto; margin-right:auto; height:auto; display:block; border-radius:10px; transform:scale(0.8); transform-origin:top center; }
       .tint { fill:var(--water, #2a8fd6); opacity:.45; transition:fill 1.5s; }
       .night-overlay { fill:#050b24; opacity:0; transition:opacity 1.2s; }
       .night .night-overlay { opacity:.6; }
@@ -7125,6 +7150,7 @@ class ApplianceLinkyCard extends HTMLElement {
       schema: [
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
+        { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
         { name: 'entity_power', selector: { entity: { domain: 'sensor' } } },
         { name: 'entity_active_power', selector: { entity: { domain: 'sensor', device_class: 'power' } } },
         { type: 'grid', name: '', schema: [
@@ -7158,6 +7184,7 @@ class ApplianceLinkyCard extends HTMLElement {
   }
 
   setConfig(config) {
+    if (window.applianceSize) window.applianceSize(this, config);
     this._config = {
       show_gauge: true, show_phases: true, show_index: true, show_injection: true, show_tariff: true, show_cost: true,
       phase_gauge: 'needles', subscribed_power: 9, hc_ranges: '', ...config,
@@ -7172,6 +7199,7 @@ class ApplianceLinkyCard extends HTMLElement {
     if (l && l !== this._lng) { this._lng = l; this._hass = hass; this._built = false; this._build(); }
     this._hass = hass; this._update(); }
   getCardSize() { return 5; }
+  getGridOptions() { return { columns: 12, min_columns: 3, rows: 'auto', min_rows: 1 }; }
   _t(k) { return (I18N_LINKY[this._config.language || lang(this._hass)] || I18N_LINKY.en)[k] ?? I18N_LINKY.en[k] ?? k; }
   // libellé perso (option labels) sinon traduction
   _l(k) { const L = this._config && this._config.labels; return L && L[k] != null && L[k] !== '' ? String(L[k]) : this._t(k); }
@@ -7196,12 +7224,13 @@ class ApplianceLinkyCard extends HTMLElement {
     }).join('');
     this.shadowRoot.innerHTML = `
     <style>
-      :host { display:block; }
+      :host { display:block; }:host{height:100%} ha-card{height:100%;box-sizing:border-box}
       ha-card { padding:12px; }
       .title { font-weight:600; margin:0 4px 10px; }
       .wrap { display:flex; gap:14px; align-items:center; flex-wrap:wrap; justify-content:center; }
       /* Boîtier : coque vert anis, cadre blanc, écran LCD vert sombre, 2 boutons, croix en bas */
-      .box { width:150px; background:linear-gradient(160deg,#d4ea35,#b5d11c); border-radius:10px; padding:16px 14px 14px;
+      /* illustration_size : le compteur (HTML) est agrandi d'un bloc avec zoom */
+      .box { zoom:var(--illus-scale,1); width:150px; background:linear-gradient(160deg,#d4ea35,#b5d11c); border-radius:10px; padding:16px 14px 14px;
         box-shadow:0 3px 10px rgba(0,0,0,.35), inset 0 0 0 2px rgba(255,255,255,.35); position:relative; }
       .eye { width:8px; height:8px; background:#1d2a05; border-radius:2px; margin:-6px auto 8px; }
       .bezel { background:linear-gradient(#f7f7f7,#dcdcdc); border-radius:12px; padding:10px 9px 8px; box-shadow:inset 0 0 0 1px #c9c9c9; }
@@ -7219,7 +7248,7 @@ class ApplianceLinkyCard extends HTMLElement {
       .led.conso { background:#ff3b30; box-shadow:0 0 8px #ff3b30; animation:pulse var(--pulse,2s) infinite; }
       .led.hc { background:#ffb300; box-shadow:0 0 8px #ffb300; } .led.hp { background:#f4511e; box-shadow:0 0 8px #f4511e; }
       .led.prod { background:#2a4a2a; } .led.prod.on { background:#43a047; box-shadow:0 0 8px #43a047; }
-      .gauge { flex:1; min-width:170px; max-width:260px; }
+      .gauge { flex:1; min-width:calc(170px * min(var(--illus-scale,1),1)); max-width:calc(260px * var(--illus-scale,1)); }
       .gauge svg { width:100%; display:block; transform:scale(0.8); transform-origin:top center; }
       .arc-bg { fill:none; stroke:rgba(127,127,127,.25); stroke-width:12; stroke-linecap:round; }
       .arc { fill:none; stroke:var(--gc,#43a047); stroke-width:12; stroke-linecap:round; transition:stroke-dashoffset 1s ease, stroke .6s; }
@@ -7549,6 +7578,7 @@ class ApplianceBatteryCard extends HTMLElement {
       schema: [
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
+        { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
         { name: 'entity_soc', selector: { entity: { domain: 'sensor', device_class: 'battery' } } },
         { name: 'entity_power', selector: { entity: { domain: 'sensor', device_class: 'power' } } },
         { name: 'invert_power', selector: { boolean: {} } },
@@ -7574,6 +7604,7 @@ class ApplianceBatteryCard extends HTMLElement {
   }
 
   setConfig(config) {
+    if (window.applianceSize) window.applianceSize(this, config);
     // Convention : puissance > 0 = charge (inverser avec invert_power si ton capteur est l'inverse)
     this._config = { show_power: true, show_energy: true, show_temperature: true, show_time: true,
       capacity_kwh: 10, max_power: 5000, low_threshold: 15, invert_power: false, status_position: 'auto', layout: 'default', ...config };
@@ -7587,6 +7618,7 @@ class ApplianceBatteryCard extends HTMLElement {
     this._update();
   }
   getCardSize() { return 5; }
+  getGridOptions() { return { columns: 12, min_columns: 3, rows: 'auto', min_rows: 1 }; }
   _t(k) { return (I18N_BAT[this._config.language || lang(this._hass)] || I18N_BAT.en)[k] ?? I18N_BAT.en[k] ?? k; }
   // libellé perso (option labels) sinon traduction
   _l(k) { const L = this._config && this._config.labels; return L && L[k] != null && L[k] !== '' ? String(L[k]) : this._t(k); }
@@ -7621,12 +7653,12 @@ class ApplianceBatteryCard extends HTMLElement {
     const cables = [cab(46, 128), cab(134, 216), `M${X[2] + W + 8} ${TOP - 6} C ${X[2] + W + 30} ${TOP - 20}, ${X[2] + W + 26} ${TOP + 60}, ${X[2] + W + 22} ${TOP + 110}`];
     this.shadowRoot.innerHTML = `
     <style>
-      :host { display:block; }
+      :host { display:block; }:host{height:100%} ha-card{height:100%;box-sizing:border-box}
       ha-card { padding:12px; overflow:hidden; container-type:inline-size; }
       .title { font-weight:600; margin:0 4px 4px; display:flex; justify-content:space-between; align-items:center; }
       .badge { font-size:.75em; color:#fff; background:#e53935; border-radius:10px; padding:2px 8px; display:none; animation:blink 1s infinite; }
       .low .badge { display:inline-block; }
-      svg { width:100%; height:auto; display:block; overflow:visible; transform:scale(0.8); transform-origin:top center; }
+      svg { width:100%; max-width:calc(100% * var(--illus-scale,1)); margin-left:auto; margin-right:auto; height:auto; display:block; overflow:visible; transform:scale(0.8); transform-origin:top center; }
       .liquid { fill:var(--lc,#43a047); opacity:.35; transition:y 1.2s ease, height 1.2s ease, fill .8s; }
       .wave { fill:var(--lc,#43a047); opacity:.45; animation:wave 2.6s ease-in-out infinite alternate; transition:fill .8s; }
       .led { fill:var(--lc,#43a047); animation:blink var(--bl,2s) infinite; filter:drop-shadow(0 0 3px var(--lc,#43a047)); }
@@ -7844,6 +7876,7 @@ class ApplianceEvChargerCard extends HTMLElement {
       schema: [
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
+        { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
         { name: 'entity_power', selector: { entity: { domain: 'sensor', device_class: 'power' } } },
         { name: 'entity_session_energy', selector: { entity: { domain: 'sensor', device_class: 'energy' } } },
         { name: 'entity_car_soc', selector: { entity: { domain: 'sensor' } } },
@@ -7869,6 +7902,7 @@ class ApplianceEvChargerCard extends HTMLElement {
   }
 
   setConfig(config) {
+    if (window.applianceSize) window.applianceSize(this, config);
     this._config = { show_power: true, show_energy: true, show_soc: true, show_status: true, show_duration: true, show_cost: true,
       max_power: 7400, price_per_kwh: 0.2, car_color: '#3d6fb6', ...config };
     this._built = false; this._build();
@@ -7881,6 +7915,7 @@ class ApplianceEvChargerCard extends HTMLElement {
     this._update();
   }
   getCardSize() { return 5; }
+  getGridOptions() { return { columns: 12, min_columns: 3, rows: 'auto', min_rows: 1 }; }
   connectedCallback() { this._timer = setInterval(() => this._update(), 30000); } // rafraîchit la durée
   disconnectedCallback() { clearInterval(this._timer); }
   _t(k) { return (I18N_EV[this._config.language || lang(this._hass)] || I18N_EV.en)[k] ?? I18N_EV.en[k] ?? k; }
@@ -7893,10 +7928,10 @@ class ApplianceEvChargerCard extends HTMLElement {
     const cable = 'M44 112 C 44 168, 112 170, 134 118';
     this.shadowRoot.innerHTML = `
     <style>
-      :host { display:block; }
+      :host { display:block; }:host{height:100%} ha-card{height:100%;box-sizing:border-box}
       ha-card { padding:12px; overflow:hidden; }
       .title { font-weight:600; margin:0 4px 4px; }
-      svg { width:100%; height:auto; display:block; overflow:visible; }
+      svg { width:100%; max-width:calc(100% * var(--illus-scale,1)); margin-left:auto; margin-right:auto; height:auto; display:block; overflow:visible; }
       .ledbar { fill:var(--st,#9e9e9e); filter:drop-shadow(0 0 4px var(--st,#9e9e9e)); transition:fill .6s; }
       .charging .ledbar { animation:breathe var(--sp,2s) ease-in-out infinite; }
       .scr { fill:#0c1a24; } .scrtxt { fill:#7fe0ff; font:700 8px 'Courier New',monospace; text-anchor:middle; }
@@ -8220,6 +8255,7 @@ class ApplianceRobotVacuumCard extends HTMLElement {
         { name: 'entity', required: true, selector: { entity: { domain: 'vacuum' } } },
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
+        { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
         { name: 'entity_battery', selector: { entity: { domain: 'sensor', device_class: 'battery' } } },
         { name: 'entity_area', selector: { entity: { domain: 'sensor' } } },
         { name: 'entity_time', selector: { entity: { domain: 'sensor' } } },
@@ -8244,6 +8280,7 @@ class ApplianceRobotVacuumCard extends HTMLElement {
   }
 
   setConfig(config) {
+    if (window.applianceSize) window.applianceSize(this, config);
     if (!config.entity) throw new Error('entity (vacuum.xxx) requise');
     this._config = { show_battery: true, show_area: true, show_time: true, show_fan: true, show_status: true,
       show_consumables: true, show_buttons: true, ...config };
@@ -8255,6 +8292,7 @@ class ApplianceRobotVacuumCard extends HTMLElement {
     if (l && l !== this._lng) { this._lng = l; this._hass = h; this._built = false; this._build(); }
     this._hass = h; this._update(); }
   getCardSize() { return this._config && this._config.layout === 'compact' ? 3 : 6; }
+  getGridOptions() { return { columns: 12, min_columns: 3, rows: 'auto', min_rows: 1 }; }
   _t(k) { return (I18N_VAC[this._config.language || lang(this._hass)] || I18N_VAC.en)[k] ?? I18N_VAC.en[k] ?? k; }
   // libellé perso (option labels) sinon traduction
   _l(k) { const L = this._config && this._config.labels; return L && L[k] != null && L[k] !== '' ? String(L[k]) : this._t(k); }
@@ -8323,12 +8361,12 @@ window.customCards = window.customCards || [];
  * type: custom:appliance-robot-vacuum-solo-card  (mêmes options que la carte complète)
  * ─────────────────────────────────────────────────────────────── */
 const COMMON_CSS_VAC = `
-  :host { display:block; }
+  :host { display:block; }:host{height:100%} ha-card{height:100%;box-sizing:border-box}
   ha-card { padding:12px; overflow:hidden; }
   .title { font-weight:600; margin:0 4px 4px; display:flex; justify-content:space-between; align-items:center; }
   .badge { font-size:.75em; color:#fff; background:#e53935; border-radius:10px; padding:2px 8px; display:none; animation:blink 1s infinite; }
   .error .badge { display:inline-block; }
-  svg { width:100%; height:auto; display:block; overflow:visible; }
+  svg { width:100%; max-width:calc(100% * var(--illus-scale,1)); margin-left:auto; margin-right:auto; height:auto; display:block; overflow:visible; }
   .btns { display:flex; gap:8px; margin-top:8px; }
   .btn { flex:1; display:flex; align-items:center; justify-content:center; gap:6px; border:none; cursor:pointer; border-radius:999px; padding:8px 6px;
     background:var(--secondary-background-color, rgba(127,127,127,.15)); color:var(--primary-text-color,#222); font:600 .85em system-ui,sans-serif; transition:transform .1s, background .2s; }
@@ -8625,6 +8663,7 @@ class ApplianceRobotMowerCard extends HTMLElement {
         { name: 'entity', required: true, selector: { entity: { domain: ['lawn_mower', 'vacuum'] } } },
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
+        { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
         { name: 'entity_battery', selector: { entity: { domain: 'sensor', device_class: 'battery' } } },
         { name: 'entity_area', selector: { entity: { domain: 'sensor' } } },
         { name: 'entity_time', selector: { entity: { domain: 'sensor' } } },
@@ -8650,6 +8689,7 @@ class ApplianceRobotMowerCard extends HTMLElement {
   }
 
   setConfig(config) {
+    if (window.applianceSize) window.applianceSize(this, config);
     if (!config.entity) throw new Error('entity (lawn_mower.xxx) requise');
     this._config = { show_battery: true, show_area: true, show_time: true, show_next: true, show_status: true,
       show_blade: true, show_buttons: true, ...config };
@@ -8661,6 +8701,7 @@ class ApplianceRobotMowerCard extends HTMLElement {
     if (l && l !== this._lng) { this._lng = l; this._hass = h; this._built = false; this._build(); }
     this._hass = h; this._update(); }
   getCardSize() { return this._config && this._config.layout === 'compact' ? 3 : 6; }
+  getGridOptions() { return { columns: 12, min_columns: 3, rows: 'auto', min_rows: 1 }; }
   _t(k) { return (I18N_MOW[this._config.language || lang(this._hass)] || I18N_MOW.en)[k] ?? I18N_MOW.en[k] ?? k; }
   // libellé perso (option labels) sinon traduction
   _l(k) { const L = this._config && this._config.labels; return L && L[k] != null && L[k] !== '' ? String(L[k]) : this._t(k); }
@@ -8807,12 +8848,12 @@ class ApplianceRobotMowerSoloCard extends ApplianceRobotMowerCard {
   }
 }
 const COMMON_CSS_MOW = `
-  :host { display:block; }
+  :host { display:block; }:host{height:100%} ha-card{height:100%;box-sizing:border-box}
   ha-card { padding:12px; overflow:hidden; }
   .title { font-weight:600; margin:0 4px 4px; display:flex; justify-content:space-between; align-items:center; }
   .badge { font-size:.75em; color:#fff; background:#e53935; border-radius:10px; padding:2px 8px; display:none; animation:blink 1s infinite; }
   .error .badge { display:inline-block; }
-  svg { width:100%; height:auto; display:block; overflow:visible; }
+  svg { width:100%; max-width:calc(100% * var(--illus-scale,1)); margin-left:auto; margin-right:auto; height:auto; display:block; overflow:visible; }
   .btns { display:flex; gap:8px; margin-top:8px; }
   .btn { flex:1; display:flex; align-items:center; justify-content:center; gap:6px; border:none; cursor:pointer; border-radius:999px; padding:8px 6px;
     background:var(--secondary-background-color, rgba(127,127,127,.15)); color:var(--primary-text-color,#222); font:600 .85em system-ui,sans-serif; transition:transform .1s, background .2s; }
@@ -8985,6 +9026,7 @@ class AppliancePelletBoilerCard extends HTMLElement {
       schema: [
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
+        { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
         { name: 'entity_status', selector: { entity: { domain: ['sensor', 'select', 'climate', 'switch', 'binary_sensor'] } } },
         { name: 'entity_power', selector: { entity: { domain: 'sensor', device_class: 'power' } } },
         { name: 'entity_energy', selector: { entity: { domain: 'sensor', device_class: 'energy' } } },
@@ -9014,6 +9056,7 @@ class AppliancePelletBoilerCard extends HTMLElement {
   }
 
   setConfig(config) {
+    if (window.applianceSize) window.applianceSize(this, config);
     this._config = { show_power: true, show_energy: true, show_cost: true, show_temps: true, show_pellets: true, show_status: true,
       price_per_kwh: 0, threshold: 30, ignition_threshold: 300, pellet_alert: 15, flow_temp_max: 80, ...config };
     this._built = false; this._build();
@@ -9024,6 +9067,7 @@ class AppliancePelletBoilerCard extends HTMLElement {
     if (l && l !== this._lng) { this._lng = l; this._hass = h; this._built = false; this._build(); }
     this._hass = h; this._update(); }
   getCardSize() { return 6; }
+  getGridOptions() { return { columns: 12, min_columns: 3, rows: 'auto', min_rows: 1 }; }
   _t(k) { return (I18N_PB[this._config.language || lang(this._hass)] || I18N_PB.en)[k] ?? I18N_PB.en[k] ?? k; }
   // libellé perso (option labels) sinon traduction
   _l(k) { const L = this._config && this._config.labels; return L && L[k] != null && L[k] !== '' ? String(L[k]) : this._t(k); }
@@ -9038,12 +9082,12 @@ class AppliancePelletBoilerCard extends HTMLElement {
     const tube = 'M76 172 L136 112';
     this.shadowRoot.innerHTML = `
     <style>
-      :host { display:block; }
+      :host { display:block; }:host{height:100%} ha-card{height:100%;box-sizing:border-box}
       ha-card { padding:12px; overflow:hidden; }
       .title { font-weight:600; margin:0 4px 4px; display:flex; justify-content:space-between; align-items:center; gap:6px; }
       .badge { font-size:.75em; color:#fff; background:#e53935; border-radius:10px; padding:2px 8px; display:none; animation:blink 1s infinite; }
       .alarm .badge.al, .low .badge.lo { display:inline-block; } .badge.lo { background:#fb8c00; }
-      svg { width:100%; height:auto; display:block; overflow:visible; }
+      svg { width:100%; max-width:calc(100% * var(--illus-scale,1)); margin-left:auto; margin-right:auto; height:auto; display:block; overflow:visible; }
       /* Flamme dans le hublot */
       .flame { transform-box:fill-box; transform-origin:50% 100%; opacity:0; transition:opacity .8s; }
       .ignition .flame.small, .heating .flame, .extinguishing .flame.small { opacity:1; animation:flick .35s ease-in-out infinite alternate; }
@@ -9385,7 +9429,7 @@ window.customCards.push({ type: 'appliance-pellet-boiler-card', name: 'Appliance
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); // texte → HTML sûr
 
   const CSS = `
-:host{display:block}
+:host{display:block}:host{height:100%} ha-card{height:100%;box-sizing:border-box}
 ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--gb-heat:var(--appliance-heat-color,#ff8a3d);--gb-cold:var(--appliance-cold-color,#2b9af9);
   --gb-alert:var(--appliance-alert-color,#db4437);--gb-ok:var(--appliance-ok-color,#43a047);--gb-flow:#3b8fe8;--gb-ret:#3b8fe8;--mod:1}
 .head{display:flex;align-items:center;justify-content:space-between;gap:8px}
@@ -9396,7 +9440,7 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--gb-heat:var(--app
 .alarm .badge{background:color-mix(in srgb,var(--gb-alert) 22%,transparent);color:var(--gb-alert)}
 .alert{display:none;margin-top:4px;font-size:11px;color:var(--gb-alert);font-weight:500;text-align:center}
 .alert.on{display:block}
-svg{display:block;width:100%;max-width:170px;height:var(--appliance-illustration-height,auto);margin:2px auto 0;overflow:visible}
+svg{display:block;width:100%;max-width:calc(170px * var(--illus-scale,1));height:var(--appliance-illustration-height,auto);margin:2px auto 0;overflow:visible}
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(76px,1fr));gap:6px;margin-top:6px}
 .tile{box-sizing:border-box;background:var(--secondary-background-color);border-radius:10px;padding:5px 7px;min-width:0;overflow:hidden;text-align:center}
 .tile .l{display:flex;align-items:center;justify-content:center;gap:3px;font-size:10px;line-height:14px;color:var(--secondary-text-color);min-width:0}
@@ -9518,6 +9562,7 @@ svg{display:block;width:100%;max-width:170px;height:var(--appliance-illustration
       };
     }
     setConfig(c) {
+      if (window.applianceSize) window.applianceSize(this, c);
       if (!c || typeof c !== 'object') throw new Error('Invalid configuration');
       this._c = { show_power: true, show_energy: true, show_gas: true, show_cost: true, show_temps: true,
         show_pressure: true, show_modulation: true, show_status: true, threshold: 15, off_threshold: 0.5,
@@ -9527,7 +9572,7 @@ svg{display:block;width:100%;max-width:170px;height:var(--appliance-illustration
     }
     set hass(h) { this._hass = h; if (this._c) this._render(); }
     getCardSize() { return 5; }
-    getGridOptions() { return { columns: 12, min_columns: 6, rows: 'auto' }; }
+    getGridOptions() { return { columns: 12, min_columns: 3, rows: 'auto', min_rows: 1 }; }
 
     _t(k) { return T[this._lang()][k] ?? T.en[k] ?? k; }
     // libellé perso (option labels) sinon traduction
@@ -9674,6 +9719,7 @@ svg{display:block;width:100%;max-width:170px;height:var(--appliance-illustration
       this._form.schema = [
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
+        { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
         ent('entity_status'), ent('entity_flame', 'binary_sensor'), ent('entity_power', 'sensor'), ent('entity_energy', 'sensor'),
         ent('entity_gas', 'sensor'), ent('entity_cost', 'sensor'), { name: 'price_per_unit', selector: { number: { min: 0, step: 0.0001, mode: 'box' } } },
         ent('entity_flow_temp', 'sensor'), ent('entity_return_temp', 'sensor'), ent('entity_pressure', 'sensor'), ent('entity_modulation', 'sensor'),
@@ -9870,7 +9916,7 @@ svg{display:block;width:100%;max-width:170px;height:var(--appliance-illustration
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); // texte → HTML sûr
 
   const CSS = `
-:host{display:block}
+:host{display:block}:host{height:100%} ha-card{height:100%;box-sizing:border-box}
 ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--wp-heat:var(--appliance-heat-color,#ff8a3d);--wp-cold:var(--appliance-cold-color,#2b9af9);
   --wp-alert:var(--appliance-alert-color,#db4437)}
 .head{display:flex;align-items:center;justify-content:space-between;gap:8px}
@@ -9879,7 +9925,7 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--wp-heat:var(--app
 .heating .badge{background:color-mix(in srgb,var(--wp-heat) 22%,transparent);color:var(--wp-heat)}
 .dhw .badge,.cooling .badge{background:color-mix(in srgb,var(--wp-cold) 22%,transparent);color:var(--wp-cold)}
 .alarm .badge{background:color-mix(in srgb,var(--wp-alert) 22%,transparent);color:var(--wp-alert)}
-svg{display:block;width:100%;height:var(--appliance-illustration-height,auto);margin:2px auto 0;overflow:visible}
+svg{display:block;width:100%;max-width:calc(100% * var(--illus-scale,1));height:var(--appliance-illustration-height,auto);margin:2px auto 0;overflow:visible}
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(76px,1fr));gap:6px;margin-top:6px}
 .tile{box-sizing:border-box;background:var(--secondary-background-color);border-radius:10px;padding:5px 7px;min-width:0;overflow:hidden;text-align:center;cursor:pointer}
 .tile .l{display:flex;align-items:center;justify-content:center;gap:3px;font-size:10px;line-height:14px;color:var(--secondary-text-color);min-width:0}
@@ -10026,6 +10072,7 @@ svg{display:block;width:100%;height:var(--appliance-illustration-height,auto);ma
         schema: [
           { name: 'name', selector: { text: {} } },
           { name: 'labels', selector: { object: {} } },
+          { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
           ent('entity_status', ['climate', 'sensor', 'select', 'input_select', 'water_heater']),
           { type: 'grid', name: '', schema: [ent('entity_power', 'sensor'), ent('entity_heat_power', 'sensor'), ent('entity_cop', 'sensor')] },
           { type: 'grid', name: '', schema: [ent('entity_flow_temp', 'sensor'), ent('entity_return_temp', 'sensor'), ent('entity_flow_rate', 'sensor')] },
@@ -10047,6 +10094,7 @@ svg{display:block;width:100%;height:var(--appliance-illustration-height,auto);ma
       };
     }
     setConfig(c) {
+      if (window.applianceSize) window.applianceSize(this, c);
       if (!c || typeof c !== 'object') throw new Error('Invalid configuration');
       this._c = { ...Object.fromEntries(SHOW.map((k) => [k, true])), threshold: 100, off_threshold: 0.5, ...c };
       this._built = false;
@@ -10068,7 +10116,7 @@ svg{display:block;width:100%;height:var(--appliance-illustration-height,auto);ma
       if (!this._dt) this._dt = setTimeout(() => { this._dt = null; if (this._hass) this._render(); }, left + 50);
       return false;
     }
-    getGridOptions() { return { columns: 12, min_columns: 6, rows: 'auto' }; }
+    getGridOptions() { return { columns: 12, min_columns: 3, rows: 'auto', min_rows: 1 }; }
 
     _t(k) { return T[this._lang()][k] ?? T.en[k] ?? k; }
     // libellé perso (option labels) sinon traduction
@@ -10350,7 +10398,7 @@ svg{display:block;width:100%;height:var(--appliance-illustration-height,auto);ma
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); // texte → HTML sûr
 
   const CSS = `
-:host{display:block}
+:host{display:block}:host{height:100%} ha-card{height:100%;box-sizing:border-box}
 ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--dh-heat:var(--appliance-heat-color,#ff8a3d);--dh-cold:var(--appliance-cold-color,#2b9af9);
   --dh-alert:var(--appliance-alert-color,#db4437);--dh-ok:var(--appliance-ok-color,#43a047);--mod:1}
 .head{display:flex;align-items:center;justify-content:space-between;gap:8px}
@@ -10361,7 +10409,7 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--dh-heat:var(--app
 .alarm .badge{background:color-mix(in srgb,var(--dh-alert) 22%,transparent);color:var(--dh-alert)}
 .alert{display:none;margin-top:4px;font-size:11px;color:var(--dh-alert);font-weight:500;text-align:center}
 .alert.on{display:block}
-svg{display:block;width:100%;max-width:190px;height:var(--appliance-illustration-height,auto);margin:2px auto 0;overflow:visible}
+svg{display:block;width:100%;max-width:calc(190px * var(--illus-scale,1));height:var(--appliance-illustration-height,auto);margin:2px auto 0;overflow:visible}
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(76px,1fr));gap:6px;margin-top:6px}
 .tile{box-sizing:border-box;background:var(--secondary-background-color);border-radius:10px;padding:5px 7px;min-width:0;overflow:hidden;text-align:center}
 .tile .l{display:flex;align-items:center;justify-content:center;gap:3px;font-size:10px;line-height:14px;color:var(--secondary-text-color);min-width:0}
@@ -10523,6 +10571,7 @@ svg{display:block;width:100%;max-width:190px;height:var(--appliance-illustration
       };
     }
     setConfig(c) {
+      if (window.applianceSize) window.applianceSize(this, c);
       if (!c || typeof c !== 'object') throw new Error('Invalid configuration');
       this._c = { show_power: true, show_energy: true, show_fuel: true, show_fuel_used: true, show_cost: true, show_temps: true,
         show_status: true, threshold: 15, ignition_threshold: 60, off_threshold: 0.5, fuel_alert: 15, flue_temp_max: 300, ...c };
@@ -10531,7 +10580,7 @@ svg{display:block;width:100%;max-width:190px;height:var(--appliance-illustration
     }
     set hass(h) { this._hass = h; if (this._c) this._render(); }
     getCardSize() { return 5; }
-    getGridOptions() { return { columns: 12, min_columns: 6, rows: 'auto' }; }
+    getGridOptions() { return { columns: 12, min_columns: 3, rows: 'auto', min_rows: 1 }; }
 
     _t(k) { return T[this._lang()][k] ?? T.en[k] ?? k; }
     // libellé perso (option labels) sinon traduction
@@ -10673,6 +10722,7 @@ svg{display:block;width:100%;max-width:190px;height:var(--appliance-illustration
       this._form.schema = [
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
+        { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
         ent('entity_status'), ent('entity_flame', 'binary_sensor'), ent('entity_power', 'sensor'), ent('entity_energy', 'sensor'),
         ent('entity_fuel_level', 'sensor'), ent('entity_fuel_used', 'sensor'), ent('entity_cost', 'sensor'),
         { name: 'price_per_liter', selector: { number: { min: 0, step: 0.0001, mode: 'box' } } },
@@ -10844,7 +10894,7 @@ svg{display:block;width:100%;max-width:190px;height:var(--appliance-illustration
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); // texte → HTML sûr
 
   const CSS = `
-:host{display:block}
+:host{display:block}:host{height:100%} ha-card{height:100%;box-sizing:border-box}
 ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--jz-heat:var(--appliance-heat-color,#ff8a3d);--jz-cold:var(--appliance-cold-color,#2b9af9);
   --jz-alert:var(--appliance-alert-color,#db4437);--jz-ok:var(--appliance-ok-color,#43a047);--spd:1;--jz-led:#7a5cff}
 .head{display:flex;align-items:center;justify-content:space-between;gap:8px}
@@ -10855,7 +10905,7 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--jz-heat:var(--app
 .alarm .badge{background:color-mix(in srgb,var(--jz-alert) 22%,transparent);color:var(--jz-alert)}
 .alert{display:none;margin-top:4px;font-size:11px;color:var(--jz-alert);font-weight:500;text-align:center}
 .alert.on{display:block}
-svg{display:block;width:100%;max-width:230px;height:var(--appliance-illustration-height,auto);margin:2px auto 0;overflow:visible}
+svg{display:block;width:100%;max-width:calc(230px * var(--illus-scale,1));height:var(--appliance-illustration-height,auto);margin:2px auto 0;overflow:visible}
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(76px,1fr));gap:6px;margin-top:6px}
 .tile{box-sizing:border-box;background:var(--secondary-background-color);border-radius:10px;padding:5px 7px;min-width:0;overflow:hidden;text-align:center}
 .tile .l{display:flex;align-items:center;justify-content:center;gap:3px;font-size:10px;line-height:14px;color:var(--secondary-text-color);min-width:0}
@@ -10993,6 +11043,7 @@ svg{display:block;width:100%;max-width:230px;height:var(--appliance-illustration
       };
     }
     setConfig(c) {
+      if (window.applianceSize) window.applianceSize(this, c);
       if (!c || typeof c !== 'object') throw new Error('Invalid configuration');
       this._c = { show_power: true, show_energy: true, show_temp: true, show_ph: true, show_cost: true, show_status: true,
         filter_threshold: 30, jets_threshold: 700, heater_threshold: 1800, power_max: 2500, off_threshold: 0.5,
@@ -11002,7 +11053,7 @@ svg{display:block;width:100%;max-width:230px;height:var(--appliance-illustration
     }
     set hass(h) { this._hass = h; if (this._c) this._render(); }
     getCardSize() { return 5; }
-    getGridOptions() { return { columns: 12, min_columns: 6, rows: 'auto' }; }
+    getGridOptions() { return { columns: 12, min_columns: 3, rows: 'auto', min_rows: 1 }; }
 
     _t(k) { return T[this._lang()][k] ?? T.en[k] ?? k; }
     // libellé perso (option labels) sinon traduction
@@ -11154,6 +11205,7 @@ svg{display:block;width:100%;max-width:230px;height:var(--appliance-illustration
       this._form.schema = [
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
+        { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
         ent('entity_status'), ent('entity_power', 'sensor'), ent('entity_energy', 'sensor'), ent('entity_cost', 'sensor'),
         { name: 'price_per_kwh', selector: { number: { min: 0, step: 0.0001, mode: 'box' } } },
         ent('entity_temp', 'sensor'), ent('entity_target_temp'), ent('entity_ph', 'sensor'), ent('entity_light'),
@@ -11352,7 +11404,7 @@ svg{display:block;width:100%;max-width:230px;height:var(--appliance-illustration
   catch (e) { typed = !!e && e.name === 'InvalidModificationError'; } // déjà enregistrée par une autre copie
 
   const CSS_TXT = `
-:host{display:block}
+:host{display:block}:host{height:100%} ha-card{height:100%;box-sizing:border-box}
 ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--acc-move:var(--appliance-heat-color,#ff8a3d);--acc-ok:var(--appliance-ok-color,#43a047);
   --acc-cold:var(--appliance-cold-color,#2b9af9);--acc-beacon:#ffa31a}
 .head{display:flex;align-items:center;justify-content:space-between;gap:8px}
@@ -11361,7 +11413,7 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--acc-move:var(--ap
 .open .badge{background:color-mix(in srgb,var(--acc-ok) 22%,transparent);color:var(--acc-ok)}
 .opening .badge,.closing .badge{background:color-mix(in srgb,var(--acc-move) 22%,transparent);color:var(--acc-move)}
 .partial .badge{background:color-mix(in srgb,var(--acc-cold) 22%,transparent);color:var(--acc-cold)}
-.scene{position:relative;width:100%;max-width:260px;height:var(--appliance-illustration-height,auto);margin:4px auto 0;cursor:pointer;
+.scene{position:relative;width:100%;max-width:calc(260px * var(--illus-scale,1));height:var(--appliance-illustration-height,auto);margin:4px auto 0;cursor:pointer;
   --acc-p:0;transition:--acc-p var(--acc-t,0s) linear}
 .scene>svg,.scene>.leaf{position:absolute}
 .scene>svg{inset:0;width:100%;height:100%;overflow:visible}
@@ -11621,6 +11673,7 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--acc-move:var(--ap
 
   class ApplianceAccessCard extends HTMLElement {
     setConfig(c) {
+      if (window.applianceSize) window.applianceSize(this, c);
       if (!c || typeof c !== 'object') throw new Error('Invalid configuration');
       this._c = { show_status: true, show_controls: true, show_position: true, show_power: true, show_energy: true, show_cost: true, show_since: true,
         travel_time: KINDS[this.kind].travel, moving_threshold: 15, invert: false, leaves: 2, ...c };
@@ -11629,7 +11682,7 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--acc-move:var(--ap
     }
     set hass(h) { this._hass = h; if (this._c) this._render(); }
     getCardSize() { return 5; }
-    getGridOptions() { return { columns: 12, min_columns: 6, rows: 'auto' }; }
+    getGridOptions() { return { columns: 12, min_columns: 3, rows: 'auto', min_rows: 1 }; }
 
     _t(k) { return T[this._lang()][k] ?? T.en[k] ?? k; }
     // libellé perso (option labels) sinon traduction
@@ -11808,6 +11861,7 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--acc-move:var(--ap
       this._form.schema = [
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
+        { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
         ent('entity'), ent('entity_control'),
         ent('entity_power', 'sensor'), ent('entity_energy', 'sensor'), ent('entity_cost', 'sensor'),
         { name: 'price_per_kwh', selector: { number: { min: 0, step: 0.0001, mode: 'box' } } },
@@ -11991,7 +12045,7 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--acc-move:var(--ap
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); // texte → HTML sûr
 
   const CSS = `
-:host{display:block}
+:host{display:block}:host{height:100%} ha-card{height:100%;box-sizing:border-box}
 ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--sn-heat-c:var(--appliance-heat-color,#ff8a3d);--sn-ok:var(--appliance-ok-color,#43a047);
   --sn-cold:var(--appliance-cold-color,#2b9af9);--sn-alert:var(--appliance-alert-color,#db4437);--heat:0;--tf:0}
 .head{display:flex;align-items:center;justify-content:space-between;gap:8px}
@@ -12003,7 +12057,7 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--sn-heat-c:var(--a
 .fault .badge{background:color-mix(in srgb,var(--sn-alert) 22%,transparent);color:var(--sn-alert)}
 .alert{display:none;margin-top:4px;font-size:11px;color:var(--sn-alert);font-weight:500;text-align:center}
 .alert.on{display:block}
-svg{display:block;width:100%;max-width:250px;height:var(--appliance-illustration-height,auto);margin:2px auto 0;overflow:visible;cursor:pointer}
+svg{display:block;width:100%;max-width:calc(250px * var(--illus-scale,1));height:var(--appliance-illustration-height,auto);margin:2px auto 0;overflow:visible;cursor:pointer}
 .ctl{display:flex;justify-content:center;gap:6px;margin-top:6px}
 .ctl.hide,.ctl button.hide{display:none}
 .ctl button{flex:1 1 0;max-width:120px;display:flex;align-items:center;justify-content:center;gap:4px;border:0;border-radius:10px;padding:6px 4px;cursor:pointer;
@@ -12130,6 +12184,7 @@ svg{display:block;width:100%;max-width:250px;height:var(--appliance-illustration
       };
     }
     setConfig(c) {
+      if (window.applianceSize) window.applianceSize(this, c);
       if (!c || typeof c !== 'object') throw new Error('Invalid configuration');
       this._c = { show_status: true, show_controls: true, show_temp: true, show_humidity: true, show_power: true, show_energy: true, show_cost: true,
         target_temp: 80, ready_margin: 3, heater_threshold: 300, off_threshold: 5, temp_max: 110, temp_scale: 120, ...c };
@@ -12138,7 +12193,7 @@ svg{display:block;width:100%;max-width:250px;height:var(--appliance-illustration
     }
     set hass(h) { this._hass = h; if (this._c) this._render(); }
     getCardSize() { return 5; }
-    getGridOptions() { return { columns: 12, min_columns: 6, rows: 'auto' }; }
+    getGridOptions() { return { columns: 12, min_columns: 3, rows: 'auto', min_rows: 1 }; }
 
     _t(k) { return T[this._lang()][k] ?? T.en[k] ?? k; }
     // libellé perso (option labels) sinon traduction
@@ -12298,6 +12353,7 @@ svg{display:block;width:100%;max-width:250px;height:var(--appliance-illustration
       this._form.schema = [
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
+        { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
         ent('entity'), ent('entity_temp', 'sensor'), ent('entity_target_temp'), ent('entity_humidity', 'sensor'),
         ent('entity_power', 'sensor'), ent('entity_energy', 'sensor'), ent('entity_cost', 'sensor'),
         { name: 'price_per_kwh', selector: { number: { min: 0, step: 0.0001, mode: 'box' } } },
@@ -12541,7 +12597,7 @@ svg{display:block;width:100%;max-width:250px;height:var(--appliance-illustration
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); // texte → HTML sûr
 
   const CSS = `
-:host{display:block}
+:host{display:block}:host{height:100%} ha-card{height:100%;box-sizing:border-box}
 ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--pp-ok:var(--appliance-ok-color,#43a047);--pp-warn:#ffa31a;
   --pp-alert:var(--appliance-alert-color,#db4437);--fluid:#3fa9f5;--spd:0;--lvl:.6;--pr:0}
 .head{display:flex;align-items:center;justify-content:space-between;gap:8px}
@@ -12553,7 +12609,7 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--pp-ok:var(--appli
 .fault .badge{background:color-mix(in srgb,var(--pp-alert) 22%,transparent);color:var(--pp-alert)}
 .alert{display:none;margin-top:4px;font-size:11px;color:var(--pp-alert);font-weight:500;text-align:center}
 .alert.on{display:block}
-svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration-height,auto);margin:2px auto 0;overflow:visible;cursor:pointer}
+svg{display:block;width:100%;max-width:calc(270px * var(--illus-scale,1));height:var(--appliance-illustration-height,auto);margin:2px auto 0;overflow:visible;cursor:pointer}
 .ctl{display:flex;justify-content:center;gap:6px;margin-top:6px}
 .ctl.hide{display:none}
 .ctl button{flex:1 1 0;max-width:140px;display:flex;align-items:center;justify-content:center;gap:4px;border:0;border-radius:10px;padding:6px 4px;cursor:pointer;
@@ -12859,6 +12915,7 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
 
   class AppliancePumpCard extends HTMLElement {
     setConfig(c) {
+      if (window.applianceSize) window.applianceSize(this, c);
       if (!c || typeof c !== 'object') throw new Error('Invalid configuration');
       this._c = { show_status: true, show_controls: true, show_flow: true, show_pressure: true, show_power: true, show_temp: true, show_level: true,
         show_runtime: true, show_starts: true, show_energy: true, show_cost: true, no_flow_threshold: 0.5, ...KINDS[this.kind].d, ...c };
@@ -12867,7 +12924,7 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
     }
     set hass(h) { this._hass = h; if (this._c) this._render(); }
     getCardSize() { return 5; }
-    getGridOptions() { return { columns: 12, min_columns: 6, rows: 'auto' }; }
+    getGridOptions() { return { columns: 12, min_columns: 3, rows: 'auto', min_rows: 1 }; }
 
     _t(k) { return T[this._lang()][k] ?? T.en[k] ?? k; }
     // libellé perso (option labels) sinon traduction
@@ -13035,6 +13092,7 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
       this._form.schema = [
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
+        { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
         ent('entity'), ent('entity_power', 'sensor'), ent('entity_flow', 'sensor'), ent('entity_pressure', 'sensor'),
         ent('entity_temp', 'sensor'), ent('entity_level', 'sensor'), ent('entity_fault', 'binary_sensor'), ent('entity_runtime', 'sensor'),
         ...(KINDS[this.kind].sump ? [ent('entity_float', 'binary_sensor'), ent('entity_starts', 'sensor')] : []),
@@ -13278,7 +13336,7 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); // texte → HTML sûr
 
   const CSS = `
-:host{display:block}
+:host{display:block}:host{height:100%} ha-card{height:100%;box-sizing:border-box}
 ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--pr-ok:var(--appliance-ok-color,#43a047);--pr-cold:var(--appliance-cold-color,#2b9af9);
   --pr-warn:#ffa31a;--pr-alert:var(--appliance-alert-color,#db4437);--wl:.85;--dirt:0;--pr-water:#2fa6d9}
 .head{display:flex;align-items:center;justify-content:space-between;gap:8px}
@@ -13289,7 +13347,7 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--pr-ok:var(--appli
 .error .badge{background:color-mix(in srgb,var(--pr-alert) 22%,transparent);color:var(--pr-alert)}
 .alert{display:none;margin-top:4px;font-size:11px;color:var(--pr-alert);font-weight:500;text-align:center}
 .alert.on{display:block}
-svg{display:block;width:100%;max-width:280px;height:var(--appliance-illustration-height,auto);margin:2px auto 0;overflow:visible;cursor:pointer}
+svg{display:block;width:100%;max-width:calc(280px * var(--illus-scale,1));height:var(--appliance-illustration-height,auto);margin:2px auto 0;overflow:visible;cursor:pointer}
 .ctl{display:flex;justify-content:center;gap:6px;margin-top:6px}
 .ctl.hide,.ctl button.hide{display:none}
 .ctl button{flex:1 1 0;max-width:120px;display:flex;align-items:center;justify-content:center;gap:4px;border:0;border-radius:10px;padding:6px 4px;cursor:pointer;
@@ -13432,6 +13490,7 @@ svg{display:block;width:100%;max-width:280px;height:var(--appliance-illustration
       };
     }
     setConfig(c) {
+      if (window.applianceSize) window.applianceSize(this, c);
       if (!c || typeof c !== 'object') throw new Error('Invalid configuration');
       this._c = { show_status: true, show_controls: true, show_status_tile: true, show_filter: true, show_water_level: true, show_water_temp: true,
         show_time: true, show_battery: true, show_mode: true, show_power: true, show_energy: true,
@@ -13441,7 +13500,7 @@ svg{display:block;width:100%;max-width:280px;height:var(--appliance-illustration
     }
     set hass(h) { this._hass = h; if (this._c) this._render(); }
     getCardSize() { return 6; }
-    getGridOptions() { return { columns: 12, min_columns: 6, rows: 'auto' }; }
+    getGridOptions() { return { columns: 12, min_columns: 3, rows: 'auto', min_rows: 1 }; }
 
     _t(k) { return T[this._lang()][k] ?? T.en[k] ?? k; }
     // libellé perso (option labels) sinon traduction
@@ -13615,6 +13674,7 @@ svg{display:block;width:100%;max-width:280px;height:var(--appliance-illustration
       this._form.schema = [
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
+        { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
         ent('entity'), ent('entity_switch'), ent('entity_status', 'sensor'), ent('entity_filter', 'sensor'), ent('entity_water_level', 'sensor'),
         ent('entity_water_temp', 'sensor'), ent('entity_time', 'sensor'), ent('entity_battery', 'sensor'), ent('entity_mode'),
         ent('entity_power', 'sensor'), ent('entity_energy', 'sensor'),
@@ -13784,7 +13844,7 @@ svg{display:block;width:100%;max-width:280px;height:var(--appliance-illustration
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); // texte → HTML sûr
 
   const CSS = `
-:host{display:block}
+:host{display:block}:host{height:100%} ha-card{height:100%;box-sizing:border-box}
 ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--up-ok:var(--appliance-ok-color,#43a047);--up-warn:#ffa31a;
   --up-alert:var(--appliance-alert-color,#db4437);--up-cold:var(--appliance-cold-color,#2b9af9);--bat:1;--load:0}
 .head{display:flex;align-items:center;justify-content:space-between;gap:8px}
@@ -13796,7 +13856,7 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--up-ok:var(--appli
 .low_battery .badge,.offline .badge{background:color-mix(in srgb,var(--up-alert) 22%,transparent);color:var(--up-alert)}
 .alert{display:none;margin-top:4px;font-size:11px;color:var(--up-alert);font-weight:500;text-align:center}
 .alert.on{display:block}
-svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration-height,auto);margin:2px auto 0;overflow:visible;cursor:pointer}
+svg{display:block;width:100%;max-width:calc(270px * var(--illus-scale,1));height:var(--appliance-illustration-height,auto);margin:2px auto 0;overflow:visible;cursor:pointer}
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(76px,1fr));gap:6px;margin-top:6px}
 .tile{box-sizing:border-box;background:var(--secondary-background-color);border-radius:10px;padding:5px 7px;min-width:0;overflow:hidden;text-align:center;cursor:pointer}
 .tile .l{display:flex;align-items:center;justify-content:center;gap:3px;font-size:10px;line-height:14px;color:var(--secondary-text-color);min-width:0}
@@ -13927,6 +13987,7 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
       };
     }
     setConfig(c) {
+      if (window.applianceSize) window.applianceSize(this, c);
       if (!c || typeof c !== 'object') throw new Error('Invalid configuration');
       this._c = { show_status: true, show_charge: true, show_runtime: true, show_load: true, show_power: true, show_voltage: true, show_energy: true,
         battery_low: 20, load_max: 90, mains_min: 100, ...c };
@@ -13935,7 +13996,7 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
     }
     set hass(h) { this._hass = h; if (this._c) this._render(); }
     getCardSize() { return 5; }
-    getGridOptions() { return { columns: 12, min_columns: 6, rows: 'auto' }; }
+    getGridOptions() { return { columns: 12, min_columns: 3, rows: 'auto', min_rows: 1 }; }
 
     _t(k) { return T[this._lang()][k] ?? T.en[k] ?? k; }
     // libellé perso (option labels) sinon traduction
@@ -14071,6 +14132,7 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
       this._form.schema = [
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
+        { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
         ent('entity'), ent('entity_charge', 'sensor'), ent('entity_runtime', 'sensor'), ent('entity_load', 'sensor'), ent('entity_power', 'sensor'),
         ent('entity_input_voltage', 'sensor'), ent('entity_output_voltage', 'sensor'), ent('entity_energy', 'sensor'),
         { type: 'grid', name: '', schema: [num('battery_low', 0, 100, 1, 20, '%'), num('load_max', 10, 100, 1, 90, '%'), num('mains_min', 0, 250, 1, 100, 'V')] },
@@ -14235,7 +14297,7 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); // texte → HTML sûr
 
   const CSS = `
-:host{display:block}
+:host{display:block}:host{height:100%} ha-card{height:100%;box-sizing:border-box}
 ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--uf-heat-c:var(--appliance-heat-color,#ff8a3d);--uf-ok:var(--appliance-ok-color,#43a047);
   --uf-alert:var(--appliance-alert-color,#db4437);--heat:0}
 .head{display:flex;align-items:center;justify-content:space-between;gap:8px}
@@ -14246,7 +14308,7 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--uf-heat-c:var(--a
 .fault .badge{background:color-mix(in srgb,var(--uf-alert) 22%,transparent);color:var(--uf-alert)}
 .alert{display:none;margin-top:4px;font-size:11px;color:var(--uf-alert);font-weight:500;text-align:center}
 .alert.on{display:block}
-svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration-height,auto);margin:2px auto 0;overflow:visible;cursor:pointer}
+svg{display:block;width:100%;max-width:calc(270px * var(--illus-scale,1));height:var(--appliance-illustration-height,auto);margin:2px auto 0;overflow:visible;cursor:pointer}
 .ctl{display:flex;justify-content:center;gap:6px;margin-top:6px}
 .ctl.hide,.ctl button.hide{display:none}
 .ctl button{flex:1 1 0;max-width:120px;display:flex;align-items:center;justify-content:center;gap:4px;border:0;border-radius:10px;padding:6px 4px;cursor:pointer;
@@ -14359,6 +14421,7 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
       return { entity: f(re, 'climate') || f(re, 'switch'), entity_floor_temp: f(/(plancher|floor|sol).*temp/i, 'sensor') };
     }
     setConfig(c) {
+      if (window.applianceSize) window.applianceSize(this, c);
       if (!c || typeof c !== 'object') throw new Error('Invalid configuration');
       this._c = { show_status: true, show_controls: true, show_temp: true, show_floor: true, show_water: true, show_power: true, show_energy: true, show_cost: true,
         heating_type: 'water', floor_max: 29, water_max: 45, heat_threshold: 20, ...c };
@@ -14367,7 +14430,7 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
     }
     set hass(h) { this._hass = h; if (this._c) this._render(); }
     getCardSize() { return 5; }
-    getGridOptions() { return { columns: 12, min_columns: 6, rows: 'auto' }; }
+    getGridOptions() { return { columns: 12, min_columns: 3, rows: 'auto', min_rows: 1 }; }
 
     _t(k) { return T[this._lang()][k] ?? T.en[k] ?? k; }
     // libellé perso (option labels) sinon traduction
@@ -14531,6 +14594,7 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
       this._form.schema = [
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
+        { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
         ent('entity'), ent('entity_temp', 'sensor'), ent('entity_target_temp'), ent('entity_floor_temp', 'sensor'), ent('entity_water_temp', 'sensor'),
         ent('entity_power', 'sensor'), ent('entity_energy', 'sensor'), ent('entity_cost', 'sensor'),
         { name: 'price_per_kwh', selector: { number: { min: 0, step: 0.0001, mode: 'box' } } },
@@ -14718,13 +14782,13 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); // texte → HTML sûr
 
   const CSS = `
-:host{display:block}
+:host{display:block}:host{height:100%} ha-card{height:100%;box-sizing:border-box}
 ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--lc:#ffb347;--b:1;--lt-ok:#f5c45e}
 .head{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .title{font-size:14px;font-weight:500;color:var(--primary-text-color);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:12px;background:var(--secondary-background-color);color:var(--secondary-text-color);white-space:nowrap}
 .on .badge{background:color-mix(in srgb,var(--lc) 26%,transparent);color:color-mix(in srgb,var(--lc) 75%,var(--primary-text-color))}
-.stage{position:relative;margin:4px auto 0;max-width:240px;border-radius:14px;background:radial-gradient(ellipse at 50% 55%,#1d232b,#12161b 75%);overflow:hidden;cursor:pointer}
+.stage{position:relative;margin:4px auto 0;max-width:calc(240px * var(--illus-scale,1));border-radius:14px;background:radial-gradient(ellipse at 50% 55%,#1d232b,#12161b 75%);overflow:hidden;cursor:pointer}
 svg{display:block;width:100%;height:auto;overflow:visible}
 .ctl{display:flex;justify-content:center;gap:6px;margin-top:8px}
 .ctl.hide,.ctl button.hide{display:none}
@@ -14947,6 +15011,7 @@ svg{display:block;width:100%;height:auto;overflow:visible}
 
   class ApplianceLightCard extends HTMLElement {
     setConfig(c) {
+      if (window.applianceSize) window.applianceSize(this, c);
       if (!c || typeof c !== 'object') throw new Error('Invalid configuration');
       this._c = { show_status: true, show_controls: true, show_brightness: true, show_power: true, show_energy: true, follow_light_color: true, ...c };
       this._built = false;
@@ -14954,7 +15019,7 @@ svg{display:block;width:100%;height:auto;overflow:visible}
     }
     set hass(h) { this._hass = h; if (this._c) this._render(); }
     getCardSize() { return 5; }
-    getGridOptions() { return { columns: 6, min_columns: 4, rows: 'auto' }; }
+    getGridOptions() { return { columns: 6, min_columns: 3, rows: 'auto', min_rows: 1 }; }
 
     _t(k) { return T[this._lang()][k] ?? T.en[k] ?? k; }
     // libellé perso (option labels) sinon traduction
@@ -15090,6 +15155,7 @@ svg{display:block;width:100%;height:auto;overflow:visible}
       this._form.schema = [
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
+        { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
         ent('entity'), ent('entity_power', 'sensor'), ent('entity_energy', 'sensor'),
         { name: 'color', selector: { color_rgb: {} } },
         { type: 'grid', name: '', schema: [
@@ -15266,7 +15332,7 @@ svg{display:block;width:100%;height:auto;overflow:visible}
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); // texte → HTML sûr
 
   const CSS = `
-:host{display:block}
+:host{display:block}:host{height:100%} ha-card{height:100%;box-sizing:border-box}
 ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--sh-move:var(--appliance-heat-color,#ff8a3d);--sh-ok:var(--appliance-ok-color,#43a047);
   --sh-cold:var(--appliance-cold-color,#2b9af9);--sc:#d5dbe1;--p:0;--t:100;--sh-d:1.2s}
 .head{display:flex;align-items:center;justify-content:space-between;gap:8px}
@@ -15275,7 +15341,7 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--sh-move:var(--app
 .open .badge{background:color-mix(in srgb,var(--sh-ok) 22%,transparent);color:var(--sh-ok)}
 .partial .badge{background:color-mix(in srgb,var(--sh-cold) 22%,transparent);color:var(--sh-cold)}
 .opening .badge,.closing .badge{background:color-mix(in srgb,var(--sh-move) 22%,transparent);color:var(--sh-move)}
-.scene{position:relative;max-width:250px;margin:4px auto 0;cursor:pointer}
+.scene{position:relative;max-width:calc(250px * var(--illus-scale,1));margin:4px auto 0;cursor:pointer}
 .scene>svg{display:block;width:100%;height:auto}
 .ctl{display:flex;justify-content:center;gap:6px;margin-top:6px}
 .ctl.hide,.ctl button.hide{display:none}
@@ -15426,6 +15492,7 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--sh-move:var(--app
 
   class ApplianceShutterCard extends HTMLElement {
     setConfig(c) {
+      if (window.applianceSize) window.applianceSize(this, c);
       if (!c || typeof c !== 'object') throw new Error('Invalid configuration');
       this._c = { show_status: true, show_controls: true, show_slider: true, show_position: true, show_tilt: true, show_power: true, show_since: true,
         sun_entity: 'sun.sun', ...c };
@@ -15434,7 +15501,7 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--sh-move:var(--app
     }
     set hass(h) { this._hass = h; if (this._c) this._render(); }
     getCardSize() { return 6; }
-    getGridOptions() { return { columns: 6, min_columns: 4, rows: 'auto' }; }
+    getGridOptions() { return { columns: 6, min_columns: 3, rows: 'auto', min_rows: 1 }; }
 
     _t(k) { return T[this._lang()][k] ?? T.en[k] ?? k; }
     // libellé perso (option labels) sinon traduction
@@ -15593,6 +15660,7 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--sh-move:var(--app
       this._form.schema = [
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
+        { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
         ent('entity', 'cover'), ent('entity_power', 'sensor'), ent('sun_entity', 'sun'),
         { type: 'grid', name: '', schema: [
           { name: 'color', selector: { text: {} } },

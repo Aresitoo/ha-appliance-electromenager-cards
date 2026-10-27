@@ -11,7 +11,7 @@
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); // texte → HTML sûr
 
   const CSS = `
-:host{display:block}
+:host{display:block}:host{height:100%} ha-card{height:100%;box-sizing:border-box}
 ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--wp-heat:var(--appliance-heat-color,#ff8a3d);--wp-cold:var(--appliance-cold-color,#2b9af9);
   --wp-alert:var(--appliance-alert-color,#db4437)}
 .head{display:flex;align-items:center;justify-content:space-between;gap:8px}
@@ -20,7 +20,7 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--wp-heat:var(--app
 .heating .badge{background:color-mix(in srgb,var(--wp-heat) 22%,transparent);color:var(--wp-heat)}
 .dhw .badge,.cooling .badge{background:color-mix(in srgb,var(--wp-cold) 22%,transparent);color:var(--wp-cold)}
 .alarm .badge{background:color-mix(in srgb,var(--wp-alert) 22%,transparent);color:var(--wp-alert)}
-svg{display:block;width:100%;height:var(--appliance-illustration-height,auto);margin:2px auto 0;overflow:visible}
+svg{display:block;width:100%;max-width:calc(100% * var(--illus-scale,1));height:var(--appliance-illustration-height,auto);margin:2px auto 0;overflow:visible}
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(76px,1fr));gap:6px;margin-top:6px}
 .tile{box-sizing:border-box;background:var(--secondary-background-color);border-radius:10px;padding:5px 7px;min-width:0;overflow:hidden;text-align:center;cursor:pointer}
 .tile .l{display:flex;align-items:center;justify-content:center;gap:3px;font-size:10px;line-height:14px;color:var(--secondary-text-color);min-width:0}
@@ -167,6 +167,7 @@ svg{display:block;width:100%;height:var(--appliance-illustration-height,auto);ma
         schema: [
           { name: 'name', selector: { text: {} } },
           { name: 'labels', selector: { object: {} } },
+          { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
           ent('entity_status', ['climate', 'sensor', 'select', 'input_select', 'water_heater']),
           { type: 'grid', name: '', schema: [ent('entity_power', 'sensor'), ent('entity_heat_power', 'sensor'), ent('entity_cop', 'sensor')] },
           { type: 'grid', name: '', schema: [ent('entity_flow_temp', 'sensor'), ent('entity_return_temp', 'sensor'), ent('entity_flow_rate', 'sensor')] },
@@ -188,6 +189,7 @@ svg{display:block;width:100%;height:var(--appliance-illustration-height,auto);ma
       };
     }
     setConfig(c) {
+      if (window.applianceSize) window.applianceSize(this, c);
       if (!c || typeof c !== 'object') throw new Error('Invalid configuration');
       this._c = { ...Object.fromEntries(SHOW.map((k) => [k, true])), threshold: 100, off_threshold: 0.5, ...c };
       this._built = false;
@@ -209,7 +211,7 @@ svg{display:block;width:100%;height:var(--appliance-illustration-height,auto);ma
       if (!this._dt) this._dt = setTimeout(() => { this._dt = null; if (this._hass) this._render(); }, left + 50);
       return false;
     }
-    getGridOptions() { return { columns: 12, min_columns: 6, rows: 'auto' }; }
+    getGridOptions() { return { columns: 12, min_columns: 3, rows: 'auto', min_rows: 1 }; }
 
     _t(k) { return T[this._lang()][k] ?? T.en[k] ?? k; }
     // libellé perso (option labels) sinon traduction

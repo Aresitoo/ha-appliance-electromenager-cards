@@ -11,7 +11,7 @@
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); // texte → HTML sûr
 
   const CSS = `
-:host{display:block}
+:host{display:block}:host{height:100%} ha-card{height:100%;box-sizing:border-box}
 ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--dh-heat:var(--appliance-heat-color,#ff8a3d);--dh-cold:var(--appliance-cold-color,#2b9af9);
   --dh-alert:var(--appliance-alert-color,#db4437);--dh-ok:var(--appliance-ok-color,#43a047);--mod:1}
 .head{display:flex;align-items:center;justify-content:space-between;gap:8px}
@@ -22,7 +22,7 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--dh-heat:var(--app
 .alarm .badge{background:color-mix(in srgb,var(--dh-alert) 22%,transparent);color:var(--dh-alert)}
 .alert{display:none;margin-top:4px;font-size:11px;color:var(--dh-alert);font-weight:500;text-align:center}
 .alert.on{display:block}
-svg{display:block;width:100%;max-width:190px;height:var(--appliance-illustration-height,auto);margin:2px auto 0;overflow:visible}
+svg{display:block;width:100%;max-width:calc(190px * var(--illus-scale,1));height:var(--appliance-illustration-height,auto);margin:2px auto 0;overflow:visible}
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(76px,1fr));gap:6px;margin-top:6px}
 .tile{box-sizing:border-box;background:var(--secondary-background-color);border-radius:10px;padding:5px 7px;min-width:0;overflow:hidden;text-align:center}
 .tile .l{display:flex;align-items:center;justify-content:center;gap:3px;font-size:10px;line-height:14px;color:var(--secondary-text-color);min-width:0}
@@ -184,6 +184,7 @@ svg{display:block;width:100%;max-width:190px;height:var(--appliance-illustration
       };
     }
     setConfig(c) {
+      if (window.applianceSize) window.applianceSize(this, c);
       if (!c || typeof c !== 'object') throw new Error('Invalid configuration');
       this._c = { show_power: true, show_energy: true, show_fuel: true, show_fuel_used: true, show_cost: true, show_temps: true,
         show_status: true, threshold: 15, ignition_threshold: 60, off_threshold: 0.5, fuel_alert: 15, flue_temp_max: 300, ...c };
@@ -192,7 +193,7 @@ svg{display:block;width:100%;max-width:190px;height:var(--appliance-illustration
     }
     set hass(h) { this._hass = h; if (this._c) this._render(); }
     getCardSize() { return 5; }
-    getGridOptions() { return { columns: 12, min_columns: 6, rows: 'auto' }; }
+    getGridOptions() { return { columns: 12, min_columns: 3, rows: 'auto', min_rows: 1 }; }
 
     _t(k) { return T[this._lang()][k] ?? T.en[k] ?? k; }
     // libellé perso (option labels) sinon traduction
@@ -334,6 +335,7 @@ svg{display:block;width:100%;max-width:190px;height:var(--appliance-illustration
       this._form.schema = [
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
+        { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
         ent('entity_status'), ent('entity_flame', 'binary_sensor'), ent('entity_power', 'sensor'), ent('entity_energy', 'sensor'),
         ent('entity_fuel_level', 'sensor'), ent('entity_fuel_used', 'sensor'), ent('entity_cost', 'sensor'),
         { name: 'price_per_liter', selector: { number: { min: 0, step: 0.0001, mode: 'box' } } },

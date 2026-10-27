@@ -12,7 +12,7 @@
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); // texte → HTML sûr
 
   const CSS = `
-:host{display:block}
+:host{display:block}:host{height:100%} ha-card{height:100%;box-sizing:border-box}
 ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--sh-move:var(--appliance-heat-color,#ff8a3d);--sh-ok:var(--appliance-ok-color,#43a047);
   --sh-cold:var(--appliance-cold-color,#2b9af9);--sc:#d5dbe1;--p:0;--t:100;--sh-d:1.2s}
 .head{display:flex;align-items:center;justify-content:space-between;gap:8px}
@@ -21,7 +21,7 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--sh-move:var(--app
 .open .badge{background:color-mix(in srgb,var(--sh-ok) 22%,transparent);color:var(--sh-ok)}
 .partial .badge{background:color-mix(in srgb,var(--sh-cold) 22%,transparent);color:var(--sh-cold)}
 .opening .badge,.closing .badge{background:color-mix(in srgb,var(--sh-move) 22%,transparent);color:var(--sh-move)}
-.scene{position:relative;max-width:250px;margin:4px auto 0;cursor:pointer}
+.scene{position:relative;max-width:calc(250px * var(--illus-scale,1));margin:4px auto 0;cursor:pointer}
 .scene>svg{display:block;width:100%;height:auto}
 .ctl{display:flex;justify-content:center;gap:6px;margin-top:6px}
 .ctl.hide,.ctl button.hide{display:none}
@@ -172,6 +172,7 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--sh-move:var(--app
 
   class ApplianceShutterCard extends HTMLElement {
     setConfig(c) {
+      if (window.applianceSize) window.applianceSize(this, c);
       if (!c || typeof c !== 'object') throw new Error('Invalid configuration');
       this._c = { show_status: true, show_controls: true, show_slider: true, show_position: true, show_tilt: true, show_power: true, show_since: true,
         sun_entity: 'sun.sun', ...c };
@@ -180,7 +181,7 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--sh-move:var(--app
     }
     set hass(h) { this._hass = h; if (this._c) this._render(); }
     getCardSize() { return 6; }
-    getGridOptions() { return { columns: 6, min_columns: 4, rows: 'auto' }; }
+    getGridOptions() { return { columns: 6, min_columns: 3, rows: 'auto', min_rows: 1 }; }
 
     _t(k) { return T[this._lang()][k] ?? T.en[k] ?? k; }
     // libellé perso (option labels) sinon traduction
@@ -339,6 +340,7 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--sh-move:var(--app
       this._form.schema = [
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
+        { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
         ent('entity', 'cover'), ent('entity_power', 'sensor'), ent('sun_entity', 'sun'),
         { type: 'grid', name: '', schema: [
           { name: 'color', selector: { text: {} } },

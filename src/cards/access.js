@@ -19,7 +19,7 @@
   catch (e) { typed = !!e && e.name === 'InvalidModificationError'; } // déjà enregistrée par une autre copie
 
   const CSS_TXT = `
-:host{display:block}
+:host{display:block}:host{height:100%} ha-card{height:100%;box-sizing:border-box}
 ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--acc-move:var(--appliance-heat-color,#ff8a3d);--acc-ok:var(--appliance-ok-color,#43a047);
   --acc-cold:var(--appliance-cold-color,#2b9af9);--acc-beacon:#ffa31a}
 .head{display:flex;align-items:center;justify-content:space-between;gap:8px}
@@ -28,7 +28,7 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--acc-move:var(--ap
 .open .badge{background:color-mix(in srgb,var(--acc-ok) 22%,transparent);color:var(--acc-ok)}
 .opening .badge,.closing .badge{background:color-mix(in srgb,var(--acc-move) 22%,transparent);color:var(--acc-move)}
 .partial .badge{background:color-mix(in srgb,var(--acc-cold) 22%,transparent);color:var(--acc-cold)}
-.scene{position:relative;width:100%;max-width:260px;height:var(--appliance-illustration-height,auto);margin:4px auto 0;cursor:pointer;
+.scene{position:relative;width:100%;max-width:calc(260px * var(--illus-scale,1));height:var(--appliance-illustration-height,auto);margin:4px auto 0;cursor:pointer;
   --acc-p:0;transition:--acc-p var(--acc-t,0s) linear}
 .scene>svg,.scene>.leaf{position:absolute}
 .scene>svg{inset:0;width:100%;height:100%;overflow:visible}
@@ -288,6 +288,7 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--acc-move:var(--ap
 
   class ApplianceAccessCard extends HTMLElement {
     setConfig(c) {
+      if (window.applianceSize) window.applianceSize(this, c);
       if (!c || typeof c !== 'object') throw new Error('Invalid configuration');
       this._c = { show_status: true, show_controls: true, show_position: true, show_power: true, show_energy: true, show_cost: true, show_since: true,
         travel_time: KINDS[this.kind].travel, moving_threshold: 15, invert: false, leaves: 2, ...c };
@@ -296,7 +297,7 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--acc-move:var(--ap
     }
     set hass(h) { this._hass = h; if (this._c) this._render(); }
     getCardSize() { return 5; }
-    getGridOptions() { return { columns: 12, min_columns: 6, rows: 'auto' }; }
+    getGridOptions() { return { columns: 12, min_columns: 3, rows: 'auto', min_rows: 1 }; }
 
     _t(k) { return T[this._lang()][k] ?? T.en[k] ?? k; }
     // libellé perso (option labels) sinon traduction
@@ -475,6 +476,7 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--acc-move:var(--ap
       this._form.schema = [
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
+        { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
         ent('entity'), ent('entity_control'),
         ent('entity_power', 'sensor'), ent('entity_energy', 'sensor'), ent('entity_cost', 'sensor'),
         { name: 'price_per_kwh', selector: { number: { min: 0, step: 0.0001, mode: 'box' } } },

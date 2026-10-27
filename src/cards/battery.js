@@ -21,6 +21,7 @@ class ApplianceBatteryCard extends HTMLElement {
       schema: [
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
+        { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
         { name: 'entity_soc', selector: { entity: { domain: 'sensor', device_class: 'battery' } } },
         { name: 'entity_power', selector: { entity: { domain: 'sensor', device_class: 'power' } } },
         { name: 'invert_power', selector: { boolean: {} } },
@@ -46,6 +47,7 @@ class ApplianceBatteryCard extends HTMLElement {
   }
 
   setConfig(config) {
+    if (window.applianceSize) window.applianceSize(this, config);
     // Convention : puissance > 0 = charge (inverser avec invert_power si ton capteur est l'inverse)
     this._config = { show_power: true, show_energy: true, show_temperature: true, show_time: true,
       capacity_kwh: 10, max_power: 5000, low_threshold: 15, invert_power: false, status_position: 'auto', layout: 'default', ...config };
@@ -59,6 +61,7 @@ class ApplianceBatteryCard extends HTMLElement {
     this._update();
   }
   getCardSize() { return 5; }
+  getGridOptions() { return { columns: 12, min_columns: 3, rows: 'auto', min_rows: 1 }; }
   _t(k) { return (I18N_BAT[this._config.language || lang(this._hass)] || I18N_BAT.en)[k] ?? I18N_BAT.en[k] ?? k; }
   // libellé perso (option labels) sinon traduction
   _l(k) { const L = this._config && this._config.labels; return L && L[k] != null && L[k] !== '' ? String(L[k]) : this._t(k); }
@@ -93,12 +96,12 @@ class ApplianceBatteryCard extends HTMLElement {
     const cables = [cab(46, 128), cab(134, 216), `M${X[2] + W + 8} ${TOP - 6} C ${X[2] + W + 30} ${TOP - 20}, ${X[2] + W + 26} ${TOP + 60}, ${X[2] + W + 22} ${TOP + 110}`];
     this.shadowRoot.innerHTML = `
     <style>
-      :host { display:block; }
+      :host { display:block; }:host{height:100%} ha-card{height:100%;box-sizing:border-box}
       ha-card { padding:12px; overflow:hidden; container-type:inline-size; }
       .title { font-weight:600; margin:0 4px 4px; display:flex; justify-content:space-between; align-items:center; }
       .badge { font-size:.75em; color:#fff; background:#e53935; border-radius:10px; padding:2px 8px; display:none; animation:blink 1s infinite; }
       .low .badge { display:inline-block; }
-      svg { width:100%; height:auto; display:block; overflow:visible; transform:scale(0.8); transform-origin:top center; }
+      svg { width:100%; max-width:calc(100% * var(--illus-scale,1)); margin-left:auto; margin-right:auto; height:auto; display:block; overflow:visible; transform:scale(0.8); transform-origin:top center; }
       .liquid { fill:var(--lc,#43a047); opacity:.35; transition:y 1.2s ease, height 1.2s ease, fill .8s; }
       .wave { fill:var(--lc,#43a047); opacity:.45; animation:wave 2.6s ease-in-out infinite alternate; transition:fill .8s; }
       .led { fill:var(--lc,#43a047); animation:blink var(--bl,2s) infinite; filter:drop-shadow(0 0 3px var(--lc,#43a047)); }

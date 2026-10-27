@@ -28,6 +28,7 @@ class ApplianceRobotVacuumCard extends HTMLElement {
         { name: 'entity', required: true, selector: { entity: { domain: 'vacuum' } } },
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
+        { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
         { name: 'entity_battery', selector: { entity: { domain: 'sensor', device_class: 'battery' } } },
         { name: 'entity_area', selector: { entity: { domain: 'sensor' } } },
         { name: 'entity_time', selector: { entity: { domain: 'sensor' } } },
@@ -52,6 +53,7 @@ class ApplianceRobotVacuumCard extends HTMLElement {
   }
 
   setConfig(config) {
+    if (window.applianceSize) window.applianceSize(this, config);
     if (!config.entity) throw new Error('entity (vacuum.xxx) requise');
     this._config = { show_battery: true, show_area: true, show_time: true, show_fan: true, show_status: true,
       show_consumables: true, show_buttons: true, ...config };
@@ -63,6 +65,7 @@ class ApplianceRobotVacuumCard extends HTMLElement {
     if (l && l !== this._lng) { this._lng = l; this._hass = h; this._built = false; this._build(); }
     this._hass = h; this._update(); }
   getCardSize() { return this._config && this._config.layout === 'compact' ? 3 : 6; }
+  getGridOptions() { return { columns: 12, min_columns: 3, rows: 'auto', min_rows: 1 }; }
   _t(k) { return (I18N_VAC[this._config.language || lang(this._hass)] || I18N_VAC.en)[k] ?? I18N_VAC.en[k] ?? k; }
   // libellé perso (option labels) sinon traduction
   _l(k) { const L = this._config && this._config.labels; return L && L[k] != null && L[k] !== '' ? String(L[k]) : this._t(k); }
@@ -131,12 +134,12 @@ window.customCards = window.customCards || [];
  * type: custom:appliance-robot-vacuum-solo-card  (mêmes options que la carte complète)
  * ─────────────────────────────────────────────────────────────── */
 const COMMON_CSS_VAC = `
-  :host { display:block; }
+  :host { display:block; }:host{height:100%} ha-card{height:100%;box-sizing:border-box}
   ha-card { padding:12px; overflow:hidden; }
   .title { font-weight:600; margin:0 4px 4px; display:flex; justify-content:space-between; align-items:center; }
   .badge { font-size:.75em; color:#fff; background:#e53935; border-radius:10px; padding:2px 8px; display:none; animation:blink 1s infinite; }
   .error .badge { display:inline-block; }
-  svg { width:100%; height:auto; display:block; overflow:visible; }
+  svg { width:100%; max-width:calc(100% * var(--illus-scale,1)); margin-left:auto; margin-right:auto; height:auto; display:block; overflow:visible; }
   .btns { display:flex; gap:8px; margin-top:8px; }
   .btn { flex:1; display:flex; align-items:center; justify-content:center; gap:6px; border:none; cursor:pointer; border-radius:999px; padding:8px 6px;
     background:var(--secondary-background-color, rgba(127,127,127,.15)); color:var(--primary-text-color,#222); font:600 .85em system-ui,sans-serif; transition:transform .1s, background .2s; }

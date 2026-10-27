@@ -203,7 +203,8 @@
     "f_energy_period": "Énergie affichée (compteur ou période)",
     "flex_temp": "Zone flex",
     "f_flex_temperature": "Capteur température zone flex",
-    "f_flex_max_temperature": "Alerte zone flex au-dessus de (°C)"
+    "f_flex_max_temperature": "Alerte zone flex au-dessus de (°C)",
+    "f_illustration_size": "Taille de l'illustration"
   },
   "aquarium": {
     "power": "Puissance",
@@ -706,7 +707,8 @@
     "shutter_color": "Couleur du volet",
     "show_slider": "Afficher les curseurs",
     "show_tilt": "Afficher l'inclinaison",
-    "image": "Image perso (URL)"
+    "image": "Image perso (URL)",
+    "illustration_size": "Taille de l'illustration"
   },
   "light": {
     "light_bulb": "Ampoule",

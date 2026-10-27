@@ -14,7 +14,7 @@
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); // texte → HTML sûr
 
   const CSS = `
-:host{display:block}
+:host{display:block}:host{height:100%} ha-card{height:100%;box-sizing:border-box}
 ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--uf-heat-c:var(--appliance-heat-color,#ff8a3d);--uf-ok:var(--appliance-ok-color,#43a047);
   --uf-alert:var(--appliance-alert-color,#db4437);--heat:0}
 .head{display:flex;align-items:center;justify-content:space-between;gap:8px}
@@ -25,7 +25,7 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--uf-heat-c:var(--a
 .fault .badge{background:color-mix(in srgb,var(--uf-alert) 22%,transparent);color:var(--uf-alert)}
 .alert{display:none;margin-top:4px;font-size:11px;color:var(--uf-alert);font-weight:500;text-align:center}
 .alert.on{display:block}
-svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration-height,auto);margin:2px auto 0;overflow:visible;cursor:pointer}
+svg{display:block;width:100%;max-width:calc(270px * var(--illus-scale,1));height:var(--appliance-illustration-height,auto);margin:2px auto 0;overflow:visible;cursor:pointer}
 .ctl{display:flex;justify-content:center;gap:6px;margin-top:6px}
 .ctl.hide,.ctl button.hide{display:none}
 .ctl button{flex:1 1 0;max-width:120px;display:flex;align-items:center;justify-content:center;gap:4px;border:0;border-radius:10px;padding:6px 4px;cursor:pointer;
@@ -138,6 +138,7 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
       return { entity: f(re, 'climate') || f(re, 'switch'), entity_floor_temp: f(/(plancher|floor|sol).*temp/i, 'sensor') };
     }
     setConfig(c) {
+      if (window.applianceSize) window.applianceSize(this, c);
       if (!c || typeof c !== 'object') throw new Error('Invalid configuration');
       this._c = { show_status: true, show_controls: true, show_temp: true, show_floor: true, show_water: true, show_power: true, show_energy: true, show_cost: true,
         heating_type: 'water', floor_max: 29, water_max: 45, heat_threshold: 20, ...c };
@@ -146,7 +147,7 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
     }
     set hass(h) { this._hass = h; if (this._c) this._render(); }
     getCardSize() { return 5; }
-    getGridOptions() { return { columns: 12, min_columns: 6, rows: 'auto' }; }
+    getGridOptions() { return { columns: 12, min_columns: 3, rows: 'auto', min_rows: 1 }; }
 
     _t(k) { return T[this._lang()][k] ?? T.en[k] ?? k; }
     // libellé perso (option labels) sinon traduction
@@ -310,6 +311,7 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
       this._form.schema = [
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
+        { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
         ent('entity'), ent('entity_temp', 'sensor'), ent('entity_target_temp'), ent('entity_floor_temp', 'sensor'), ent('entity_water_temp', 'sensor'),
         ent('entity_power', 'sensor'), ent('entity_energy', 'sensor'), ent('entity_cost', 'sensor'),
         { name: 'price_per_kwh', selector: { number: { min: 0, step: 0.0001, mode: 'box' } } },

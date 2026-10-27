@@ -18,7 +18,7 @@
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); // texte → HTML sûr
 
   const CSS = `
-:host{display:block}
+:host{display:block}:host{height:100%} ha-card{height:100%;box-sizing:border-box}
 ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--pp-ok:var(--appliance-ok-color,#43a047);--pp-warn:#ffa31a;
   --pp-alert:var(--appliance-alert-color,#db4437);--fluid:#3fa9f5;--spd:0;--lvl:.6;--pr:0}
 .head{display:flex;align-items:center;justify-content:space-between;gap:8px}
@@ -30,7 +30,7 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--pp-ok:var(--appli
 .fault .badge{background:color-mix(in srgb,var(--pp-alert) 22%,transparent);color:var(--pp-alert)}
 .alert{display:none;margin-top:4px;font-size:11px;color:var(--pp-alert);font-weight:500;text-align:center}
 .alert.on{display:block}
-svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration-height,auto);margin:2px auto 0;overflow:visible;cursor:pointer}
+svg{display:block;width:100%;max-width:calc(270px * var(--illus-scale,1));height:var(--appliance-illustration-height,auto);margin:2px auto 0;overflow:visible;cursor:pointer}
 .ctl{display:flex;justify-content:center;gap:6px;margin-top:6px}
 .ctl.hide{display:none}
 .ctl button{flex:1 1 0;max-width:140px;display:flex;align-items:center;justify-content:center;gap:4px;border:0;border-radius:10px;padding:6px 4px;cursor:pointer;
@@ -336,6 +336,7 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
 
   class AppliancePumpCard extends HTMLElement {
     setConfig(c) {
+      if (window.applianceSize) window.applianceSize(this, c);
       if (!c || typeof c !== 'object') throw new Error('Invalid configuration');
       this._c = { show_status: true, show_controls: true, show_flow: true, show_pressure: true, show_power: true, show_temp: true, show_level: true,
         show_runtime: true, show_starts: true, show_energy: true, show_cost: true, no_flow_threshold: 0.5, ...KINDS[this.kind].d, ...c };
@@ -344,7 +345,7 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
     }
     set hass(h) { this._hass = h; if (this._c) this._render(); }
     getCardSize() { return 5; }
-    getGridOptions() { return { columns: 12, min_columns: 6, rows: 'auto' }; }
+    getGridOptions() { return { columns: 12, min_columns: 3, rows: 'auto', min_rows: 1 }; }
 
     _t(k) { return T[this._lang()][k] ?? T.en[k] ?? k; }
     // libellé perso (option labels) sinon traduction
@@ -512,6 +513,7 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
       this._form.schema = [
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
+        { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
         ent('entity'), ent('entity_power', 'sensor'), ent('entity_flow', 'sensor'), ent('entity_pressure', 'sensor'),
         ent('entity_temp', 'sensor'), ent('entity_level', 'sensor'), ent('entity_fault', 'binary_sensor'), ent('entity_runtime', 'sensor'),
         ...(KINDS[this.kind].sump ? [ent('entity_float', 'binary_sensor'), ent('entity_starts', 'sensor')] : []),

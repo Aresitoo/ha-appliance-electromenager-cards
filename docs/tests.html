@@ -815,6 +815,13 @@ ok('no page errors',__errors.length===0,__errors.join('; '));
  c=card('fridge',{style:'french',power:'sensor.p',temperature:'sensor.t',flex_temperature:'sensor.x',flex_max_temperature:-5},st());
  ok('fridge flex: alert above flex_max_temperature, french drawer display',c.wrap.classList.contains('alert')&&!!c.sr.querySelector('.fzd-pull .lcd3'),c.wrap.className);
  c=card('fridge',{style:'four_door',power:'sensor.p'},st()); ok('fridge without flex: no flex display',!c.sr.querySelector('.lcd3'));}
+// sizing: illustration_size and free grid resizing (sections dashboards)
+{const tags=['washer','sauna','roller-shutter','battery','linky','robot-vacuum-solo','light-bulb'];
+ const cfgs={washer:{power:'sensor.p'},sauna:{entity:'switch.s'},'roller-shutter':{entity:'cover.v'},battery:{entity_soc:'sensor.b'},linky:{entity_power:'sensor.p'},'robot-vacuum-solo':{entity:'vacuum.r'},'light-bulb':{entity:'light.l'}};
+ for(const t of tags){const c=card(t,{...cfgs[t],illustration_size:150},[mk('sensor.p',10,W),mk('switch.s','on'),mk('cover.v','open'),mk('sensor.b',50),mk('vacuum.r','docked'),mk('light.l','on')]);
+  const g=c.el.getGridOptions?c.el.getGridOptions():null;
+  ok(`size ${t}: illustration_size 150 -> --illus-scale 1.5, min 3 columns`,c.el.style.getPropertyValue('--illus-scale')==='1.5'&&g&&g.min_columns===3&&g.min_rows===1,c.el.style.getPropertyValue('--illus-scale')+' '+JSON.stringify(g));}
+ const c=card('washer',{power:'sensor.p',illustration_size:9999},[mk('sensor.p',10,W)]); ok('size: clamped to 300 %',c.el.style.getPropertyValue('--illus-scale')==='3');}
 window.RESULTS=R;
 const fails=R.filter(r=>!r.pass).length;
 document.getElementById('sum').innerHTML=`<b class="${fails?'f':'p'}">${R.length-fails} / ${R.length} tests réussis</b> — fichier testé : <code>dist/ha-appliance-electromenager-cards.js</code>`;

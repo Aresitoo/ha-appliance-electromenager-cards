@@ -10,6 +10,7 @@ class ApplianceCardBase extends HTMLElement {
 
   setConfig(config) {
     if (!config) throw new Error("Invalid configuration");
+    if (window.applianceSize) window.applianceSize(this, config);
     if (!["entity", "power", "power_solar", "switch", "temperature", "zone_1"].some((f) => config[f])) {
       throw new Error(tr(undefined, "err_need_entity"));
     }
@@ -33,7 +34,7 @@ class ApplianceCardBase extends HTMLElement {
   disconnectedCallback() { clearInterval(this._tick); }
 
   getCardSize() { return 4; }
-  getGridOptions() { return { columns: 12, min_columns: 6 }; }
+  getGridOptions() { return { columns: 12, min_columns: 3, rows: 'auto', min_rows: 1 }; }
 
   // liste des capteurs de buse (imprimante multi-buses) ; une simple chaîne est acceptée
   _nozzles() {
