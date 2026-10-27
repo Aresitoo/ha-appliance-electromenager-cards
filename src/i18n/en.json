@@ -200,7 +200,10 @@
     "energy_day": "Today",
     "energy_week": "This week",
     "energy_month": "This month",
-    "f_energy_period": "Energy shown (counter or period)"
+    "f_energy_period": "Energy shown (counter or period)",
+    "flex_temp": "Flex zone",
+    "f_flex_temperature": "Flex zone temperature sensor",
+    "f_flex_max_temperature": "Alert flex zone above (°C)"
   },
   "aquarium": {
     "power": "Power",
