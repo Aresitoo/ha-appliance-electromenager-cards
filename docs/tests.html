@@ -753,6 +753,16 @@ ok('no page errors',__errors.length===0,__errors.join('; '));
  c=card('swing-shutter',{entity:'cover.v',color:'red;background:url(x)'},[mk('cover.v','open')]);
  ok('swing bad colour ignored',v(c,'--sc')==='#4f7d5c',v(c,'--sc'));
  c=card('roller-shutter',{entity:'cover.v'},[mk('cover.v','unavailable')]); ok('roller unavailable',/unavailable/.test(cls(c))&&badge(c)==='Indisponible');}
+// generic: conditional images (power thresholds, state, other entity)
+{const href=(c)=>c.sr.querySelector('.gn-img').getAttribute('href');
+ const imgs=[{image:'/local/off.png'},{above:20,image:'/local/s1.png'},{above:60,image:'/local/s2.png'},{state:'boost',entity:'select.m',image:'/local/boost.png'}];
+ let c=card('generic',{power:'sensor.p',images:imgs},[mk('sensor.p',2,W),mk('select.m','auto')]); ok('generic images: default under 20 W',href(c)==='/local/off.png',href(c));
+ c=card('generic',{power:'sensor.p',images:imgs},[mk('sensor.p',35,W),mk('select.m','auto')]); ok('generic images: speed 1 above 20 W',href(c)==='/local/s1.png',href(c));
+ c=card('generic',{power:'sensor.p',images:imgs},[mk('sensor.p',0.08,{unit_of_measurement:'kW'}),mk('select.m','auto')]); ok('generic images: kW converted (80 W -> speed 2)',href(c)==='/local/s2.png',href(c));
+ c=card('generic',{power:'sensor.p',images:imgs},[mk('sensor.p',80,W),mk('select.m','boost')]); ok('generic images: state of other entity wins (last match)',href(c)==='/local/boost.png',href(c));
+ c.h.states['select.m']=mk('select.m','auto'); c.h.states['sensor.p']=mk('sensor.p',30,W); c.el.hass={...c.h,states:{...c.h.states}}; ok('generic images: updates on change',href(c)==='/local/s1.png',href(c));
+ c=card('generic',{entity:'switch.s',images:[{image:'/local/off.png'},{state:'on',image:'/local/on.png'}]},[mk('switch.s','on')]); ok('generic images: main entity state',href(c)==='/local/on.png',href(c));
+ c=card('generic',{power:'sensor.p',images:[{image:'"><b class="xss">x</b>'}]},[mk('sensor.p',2,W)]); ok('generic images: escaped',!c.sr.querySelector('.xss'));}
 window.RESULTS=R;
 const fails=R.filter(r=>!r.pass).length;
 document.getElementById('sum').innerHTML=`<b class="${fails?'f':'p'}">${R.length-fails} / ${R.length} tests réussis</b> — fichier testé : <code>dist/ha-appliance-electromenager-cards.js</code>`;

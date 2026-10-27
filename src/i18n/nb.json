@@ -107,6 +107,7 @@
 "f_bed_temperature": "Sensor for platetemperatur",
 "f_filament_color": "Filamentfarge (CSS)",
 "f_image": "Bilde-URL (f.eks. /local/min-enhet.png)",
+"f_images": "Bilder etter tilstand (liste: image + above / below / state)",
 "f_nozzle_temperatures": "Dysetemperatursensorer (T0, T1…)",
 "filtering": "Filtrerer",
 "water": "Vann",

@@ -210,7 +210,8 @@ const STRINGS = {
     "f_mid_threshold": "Speed 2 above (W)",
     "ph_heat": "Heating",
     "f_heating_power": "Heating phase threshold (W)",
-    "f_spin_power": "Spinning phase threshold (W)"
+    "f_spin_power": "Spinning phase threshold (W)",
+    "f_images": "Images by state (list: image + above / below / state)"
   },
   "de": {
     "washer": "Waschmaschine",
@@ -408,7 +409,8 @@ const STRINGS = {
     "f_mid_threshold": "Stufe 2 ab (W)",
     "ph_heat": "Aufheizen",
     "f_heating_power": "Schwellenwert für Heizphase (W)",
-    "f_spin_power": "Schwellenwert für Schleuderphase (W)"
+    "f_spin_power": "Schwellenwert für Schleuderphase (W)",
+    "f_images": "Bilder nach Zustand (Liste: image + above / below / state)"
   },
   "fr": {
     "washer": "Lave-linge",
@@ -606,7 +608,8 @@ const STRINGS = {
     "f_mid_threshold": "Vitesse 2 au-dessus de (W)",
     "ph_heat": "Chauffe",
     "f_heating_power": "Seuil de phase de chauffe (W)",
-    "f_spin_power": "Seuil de phase d'essorage (W)"
+    "f_spin_power": "Seuil de phase d'essorage (W)",
+    "f_images": "Images selon l'état (liste : image + above / below / state)"
   },
   "nb": {
     "washer": "Vaskemaskin",
@@ -716,6 +719,7 @@ const STRINGS = {
     "f_bed_temperature": "Sensor for platetemperatur",
     "f_filament_color": "Filamentfarge (CSS)",
     "f_image": "Bilde-URL (f.eks. /local/min-enhet.png)",
+    "f_images": "Bilder etter tilstand (liste: image + above / below / state)",
     "f_nozzle_temperatures": "Dysetemperatursensorer (T0, T1…)",
     "filtering": "Filtrerer",
     "water": "Vann",
@@ -1002,7 +1006,8 @@ const STRINGS = {
     "f_mid_threshold": "Stand 2 boven (W)",
     "ph_heat": "Verwarmen",
     "f_heating_power": "Drempelwaarde verwarmingsfase (W)",
-    "f_spin_power": "Drempelwaarde centrifugeerfase (W)"
+    "f_spin_power": "Drempelwaarde centrifugeerfase (W)",
+    "f_images": "Afbeeldingen per toestand (lijst: image + above / below / state)"
   },
   "ro": {
     "washer": "Mașină de spălat rufe",
@@ -1200,7 +1205,8 @@ const STRINGS = {
     "f_mid_threshold": "Viteză 2 peste (W)",
     "ph_heat": "Încălzire",
     "f_heating_power": "Prag de putere pentru încălzire (W)",
-    "f_spin_power": "Prag de putere pentru centrifugare (W)"
+    "f_spin_power": "Prag de putere pentru centrifugare (W)",
+    "f_images": "Imagini după stare (listă: image + above / below / state)"
   },
   "ru": {
     "washer": "Стиральная машина",
@@ -1398,7 +1404,8 @@ const STRINGS = {
     "f_mid_threshold": "Скорость 2 выше (Вт)",
     "ph_heat": "Нагрев",
     "f_heating_power": "Порог фазы нагрева (Вт)",
-    "f_spin_power": "Порог фазы отжима (Вт)"
+    "f_spin_power": "Порог фазы отжима (Вт)",
+    "f_images": "Изображения по состоянию (список: image + above / below / state)"
   }
 };
 const lang = (hass) => {
@@ -2151,7 +2158,9 @@ SVG.fridge = (c) => `${FRIDGE_DEFS}${FRIDGE[fridgeStyle(c)]()}${fridgeMist}`;
 
 /* Carte générique : l'utilisateur fournit sa propre image (option `image`) */
 SVG.generic = (c = {}) => {
-  const src = String((c && c.image) || "").trim();
+  // `images` (liste conditionnelle) : on part de la première ; la carte choisit ensuite selon l'état
+  const list = Array.isArray(c && c.images) ? c.images.filter((i) => i && i.image) : [];
+  const src = String((c && c.image) || (list[0] && list[0].image) || "").trim();
   const art = src
     ? `<image class="gn-img" href="${esc(src)}" x="4" y="6" width="112" height="124" preserveAspectRatio="xMidYMid meet"/>`
     // pas d'image : pictogramme de prise pour inviter à renseigner `image`
@@ -3252,7 +3261,8 @@ class ApplianceCardBase extends HTMLElement {
   _ids() {
     const c = this._config;
     return ["entity", "power", "power_solar", "energy_solar", "energy", "cost", "remaining", "progress", "program", "door", "switch",
-      "power_level", "pellet_level", "runtime", "speed", "bed_temperature", "humidity", "light", "keg_level", "pouring", "battery_level", "zone2_temperature", "zone_1", "zone_2", "zone_3", "zone_4", "mode", "window", "temperature", "target_temperature", "freezer_temperature", "freezer_door"].map((k) => c[k]).filter(Boolean).concat(this._nozzles());
+      "power_level", "pellet_level", "runtime", "speed", "bed_temperature", "humidity", "light", "keg_level", "pouring", "battery_level", "zone2_temperature", "zone_1", "zone_2", "zone_3", "zone_4", "mode", "window", "temperature", "target_temperature", "freezer_temperature", "freezer_door"].map((k) => c[k]).filter(Boolean).concat(this._nozzles())
+      .concat(Array.isArray(c.images) ? c.images.map((i) => i && typeof i.entity === "string" && i.entity).filter(Boolean) : []);
   }
 
   _build() {
@@ -3799,6 +3809,23 @@ class ApplianceCardBase extends HTMLElement {
     if (lcdEl) lcdEl.textContent = this._lcdText(m);
     const lcd2 = sr.querySelector(".lcd2");
     if (lcd2) lcd2.textContent = m.status === "unavailable" ? "--" : m.zone2 != null ? `${fmtNum(hass, m.zone2, 0)}°` : "--°";
+    if (kind === "generic" && Array.isArray(c.images)) {
+      // image conditionnelle : la dernière entrée dont toutes les conditions sont vraies (une entrée sans condition vaut toujours)
+      const main = hass.states[c.entity];
+      let src = c.image || "";
+      for (const it of c.images) {
+        if (!it || !it.image) continue;
+        const st = it.entity ? hass.states[it.entity] : null;
+        const val = it.entity ? num(st) : m.pw ? powerW(m.pw) : num(main);
+        const raw = String((it.entity ? st : main)?.state ?? "").toLowerCase();
+        const okAbove = it.above == null || (val != null && val > Number(it.above));
+        const okBelow = it.below == null || (val != null && val < Number(it.below));
+        const okState = it.state == null || [].concat(it.state).some((v) => String(v).toLowerCase() === raw);
+        if (okAbove && okBelow && okState) src = it.image;
+      }
+      const img = sr.querySelector(".gn-img");
+      if (img && img.tagName.toLowerCase() === "image" && img.getAttribute("href") !== String(src).trim()) img.setAttribute("href", String(src).trim());
+    }
     if (kind === "server_rack") $("wrap").style.setProperty("--load", (m.load ?? 0.4).toFixed(2));
     if (kind === "solar") $("wrap").style.setProperty("--sun", (m.frac || 0).toFixed(2));
     if (kind === "radiator" || kind === "towel_dryer") {
@@ -4103,7 +4130,7 @@ function buildForm(kind) {
             { name: "freezer_max_temperature", selector: { number: { min: -30, max: 0, step: 0.5, mode: "box" } } },
           ] : []),
           { name: "animations", selector: { boolean: {} }, default: true },
-          ...(kind === "generic" ? [{ name: "image", selector: { text: {} } }] : []),
+          ...(kind === "generic" ? [{ name: "image", selector: { text: {} } }, { name: "images", selector: { object: {} } }] : []),
           ...(kind === "printer_3d" ? [
             { name: "nozzle_temperatures", selector: { entity: { multiple: true, domain: "sensor" } } },
             { name: "filament_color", selector: { text: {} } },

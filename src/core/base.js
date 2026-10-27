@@ -44,7 +44,8 @@ class ApplianceCardBase extends HTMLElement {
   _ids() {
     const c = this._config;
     return ["entity", "power", "power_solar", "energy_solar", "energy", "cost", "remaining", "progress", "program", "door", "switch",
-      "power_level", "pellet_level", "runtime", "speed", "bed_temperature", "humidity", "light", "keg_level", "pouring", "battery_level", "zone2_temperature", "zone_1", "zone_2", "zone_3", "zone_4", "mode", "window", "temperature", "target_temperature", "freezer_temperature", "freezer_door"].map((k) => c[k]).filter(Boolean).concat(this._nozzles());
+      "power_level", "pellet_level", "runtime", "speed", "bed_temperature", "humidity", "light", "keg_level", "pouring", "battery_level", "zone2_temperature", "zone_1", "zone_2", "zone_3", "zone_4", "mode", "window", "temperature", "target_temperature", "freezer_temperature", "freezer_door"].map((k) => c[k]).filter(Boolean).concat(this._nozzles())
+      .concat(Array.isArray(c.images) ? c.images.map((i) => i && typeof i.entity === "string" && i.entity).filter(Boolean) : []);
   }
 
   _build() {
@@ -591,6 +592,23 @@ class ApplianceCardBase extends HTMLElement {
     if (lcdEl) lcdEl.textContent = this._lcdText(m);
     const lcd2 = sr.querySelector(".lcd2");
     if (lcd2) lcd2.textContent = m.status === "unavailable" ? "--" : m.zone2 != null ? `${fmtNum(hass, m.zone2, 0)}°` : "--°";
+    if (kind === "generic" && Array.isArray(c.images)) {
+      // image conditionnelle : la dernière entrée dont toutes les conditions sont vraies (une entrée sans condition vaut toujours)
+      const main = hass.states[c.entity];
+      let src = c.image || "";
+      for (const it of c.images) {
+        if (!it || !it.image) continue;
+        const st = it.entity ? hass.states[it.entity] : null;
+        const val = it.entity ? num(st) : m.pw ? powerW(m.pw) : num(main);
+        const raw = String((it.entity ? st : main)?.state ?? "").toLowerCase();
+        const okAbove = it.above == null || (val != null && val > Number(it.above));
+        const okBelow = it.below == null || (val != null && val < Number(it.below));
+        const okState = it.state == null || [].concat(it.state).some((v) => String(v).toLowerCase() === raw);
+        if (okAbove && okBelow && okState) src = it.image;
+      }
+      const img = sr.querySelector(".gn-img");
+      if (img && img.tagName.toLowerCase() === "image" && img.getAttribute("href") !== String(src).trim()) img.setAttribute("href", String(src).trim());
+    }
     if (kind === "server_rack") $("wrap").style.setProperty("--load", (m.load ?? 0.4).toFixed(2));
     if (kind === "solar") $("wrap").style.setProperty("--sun", (m.frac || 0).toFixed(2));
     if (kind === "radiator" || kind === "towel_dryer") {
