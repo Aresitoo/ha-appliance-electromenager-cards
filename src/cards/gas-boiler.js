@@ -155,6 +155,8 @@ svg{display:block;width:100%;max-width:170px;height:var(--appliance-illustration
     getGridOptions() { return { columns: 12, min_columns: 6, rows: 'auto' }; }
 
     _t(k) { return T[this._lang()][k] ?? T.en[k] ?? k; }
+    // libellé perso (option labels) sinon traduction
+    _l(k) { const L = this._c && this._c.labels; return L && L[k] != null && L[k] !== '' ? String(L[k]) : this._t(k); }
     _lang() { const l = (this._c.language || (this._hass && this._hass.language) || 'en').slice(0, 2); return T[l] ? l : 'en'; }
     _st(id) { return id && this._hass.states[id]; }
     _num(id) {
@@ -266,7 +268,7 @@ svg{display:block;width:100%;max-width:170px;height:var(--appliance-illustration
       TILES.forEach(([k, , opt]) => {
         const el = r.querySelector(`.tile[data-k="${k}"]`); const [ent, val, unit] = V[k];
         el.classList.toggle('hide', !ent || c[opt] === false);
-        el.querySelector('.lbl').textContent = this._t(k);
+        el.querySelector('.lbl').textContent = this._l(k);
         // valeur + unité en texte (l'unité vient de l'entité ou de la config)
         const small = document.createElement('small'); small.textContent = unit ?? '';
         el.querySelector('.v').replaceChildren(String(val ?? ''), small);
@@ -294,6 +296,7 @@ svg{display:block;width:100%;max-width:170px;height:var(--appliance-illustration
       this._form.data = this._c;
       this._form.schema = [
         { name: 'name', selector: { text: {} } },
+        { name: 'labels', selector: { object: {} } },
         ent('entity_status'), ent('entity_flame', 'binary_sensor'), ent('entity_power', 'sensor'), ent('entity_energy', 'sensor'),
         ent('entity_gas', 'sensor'), ent('entity_cost', 'sensor'), { name: 'price_per_unit', selector: { number: { min: 0, step: 0.0001, mode: 'box' } } },
         ent('entity_flow_temp', 'sensor'), ent('entity_return_temp', 'sensor'), ent('entity_pressure', 'sensor'), ent('entity_modulation', 'sensor'),

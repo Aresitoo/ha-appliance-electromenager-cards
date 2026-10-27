@@ -27,6 +27,7 @@ class ApplianceRobotVacuumCard extends HTMLElement {
       schema: [
         { name: 'entity', required: true, selector: { entity: { domain: 'vacuum' } } },
         { name: 'name', selector: { text: {} } },
+        { name: 'labels', selector: { object: {} } },
         { name: 'entity_battery', selector: { entity: { domain: 'sensor', device_class: 'battery' } } },
         { name: 'entity_area', selector: { entity: { domain: 'sensor' } } },
         { name: 'entity_time', selector: { entity: { domain: 'sensor' } } },
@@ -61,6 +62,8 @@ class ApplianceRobotVacuumCard extends HTMLElement {
     this._hass = h; this._update(); }
   getCardSize() { return 6; }
   _t(k) { return (I18N_VAC[this._config.language || lang(this._hass)] || I18N_VAC.en)[k] ?? I18N_VAC.en[k] ?? k; }
+  // libellé perso (option labels) sinon traduction
+  _l(k) { const L = this._config && this._config.labels; return L && L[k] != null && L[k] !== '' ? String(L[k]) : this._t(k); }
 
   _call(action) {
     if (!this._hass) return;
@@ -99,15 +102,15 @@ class ApplianceRobotVacuumCard extends HTMLElement {
     const batt = this._num(c.entity_battery) ?? (a.battery_level ?? null);
     const area = this._num(c.entity_area), time = this._num(c.entity_time);
     const it = [];
-    if (c.show_battery) it.push([this._t('battery'), batt === null ? '—' : `${Math.round(batt)} %`]);
-    if (c.show_status) it.push([this._t('status'), this._t(emptying ? 'emptying' : st)]);
-    if (c.show_area) it.push([this._t('area'), area === null ? '—' : `${Math.round(area)} m²`]);
-    if (c.show_time) it.push([this._t('time'), time === null ? '—' : `${Math.round(time)} min`]);
-    if (c.show_fan && a.fan_speed) it.push([this._t('fan'), String(a.fan_speed)]);
+    if (c.show_battery) it.push([this._l('battery'), batt === null ? '—' : `${Math.round(batt)} %`]);
+    if (c.show_status) it.push([this._l('status'), this._t(emptying ? 'emptying' : st)]);
+    if (c.show_area) it.push([this._l('area'), area === null ? '—' : `${Math.round(area)} m²`]);
+    if (c.show_time) it.push([this._l('time'), time === null ? '—' : `${Math.round(time)} min`]);
+    if (c.show_fan && a.fan_speed) it.push([this._l('fan'), String(a.fan_speed)]);
     if (c.show_consumables) {
       const fl = this._num(c.entity_filter), br = this._num(c.entity_brush);
-      if (fl !== null) it.push([this._t('filter'), `${Math.round(fl)} %`]);
-      if (br !== null) it.push([this._t('brush'), `${Math.round(br)} %`]);
+      if (fl !== null) it.push([this._l('filter'), `${Math.round(fl)} %`]);
+      if (br !== null) it.push([this._l('brush'), `${Math.round(br)} %`]);
     }
     const stats = r.getElementById('stats');
     stats.style.gridTemplateColumns = `repeat(${it.length > 4 ? Math.ceil(it.length / 2) : it.length}, 1fr)`;

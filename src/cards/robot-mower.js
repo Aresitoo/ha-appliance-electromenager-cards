@@ -28,6 +28,7 @@ class ApplianceRobotMowerCard extends HTMLElement {
       schema: [
         { name: 'entity', required: true, selector: { entity: { domain: ['lawn_mower', 'vacuum'] } } },
         { name: 'name', selector: { text: {} } },
+        { name: 'labels', selector: { object: {} } },
         { name: 'entity_battery', selector: { entity: { domain: 'sensor', device_class: 'battery' } } },
         { name: 'entity_area', selector: { entity: { domain: 'sensor' } } },
         { name: 'entity_time', selector: { entity: { domain: 'sensor' } } },
@@ -63,6 +64,8 @@ class ApplianceRobotMowerCard extends HTMLElement {
     this._hass = h; this._update(); }
   getCardSize() { return 6; }
   _t(k) { return (I18N_MOW[this._config.language || lang(this._hass)] || I18N_MOW.en)[k] ?? I18N_MOW.en[k] ?? k; }
+  // libellé perso (option labels) sinon traduction
+  _l(k) { const L = this._config && this._config.labels; return L && L[k] != null && L[k] !== '' ? String(L[k]) : this._t(k); }
 
   _call(action) {
     if (!this._hass) return;
@@ -108,12 +111,12 @@ class ApplianceRobotMowerCard extends HTMLElement {
       next = isNaN(d) ? ns.state : d.toLocaleString(c.language === 'en' ? 'en-GB' : 'fr-FR', { weekday: 'short', hour: '2-digit', minute: '2-digit' });
     }
     const it = [];
-    if (c.show_battery) it.push([this._t('battery'), batt === null ? '—' : `${Math.round(batt)} %`]);
-    if (c.show_status) it.push([this._t('status'), raining && st !== 'mowing' ? `${this._t(st)} · ${this._t('rain')}` : this._t(st)]);
-    if (c.show_area && area !== null) it.push([this._t('area'), `${Math.round(area)} m²`]);
-    if (c.show_time && time !== null) it.push([this._t('time'), time >= 60 ? `${Math.floor(time / 60)}h${String(Math.round(time % 60)).padStart(2, '0')}` : `${Math.round(time)} min`]);
-    if (c.show_next && next) it.push([this._t('next'), next]);
-    if (c.show_blade && blade !== null) it.push([this._t('blade'), `${Math.round(blade)} %`]);
+    if (c.show_battery) it.push([this._l('battery'), batt === null ? '—' : `${Math.round(batt)} %`]);
+    if (c.show_status) it.push([this._l('status'), raining && st !== 'mowing' ? `${this._t(st)} · ${this._t('rain')}` : this._t(st)]);
+    if (c.show_area && area !== null) it.push([this._l('area'), `${Math.round(area)} m²`]);
+    if (c.show_time && time !== null) it.push([this._l('time'), time >= 60 ? `${Math.floor(time / 60)}h${String(Math.round(time % 60)).padStart(2, '0')}` : `${Math.round(time)} min`]);
+    if (c.show_next && next) it.push([this._l('next'), next]);
+    if (c.show_blade && blade !== null) it.push([this._l('blade'), `${Math.round(blade)} %`]);
     const stats = r.getElementById('stats');
     stats.style.gridTemplateColumns = `repeat(${it.length > 4 ? Math.ceil(it.length / 2) : it.length}, 1fr)`;
     stats.innerHTML = it.map(([l, v]) => `<div class="stat"><div class="v">${esc(v)}</div><div class="l">${esc(l)}</div></div>`).join('');

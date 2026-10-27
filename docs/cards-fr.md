@@ -62,6 +62,17 @@ cost: sensor.lave_linge_cout_jour
 
 **Plusieurs appareils du même type** : chaque carte est indépendante (ses propres entités, son état, ses minuteries). Deux lave-linge ou plusieurs frigos peuvent cohabiter, il suffit de donner à chaque carte ses entités (et un `name`).
 
+**Libellés perso des tuiles** : l'option `labels` renomme les tuiles sous le dessin, dans la langue de ton choix. Tu donnes la clé de la tuile et ton texte ; les tuiles non listées gardent la traduction. Le champ **Libellés perso des tuiles** de l'éditeur visuel prend les mêmes lignes `clé: texte`. La liste des clés par carte est dans [configuration.md](configuration.md#custom-tile-labels).
+
+```yaml
+type: custom:appliance-sauna-card
+entity: switch.sauna
+labels:
+  temp: Chaleur
+  power: Conso
+  energy: Total
+```
+
 **Carte générique** (`custom:appliance-generic-card`) : pour tout appareil sans carte dédiée (enceinte, lampe, pompe…), renseigne ta propre image dans `image` (`/local/mon-appareil.png` pour un fichier de `config/www/`, ou une URL `https://`). La carte garde le statut (en cours / inactif / éteint), la puissance, l'énergie, le coût et le bouton ; l'image est atténuée quand l'appareil est éteint et brille doucement en marche.
 
 **Sèche-serviettes, baie informatique, PC fixe, PC portable, cave à vin** : cinq cartes pilotées par une prise connectée (`power`). `custom:appliance-towel-dryer-card` : au-dessus de 50 W, les barres rougeoient, la chaleur monte, les serviettes se balancent et fument ; prise allumée sous le seuil : « Consigne atteinte ». `custom:appliance-server-rack-card` (homelab) : au-dessus de 30 W, les LED clignotent, les ventilateurs tournent, les baies de disques s'allument en bleu et les données circulent dans les câbles ; la vitesse suit la charge (`max_power`, 300 W par défaut) et l'onduleur affiche la puissance. `custom:appliance-desktop-pc-card` : au-dessus de 40 W, l'écran s'allume (code qui s'écrit, graphique, curseur) et les ventilateurs RGB tournent ; entre 0,5 W et le seuil : veille (voyant orange). `custom:appliance-laptop-card` : au-dessus de 15 W, l'écran affiche un tableau de bord animé et le clavier est rétroéclairé ; en dessous : veille. `custom:appliance-wine-cooler-card` : cave vitrée ; quand le compresseur tourne (au-dessus de 15 W), l'intérieur s'éclaire, l'air froid circule entre les bouteilles et la condensation coule ; la porte s'ouvre avec un capteur `door` ; alerte au-dessus de `max_temperature` (18 °C).

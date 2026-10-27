@@ -514,6 +514,7 @@
 "water_hot": "Vannet er for varmt"
 },
 "editor": {
+"labels": "Egne flisetiketter (nøkkel: tekst)",
 "animations": "Animasjoner",
 "battery_low": "Lavt batteri (%)",
 "buffer_tank": "Akkumulatortank",

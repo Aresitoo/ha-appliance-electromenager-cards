@@ -20,6 +20,7 @@ class ApplianceEvChargerCard extends HTMLElement {
     return {
       schema: [
         { name: 'name', selector: { text: {} } },
+        { name: 'labels', selector: { object: {} } },
         { name: 'entity_power', selector: { entity: { domain: 'sensor', device_class: 'power' } } },
         { name: 'entity_session_energy', selector: { entity: { domain: 'sensor', device_class: 'energy' } } },
         { name: 'entity_car_soc', selector: { entity: { domain: 'sensor' } } },
@@ -60,6 +61,8 @@ class ApplianceEvChargerCard extends HTMLElement {
   connectedCallback() { this._timer = setInterval(() => this._update(), 30000); } // rafraîchit la durée
   disconnectedCallback() { clearInterval(this._timer); }
   _t(k) { return (I18N_EV[this._config.language || lang(this._hass)] || I18N_EV.en)[k] ?? I18N_EV.en[k] ?? k; }
+  // libellé perso (option labels) sinon traduction
+  _l(k) { const L = this._config && this._config.labels; return L && L[k] != null && L[k] !== '' ? String(L[k]) : this._t(k); }
 
   _build() {
     if (!this.shadowRoot) this.attachShadow({ mode: 'open' });
@@ -200,12 +203,12 @@ class ApplianceEvChargerCard extends HTMLElement {
 
     const f = (v, d, u) => (v === null ? '—' : `${v.toFixed(d)} ${u}`);
     const it = [];
-    if (c.show_power) it.push([this._t('power'), w === null ? '—' : w >= 1000 ? `${(w / 1000).toFixed(1)} kW` : `${Math.round(w)} W`]);
-    if (c.show_energy) it.push([this._t('energy'), f(energy, 1, 'kWh')]);
-    if (c.show_soc && soc !== null) it.push([this._t('soc'), f(soc, 0, '%')]);
-    if (c.show_status) it.push([this._t('status'), this._t(st)]);
-    if (c.show_duration) it.push([this._t('duration'), dur || '—']);
-    if (c.show_cost) it.push([this._t('cost'), f(cost, 2, '€')]);
+    if (c.show_power) it.push([this._l('power'), w === null ? '—' : w >= 1000 ? `${(w / 1000).toFixed(1)} kW` : `${Math.round(w)} W`]);
+    if (c.show_energy) it.push([this._l('energy'), f(energy, 1, 'kWh')]);
+    if (c.show_soc && soc !== null) it.push([this._l('soc'), f(soc, 0, '%')]);
+    if (c.show_status) it.push([this._l('status'), this._t(st)]);
+    if (c.show_duration) it.push([this._l('duration'), dur || '—']);
+    if (c.show_cost) it.push([this._l('cost'), f(cost, 2, '€')]);
     // 5-6 valeurs → 2 lignes équilibrées
     r.getElementById('stats').style.gridTemplateColumns = `repeat(${it.length > 4 ? Math.ceil(it.length / 2) : it.length}, 1fr)`;
     r.getElementById('stats').innerHTML = it.map(([l, v]) => `<div class="stat"><div class="v">${esc(v)}</div><div class="l">${esc(l)}</div></div>`).join('');

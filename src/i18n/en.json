@@ -692,7 +692,8 @@
     "follow_light_color": "Follow the bulb colour",
     "color_cycle": "Colour cycle",
     "multicolor": "Multicolour lights",
-    "show_brightness": "Show brightness"
+    "show_brightness": "Show brightness",
+    "labels": "Custom tile labels (key: text)"
   },
   "light": {
     "light_bulb": "Bulb",

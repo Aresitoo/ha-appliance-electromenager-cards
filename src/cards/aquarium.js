@@ -23,6 +23,7 @@ class ApplianceAquariumCard extends HTMLElement {
     return {
       schema: [
         { name: 'name', selector: { text: {} } },
+        { name: 'labels', selector: { object: {} } },
         { name: 'entity_power', selector: { entity: { domain: 'sensor', device_class: 'power' } } },
         { name: 'entity_energy', selector: { entity: { domain: 'sensor', device_class: 'energy' } } },
         { name: 'entity_temperature', selector: { entity: { domain: 'sensor', device_class: 'temperature' } } },
@@ -67,6 +68,8 @@ class ApplianceAquariumCard extends HTMLElement {
   getCardSize() { return 5; }
 
   _t(k) { return (I18N_AQUARIUM[this._config.language || lang(this._hass)] || I18N_AQUARIUM.en)[k] ?? I18N_AQUARIUM.en[k] ?? k; }
+  // libellé perso (option labels) sinon traduction
+  _l(k) { const L = this._config && this._config.labels; return L && L[k] != null && L[k] !== '' ? String(L[k]) : this._t(k); }
 
   _build() {
     const c = this._config;
@@ -207,10 +210,10 @@ class ApplianceAquariumCard extends HTMLElement {
 
     const fmt = (v, d, u) => v === null ? '—' : `${v.toFixed(d)} ${u}`;
     const items = [];
-    if (c.show_power) items.push(['p', this._t('power'), fmt(power, 0, 'W')]);
-    if (c.show_energy) items.push(['e', this._t('energy'), fmt(energy, 2, 'kWh')]);
-    if (c.show_temperature) items.push(['t', this._t('temp'), fmt(temp, 1, '°C')]);
-    if (c.show_cost) items.push(['c', this._t('cost'), fmt(cost, 2, '€')]);
+    if (c.show_power) items.push(['p', this._l('power'), fmt(power, 0, 'W')]);
+    if (c.show_energy) items.push(['e', this._l('energy'), fmt(energy, 2, 'kWh')]);
+    if (c.show_temperature) items.push(['t', this._l('temp'), fmt(temp, 1, '°C')]);
+    if (c.show_cost) items.push(['c', this._l('cost'), fmt(cost, 2, '€')]);
     root.getElementById('stats').innerHTML = items.map(([k, l, v]) =>
       `<div class="stat ${k}"><div class="v">${esc(v)}</div><div class="l">${esc(l)}</div></div>`).join('');
   }

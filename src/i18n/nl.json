@@ -692,7 +692,8 @@
     "follow_light_color": "Kleur van de lamp volgen",
     "color_cycle": "Kleurenwissel",
     "multicolor": "Veelkleurige lichtjes",
-    "show_brightness": "Helderheid tonen"
+    "show_brightness": "Helderheid tonen",
+    "labels": "Eigen tegellabels (sleutel: tekst)"
   },
   "light": {
     "light_bulb": "Lamp",
