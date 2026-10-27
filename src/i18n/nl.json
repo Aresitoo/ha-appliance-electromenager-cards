@@ -687,6 +687,32 @@
     "travel_time": "Looptijd motor (s)",
     "water_level_full": "Waterniveau „vol“",
     "water_level_min": "Minimaal waterniveau",
-    "water_max": "Max. watertemperatuur (°C)"
+    "water_max": "Max. watertemperatuur (°C)",
+    "color": "Lichtkleur",
+    "follow_light_color": "Kleur van de lamp volgen",
+    "color_cycle": "Kleurenwissel",
+    "multicolor": "Veelkleurige lichtjes",
+    "show_brightness": "Helderheid tonen"
+  },
+  "light": {
+    "light_bulb": "Lamp",
+    "color_bulb": "Kleurenlamp",
+    "filament_bulb": "Filamentlamp",
+    "pendant_light": "Hanglamp",
+    "pendant_cluster": "Hanglampen-cluster",
+    "desk_lamp": "Bureaulamp",
+    "floor_lamp": "Staande lamp",
+    "chandelier": "Kroonluchter",
+    "garden_spotlight": "Tuinspot",
+    "christmas_tree": "Kerstboom",
+    "on": "Aan",
+    "off": "Uit",
+    "unavailable": "Niet beschikbaar",
+    "turn_on": "Aan",
+    "turn_off": "Uit",
+    "color": "Kleur",
+    "brightness": "Helderheid",
+    "power": "Vermogen",
+    "energy": "Energie"
   }
 }

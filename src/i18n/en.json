@@ -687,6 +687,32 @@
     "travel_time": "Travel time (s)",
     "water_level_full": "Full pool water level",
     "water_level_min": "Minimum water level",
-    "water_max": "Max water temperature (°C)"
+    "water_max": "Max water temperature (°C)",
+    "color": "Light colour",
+    "follow_light_color": "Follow the bulb colour",
+    "color_cycle": "Colour cycle",
+    "multicolor": "Multicolour lights",
+    "show_brightness": "Show brightness"
+  },
+  "light": {
+    "light_bulb": "Bulb",
+    "color_bulb": "Colour bulb",
+    "filament_bulb": "Filament bulb",
+    "pendant_light": "Pendant light",
+    "pendant_cluster": "Pendant cluster",
+    "desk_lamp": "Desk lamp",
+    "floor_lamp": "Floor lamp",
+    "chandelier": "Chandelier",
+    "garden_spotlight": "Garden spotlight",
+    "christmas_tree": "Christmas tree",
+    "on": "On",
+    "off": "Off",
+    "unavailable": "Unavailable",
+    "turn_on": "On",
+    "turn_off": "Off",
+    "color": "Colour",
+    "brightness": "Brightness",
+    "power": "Power",
+    "energy": "Energy"
   }
 }

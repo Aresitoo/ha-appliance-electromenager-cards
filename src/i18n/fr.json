@@ -687,6 +687,32 @@
     "travel_time": "Temps de course (s)",
     "water_level_full": "Niveau d'eau « plein »",
     "water_level_min": "Niveau d'eau minimal",
-    "water_max": "Température max de l'eau (°C)"
+    "water_max": "Température max de l'eau (°C)",
+    "color": "Couleur de la lumière",
+    "follow_light_color": "Suivre la couleur de l'ampoule",
+    "color_cycle": "Défilement des couleurs",
+    "multicolor": "Guirlande multicolore",
+    "show_brightness": "Afficher la luminosité"
+  },
+  "light": {
+    "light_bulb": "Ampoule",
+    "color_bulb": "Ampoule couleur",
+    "filament_bulb": "Ampoule à filament",
+    "pendant_light": "Suspension",
+    "pendant_cluster": "Suspensions en grappe",
+    "desk_lamp": "Lampe de bureau",
+    "floor_lamp": "Lampadaire",
+    "chandelier": "Lustre",
+    "garden_spotlight": "Spot de jardin",
+    "christmas_tree": "Sapin de Noël",
+    "on": "Allumée",
+    "off": "Éteinte",
+    "unavailable": "Indisponible",
+    "turn_on": "Allumer",
+    "turn_off": "Éteindre",
+    "color": "Couleur",
+    "brightness": "Luminosité",
+    "power": "Puissance",
+    "energy": "Énergie"
   }
 }

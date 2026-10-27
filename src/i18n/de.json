@@ -687,6 +687,32 @@
     "travel_time": "Laufzeit des Motors (s)",
     "water_level_full": "Wasserstand „voll“",
     "water_level_min": "Minimaler Wasserstand",
-    "water_max": "Max. Wassertemperatur (°C)"
+    "water_max": "Max. Wassertemperatur (°C)",
+    "color": "Lichtfarbe",
+    "follow_light_color": "Farbe der Lampe übernehmen",
+    "color_cycle": "Farbwechsel",
+    "multicolor": "Bunte Lichterkette",
+    "show_brightness": "Helligkeit anzeigen"
+  },
+  "light": {
+    "light_bulb": "Glühbirne",
+    "color_bulb": "Farbige Glühbirne",
+    "filament_bulb": "Filament-Glühbirne",
+    "pendant_light": "Pendelleuchte",
+    "pendant_cluster": "Pendelleuchten-Gruppe",
+    "desk_lamp": "Schreibtischlampe",
+    "floor_lamp": "Stehlampe",
+    "chandelier": "Kronleuchter",
+    "garden_spotlight": "Gartenstrahler",
+    "christmas_tree": "Weihnachtsbaum",
+    "on": "An",
+    "off": "Aus",
+    "unavailable": "Nicht verfügbar",
+    "turn_on": "Ein",
+    "turn_off": "Aus",
+    "color": "Farbe",
+    "brightness": "Helligkeit",
+    "power": "Leistung",
+    "energy": "Energie"
   }
 }

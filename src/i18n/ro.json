@@ -687,6 +687,32 @@
     "travel_time": "Timp de cursă (s)",
     "water_level_full": "Nivel apă „plin”",
     "water_level_min": "Nivel minim al apei",
-    "water_max": "Temperatură max apă (°C)"
+    "water_max": "Temperatură max apă (°C)",
+    "color": "Culoarea luminii",
+    "follow_light_color": "Urmează culoarea becului",
+    "color_cycle": "Ciclu de culori",
+    "multicolor": "Instalație multicoloră",
+    "show_brightness": "Afișează luminozitatea"
+  },
+  "light": {
+    "light_bulb": "Bec",
+    "color_bulb": "Bec color",
+    "filament_bulb": "Bec cu filament",
+    "pendant_light": "Lustră suspendată",
+    "pendant_cluster": "Grup de lustre suspendate",
+    "desk_lamp": "Lampă de birou",
+    "floor_lamp": "Lampadar",
+    "chandelier": "Candelabru",
+    "garden_spotlight": "Spot de grădină",
+    "christmas_tree": "Brad de Crăciun",
+    "on": "Aprins",
+    "off": "Stins",
+    "unavailable": "Indisponibil",
+    "turn_on": "Aprinde",
+    "turn_off": "Stinge",
+    "color": "Culoare",
+    "brightness": "Luminozitate",
+    "power": "Putere",
+    "energy": "Energie"
   }
 }
