@@ -265,5 +265,5 @@ class AppliancePelletBoilerCard extends HTMLElement {
 }
 define('appliance-pellet-boiler-card', AppliancePelletBoilerCard);
 window.customCards = window.customCards || [];
-window.customCards.push({ type: 'appliance-pellet-boiler-card', name: 'Pellet Boiler Card', description: 'Chaudière à granulés animée (trémie, vis sans fin, flamme, départ/retour)', preview: false });
+window.customCards.push({ type: 'appliance-pellet-boiler-card', name: 'Appliance – Pellet boiler / Chaudière à granulés', description: 'Chaudière à granulés animée (trémie, vis sans fin, flamme, départ/retour)', preview: false });
 })();

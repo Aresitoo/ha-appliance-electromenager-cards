@@ -198,5 +198,5 @@ class ApplianceBatteryCard extends HTMLElement {
 }
 define('appliance-battery-card', ApplianceBatteryCard);
 window.customCards = window.customCards || [];
-window.customCards.push({ type: 'appliance-battery-card', name: 'Solar Battery Card', description: 'Batterie de stockage solaire animée', preview: false });
+window.customCards.push({ type: 'appliance-battery-card', name: 'Appliance – Solar battery / Batterie solaire', description: 'Batterie de stockage solaire animée', preview: false });
 })();

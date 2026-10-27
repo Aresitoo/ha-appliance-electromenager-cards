@@ -221,5 +221,5 @@ class ApplianceRobotVacuumSoloCard extends ApplianceRobotVacuumCard {
   }
 }
 define('appliance-robot-vacuum-solo-card', ApplianceRobotVacuumSoloCard);
-window.customCards.push({ type: 'appliance-robot-vacuum-solo-card', name: 'Robot Vacuum Solo Card', description: 'Robot aspirateur seul (sans fond ni station), animé, avec commandes', preview: false });
+window.customCards.push({ type: 'appliance-robot-vacuum-solo-card', name: 'Appliance – Robot vacuum (solo) / Robot aspirateur (seul)', description: 'Robot aspirateur seul (sans fond ni station), animé, avec commandes', preview: false });
 })();

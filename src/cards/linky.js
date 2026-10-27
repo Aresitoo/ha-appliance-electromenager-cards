@@ -331,5 +331,5 @@ class ApplianceLinkyCard extends HTMLElement {
 
 define('appliance-linky-card', ApplianceLinkyCard);
 window.customCards = window.customCards || [];
-window.customCards.push({ type: 'appliance-linky-card', name: 'Linky Card', description: 'Compteur Linky animé : LCD, jauge, index HP/HC', preview: false });
+window.customCards.push({ type: 'appliance-linky-card', name: 'Appliance – Linky', description: 'Compteur Linky animé : LCD, jauge, index HP/HC', preview: false });
 })();
