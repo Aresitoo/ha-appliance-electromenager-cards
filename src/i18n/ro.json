@@ -195,7 +195,8 @@
     "f_mid_threshold": "Viteză 2 peste (W)",
     "ph_heat": "Încălzire",
     "f_heating_power": "Prag de putere pentru încălzire (W)",
-    "f_spin_power": "Prag de putere pentru centrifugare (W)"
+    "f_spin_power": "Prag de putere pentru centrifugare (W)",
+    "f_images": "Imagini după stare (listă: image + above / below / state)"
   },
   "aquarium": {
     "power": "Putere",

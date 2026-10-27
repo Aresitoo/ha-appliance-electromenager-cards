@@ -195,7 +195,8 @@
     "f_mid_threshold": "Vitesse 2 au-dessus de (W)",
     "ph_heat": "Chauffe",
     "f_heating_power": "Seuil de phase de chauffe (W)",
-    "f_spin_power": "Seuil de phase d'essorage (W)"
+    "f_spin_power": "Seuil de phase d'essorage (W)",
+    "f_images": "Images selon l'état (liste : image + above / below / state)"
   },
   "aquarium": {
     "power": "Puissance",

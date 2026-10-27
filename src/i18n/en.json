@@ -195,7 +195,8 @@
     "f_mid_threshold": "Speed 2 above (W)",
     "ph_heat": "Heating",
     "f_heating_power": "Heating phase threshold (W)",
-    "f_spin_power": "Spinning phase threshold (W)"
+    "f_spin_power": "Spinning phase threshold (W)",
+    "f_images": "Images by state (list: image + above / below / state)"
   },
   "aquarium": {
     "power": "Power",

@@ -195,7 +195,8 @@
     "f_mid_threshold": "Скорость 2 выше (Вт)",
     "ph_heat": "Нагрев",
     "f_heating_power": "Порог фазы нагрева (Вт)",
-    "f_spin_power": "Порог фазы отжима (Вт)"
+    "f_spin_power": "Порог фазы отжима (Вт)",
+    "f_images": "Изображения по состоянию (список: image + above / below / state)"
   },
   "aquarium": {
     "power": "Мощность",
