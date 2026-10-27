@@ -16,7 +16,7 @@ const DEFS = `
 
 const lcd = (x, y, w, h) => `
 <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="1.5" fill="#0c1720" stroke="#8f98a2" stroke-width=".6"/>
-<text class="lcd" x="${x + w / 2}" y="${y + h / 2 + 2.5}" text-anchor="middle">OFF</text>`;
+<text class="lcd" x="${x + w / 2}" y="${y + h / 2 + 0.3}" text-anchor="middle" dominant-baseline="central" fill="#7ec8e3">OFF</text>`;
 
 const clothes = `
 <g class="clothes">
