@@ -385,5 +385,43 @@
     "lowph": "pH prea scăzut",
     "highph": "pH prea ridicat",
     "hot": "Apă prea fierbinte"
+  },
+  "access": {
+    "barrier": "Barieră",
+    "sliding_gate": "Poartă culisantă",
+    "swing_gate": "Poartă batantă",
+    "garage_door": "Ușă de garaj",
+    "open": "Deschis",
+    "closed": "Închis",
+    "opening": "Se deschide",
+    "closing": "Se închide",
+    "partial": "Parțial deschis",
+    "unavailable": "Indisponibil",
+    "position": "Poziție",
+    "power": "Motor",
+    "energy": "Energie",
+    "cost": "Cost",
+    "since": "Ultima schimbare",
+    "btn_open": "Deschide",
+    "btn_stop": "Stop",
+    "btn_close": "Închide",
+    "btn_command": "Comandă"
+  },
+  "sauna": {
+    "name": "Saună",
+    "off": "Oprit",
+    "heating": "Se încălzește",
+    "ready": "Gata",
+    "cooling": "Se răcește",
+    "fault": "Defect",
+    "temp": "Cabină",
+    "target": "Țintă",
+    "humidity": "Umiditate",
+    "power": "Sobă",
+    "energy": "Energie",
+    "cost": "Cost",
+    "turn_on": "Pornește",
+    "turn_off": "Oprește",
+    "overheat": "Prea cald"
   }
 }

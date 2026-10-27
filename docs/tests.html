@@ -19,7 +19,7 @@ const has=(c,cls)=>c.wrap.classList.contains(cls);
 const tags=['washer','dryer','dishwasher','water-heater','oven','microwave','fridge','pellet-stove','pool-pump','printer-3d','chest-freezer','drawer-freezer','solar','vmc','hob','radiator','air-fryer','coffee-maker','tv','range-hood','ac-split','heat-pump','towel-dryer','server-rack','desktop-pc','laptop','wine-cooler','beer-tap','av-receiver','fan','generic','tool-charger','ceiling-fan'];
 tags.forEach(t=>ok(`registered ${t}`,customElements.get(`appliance-${t}-card`)));
 // card picker: every core card and every self-contained card listed exactly once
-const solo=['aquarium','linky','battery','ev-charger','robot-vacuum-solo','robot-mower-solo','pellet-boiler','gas-boiler','water-heat-pump','diesel-heater','jacuzzi'];
+const solo=['aquarium','linky','battery','ev-charger','robot-vacuum-solo','robot-mower-solo','pellet-boiler','gas-boiler','water-heat-pump','diesel-heater','jacuzzi','barrier','sliding-gate','swing-gate','garage-door','sauna'];
 solo.forEach(t=>ok(`registered ${t}`,customElements.get(`appliance-${t}-card`)));
 const picked=window.customCards.map(c=>c.type), wanted=[...tags,...solo].map(t=>`appliance-${t}-card`);
 ok(`customCards = ${wanted.length}`,picked.length===wanted.length&&wanted.every(t=>picked.filter(p=>p===t).length===1),
@@ -559,8 +559,37 @@ ok('card size / grid',typeof c.el.getCardSize()==='number'&&c.el.getGridOptions(
   ['water-heat-pump',{name:X,entity_power:'sensor.p',entity_flow_temp:'sensor.f',entity_flow_rate:'sensor.q',entity_energy:'sensor.e'},[mk('sensor.p',900,U),mk('sensor.f',35,U),mk('sensor.q',1.2,U),mk('sensor.e',3,U)]],
   ['diesel-heater',{name:X,entity_power:'sensor.p',entity_fuel_level:'sensor.l',entity_fuel_used:'sensor.u',entity_energy:'sensor.e',price_per_liter:1,currency:X},[mk('sensor.p',100,U),mk('sensor.l',50,U),mk('sensor.u',2,U),mk('sensor.e',3,U)]],
   ['jacuzzi',{name:X,entity_power:'sensor.p',entity_temp:'sensor.t',entity_ph:'sensor.h',entity_energy:'sensor.e',entity_light:'light.l',price_per_kwh:1,currency:X},[mk('sensor.p',900,U),mk('sensor.t',38,U),mk('sensor.h',7.4,U),mk('sensor.e',3,U),mk('light.l','on',{rgb_color:[X,2,3]})]],
+  ['garage-door',{name:X,entity:'cover.g',entity_power:'sensor.p',entity_energy:'sensor.e',price_per_kwh:1,currency:X},[mk('cover.g','open',{current_position:40}),mk('sensor.p',50,U),mk('sensor.e',3,U)]],
+  ['swing-gate',{name:X,entity:'binary_sensor.g',entity_control:'button.b',leaves:1},[mk('binary_sensor.g','on')]],
+  ['sauna',{name:X,entity:'climate.s',entity_power:'sensor.p',entity_humidity:'sensor.h',entity_energy:'sensor.e',price_per_kwh:1,currency:X},[mk('climate.s','heat',{current_temperature:70,temperature:80}),mk('sensor.p',6000,U),mk('sensor.h',10,U),mk('sensor.e',3,U)]],
  ];
  xs.forEach(([t,cfg,st])=>{const c=card(t,cfg,st); ok(`no HTML injection ${t}`,!c.sr.querySelector('.xss'),c.sr.querySelectorAll('.xss').length+' injected'); c.el.remove();});}
+// access cards: state, position, moving, controls
+{const cls=(c)=>c.sr.querySelector('ha-card').className, badge=(c)=>c.sr.getElementById('accbadge').textContent;
+ let c=card('garage-door',{entity:'cover.g'},[mk('cover.g','open',{current_position:40,supported_features:15})]);
+ ok('garage partial 40 %',/partial/.test(cls(c))&&c.sr.querySelector('.scene').style.getPropertyValue('--acc-p')==='40',cls(c));
+ c.sr.querySelector('[data-a=close]').click(); ok('garage close -> cover.close_cover',JSON.stringify(c.h.calls[0])==='["cover","close_cover",{"entity_id":"cover.g"}]',JSON.stringify(c.h.calls));
+ c=card('barrier',{entity:'cover.b'},[mk('cover.b','opening')]); ok('barrier opening moves + beacon',/opening/.test(cls(c))&&/moving/.test(cls(c)),cls(c));
+ ok('barrier no position tile without current_position',c.sr.querySelector('.tile[data-k=position]').classList.contains('hide'));
+ ok('barrier open disabled while opening',c.sr.querySelector('[data-a=open]').disabled);
+ c=card('sliding-gate',{entity:'binary_sensor.g',invert:true},[mk('binary_sensor.g','on')]); ok('sliding binary invert -> closed',/closed/.test(cls(c)),cls(c));
+ ok('binary_sensor without control -> no buttons',c.sr.getElementById('accctl').classList.contains('hide'));
+ c=card('sliding-gate',{entity:'binary_sensor.g',entity_power:'sensor.p'},[mk('binary_sensor.g','off'),mk('sensor.p',120,W)]); ok('sliding power above threshold -> moving',/moving/.test(cls(c)),cls(c));
+ c=card('swing-gate',{entity:'binary_sensor.g',entity_control:'button.b'},[mk('binary_sensor.g','off')]);
+ c.sr.querySelector('[data-a=command]').click(); ok('swing impulse -> button.press',JSON.stringify(c.h.calls[0])==='["button","press",{"entity_id":"button.b"}]',JSON.stringify(c.h.calls));
+ ok('swing two leaves',c.sr.querySelectorAll('.leaf').length===2);
+ c=card('garage-door',{entity:'cover.g'},[mk('cover.g','unavailable')]); ok('garage unavailable',/unavailable/.test(cls(c))&&badge(c)==='Indisponible',cls(c)+' '+badge(c));}
+// sauna: heating / ready / cooling / off, climate controls
+{const cls=(c)=>c.sr.querySelector('ha-card').className.trim().split(' ')[0];
+ const sc=[['climate heat 60/80 -> heating',{entity:'climate.s'},[mk('climate.s','heat',{current_temperature:60,temperature:80})],'heating'],
+  ['climate heat 78/80 -> ready',{entity:'climate.s'},[mk('climate.s','heat',{current_temperature:78,temperature:80})],'ready'],
+  ['switch off + 70 °C -> cooling',{entity:'switch.s',entity_temp:'sensor.t'},[mk('switch.s','off'),mk('sensor.t',70,T)],'cooling'],
+  ['switch off cold -> off',{entity:'switch.s',entity_temp:'sensor.t'},[mk('switch.s','off'),mk('sensor.t',22,T)],'off'],
+  ['power only 6 kW -> heating',{entity_power:'sensor.p'},[mk('sensor.p',6000,W)],'heating']];
+ for(const [n,cfg,st,want] of sc){const c=card('sauna',cfg,st); ok(`sauna: ${n}`,cls(c)===want,cls(c));}
+ const c=card('sauna',{entity:'climate.s'},[mk('climate.s','heat',{current_temperature:60,temperature:80,target_temp_step:1})]);
+ c.sr.querySelector('[data-a=up]').click(); c.sr.querySelector('[data-a=power]').click();
+ ok('sauna +1 °C and turn off',JSON.stringify(c.h.calls)==='[["climate","set_temperature",{"entity_id":"climate.s","temperature":81}],["climate","set_hvac_mode",{"entity_id":"climate.s","hvac_mode":"off"}]]',JSON.stringify(c.h.calls));}
 ok('no page errors',__errors.length===0,__errors.join('; '));
 window.RESULTS=R;
 const fails=R.filter(r=>!r.pass).length;

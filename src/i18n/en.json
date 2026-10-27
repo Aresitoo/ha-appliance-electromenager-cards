@@ -385,5 +385,43 @@
     "lowph": "pH too low",
     "highph": "pH too high",
     "hot": "Water too hot"
+  },
+  "access": {
+    "barrier": "Barrier",
+    "sliding_gate": "Sliding gate",
+    "swing_gate": "Swing gate",
+    "garage_door": "Garage door",
+    "open": "Open",
+    "closed": "Closed",
+    "opening": "Opening",
+    "closing": "Closing",
+    "partial": "Partly open",
+    "unavailable": "Unavailable",
+    "position": "Position",
+    "power": "Motor",
+    "energy": "Energy",
+    "cost": "Cost",
+    "since": "Last change",
+    "btn_open": "Open",
+    "btn_stop": "Stop",
+    "btn_close": "Close",
+    "btn_command": "Command"
+  },
+  "sauna": {
+    "name": "Sauna",
+    "off": "Off",
+    "heating": "Heating",
+    "ready": "Ready",
+    "cooling": "Cooling down",
+    "fault": "Fault",
+    "temp": "Cabin",
+    "target": "Target",
+    "humidity": "Humidity",
+    "power": "Heater",
+    "energy": "Energy",
+    "cost": "Cost",
+    "turn_on": "Turn on",
+    "turn_off": "Turn off",
+    "overheat": "Too hot"
   }
 }

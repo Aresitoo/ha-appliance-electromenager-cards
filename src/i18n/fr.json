@@ -385,5 +385,43 @@
     "lowph": "pH trop bas",
     "highph": "pH trop élevé",
     "hot": "Eau trop chaude"
+  },
+  "access": {
+    "barrier": "Barrière",
+    "sliding_gate": "Portail coulissant",
+    "swing_gate": "Portail battant",
+    "garage_door": "Porte de garage",
+    "open": "Ouvert",
+    "closed": "Fermé",
+    "opening": "Ouverture",
+    "closing": "Fermeture",
+    "partial": "Entrouvert",
+    "unavailable": "Indisponible",
+    "position": "Position",
+    "power": "Moteur",
+    "energy": "Énergie",
+    "cost": "Coût",
+    "since": "Dernier mouvement",
+    "btn_open": "Ouvrir",
+    "btn_stop": "Stop",
+    "btn_close": "Fermer",
+    "btn_command": "Commande"
+  },
+  "sauna": {
+    "name": "Sauna",
+    "off": "Arrêt",
+    "heating": "Chauffe",
+    "ready": "Prêt",
+    "cooling": "Refroidissement",
+    "fault": "Défaut",
+    "temp": "Cabine",
+    "target": "Consigne",
+    "humidity": "Humidité",
+    "power": "Poêle",
+    "energy": "Énergie",
+    "cost": "Coût",
+    "turn_on": "Allumer",
+    "turn_off": "Éteindre",
+    "overheat": "Trop chaud"
   }
 }
