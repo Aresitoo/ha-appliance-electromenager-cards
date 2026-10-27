@@ -445,7 +445,12 @@
     "no_flow": "Pas de débit : marche à sec ?",
     "overpressure": "Surpression",
     "overheat": "Moteur trop chaud",
-    "low_level": "Niveau bas"
+    "low_level": "Niveau bas",
+    "sump_pump": "Pompe de relevage",
+    "alarm": "Niveau haut",
+    "high_level": "Niveau d'eau trop haut",
+    "pit": "Fosse",
+    "starts": "Démarrages"
   },
   "pool_robot": {
     "name": "Robot de piscine",
@@ -471,5 +476,41 @@
     "energy": "Énergie",
     "filter_full": "Filtre à nettoyer",
     "low_water": "Niveau d'eau bas"
+  },
+  "ups": {
+    "name": "Onduleur",
+    "online": "Sur secteur",
+    "charging": "En charge",
+    "on_battery": "Sur batterie",
+    "low_battery": "Batterie faible",
+    "offline": "Éteint",
+    "unavailable": "Indisponible",
+    "charge": "Batterie",
+    "runtime": "Autonomie",
+    "load": "Charge",
+    "power": "Puissance",
+    "input": "Entrée",
+    "output": "Sortie",
+    "energy": "Énergie",
+    "overload": "Surcharge",
+    "replace_battery": "Batterie à remplacer"
+  },
+  "underfloor": {
+    "name": "Plancher chauffant",
+    "off": "Arrêt",
+    "heating": "Chauffe",
+    "idle": "En veille",
+    "fault": "Défaut",
+    "temp": "Pièce",
+    "target": "Consigne",
+    "floor": "Sol",
+    "water": "Départ",
+    "power": "Puissance",
+    "energy": "Énergie",
+    "cost": "Coût",
+    "turn_on": "Allumer",
+    "turn_off": "Éteindre",
+    "floor_hot": "Sol trop chaud",
+    "water_hot": "Eau trop chaude"
   }
 }

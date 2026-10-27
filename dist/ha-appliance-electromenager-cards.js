@@ -10273,8 +10273,8 @@ svg{display:block;width:100%;max-width:250px;height:var(--appliance-illustration
   });
 })();
 
-/* Cartes « Pompes » — pompe à eau et pompe industrielle
- * custom:appliance-water-pump-card, appliance-industrial-pump-card.
+/* Cartes « Pompes » — pompe à eau, pompe industrielle et pompe de relevage
+ * custom:appliance-water-pump-card, appliance-industrial-pump-card, appliance-sump-pump-card.
  * Pompe à eau : style sobre, cuve source dont le niveau suit entity_level, roue à aubes visible
  * dans la volute, eau qui circule dans les tuyaux, jet et vagues dans le bassin de sortie.
  * Pompe industrielle : groupe moteur + pompe à engrenage interne sur châssis, finition métal,
@@ -10282,7 +10282,9 @@ svg{display:block;width:100%;max-width:250px;height:var(--appliance-illustration
  * La vitesse des animations suit le débit (ou la puissance) : --spd, 0 → 1 de 0 à max_flow.
  * Le débit est lu en L/min, m³/h, L/h, L/s ou gal/min et converti en L/min pour la vitesse et
  * les seuils (max_flow, no_flow_threshold) ; la tuile garde l'unité du capteur.
- * États : off, running, warning (marche avec alerte), fault, unavailable.
+ * Pompe de relevage : fosse en coupe, eau qui arrive par le drain, niveau (entity_level) et flotteur,
+ * pompe immergée, refoulement vers l'égout, repère « max » et gyrophare si le niveau est trop haut.
+ * États : off, running, warning (marche avec alerte), alarm (niveau haut, pompe arrêtée), fault, unavailable.
  */
 (() => {
   if (customElements.get('appliance-water-pump-card')) return;
@@ -10309,7 +10311,12 @@ svg{display:block;width:100%;max-width:250px;height:var(--appliance-illustration
       "no_flow": "No flow: running dry?",
       "overpressure": "Overpressure",
       "overheat": "Motor too hot",
-      "low_level": "Low level"
+      "low_level": "Low level",
+      "sump_pump": "Sump pump",
+      "alarm": "High level",
+      "high_level": "High water level",
+      "pit": "Pit",
+      "starts": "Starts"
     },
     "de": {
       "water_pump": "Wasserpumpe",
@@ -10332,7 +10339,12 @@ svg{display:block;width:100%;max-width:250px;height:var(--appliance-illustration
       "no_flow": "Kein Durchfluss: Trockenlauf?",
       "overpressure": "Überdruck",
       "overheat": "Motor zu heiß",
-      "low_level": "Niedriger Füllstand"
+      "low_level": "Niedriger Füllstand",
+      "sump_pump": "Hebeanlage",
+      "alarm": "Hochwasser",
+      "high_level": "Wasserstand zu hoch",
+      "pit": "Schacht",
+      "starts": "Starts"
     },
     "fr": {
       "water_pump": "Pompe à eau",
@@ -10355,7 +10367,12 @@ svg{display:block;width:100%;max-width:250px;height:var(--appliance-illustration
       "no_flow": "Pas de débit : marche à sec ?",
       "overpressure": "Surpression",
       "overheat": "Moteur trop chaud",
-      "low_level": "Niveau bas"
+      "low_level": "Niveau bas",
+      "sump_pump": "Pompe de relevage",
+      "alarm": "Niveau haut",
+      "high_level": "Niveau d'eau trop haut",
+      "pit": "Fosse",
+      "starts": "Démarrages"
     },
     "nb": {
       "water_pump": "Vannpumpe",
@@ -10378,7 +10395,12 @@ svg{display:block;width:100%;max-width:250px;height:var(--appliance-illustration
       "no_flow": "Ingen gjennomstrømning: tørrkjøring?",
       "overpressure": "Overtrykk",
       "overheat": "Motoren er for varm",
-      "low_level": "Lavt nivå"
+      "low_level": "Lavt nivå",
+      "sump_pump": "Lensepumpe",
+      "alarm": "Høyt nivå",
+      "high_level": "For høyt vannivå",
+      "pit": "Kum",
+      "starts": "Starter"
     },
     "nl": {
       "water_pump": "Waterpomp",
@@ -10401,7 +10423,12 @@ svg{display:block;width:100%;max-width:250px;height:var(--appliance-illustration
       "no_flow": "Geen debiet: drooglopen?",
       "overpressure": "Overdruk",
       "overheat": "Motor te heet",
-      "low_level": "Laag niveau"
+      "low_level": "Laag niveau",
+      "sump_pump": "Dompelpomp",
+      "alarm": "Hoog niveau",
+      "high_level": "Waterniveau te hoog",
+      "pit": "Put",
+      "starts": "Starts"
     },
     "ro": {
       "water_pump": "Pompă de apă",
@@ -10424,7 +10451,12 @@ svg{display:block;width:100%;max-width:250px;height:var(--appliance-illustration
       "no_flow": "Fără debit: funcționare în gol?",
       "overpressure": "Suprapresiune",
       "overheat": "Motor prea fierbinte",
-      "low_level": "Nivel scăzut"
+      "low_level": "Nivel scăzut",
+      "sump_pump": "Pompă de drenaj",
+      "alarm": "Nivel ridicat",
+      "high_level": "Nivel prea ridicat al apei",
+      "pit": "Bazin",
+      "starts": "Porniri"
     }
   };
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); // texte → HTML sûr
@@ -10438,6 +10470,7 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--pp-ok:var(--appli
 .badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:12px;background:var(--secondary-background-color);color:var(--secondary-text-color);white-space:nowrap}
 .running .badge{background:color-mix(in srgb,var(--pp-ok) 22%,transparent);color:var(--pp-ok)}
 .warning .badge{background:color-mix(in srgb,var(--pp-warn) 22%,transparent);color:var(--pp-warn)}
+.alarm .badge{background:color-mix(in srgb,var(--pp-alert) 22%,transparent);color:var(--pp-alert)}
 .fault .badge{background:color-mix(in srgb,var(--pp-alert) 22%,transparent);color:var(--pp-alert)}
 .alert{display:none;margin-top:4px;font-size:11px;color:var(--pp-alert);font-weight:500;text-align:center}
 .alert.on{display:block}
@@ -10518,6 +10551,27 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
 .ip.warning .led.wrn{fill:#ffb31a;filter:drop-shadow(0 0 3px #ffb31a);animation:ppblink 1s steps(2) infinite}
 .ip.fault .led.flt{fill:#ff3b30;filter:drop-shadow(0 0 3px #ff3b30);animation:ppblink .5s steps(2) infinite}
 .ip .plate{fill:#1d2125;font:700 7px/1 var(--paper-font-body1_-_font-family,Roboto,sans-serif);text-anchor:middle}
+
+/* ---- pompe de relevage ---- */
+.sp{--fd:.8s;--dl:24px}
+.sp .pitw,.sp .floatg{transform:translateY(calc((1 - var(--lvl)) * 104px));transition:transform 1.5s ease-out}
+.sp .wave{animation:ppwave 3.2s linear infinite}
+.sp.running .wave,.sp.warning .wave{animation-duration:1.2s}
+.sp .drop{fill:var(--fluid);opacity:0;animation:ppdrop 1.6s ease-in infinite}
+.sp .drop:nth-of-type(2){animation-delay:-.55s}.sp .drop:nth-of-type(3){animation-delay:-1.1s}
+@keyframes ppdrop{0%{opacity:0;transform:translateY(0)}10%{opacity:.9}100%{opacity:0;transform:translateY(46px)}}
+.sp .rig{transform-box:view-box}
+.sp.running .rig,.sp.warning .rig{animation:ppvib .12s linear infinite}
+.sp .sbub{fill:#fff;opacity:0}
+.sp.running .sbub,.sp.warning .sbub{animation:ppsbub 1.4s ease-in infinite}
+.sp .sbub:nth-of-type(2){animation-delay:-.45s!important}.sp .sbub:nth-of-type(3){animation-delay:-.9s!important}
+@keyframes ppsbub{0%{opacity:0;transform:translateY(0)}20%{opacity:.8}100%{opacity:0;transform:translateY(-34px)}}
+.sp .beacon{fill:#5a2a26;transition:fill .3s}
+.sp.hi .beacon{fill:#ff3b30;filter:drop-shadow(0 0 5px #ff3b30);animation:ppblink .6s steps(2) infinite}
+.sp .maxl{stroke:var(--pp-alert);stroke-width:1.2;stroke-dasharray:3 2}
+.sp .maxt{fill:var(--pp-alert);font:600 7px/1 var(--paper-font-body1_-_font-family,Roboto,sans-serif)}
+.sp.running .led,.sp.warning .led{fill:var(--pp-ok)}
+.sp.fault .led,.sp.alarm .led{fill:var(--pp-alert);animation:ppblink .5s steps(2) infinite}
 .noanim *{animation:none!important}
 `;
 
@@ -10653,11 +10707,64 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
 </svg>`;
   };
 
+  /* Pompe de relevage : fosse enterrée vue en coupe, drain d'arrivée, pompe immergée et flotteur */
+  const SVG_SUMP = (label) => {
+    const wave = `M60 58 q6 -3 12 0 t12 0 t12 0 t12 0 t12 0 t12 0 t12 0 t12 0 t12 0 t12 0 t12 0 V200 H60 Z`;
+    const grill = Array.from({ length: 6 }, (_, i) => `M${92 + i * 4} 161 V167`).join(' ');
+    return `
+<svg viewBox="0 0 260 180" role="img" aria-label="${esc(label)}">
+ <defs>
+  <linearGradient id="spsoil" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8a6a4a"/><stop offset="1" stop-color="#5b4430"/></linearGradient>
+  <linearGradient id="spwater" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--fluid)" stop-opacity=".7"/><stop offset="1" stop-color="#1b4f7a" stop-opacity=".95"/></linearGradient>
+  <linearGradient id="spbody" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5f7f99"/><stop offset=".45" stop-color="#a9c0d2"/><stop offset="1" stop-color="#4a647a"/></linearGradient>
+  <clipPath id="sppit"><rect x="70" y="46" width="100" height="124"/></clipPath>
+ </defs>
+ <!-- sol en coupe et pelouse -->
+ <rect x="0" y="40" width="260" height="138" fill="url(#spsoil)"/>
+ <g fill="#6f5338" opacity=".6"><circle cx="20" cy="70" r="2"/><circle cx="40" cy="120" r="2.5"/><circle cx="210" cy="100" r="2"/><circle cx="240" cy="150" r="3"/><circle cx="30" cy="160" r="2"/><circle cx="200" cy="160" r="2.4"/></g>
+ <rect x="0" y="34" width="260" height="7" fill="#5aa046"/>
+ <!-- fosse béton -->
+ <rect x="62" y="34" width="116" height="144" fill="#a7adb2"/>
+ <rect x="70" y="46" width="100" height="124" fill="#2b3238"/>
+ <g clip-path="url(#sppit)"><g class="pitw"><path class="wave" d="${wave}" fill="url(#spwater)"/></g></g>
+ <path class="maxl" id="spmax" d="M70 0 H170"/><text class="maxt" id="spmaxt" x="166" y="0" text-anchor="end">max</text>
+ <!-- drain d'arrivée et gouttes -->
+ <path d="M0 78 H74" stroke="#7d868e" stroke-width="9" fill="none"/><path d="M0 78 H74" stroke="#3b4248" stroke-width="5" fill="none"/>
+ <g><circle class="drop" cx="76" cy="82" r="2"/><circle class="drop" cx="77" cy="82" r="1.6"/><circle class="drop" cx="75" cy="82" r="1.8"/></g>
+ <!-- flotteur : suit la surface -->
+ <g clip-path="url(#sppit)"><g class="floatg">
+  <path d="M150 62 C150 90 128 100 116 118" fill="none" stroke="#1d2125" stroke-width="1.4"/>
+  <ellipse cx="150" cy="58" rx="9" ry="5" fill="#f2a516" stroke="#a86f0c"/>
+ </g></g>
+ <!-- refoulement vers l'égout -->
+ <g fill="none" stroke-linecap="round">
+  <path d="M104 120 V68 Q104 60 112 60 H260" stroke="#7d868e" stroke-width="10"/>
+  <path d="M104 120 V68 Q104 60 112 60 H260" stroke="#3b4248" stroke-width="6"/>
+  <path class="flow" d="M104 120 V68 Q104 60 112 60 H260" stroke-width="4" stroke-dasharray="5 7"/>
+ </g>
+ <rect x="97" y="86" width="14" height="10" rx="2" fill="#4c555c" stroke="#2b3238"/>
+ <!-- pompe immergée -->
+ <g class="rig">
+  <rect x="88" y="118" width="32" height="44" rx="7" fill="url(#spbody)" stroke="#2f4558"/>
+  <rect x="86" y="160" width="36" height="9" rx="2" fill="#2f4558"/>
+  <path d="${grill}" stroke="#a9c0d2" stroke-width="1.6"/>
+  <rect x="96" y="114" width="16" height="6" rx="2" fill="#4a647a"/>
+  <circle class="led" cx="104" cy="132" r="2.4"/>
+  <circle class="sbub" cx="90" cy="158" r="1.6"/><circle class="sbub" cx="118" cy="156" r="1.3"/><circle class="sbub" cx="104" cy="160" r="1.8"/>
+ </g>
+ <!-- gyrophare d'alarme niveau haut -->
+ <rect x="214" y="26" width="16" height="9" rx="1.5" fill="#3b4248"/>
+ <path class="beacon" d="M216 26 V18 Q222 10 228 18 V26 Z"/>
+</svg>`;
+  };
+
   const KINDS = {
     water_pump: { cls: 'wp', svg: SVG_WATER, re: /pomp|pump|arros|forage|puits|well|irrig/i,
       d: { max_flow: 40, max_power: 1200, run_threshold: 15, max_pressure: 6, pressure_max: 5, temp_max: 70, level_min: 15 } },
     industrial_pump: { cls: 'ip', svg: SVG_INDUSTRIAL, re: /pomp|pump|surpress|booster|process/i,
       d: { max_flow: 200, max_power: 7500, run_threshold: 100, max_pressure: 16, pressure_max: 12, temp_max: 85, level_min: 10 } },
+    sump_pump: { cls: 'sp', svg: SVG_SUMP, sump: true, re: /relevage|sump|fosse|puisard|cuve.?eaux/i,
+      d: { max_flow: 150, max_power: 800, run_threshold: 20, max_pressure: 2, pressure_max: 2, temp_max: 70, level_min: 0, level_max: 80 } },
   };
   const TILES = [
     ['flow', 'mdi:waves-arrow-right', 'show_flow'],
@@ -10666,6 +10773,7 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
     ['temp', 'mdi:thermometer', 'show_temp'],
     ['level', 'mdi:storage-tank-outline', 'show_level'],
     ['runtime', 'mdi:timer-outline', 'show_runtime'],
+    ['starts', 'mdi:counter', 'show_starts'],
     ['energy', 'mdi:lightning-bolt-circle', 'show_energy'],
     ['cost', 'mdi:cash', 'show_cost'],
   ];
@@ -10674,7 +10782,7 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
     setConfig(c) {
       if (!c || typeof c !== 'object') throw new Error('Invalid configuration');
       this._c = { show_status: true, show_controls: true, show_flow: true, show_pressure: true, show_power: true, show_temp: true, show_level: true,
-        show_runtime: true, show_energy: true, show_cost: true, no_flow_threshold: 0.5, ...KINDS[this.kind].d, ...c };
+        show_runtime: true, show_starts: true, show_energy: true, show_cost: true, no_flow_threshold: 0.5, ...KINDS[this.kind].d, ...c };
       this._built = false;
       if (this._hass) this._render();
     }
@@ -10727,8 +10835,8 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
       });
       root.querySelectorAll('.tile').forEach((el) => el.addEventListener('click', () => {
         const cc = this._c, k = el.dataset.k;
-        this._more({ flow: cc.entity_flow, pressure: cc.entity_pressure, power: cc.entity_power, temp: cc.entity_temp, level: cc.entity_level,
-          runtime: cc.entity_runtime, energy: cc.entity_energy, cost: cc.entity_cost || cc.entity_energy }[k]);
+        this._more({ flow: cc.entity_flow, pressure: cc.entity_pressure, power: cc.entity_power, temp: cc.entity_temp, level: cc.entity_level || cc.entity_float,
+          runtime: cc.entity_runtime, starts: cc.entity_starts, energy: cc.entity_energy, cost: cc.entity_cost || cc.entity_energy }[k]);
       }));
       this._root = root; this._card = root.querySelector('ha-card'); this._built = true;
     }
@@ -10750,7 +10858,12 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
       if (on && !isNaN(flow) && flow < Number(c.no_flow_threshold)) v.alerts.push('no_flow');
       if (!isNaN(pres) && pres > Number(c.pressure_max)) v.alerts.push('overpressure');
       if (!isNaN(temp) && temp > Number(c.temp_max)) v.alerts.push('overheat');
-      if (!isNaN(level) && level < Number(c.level_min)) v.alerts.push('low_level');
+      if (KINDS[this.kind].sump) {
+        // relevage : c'est le niveau HAUT qui est dangereux (débordement), signalé par le capteur ou le flotteur d'alarme
+        const fl = this._st(c.entity_float);
+        if ((!isNaN(level) && level > Number(c.level_max)) || (fl && fl.state === 'on')) v.alerts.push('high_level');
+        if (!on && v.alerts.includes('high_level')) return { ...v, st: 'alarm' };
+      } else if (!isNaN(level) && level < Number(c.level_min)) v.alerts.push('low_level');
       return { ...v, st: !on ? 'off' : v.alerts.length ? 'warning' : 'running' };
     }
 
@@ -10764,9 +10877,19 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
       // vitesse d'animation : débit sinon puissance, au moins 0,25 pour que ça reste lisible
       let spd = !isNaN(flow) ? flow / Number(c.max_flow) : !isNaN(pw) ? pw / Number(c.max_power) : 0.7;
       spd = on ? Math.max(0.25, clamp(spd)) : 0.25;
-      card.className = `${K.cls} ${st} ${c.animations === false ? 'noanim' : ''}`;
+      card.className = `${K.cls} ${st}${alerts.includes('high_level') ? ' hi' : ''} ${c.animations === false ? 'noanim' : ''}`;
       card.style.setProperty('--spd', spd.toFixed(3));
-      card.style.setProperty('--lvl', (isNaN(level) ? 0.6 : clamp(level / 100)).toFixed(3));
+      // sans capteur de niveau, la fosse se vide pendant que la pompe tourne
+      const lvl0 = K.sump ? (alerts.includes('high_level') ? 0.9 : on ? 0.3 : 0.55) : 0.6;
+      card.style.setProperty('--lvl', (isNaN(level) ? lvl0 : clamp(level / 100)).toFixed(3));
+      const mx = r.getElementById('spmax');
+      if (mx) {
+        // repère « max » : surface de l'eau au niveau level_max (même formule que .pitw)
+        const y = 58 + (1 - clamp(Number(c.level_max) / 100)) * 104;
+        mx.setAttribute('d', `M70 ${y.toFixed(1)} H170`);
+        r.getElementById('spmaxt').setAttribute('y', (y - 2).toFixed(1));
+        mx.style.display = r.getElementById('spmaxt').style.display = c.entity_level ? '' : 'none';
+      }
       card.style.setProperty('--pr', (isNaN(pres) ? (on ? 0.5 : 0) : clamp(pres / Number(c.max_pressure))).toFixed(3));
       if (c.fluid_color) card.style.setProperty('--fluid', String(c.fluid_color)); else card.style.removeProperty('--fluid');
 
@@ -10781,7 +10904,7 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
       ctl.classList.toggle('hide', c.show_controls === false || !['switch', 'input_boolean', 'fan'].includes(d));
       ctl.querySelector('span').textContent = this._t(on ? 'turn_off' : 'turn_on');
 
-      const energy = this._num(c.entity_energy), run = this._num(c.entity_runtime);
+      const energy = this._num(c.entity_energy), run = this._num(c.entity_runtime), starts = this._num(c.entity_starts);
       let cost = this._num(c.entity_cost), costU = this._unit(c.entity_cost, c.currency || '€');
       if (isNaN(cost) && c.price_per_kwh && !isNaN(energy)) { cost = energy * Number(c.price_per_kwh); costU = c.currency || '€'; }
       const V = {
@@ -10791,15 +10914,16 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
         temp: [c.entity_temp, this._fmt(temp, 0), this._unit(c.entity_temp, '°C')],
         level: [c.entity_level, this._fmt(level, 0), this._unit(c.entity_level, '%')],
         runtime: [c.entity_runtime, this._fmt(run, 1), this._unit(c.entity_runtime, 'h')],
+        starts: [c.entity_starts, this._fmt(starts, 0), ''],
         energy: [c.entity_energy, this._fmt(energy, 2), this._unit(c.entity_energy, 'kWh')],
         cost: [c.entity_cost || (c.price_per_kwh && c.entity_energy), this._fmt(cost, 2), costU],
       };
-      const bad = { flow: alerts.includes('no_flow'), pressure: alerts.includes('overpressure'), temp: alerts.includes('overheat'), level: alerts.includes('low_level') };
+      const bad = { flow: alerts.includes('no_flow'), pressure: alerts.includes('overpressure'), temp: alerts.includes('overheat'), level: alerts.includes('low_level') || alerts.includes('high_level') };
       TILES.forEach(([k, , opt]) => {
         const el = r.querySelector(`.tile[data-k="${k}"]`); const [show, val, unit] = V[k];
         el.classList.toggle('hide', !show || c[opt] === false);
         el.classList.toggle('bad', !!bad[k]);
-        el.querySelector('.lbl').textContent = this._t(k);
+        el.querySelector('.lbl').textContent = this._t(K.sump && k === 'level' ? 'pit' : k);
         const small = document.createElement('small'); small.textContent = unit ?? '';
         el.querySelector('.v').replaceChildren(String(val ?? ''), small);
       });
@@ -10829,17 +10953,18 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
         { name: 'name', selector: { text: {} } },
         ent('entity'), ent('entity_power', 'sensor'), ent('entity_flow', 'sensor'), ent('entity_pressure', 'sensor'),
         ent('entity_temp', 'sensor'), ent('entity_level', 'sensor'), ent('entity_fault', 'binary_sensor'), ent('entity_runtime', 'sensor'),
+        ...(KINDS[this.kind].sump ? [ent('entity_float', 'binary_sensor'), ent('entity_starts', 'sensor')] : []),
         ent('entity_energy', 'sensor'), ent('entity_cost', 'sensor'),
         { name: 'price_per_kwh', selector: { number: { min: 0, step: 0.0001, mode: 'box' } } },
         { name: 'fluid_color', selector: { text: {} } },
         { type: 'grid', name: '', schema: [
           num('max_flow', 1, 10000, 1, 'L/min'), num('max_power', 10, 100000, 10, 'W'), num('run_threshold', 0, 5000, 1, 'W'),
-          num('max_pressure', 1, 100, 0.5, 'bar'), num('pressure_max', 0, 100, 0.1, 'bar'), num('temp_max', 20, 150, 1, '°C'), num('level_min', 0, 100, 1, '%'),
+          num('max_pressure', 1, 100, 0.5, 'bar'), num('pressure_max', 0, 100, 0.1, 'bar'), num('temp_max', 20, 150, 1, '°C'), KINDS[this.kind].sump ? num('level_max', 0, 100, 1, '%') : num('level_min', 0, 100, 1, '%'),
         ] },
         { name: 'language', selector: { select: { options: Object.keys(T).map((value) => ({ value, label: { fr: 'Français', en: 'English', de: 'Deutsch', nb: 'Norsk bokmål', ro: 'Română', nl: 'Nederlands' }[value] || value })) } } },
         { type: 'grid', name: '', schema: [
           bool('show_status'), bool('show_controls'), bool('show_flow'), bool('show_pressure'), bool('show_power'), bool('show_temp'),
-          bool('show_level'), bool('show_runtime'), bool('show_energy'), bool('show_cost'), bool('animations'),
+          bool('show_level'), bool('show_runtime'), bool('show_starts'), bool('show_energy'), bool('show_cost'), bool('animations'),
         ] },
       ];
       this._form.computeLabel = (s) => s.name;
@@ -10849,6 +10974,7 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
   const DESC = {
     water_pump: 'Pompe à eau sobre (arrosage, puits, piscine) : roue à aubes, eau qui circule, vagues, niveau de cuve, débit et pression.',
     industrial_pump: 'Pompe industrielle robuste : finition métal, voyants, manomètre, pulsations et vibrations selon le débit.',
+    sump_pump: 'Pompe de relevage : fosse en coupe, niveau et flotteur, pompe immergée, refoulement, alarme de niveau haut.',
   };
   window.customCards = window.customCards || [];
   for (const kind of Object.keys(KINDS)) {
@@ -11396,6 +11522,869 @@ svg{display:block;width:100%;max-width:280px;height:var(--appliance-illustration
   window.customCards.push({
     type: TAG, name: 'Appliance – Pool robot / Robot de piscine',
     description: 'Robot nettoyeur de piscine animé : allers-retours sur le fond, brosse, bulles, jauge du filtre, niveau d\'eau, commandes.', preview: true,
+    documentationURL: 'https://github.com/skyrotter/ha-appliance-electromenager-cards',
+  });
+})();
+
+/* Carte « Onduleur » — custom:appliance-ups-card
+ * Prise murale → onduleur tour → box et NAS protégés. Le courant circule dans les câbles ;
+ * sur batterie, le secteur s'éteint (éclair barré), l'écran passe à l'orange, l'onduleur bipe
+ * et le courant part de la batterie. La batterie visible sur le flanc suit la charge (--bat),
+ * la barre de LED suit la charge connectée (--load).
+ * États : online, charging, on_battery, low_battery, offline, unavailable. Lit le statut de
+ * l'intégration NUT (codes « OL », « OB », « LB », « CHRG », « RB », « OVER » ou texte « Online »,
+ * « On Battery »…), un binary_sensor (on = secteur présent) ou, à défaut, la tension d'entrée.
+ */
+(() => {
+  const TAG = 'appliance-ups-card';
+  if (customElements.get(TAG)) return;
+
+  const T = {
+    "en": {
+      "name": "UPS",
+      "online": "On mains",
+      "charging": "Charging",
+      "on_battery": "On battery",
+      "low_battery": "Low battery",
+      "offline": "Off",
+      "unavailable": "Unavailable",
+      "charge": "Battery",
+      "runtime": "Runtime",
+      "load": "Load",
+      "power": "Power",
+      "input": "Input",
+      "output": "Output",
+      "energy": "Energy",
+      "overload": "Overload",
+      "replace_battery": "Replace the battery"
+    },
+    "de": {
+      "name": "USV",
+      "online": "Netzbetrieb",
+      "charging": "Lädt",
+      "on_battery": "Batteriebetrieb",
+      "low_battery": "Batterie schwach",
+      "offline": "Aus",
+      "unavailable": "Nicht verfügbar",
+      "charge": "Batterie",
+      "runtime": "Laufzeit",
+      "load": "Last",
+      "power": "Leistung",
+      "input": "Eingang",
+      "output": "Ausgang",
+      "energy": "Energie",
+      "overload": "Überlast",
+      "replace_battery": "Batterie ersetzen"
+    },
+    "fr": {
+      "name": "Onduleur",
+      "online": "Sur secteur",
+      "charging": "En charge",
+      "on_battery": "Sur batterie",
+      "low_battery": "Batterie faible",
+      "offline": "Éteint",
+      "unavailable": "Indisponible",
+      "charge": "Batterie",
+      "runtime": "Autonomie",
+      "load": "Charge",
+      "power": "Puissance",
+      "input": "Entrée",
+      "output": "Sortie",
+      "energy": "Énergie",
+      "overload": "Surcharge",
+      "replace_battery": "Batterie à remplacer"
+    },
+    "nb": {
+      "name": "UPS",
+      "online": "På strømnett",
+      "charging": "Lader",
+      "on_battery": "På batteri",
+      "low_battery": "Lavt batteri",
+      "offline": "Av",
+      "unavailable": "Utilgjengelig",
+      "charge": "Batteri",
+      "runtime": "Driftstid",
+      "load": "Belastning",
+      "power": "Effekt",
+      "input": "Inngang",
+      "output": "Utgang",
+      "energy": "Energi",
+      "overload": "Overbelastning",
+      "replace_battery": "Bytt batteriet"
+    },
+    "nl": {
+      "name": "UPS",
+      "online": "Op net",
+      "charging": "Laden",
+      "on_battery": "Op batterij",
+      "low_battery": "Batterij bijna leeg",
+      "offline": "Uit",
+      "unavailable": "Niet beschikbaar",
+      "charge": "Batterij",
+      "runtime": "Looptijd",
+      "load": "Belasting",
+      "power": "Vermogen",
+      "input": "Ingang",
+      "output": "Uitgang",
+      "energy": "Energie",
+      "overload": "Overbelasting",
+      "replace_battery": "Vervang de batterij"
+    },
+    "ro": {
+      "name": "UPS",
+      "online": "Pe rețea",
+      "charging": "Se încarcă",
+      "on_battery": "Pe baterie",
+      "low_battery": "Baterie descărcată",
+      "offline": "Oprit",
+      "unavailable": "Indisponibil",
+      "charge": "Baterie",
+      "runtime": "Autonomie",
+      "load": "Sarcină",
+      "power": "Putere",
+      "input": "Intrare",
+      "output": "Ieșire",
+      "energy": "Energie",
+      "overload": "Suprasarcină",
+      "replace_battery": "Înlocuiți bateria"
+    }
+  };
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); // texte → HTML sûr
+
+  const CSS = `
+:host{display:block}
+ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--up-ok:var(--appliance-ok-color,#43a047);--up-warn:#ffa31a;
+  --up-alert:var(--appliance-alert-color,#db4437);--up-cold:var(--appliance-cold-color,#2b9af9);--bat:1;--load:0}
+.head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.title{font-size:14px;font-weight:500;color:var(--primary-text-color);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:12px;background:var(--secondary-background-color);color:var(--secondary-text-color);white-space:nowrap}
+.online .badge{background:color-mix(in srgb,var(--up-ok) 22%,transparent);color:var(--up-ok)}
+.charging .badge{background:color-mix(in srgb,var(--up-cold) 22%,transparent);color:var(--up-cold)}
+.on_battery .badge{background:color-mix(in srgb,var(--up-warn) 22%,transparent);color:var(--up-warn)}
+.low_battery .badge,.offline .badge{background:color-mix(in srgb,var(--up-alert) 22%,transparent);color:var(--up-alert)}
+.alert{display:none;margin-top:4px;font-size:11px;color:var(--up-alert);font-weight:500;text-align:center}
+.alert.on{display:block}
+svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration-height,auto);margin:2px auto 0;overflow:visible;cursor:pointer}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(76px,1fr));gap:6px;margin-top:6px}
+.tile{box-sizing:border-box;background:var(--secondary-background-color);border-radius:10px;padding:5px 7px;min-width:0;overflow:hidden;text-align:center;cursor:pointer}
+.tile .l{display:flex;align-items:center;justify-content:center;gap:3px;font-size:10px;line-height:14px;color:var(--secondary-text-color);min-width:0}
+.tile .l span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tile .l ha-icon{--mdc-icon-size:13px;flex:none}
+.tile .v{font-size:14px;line-height:18px;font-weight:600;color:var(--primary-text-color);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile .v small{font-size:10px;font-weight:400;color:var(--secondary-text-color);margin-left:2px}
+.tile.hide{display:none}
+.tile.bad .v{color:var(--up-alert)}
+
+/* ---- illustration ---- */
+/* courant dans les câbles : depuis le secteur en temps normal, depuis la batterie en coupure */
+.cable{fill:none;stroke:#3a4148;stroke-width:4;stroke-linecap:round}
+.amp{fill:none;stroke:#ffd43b;stroke-width:2;stroke-linecap:round;stroke-dasharray:4 8;opacity:0;transition:opacity .4s}
+.online .amp,.charging .amp{opacity:1;animation:upflow .7s linear infinite}
+.on_battery .amp.out,.low_battery .amp.out{opacity:1;stroke:#ff9f1a;animation:upflow 1s linear infinite}
+@keyframes upflow{to{stroke-dashoffset:-24}}
+.mains{transition:opacity .4s}
+.on_battery .mains,.low_battery .mains,.offline .mains{opacity:.35}
+.cut{opacity:0;transition:opacity .3s}
+.on_battery .cut,.low_battery .cut,.offline .cut{opacity:1}
+/* batterie visible sur le flanc */
+.batf{transform-box:fill-box;transform-origin:50% 100%;transform:scaleY(var(--bat));transition:transform 1.2s,fill .5s;fill:#43a047}
+.lowbat .batf{fill:#e53935}.midbat .batf{fill:#fb8c00}
+.charging .batf{animation:upchg 1.6s ease-in-out infinite}
+@keyframes upchg{50%{opacity:.55}}
+/* écran : vert sur secteur, orange sur batterie, rouge batterie faible */
+.lcdbg{fill:#14301c;transition:fill .4s}
+.on_battery .lcdbg{fill:#3d2a08}.low_battery .lcdbg{fill:#3d0f0c}.offline .lcdbg{fill:#111}
+.lcd{fill:#7dff9a;font:700 11px/1 var(--paper-font-body1_-_font-family,Roboto,sans-serif);text-anchor:middle}
+.lcds{fill:#7dff9a;font:600 6.5px/1 var(--paper-font-body1_-_font-family,Roboto,sans-serif);text-anchor:middle;opacity:.85}
+.on_battery .lcd,.on_battery .lcds{fill:#ffb84d}.low_battery .lcd,.low_battery .lcds{fill:#ff6b5e}.offline .lcd,.offline .lcds{fill:#4a4f56}
+.low_battery .lcd{animation:upblink .6s steps(2) infinite}
+/* barre de charge connectée : 5 LED allumées selon --load */
+.ld{fill:#2b3036}
+.ld.on{fill:#43a047}.ld.on.hi{fill:#fb8c00}.ld.on.max{fill:#e53935}
+.pwr{fill:#3a4148}
+.online .pwr,.charging .pwr{fill:#3ddc5a;filter:drop-shadow(0 0 3px #3ddc5a)}
+.on_battery .pwr{fill:#ffb31a;filter:drop-shadow(0 0 3px #ffb31a);animation:upblink 1s steps(2) infinite}
+.low_battery .pwr{fill:#ff3b30;animation:upblink .5s steps(2) infinite}
+/* bips de l'alarme sur batterie */
+.beep{fill:none;stroke:#ffb31a;stroke-width:1.6;stroke-linecap:round;opacity:0}
+.on_battery .beep,.low_battery .beep{animation:upbeep 1.2s ease-out infinite}
+.low_battery .beep{stroke:#ff3b30;animation-duration:.6s}
+.beep:nth-of-type(2){animation-delay:.2s!important}
+@keyframes upbeep{0%{opacity:0;transform:translateX(0)}20%{opacity:1}100%{opacity:0;transform:translateX(5px)}}
+.dev{transition:opacity .4s}
+.offline .dev{opacity:.4}
+.devled{fill:#3ddc5a;animation:upblink 1.4s steps(2) infinite}
+.devled:nth-of-type(2n){animation-delay:-.5s}
+.offline .devled{fill:#4a4f56;animation:none}
+@keyframes upblink{50%{opacity:.3}}
+.noanim *{animation:none!important}
+`;
+
+  const SVG = (label) => `
+<svg viewBox="0 0 270 170" role="img" aria-label="${esc(label)}">
+ <defs>
+  <linearGradient id="upbody" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2a2f35"/><stop offset=".5" stop-color="#3c434a"/><stop offset="1" stop-color="#23282d"/></linearGradient>
+  <linearGradient id="upside" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#1b1f23"/><stop offset="1" stop-color="#2a2f35"/></linearGradient>
+ </defs>
+ <ellipse cx="135" cy="160" rx="128" ry="5" fill="#000" opacity=".18"/>
+ <!-- prise murale -->
+ <g class="mains">
+  <rect x="8" y="70" width="34" height="40" rx="5" fill="#eef1f4" stroke="#b9c1c8"/>
+  <circle cx="25" cy="90" r="11" fill="#dfe4e8" stroke="#b9c1c8"/><circle cx="21" cy="90" r="1.8" fill="#5b636b"/><circle cx="29" cy="90" r="1.8" fill="#5b636b"/>
+  <path d="M25 52 l-6 10 h5 l-3 8 l9 -12 h-5 l3 -6 z" fill="#ffd43b"/>
+ </g>
+ <g class="cut"><path d="M25 52 l-6 10 h5 l-3 8 l9 -12 h-5 l3 -6 z" fill="#8a9097"/><path d="M15 54 L36 70" stroke="#e53935" stroke-width="2.6" stroke-linecap="round"/></g>
+ <!-- câble secteur → onduleur -->
+ <path class="cable" d="M25 101 V140 Q25 148 33 148 H82 Q90 148 90 140 V132"/>
+ <path class="amp" d="M25 101 V140 Q25 148 33 148 H82 Q90 148 90 140 V132"/>
+ <!-- onduleur tour -->
+ <path d="M126 30 L144 22 V142 L126 150 Z" fill="url(#upside)"/>
+ <rect x="76" y="30" width="50" height="120" rx="5" fill="url(#upbody)" stroke="#16191c"/>
+ <path d="M76 36 Q76 30 82 30 L100 22 H138 Q144 22 144 22 L126 30 Z" fill="#4a5158"/>
+ <!-- batterie visible par la grille du flanc -->
+ <rect x="130" y="50" width="10" height="64" rx="2" fill="#16191c" transform="skewY(-24) translate(0 58)"/>
+ <g transform="skewY(-24) translate(0 58)"><rect x="131.5" y="52" width="7" height="60" rx="1.5" fill="#262b30"/><rect class="batf" x="131.5" y="52" width="7" height="60" rx="1.5"/></g>
+ <rect x="84" y="42" width="34" height="26" rx="3" class="lcdbg" stroke="#0d0f11"/>
+ <text class="lcd" id="uplcd" x="101" y="56">--</text>
+ <text class="lcds" id="uplcds" x="101" y="64">UPS</text>
+ <g id="upleds"><rect class="ld" x="86" y="76" width="5" height="4" rx="1"/><rect class="ld" x="92.5" y="76" width="5" height="4" rx="1"/><rect class="ld" x="99" y="76" width="5" height="4" rx="1"/><rect class="ld" x="105.5" y="76" width="5" height="4" rx="1"/><rect class="ld" x="112" y="76" width="5" height="4" rx="1"/></g>
+ <circle cx="101" cy="98" r="8" fill="#1b1f23" stroke="#4a5158"/>
+ <path d="M101 93 V98 M97.5 95 A5 5 0 1 0 104.5 95" fill="none" stroke="#8a9097" stroke-width="1.4" stroke-linecap="round"/>
+ <circle class="pwr" cx="101" cy="112" r="2.4"/>
+ <g stroke="#1b1f23" stroke-width="1.2"><path d="M84 122 H118 M84 127 H118 M84 132 H118 M84 137 H118"/></g>
+ <path class="beep" d="M150 48 q5 6 0 12"/><path class="beep" d="M155 44 q7 10 0 20"/>
+ <!-- câble onduleur → appareils protégés -->
+ <path class="cable" d="M112 132 V140 Q112 148 120 148 H200 Q208 148 208 140 V128"/>
+ <path class="amp out" d="M112 132 V140 Q112 148 120 148 H200 Q208 148 208 140 V128"/>
+ <path class="cable" d="M208 140 Q208 148 216 148 H238 Q246 148 246 140 V86"/>
+ <path class="amp out" d="M208 140 Q208 148 216 148 H238 Q246 148 246 140 V86"/>
+ <!-- box internet -->
+ <g class="dev">
+  <rect x="180" y="106" width="56" height="22" rx="4" fill="#eef1f4" stroke="#b9c1c8"/>
+  <path d="M190 106 V94 M226 106 V94" stroke="#b9c1c8" stroke-width="2" stroke-linecap="round"/>
+  <circle class="devled" cx="190" cy="117" r="1.6"/><circle class="devled" cx="196" cy="117" r="1.6"/><circle class="devled" cx="202" cy="117" r="1.6"/>
+ </g>
+ <!-- NAS -->
+ <g class="dev">
+  <rect x="226" y="36" width="38" height="50" rx="4" fill="#2a2f35" stroke="#16191c"/>
+  <rect x="231" y="42" width="28" height="9" rx="1.5" fill="#3c434a"/><rect x="231" y="54" width="28" height="9" rx="1.5" fill="#3c434a"/><rect x="231" y="66" width="28" height="9" rx="1.5" fill="#3c434a"/>
+  <circle class="devled" cx="255" cy="46.5" r="1.4"/><circle class="devled" cx="255" cy="58.5" r="1.4"/><circle class="devled" cx="255" cy="70.5" r="1.4"/>
+ </g>
+</svg>`;
+
+  const TILES = [
+    ['charge', 'mdi:battery-high', 'show_charge'],
+    ['runtime', 'mdi:timer-sand', 'show_runtime'],
+    ['load', 'mdi:gauge', 'show_load'],
+    ['power', 'mdi:flash', 'show_power'],
+    ['input', 'mdi:power-plug', 'show_voltage'],
+    ['output', 'mdi:power-socket-eu', 'show_voltage'],
+    ['energy', 'mdi:lightning-bolt-circle', 'show_energy'],
+  ];
+
+  class ApplianceUpsCard extends HTMLElement {
+    static getConfigElement() { return document.createElement(TAG + '-editor'); }
+    static getStubConfig(hass) {
+      const ids = Object.keys((hass && hass.states) || {});
+      const f = (re, dom) => ids.find((i) => (!dom || i.startsWith(dom + '.')) && re.test(i)) || '';
+      return {
+        entity: f(/(ups|onduleur).*status_data/i, 'sensor') || f(/(ups|onduleur).*status/i, 'sensor'),
+        entity_charge: f(/(ups|onduleur).*(battery_charge|batterie)/i, 'sensor'),
+        entity_runtime: f(/(ups|onduleur).*runtime/i, 'sensor'),
+        entity_load: f(/(ups|onduleur).*load/i, 'sensor'),
+      };
+    }
+    setConfig(c) {
+      if (!c || typeof c !== 'object') throw new Error('Invalid configuration');
+      this._c = { show_status: true, show_charge: true, show_runtime: true, show_load: true, show_power: true, show_voltage: true, show_energy: true,
+        battery_low: 20, load_max: 90, mains_min: 100, ...c };
+      this._built = false;
+      if (this._hass) this._render();
+    }
+    set hass(h) { this._hass = h; if (this._c) this._render(); }
+    getCardSize() { return 5; }
+    getGridOptions() { return { columns: 12, min_columns: 6, rows: 'auto' }; }
+
+    _t(k) { return T[this._lang()][k] ?? T.en[k] ?? k; }
+    _lang() { const l = (this._c.language || (this._hass && this._hass.language) || 'en').slice(0, 2); return T[l] ? l : 'en'; }
+    _st(id) { return id && this._hass.states[id]; }
+    _num(id) {
+      const s = this._st(id); if (!s) return NaN;
+      const v = parseFloat(String(s.state).replace(',', '.'));
+      return isFinite(v) ? v : NaN;
+    }
+    _watts(id) {
+      const v = this._num(id); if (isNaN(v)) return NaN;
+      const u = ((this._st(id).attributes || {}).unit_of_measurement || '').toLowerCase();
+      return u === 'kw' ? v * 1000 : v;
+    }
+    _unit(id, d) { const s = this._st(id); return (s && s.attributes && s.attributes.unit_of_measurement) || d; }
+    _fmt(v, d = 0) { return isNaN(v) ? '--' : v.toLocaleString(this._lang() === 'fr' ? 'fr-FR' : 'en-US', { maximumFractionDigits: d, minimumFractionDigits: 0 }); }
+    _more(id) { if (id) this.dispatchEvent(new CustomEvent('hass-more-info', { detail: { entityId: id }, bubbles: true, composed: true })); }
+    // autonomie en minutes : NUT la donne en secondes
+    _minutes(id) {
+      const v = this._num(id); if (isNaN(v)) return NaN;
+      const u = this._unit(id, 's').toLowerCase();
+      return u === 'min' ? v : u === 'h' ? v * 60 : v / 60;
+    }
+
+    _build() {
+      const root = this.shadowRoot || this.attachShadow({ mode: 'open' });
+      const c = this._c;
+      root.innerHTML = `<style>${CSS}</style><ha-card>
+        <div class="head"><div class="title" id="uptitle"></div><div class="badge" id="upbadge"></div></div>
+        ${SVG(c.name || this._t('name'))}
+        <div class="alert" id="upalert"></div>
+        <div class="tiles">${TILES.map(([k, ic]) => `<div class="tile hide" data-k="${esc(k)}"><div class="l"><ha-icon icon="${esc(ic)}"></ha-icon><span class="lbl"></span></div><div class="v"></div></div>`).join('')}</div>
+      </ha-card>`;
+      root.querySelector('svg').addEventListener('click', () => this._more(this._c.entity || this._c.entity_charge));
+      root.querySelectorAll('.tile').forEach((el) => el.addEventListener('click', () => {
+        const cc = this._c, k = el.dataset.k;
+        this._more({ charge: cc.entity_charge, runtime: cc.entity_runtime, load: cc.entity_load, power: cc.entity_power,
+          input: cc.entity_input_voltage, output: cc.entity_output_voltage, energy: cc.entity_energy }[k]);
+      }));
+      this._root = root; this._card = root.querySelector('ha-card'); this._built = true;
+    }
+
+    _compute() {
+      const c = this._c, s = this._st(c.entity);
+      const charge = this._num(c.entity_charge), load = this._num(c.entity_load), vin = this._num(c.entity_input_voltage);
+      const raw = s ? String(s.state) : '', up = raw.toUpperCase(), alerts = [];
+      // codes NUT (OL, OB, LB, CHRG, RB, OVER…) et libellés en clair
+      if (/\bRB\b|REPLACE/.test(up)) alerts.push('replace_battery');
+      if (/\bOVER\b|OVERLOAD/.test(up) || (!isNaN(load) && load > Number(c.load_max))) alerts.push('overload');
+      let st;
+      if (s && /^(unavailable|unknown)$/.test(raw)) st = 'unavailable';
+      else if (s && s.entity_id.startsWith('binary_sensor.')) st = raw === 'on' ? 'online' : 'on_battery';
+      else if (s && /\bOFF\b|OFFLINE|\bFSD\b/.test(up)) st = 'offline';
+      else if (s && /\bOB\b|ON ?BATT|DISCHRG|DISCHARG|SUR BATTERIE/.test(up)) st = 'on_battery';
+      else if (s && /\bLB\b|LOW ?BATT/.test(up)) st = 'on_battery';
+      else if (s && /\bOL\b|ONLINE|SECTEUR|\bCHRG\b|CHARGING/.test(up)) st = 'online';
+      else if (!isNaN(vin)) st = vin < Number(c.mains_min) ? 'on_battery' : 'online';
+      else if (!s && !isNaN(charge)) st = 'online';
+      else st = s ? 'online' : 'unavailable';
+      const low = /\bLB\b|LOW ?BATT/.test(up) || (!isNaN(charge) && charge < Number(c.battery_low));
+      if (st === 'on_battery' && low) st = 'low_battery';
+      if (st === 'online' && /\bCHRG\b|CHARGING/.test(up)) st = 'charging';
+      if (st === 'low_battery') alerts.unshift('low_battery');
+      return { st, charge, load, vin, alerts };
+    }
+
+    _render() {
+      if (!this._built) this._build();
+      const c = this._c, r = this._root, card = this._card;
+      const { st, charge, load, vin, alerts } = this._compute();
+      const clamp = (x) => Math.max(0, Math.min(1, x));
+      const bat = isNaN(charge) ? 1 : clamp(charge / 100);
+      card.className = `${st} ${bat < 0.2 ? 'lowbat' : bat < 0.5 ? 'midbat' : ''} ${c.animations === false ? 'noanim' : ''}`;
+      card.style.setProperty('--bat', bat.toFixed(3));
+      // barre de LED : une LED par tranche de 20 % de charge connectée
+      const n = isNaN(load) ? 0 : Math.ceil(clamp(load / 100) * 5);
+      r.querySelectorAll('.ld').forEach((el, i) => el.setAttribute('class', `ld${i < n ? ' on' : ''}${i >= 3 ? ' hi' : ''}${i >= 4 ? ' max' : ''}`));
+
+      const rt = this._minutes(c.entity_runtime);
+      const fmtRt = (m) => isNaN(m) ? '--' : m >= 60 ? `${Math.floor(m / 60)} h ${String(Math.round(m % 60)).padStart(2, '0')}` : `${Math.round(m)} min`;
+      r.getElementById('uplcd').textContent = st === 'offline' || st === 'unavailable' ? '- - -' : isNaN(charge) ? (st === 'online' ? 'AC' : 'BATT') : `${Math.round(charge)}%`;
+      r.getElementById('uplcds').textContent = st === 'on_battery' || st === 'low_battery' ? (isNaN(rt) ? 'BATT' : fmtRt(rt)) : st === 'charging' ? 'CHARGE' : isNaN(vin) ? 'UPS' : `${Math.round(vin)} V`;
+
+      r.getElementById('uptitle').textContent = c.name || this._t('name');
+      const badge = r.getElementById('upbadge'); badge.textContent = this._t(st); badge.style.display = c.show_status === false ? 'none' : '';
+      const al = r.getElementById('upalert'); al.textContent = alerts.map((a) => this._t(a)).join(' · '); al.classList.toggle('on', alerts.length > 0);
+
+      const pw = this._watts(c.entity_power), vout = this._num(c.entity_output_voltage), energy = this._num(c.entity_energy);
+      const V = {
+        charge: [c.entity_charge, this._fmt(charge, 0), '%'],
+        runtime: [c.entity_runtime, fmtRt(rt), ''],
+        load: [c.entity_load, this._fmt(load, 0), '%'],
+        power: [c.entity_power, isNaN(pw) ? '--' : this._fmt(pw, 0), 'W'],
+        input: [c.entity_input_voltage, this._fmt(vin, 0), 'V'],
+        output: [c.entity_output_voltage, this._fmt(vout, 0), 'V'],
+        energy: [c.entity_energy, this._fmt(energy, 2), this._unit(c.entity_energy, 'kWh')],
+      };
+      const bad = { charge: alerts.includes('low_battery'), load: alerts.includes('overload'), input: st === 'on_battery' || st === 'low_battery' };
+      TILES.forEach(([k, , opt]) => {
+        const el = r.querySelector(`.tile[data-k="${k}"]`); const [show, val, unit] = V[k];
+        el.classList.toggle('hide', !show || c[opt] === false);
+        el.classList.toggle('bad', !!bad[k]);
+        el.querySelector('.lbl').textContent = this._t(k);
+        const small = document.createElement('small'); small.textContent = unit ?? '';
+        el.querySelector('.v').replaceChildren(String(val ?? ''), small);
+      });
+    }
+  }
+  customElements.define(TAG, ApplianceUpsCard);
+
+  /* ---- éditeur visuel ---- */
+  class ApplianceUpsCardEditor extends HTMLElement {
+    setConfig(c) { this._c = c; this._draw(); }
+    set hass(h) { this._hass = h; if (this._form) this._form.hass = h; }
+    _draw() {
+      if (!this._form) {
+        this._form = document.createElement('ha-form');
+        this._form.addEventListener('value-changed', (e) => {
+          this._c = e.detail.value;
+          this.dispatchEvent(new CustomEvent('config-changed', { detail: { config: this._c }, bubbles: true, composed: true }));
+        });
+        this.appendChild(this._form);
+      }
+      const ent = (name, domain) => ({ name, selector: { entity: domain ? { domain } : {} } });
+      const num = (name, min, max, step, def, unit) => ({ name, default: def, selector: { number: { min, max, step, mode: 'box', ...(unit ? { unit_of_measurement: unit } : {}) } } });
+      const bool = (name) => ({ name, selector: { boolean: {} }, default: true });
+      this._form.hass = this._hass;
+      this._form.data = this._c;
+      this._form.schema = [
+        { name: 'name', selector: { text: {} } },
+        ent('entity'), ent('entity_charge', 'sensor'), ent('entity_runtime', 'sensor'), ent('entity_load', 'sensor'), ent('entity_power', 'sensor'),
+        ent('entity_input_voltage', 'sensor'), ent('entity_output_voltage', 'sensor'), ent('entity_energy', 'sensor'),
+        { type: 'grid', name: '', schema: [num('battery_low', 0, 100, 1, 20, '%'), num('load_max', 10, 100, 1, 90, '%'), num('mains_min', 0, 250, 1, 100, 'V')] },
+        { name: 'language', selector: { select: { options: Object.keys(T).map((value) => ({ value, label: { fr: 'Français', en: 'English', de: 'Deutsch', nb: 'Norsk bokmål', ro: 'Română', nl: 'Nederlands' }[value] || value })) } } },
+        { type: 'grid', name: '', schema: [
+          bool('show_status'), bool('show_charge'), bool('show_runtime'), bool('show_load'), bool('show_power'), bool('show_voltage'), bool('show_energy'), bool('animations'),
+        ] },
+      ];
+      this._form.computeLabel = (s) => s.name;
+    }
+  }
+  customElements.define(TAG + '-editor', ApplianceUpsCardEditor);
+
+  window.customCards = window.customCards || [];
+  window.customCards.push({
+    type: TAG, name: 'Appliance – UPS / Onduleur',
+    description: 'Onduleur animé : courant du secteur ou de la batterie, coupure de courant, bips, charge batterie, autonomie et charge connectée (NUT).', preview: true,
+    documentationURL: 'https://github.com/skyrotter/ha-appliance-electromenager-cards',
+  });
+})();
+
+/* Carte « Plancher chauffant » — custom:appliance-underfloor-heating-card
+ * Pièce vue en coupe : dalle en perspective dont le carrelage est retiré à gauche pour montrer
+ * le circuit en serpentin, collecteur départ / retour au mur (hydraulique) ou câble chauffant
+ * (heating_type: electric), thermostat mural. En chauffe, l'eau ou le courant circule, la dalle
+ * rougeoit (--heat) et des ondes de chaleur montent du sol.
+ * États : off, heating, idle (allumé, consigne atteinte), fault. Entité climate (consigne ± et
+ * marche / arrêt), switch / input_boolean / binary_sensor (vanne, circulateur) ou puissance seule.
+ */
+(() => {
+  const TAG = 'appliance-underfloor-heating-card';
+  if (customElements.get(TAG)) return;
+
+  const T = {
+    "en": {
+      "name": "Underfloor heating",
+      "off": "Off",
+      "heating": "Heating",
+      "idle": "Idle",
+      "fault": "Fault",
+      "temp": "Room",
+      "target": "Target",
+      "floor": "Floor",
+      "water": "Flow",
+      "power": "Power",
+      "energy": "Energy",
+      "cost": "Cost",
+      "turn_on": "Turn on",
+      "turn_off": "Turn off",
+      "floor_hot": "Floor too hot",
+      "water_hot": "Water too hot"
+    },
+    "de": {
+      "name": "Fußbodenheizung",
+      "off": "Aus",
+      "heating": "Heizt",
+      "idle": "Bereit",
+      "fault": "Störung",
+      "temp": "Raum",
+      "target": "Soll",
+      "floor": "Boden",
+      "water": "Vorlauf",
+      "power": "Leistung",
+      "energy": "Energie",
+      "cost": "Kosten",
+      "turn_on": "Einschalten",
+      "turn_off": "Ausschalten",
+      "floor_hot": "Boden zu heiß",
+      "water_hot": "Wasser zu heiß"
+    },
+    "fr": {
+      "name": "Plancher chauffant",
+      "off": "Arrêt",
+      "heating": "Chauffe",
+      "idle": "En veille",
+      "fault": "Défaut",
+      "temp": "Pièce",
+      "target": "Consigne",
+      "floor": "Sol",
+      "water": "Départ",
+      "power": "Puissance",
+      "energy": "Énergie",
+      "cost": "Coût",
+      "turn_on": "Allumer",
+      "turn_off": "Éteindre",
+      "floor_hot": "Sol trop chaud",
+      "water_hot": "Eau trop chaude"
+    },
+    "nb": {
+      "name": "Gulvvarme",
+      "off": "Av",
+      "heating": "Varmer",
+      "idle": "Inaktiv",
+      "fault": "Feil",
+      "temp": "Rom",
+      "target": "Mål",
+      "floor": "Gulv",
+      "water": "Tur",
+      "power": "Effekt",
+      "energy": "Energi",
+      "cost": "Kostnad",
+      "turn_on": "Slå på",
+      "turn_off": "Slå av",
+      "floor_hot": "Gulvet er for varmt",
+      "water_hot": "Vannet er for varmt"
+    },
+    "nl": {
+      "name": "Vloerverwarming",
+      "off": "Uit",
+      "heating": "Verwarmt",
+      "idle": "Stand-by",
+      "fault": "Storing",
+      "temp": "Kamer",
+      "target": "Doel",
+      "floor": "Vloer",
+      "water": "Aanvoer",
+      "power": "Vermogen",
+      "energy": "Energie",
+      "cost": "Kosten",
+      "turn_on": "Aanzetten",
+      "turn_off": "Uitzetten",
+      "floor_hot": "Vloer te heet",
+      "water_hot": "Water te heet"
+    },
+    "ro": {
+      "name": "Încălzire în pardoseală",
+      "off": "Oprit",
+      "heating": "Încălzește",
+      "idle": "În așteptare",
+      "fault": "Defect",
+      "temp": "Cameră",
+      "target": "Țintă",
+      "floor": "Pardoseală",
+      "water": "Tur",
+      "power": "Putere",
+      "energy": "Energie",
+      "cost": "Cost",
+      "turn_on": "Pornește",
+      "turn_off": "Oprește",
+      "floor_hot": "Pardoseala prea caldă",
+      "water_hot": "Apa prea caldă"
+    }
+  };
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); // texte → HTML sûr
+
+  const CSS = `
+:host{display:block}
+ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--uf-heat-c:var(--appliance-heat-color,#ff8a3d);--uf-ok:var(--appliance-ok-color,#43a047);
+  --uf-alert:var(--appliance-alert-color,#db4437);--heat:0}
+.head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.title{font-size:14px;font-weight:500;color:var(--primary-text-color);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:12px;background:var(--secondary-background-color);color:var(--secondary-text-color);white-space:nowrap}
+.heating .badge{background:color-mix(in srgb,var(--uf-heat-c) 22%,transparent);color:var(--uf-heat-c)}
+.idle .badge{background:color-mix(in srgb,var(--uf-ok) 22%,transparent);color:var(--uf-ok)}
+.fault .badge{background:color-mix(in srgb,var(--uf-alert) 22%,transparent);color:var(--uf-alert)}
+.alert{display:none;margin-top:4px;font-size:11px;color:var(--uf-alert);font-weight:500;text-align:center}
+.alert.on{display:block}
+svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration-height,auto);margin:2px auto 0;overflow:visible;cursor:pointer}
+.ctl{display:flex;justify-content:center;gap:6px;margin-top:6px}
+.ctl.hide,.ctl button.hide{display:none}
+.ctl button{flex:1 1 0;max-width:120px;display:flex;align-items:center;justify-content:center;gap:4px;border:0;border-radius:10px;padding:6px 4px;cursor:pointer;
+  background:var(--secondary-background-color);color:var(--primary-text-color);font:500 12px/16px var(--paper-font-body1_-_font-family,Roboto,sans-serif)}
+.ctl button.sm{flex:0 0 40px}
+.ctl button ha-icon{--mdc-icon-size:16px}
+.ctl button:hover{filter:brightness(1.12)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(76px,1fr));gap:6px;margin-top:6px}
+.tile{box-sizing:border-box;background:var(--secondary-background-color);border-radius:10px;padding:5px 7px;min-width:0;overflow:hidden;text-align:center;cursor:pointer}
+.tile .l{display:flex;align-items:center;justify-content:center;gap:3px;font-size:10px;line-height:14px;color:var(--secondary-text-color);min-width:0}
+.tile .l span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tile .l ha-icon{--mdc-icon-size:13px;flex:none}
+.tile .v{font-size:14px;line-height:18px;font-weight:600;color:var(--primary-text-color);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile .v small{font-size:10px;font-weight:400;color:var(--secondary-text-color);margin-left:2px}
+.tile.hide{display:none}
+.tile.bad .v{color:var(--uf-alert)}
+
+/* ---- illustration ---- */
+/* circuit : gris à l'arrêt, rouge (eau chaude) ou orange (câble) en chauffe */
+.pipe{fill:none;stroke:#8d969e;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;transition:stroke .8s}
+.heating .pipe{stroke:#d9483b}.idle .pipe{stroke:#c47a6e}
+.elec .pipe{stroke-width:2.6}.elec.heating .pipe{stroke:#ff8a1f;filter:drop-shadow(0 0 2px #ffb15c)}
+.flow{fill:none;stroke:#ffd0c4;stroke-width:2;stroke-linecap:round;stroke-dasharray:4 10;opacity:0}
+.heating .flow{opacity:.9;animation:ufflow 1.2s linear infinite}
+.elec .flow{stroke:#fff3c4;stroke-width:1.2;stroke-dasharray:2 8}
+@keyframes ufflow{to{stroke-dashoffset:-28}}
+.glow{opacity:calc(var(--heat) * .75);transition:opacity 1.5s}
+.wave{fill:none;stroke:var(--uf-heat-c);stroke-width:1.6;stroke-linecap:round;opacity:0}
+.heating .wave{animation:ufwave 3s ease-in infinite}
+.idle .wave{animation:ufwave 5s ease-in infinite;stroke-opacity:.5}
+.wave:nth-of-type(2){animation-delay:-.6s!important}.wave:nth-of-type(3){animation-delay:-1.2s!important}.wave:nth-of-type(4){animation-delay:-1.8s!important}.wave:nth-of-type(5){animation-delay:-2.4s!important}
+@keyframes ufwave{0%{opacity:0;transform:translateY(6px)}30%{opacity:.8}100%{opacity:0;transform:translateY(-40px)}}
+.hyd{display:inline}.elec .hyd{display:none}
+.cab{display:none}.elec .cab{display:inline}
+.dsp{fill:#ff9f43;font:700 8px/1 var(--paper-font-body1_-_font-family,Roboto,sans-serif);text-anchor:middle}
+.off .dsp{fill:#5a6470}.fault .dsp{fill:#ff5a4e}.idle .dsp{fill:#7dff9a}
+.led{fill:#5b6570}
+.heating .led{fill:#ff8a3d;animation:ufblink 1.2s steps(2) infinite}.idle .led{fill:#43a047}.fault .led{fill:#db4437;animation:ufblink .6s steps(2) infinite}
+@keyframes ufblink{50%{opacity:.25}}
+.noanim *{animation:none!important}
+`;
+
+  // serpentin en vue de dessus (0 → 220 × 0 → 80), projeté en perspective par la matrice du groupe
+  const COIL = 'M-8 8 H200 Q210 8 210 18 Q210 28 200 28 H20 Q10 28 10 38 Q10 48 20 48 H200 Q210 48 210 58 Q210 68 200 68 H-8';
+  const SVG = (label) => `
+<svg viewBox="0 0 270 170" role="img" aria-label="${esc(label)}">
+ <defs>
+  <linearGradient id="ufwall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef1f4"/><stop offset="1" stop-color="#d9dfe4"/></linearGradient>
+  <linearGradient id="ufglow" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff7a3d" stop-opacity=".1"/><stop offset="1" stop-color="#ff5a2a" stop-opacity=".75"/></linearGradient>
+  <pattern id="uftile" width="27.5" height="20" patternUnits="userSpaceOnUse"><rect width="27.5" height="20" fill="#e9e2d6"/><path d="M0 0 H27.5 M0 0 V20" stroke="#c7bca9" stroke-width="1.4"/></pattern>
+  <clipPath id="ufslab"><rect x="0" y="0" width="220" height="80"/></clipPath>
+ </defs>
+ <ellipse cx="135" cy="164" rx="128" ry="4" fill="#000" opacity=".15"/>
+ <!-- mur du fond, fenêtre, thermostat -->
+ <path d="M40 18 H262 V118 H40 Z" fill="url(#ufwall)" stroke="#c3cad1"/>
+ <rect x="96" y="32" width="58" height="50" rx="2" fill="#bfe0f5" stroke="#9fb3c3" stroke-width="2"/>
+ <path d="M125 32 V82 M96 57 H154" stroke="#9fb3c3" stroke-width="2"/>
+ <rect x="206" y="44" width="30" height="36" rx="4" fill="#f9fafb" stroke="#b9c1c8"/>
+ <rect x="210" y="49" width="22" height="13" rx="2" fill="#1b1e22"/>
+ <text class="dsp" id="ufdsp" x="221" y="58.5">--</text>
+ <circle class="led" cx="221" cy="71" r="2.2"/>
+ <!-- ondes de chaleur qui montent du sol -->
+ <g><path class="wave" d="M70 112 q4 -5 0 -10 t0 -10"/><path class="wave" d="M110 112 q4 -5 0 -10 t0 -10"/><path class="wave" d="M150 112 q4 -5 0 -10 t0 -10"/>
+  <path class="wave" d="M190 112 q4 -5 0 -10 t0 -10"/><path class="wave" d="M230 112 q4 -5 0 -10 t0 -10"/></g>
+ <!-- dalle en perspective : chape et serpentin, carrelage posé à droite -->
+ <g transform="matrix(1 0 -.4 .5 40 118)">
+  <rect x="0" y="0" width="220" height="80" fill="#cdc6ba"/>
+  <g clip-path="url(#ufslab)">
+   <path class="pipe" d="${COIL}"/>
+   <path class="flow" d="${COIL}"/>
+  </g>
+  <path d="M120 0 L100 80 H220 V0 Z" fill="url(#uftile)"/>
+  <path d="M120 0 L100 80" stroke="#a89c86" stroke-width="2"/>
+  <rect class="glow" x="0" y="0" width="220" height="80" fill="url(#ufglow)"/>
+ </g>
+ <!-- épaisseur de la dalle -->
+ <path d="M8 158 H228 L232 158 V164 H8 Z" fill="#9c9486"/>
+ <path d="M228 158 L260 118 V124 L232 164 Z" fill="#8a8274"/>
+ <!-- collecteur départ / retour (hydraulique) -->
+ <g class="hyd">
+  <rect x="6" y="64" width="30" height="48" rx="3" fill="#f4f6f8" stroke="#b9c1c8"/>
+  <rect x="10" y="74" width="22" height="4" rx="2" fill="#d9483b"/><rect x="10" y="94" width="22" height="4" rx="2" fill="#2b7fd9"/>
+  <g fill="#5b636b"><circle cx="15" cy="76" r="2.4"/><circle cx="27" cy="76" r="2.4"/><circle cx="15" cy="96" r="2.4"/><circle cx="27" cy="96" r="2.4"/></g>
+  <path d="M15 112 V122 M27 112 V128" stroke="#8d969e" stroke-width="3"/>
+ </g>
+ <!-- boîtier du câble chauffant (électrique) -->
+ <g class="cab">
+  <rect x="10" y="84" width="22" height="26" rx="3" fill="#f4f6f8" stroke="#b9c1c8"/>
+  <path d="M21 90 l-4 7 h4 l-2 6 l6 -9 h-4 l2 -4 z" fill="#ff8a1f"/>
+  <path d="M21 110 V124" stroke="#ff8a1f" stroke-width="2"/>
+ </g>
+</svg>`;
+
+  const TILES = [
+    ['temp', 'mdi:home-thermometer', 'show_temp'],
+    ['target', 'mdi:thermometer-check', 'show_temp'],
+    ['floor', 'mdi:heating-coil', 'show_floor'],
+    ['water', 'mdi:coolant-temperature', 'show_water'],
+    ['power', 'mdi:flash', 'show_power'],
+    ['energy', 'mdi:lightning-bolt-circle', 'show_energy'],
+    ['cost', 'mdi:cash', 'show_cost'],
+  ];
+
+  class ApplianceUnderfloorHeatingCard extends HTMLElement {
+    static getConfigElement() { return document.createElement(TAG + '-editor'); }
+    static getStubConfig(hass) {
+      const ids = Object.keys((hass && hass.states) || {});
+      const re = /plancher|underfloor|floor_heat|fussboden|vloerverwarming/i;
+      const f = (r, dom) => ids.find((i) => (!dom || i.startsWith(dom + '.')) && r.test(i)) || '';
+      return { entity: f(re, 'climate') || f(re, 'switch'), entity_floor_temp: f(/(plancher|floor|sol).*temp/i, 'sensor') };
+    }
+    setConfig(c) {
+      if (!c || typeof c !== 'object') throw new Error('Invalid configuration');
+      this._c = { show_status: true, show_controls: true, show_temp: true, show_floor: true, show_water: true, show_power: true, show_energy: true, show_cost: true,
+        heating_type: 'water', floor_max: 29, water_max: 45, heat_threshold: 20, ...c };
+      this._built = false;
+      if (this._hass) this._render();
+    }
+    set hass(h) { this._hass = h; if (this._c) this._render(); }
+    getCardSize() { return 5; }
+    getGridOptions() { return { columns: 12, min_columns: 6, rows: 'auto' }; }
+
+    _t(k) { return T[this._lang()][k] ?? T.en[k] ?? k; }
+    _lang() { const l = (this._c.language || (this._hass && this._hass.language) || 'en').slice(0, 2); return T[l] ? l : 'en'; }
+    _st(id) { return id && this._hass.states[id]; }
+    _num(id) {
+      const s = this._st(id); if (!s) return NaN;
+      const v = parseFloat(String(s.state).replace(',', '.'));
+      return isFinite(v) ? v : NaN;
+    }
+    _watts(id) {
+      const v = this._num(id); if (isNaN(v)) return NaN;
+      const u = ((this._st(id).attributes || {}).unit_of_measurement || '').toLowerCase();
+      return u === 'kw' ? v * 1000 : v;
+    }
+    _unit(id, d) { const s = this._st(id); return (s && s.attributes && s.attributes.unit_of_measurement) || d; }
+    _fmt(v, d = 0) { return isNaN(v) ? '--' : v.toLocaleString(this._lang() === 'fr' ? 'fr-FR' : 'en-US', { maximumFractionDigits: d, minimumFractionDigits: 0 }); }
+    _more(id) { if (id) this.dispatchEvent(new CustomEvent('hass-more-info', { detail: { entityId: id }, bubbles: true, composed: true })); }
+
+    _build() {
+      const root = this.shadowRoot || this.attachShadow({ mode: 'open' });
+      const c = this._c;
+      root.innerHTML = `<style>${CSS}</style><ha-card>
+        <div class="head"><div class="title" id="uftitle"></div><div class="badge" id="ufbadge"></div></div>
+        ${SVG(c.name || this._t('name'))}
+        <div class="alert" id="ufalert"></div>
+        <div class="ctl" id="ufctl">
+          <button class="sm" data-a="down"><ha-icon icon="mdi:minus"></ha-icon></button>
+          <button data-a="power"><ha-icon icon="mdi:power"></ha-icon><span></span></button>
+          <button class="sm" data-a="up"><ha-icon icon="mdi:plus"></ha-icon></button>
+        </div>
+        <div class="tiles">${TILES.map(([k, ic]) => `<div class="tile hide" data-k="${esc(k)}"><div class="l"><ha-icon icon="${esc(ic)}"></ha-icon><span class="lbl"></span></div><div class="v"></div></div>`).join('')}</div>
+      </ha-card>`;
+      root.querySelector('svg').addEventListener('click', () => this._more(this._c.entity || this._c.entity_floor_temp));
+      root.querySelectorAll('.ctl button').forEach((b) => b.addEventListener('click', () => this._action(b.dataset.a)));
+      root.querySelectorAll('.tile').forEach((el) => el.addEventListener('click', () => {
+        const cc = this._c, k = el.dataset.k;
+        this._more({ temp: cc.entity_temp || cc.entity, target: cc.entity_target_temp || cc.entity, floor: cc.entity_floor_temp, water: cc.entity_water_temp,
+          power: cc.entity_power, energy: cc.entity_energy, cost: cc.entity_cost || cc.entity_energy }[k]);
+      }));
+      this._root = root; this._card = root.querySelector('ha-card'); this._built = true;
+    }
+
+    _action(a) {
+      const c = this._c, h = this._hass, s = this._st(c.entity); if (!h || !c.entity) return;
+      const d = c.entity.split('.')[0];
+      if (a === 'power') {
+        if (d === 'climate') h.callService('climate', 'set_hvac_mode', { entity_id: c.entity, hvac_mode: s && s.state !== 'off' ? 'off' : 'heat' });
+        else h.callService('homeassistant', 'toggle', { entity_id: c.entity });
+      } else if (d === 'climate' && s) {
+        const a2 = s.attributes || {}, step = Number(a2.target_temp_step) || 0.5, cur = Number(a2.temperature);
+        if (!isFinite(cur)) return;
+        const lim = (v) => Math.max(Number(a2.min_temp) || -Infinity, Math.min(Number(a2.max_temp) || Infinity, v));
+        h.callService('climate', 'set_temperature', { entity_id: c.entity, temperature: lim(cur + (a === 'up' ? step : -step)) });
+      }
+    }
+
+    _compute() {
+      const c = this._c, s = this._st(c.entity), a = (s && s.attributes) || {};
+      const pw = this._watts(c.entity_power);
+      let temp = this._num(c.entity_temp);
+      if (isNaN(temp) && isFinite(Number(a.current_temperature))) temp = Number(a.current_temperature);
+      let target = this._num(c.entity_target_temp);
+      if (isNaN(target) && isFinite(Number(a.temperature))) target = Number(a.temperature);
+      const floor = this._num(c.entity_floor_temp), water = this._num(c.entity_water_temp);
+      const v = { pw, temp, target, floor, water };
+      const txt = s ? String(s.state).toLowerCase() : '';
+      if (/error|erreur|fault|défaut|defaut|alarm/.test(txt)) return { ...v, st: 'fault' };
+      if (s && !/^(unavailable|unknown)$/.test(txt)) {
+        if (/^(off|false|0|arr[eê]t|éteint|eteint)$/.test(txt)) return { ...v, st: 'off' };
+        if (s.entity_id.startsWith('climate.')) {
+          // hvac_action fait foi, sinon on compare la pièce à la consigne
+          if (a.hvac_action) return { ...v, st: /heat/.test(String(a.hvac_action)) ? 'heating' : /off/.test(String(a.hvac_action)) ? 'off' : 'idle' };
+          if (!isNaN(pw)) return { ...v, st: pw > Number(c.heat_threshold) ? 'heating' : 'idle' };
+          return { ...v, st: !isNaN(temp) && !isNaN(target) && temp >= target - 0.2 ? 'idle' : 'heating' };
+        }
+        if (!isNaN(pw)) return { ...v, st: pw > Number(c.heat_threshold) ? 'heating' : 'idle' };
+        return { ...v, st: 'heating' };
+      }
+      return { ...v, st: !isNaN(pw) && pw > Number(c.heat_threshold) ? 'heating' : 'off' };
+    }
+
+    _render() {
+      if (!this._built) this._build();
+      const c = this._c, r = this._root, card = this._card;
+      const { st, pw, temp, target, floor, water } = this._compute();
+      const clamp = (x) => Math.max(0, Math.min(1, x));
+      // lueur de la dalle : température du sol si connue (20 °C → floor_max), sinon selon l'état
+      const heat = !isNaN(floor) ? clamp((floor - 20) / Math.max(1, Number(c.floor_max) - 20)) : ({ heating: 0.8, idle: 0.3 }[st] || 0);
+      const elec = String(c.heating_type).toLowerCase() === 'electric';
+      card.className = `${st}${elec ? ' elec' : ''} ${c.animations === false ? 'noanim' : ''}`;
+      card.style.setProperty('--heat', (st === 'off' || st === 'fault' ? 0 : heat).toFixed(3));
+
+      r.getElementById('uftitle').textContent = c.name || this._t('name');
+      const badge = r.getElementById('ufbadge'); badge.textContent = this._t(st); badge.style.display = c.show_status === false ? 'none' : '';
+      r.getElementById('ufdsp').textContent = st === 'off' ? 'OFF' : st === 'fault' ? 'Err' : !isNaN(temp) ? `${this._fmt(temp, 1)}°` : 'ON';
+      const alerts = [];
+      if (!isNaN(floor) && floor > Number(c.floor_max)) alerts.push(this._t('floor_hot'));
+      if (!isNaN(water) && water > Number(c.water_max)) alerts.push(this._t('water_hot'));
+      const al = r.getElementById('ufalert'); al.textContent = alerts.join(' · '); al.classList.toggle('on', alerts.length > 0);
+
+      // commandes : marche/arrêt, et consigne ± seulement pour une entité climate
+      const d = (c.entity || '').split('.')[0];
+      const ctl = r.getElementById('ufctl');
+      ctl.classList.toggle('hide', c.show_controls === false || !['climate', 'switch', 'input_boolean'].includes(d));
+      ctl.querySelector('[data-a="power"] span').textContent = this._t(st === 'off' ? 'turn_on' : 'turn_off');
+      ctl.querySelectorAll('.sm').forEach((b) => b.classList.toggle('hide', d !== 'climate'));
+
+      const energy = this._num(c.entity_energy);
+      let cost = this._num(c.entity_cost), costU = this._unit(c.entity_cost, c.currency || '€');
+      if (isNaN(cost) && c.price_per_kwh && !isNaN(energy)) { cost = energy * Number(c.price_per_kwh); costU = c.currency || '€'; }
+      const V = {
+        temp: [!isNaN(temp), this._fmt(temp, 1), '°C'],
+        target: [!isNaN(target), this._fmt(target, 1), '°C'],
+        floor: [c.entity_floor_temp, this._fmt(floor, 1), '°C'],
+        water: [c.entity_water_temp, this._fmt(water, 0), '°C'],
+        power: [c.entity_power, isNaN(pw) ? '--' : (pw >= 1000 ? this._fmt(pw / 1000, 2) : this._fmt(pw, 0)), isNaN(pw) ? '' : (pw >= 1000 ? 'kW' : 'W')],
+        energy: [c.entity_energy, this._fmt(energy, 2), this._unit(c.entity_energy, 'kWh')],
+        cost: [c.entity_cost || (c.price_per_kwh && c.entity_energy), this._fmt(cost, 2), costU],
+      };
+      const bad = { floor: !isNaN(floor) && floor > Number(c.floor_max), water: !isNaN(water) && water > Number(c.water_max) };
+      TILES.forEach(([k, , opt]) => {
+        const el = r.querySelector(`.tile[data-k="${k}"]`); const [show, val, unit] = V[k];
+        el.classList.toggle('hide', !show || c[opt] === false);
+        el.classList.toggle('bad', !!bad[k]);
+        el.querySelector('.lbl').textContent = this._t(k);
+        const small = document.createElement('small'); small.textContent = unit ?? '';
+        el.querySelector('.v').replaceChildren(String(val ?? ''), small);
+      });
+    }
+  }
+  customElements.define(TAG, ApplianceUnderfloorHeatingCard);
+
+  /* ---- éditeur visuel ---- */
+  class ApplianceUnderfloorHeatingCardEditor extends HTMLElement {
+    setConfig(c) { this._c = c; this._draw(); }
+    set hass(h) { this._hass = h; if (this._form) this._form.hass = h; }
+    _draw() {
+      if (!this._form) {
+        this._form = document.createElement('ha-form');
+        this._form.addEventListener('value-changed', (e) => {
+          this._c = e.detail.value;
+          this.dispatchEvent(new CustomEvent('config-changed', { detail: { config: this._c }, bubbles: true, composed: true }));
+        });
+        this.appendChild(this._form);
+      }
+      const ent = (name, domain) => ({ name, selector: { entity: domain ? { domain } : {} } });
+      const num = (name, min, max, step, def, unit) => ({ name, default: def, selector: { number: { min, max, step, mode: 'box', ...(unit ? { unit_of_measurement: unit } : {}) } } });
+      const bool = (name) => ({ name, selector: { boolean: {} }, default: true });
+      this._form.hass = this._hass;
+      this._form.data = this._c;
+      this._form.schema = [
+        { name: 'name', selector: { text: {} } },
+        ent('entity'), ent('entity_temp', 'sensor'), ent('entity_target_temp'), ent('entity_floor_temp', 'sensor'), ent('entity_water_temp', 'sensor'),
+        ent('entity_power', 'sensor'), ent('entity_energy', 'sensor'), ent('entity_cost', 'sensor'),
+        { name: 'price_per_kwh', selector: { number: { min: 0, step: 0.0001, mode: 'box' } } },
+        { name: 'heating_type', selector: { select: { options: ['water', 'electric'] } } },
+        { type: 'grid', name: '', schema: [num('floor_max', 20, 40, 0.5, 29, '°C'), num('water_max', 25, 70, 1, 45, '°C'), num('heat_threshold', 0, 5000, 1, 20, 'W')] },
+        { name: 'language', selector: { select: { options: Object.keys(T).map((value) => ({ value, label: { fr: 'Français', en: 'English', de: 'Deutsch', nb: 'Norsk bokmål', ro: 'Română', nl: 'Nederlands' }[value] || value })) } } },
+        { type: 'grid', name: '', schema: [
+          bool('show_status'), bool('show_controls'), bool('show_temp'), bool('show_floor'), bool('show_water'),
+          bool('show_power'), bool('show_energy'), bool('show_cost'), bool('animations'),
+        ] },
+      ];
+      this._form.computeLabel = (s) => s.name;
+    }
+  }
+  customElements.define(TAG + '-editor', ApplianceUnderfloorHeatingCardEditor);
+
+  window.customCards = window.customCards || [];
+  window.customCards.push({
+    type: TAG, name: 'Appliance – Underfloor heating / Plancher chauffant',
+    description: 'Plancher chauffant animé (hydraulique ou électrique) : serpentin, collecteur, sol qui rougeoit, ondes de chaleur, thermostat.', preview: true,
     documentationURL: 'https://github.com/skyrotter/ha-appliance-electromenager-cards',
   });
 })();

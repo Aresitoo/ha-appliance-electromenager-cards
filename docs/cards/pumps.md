@@ -1,12 +1,14 @@
-# Water pump and industrial pump
+# Water pump, industrial pump and sump pump
 
-`custom:appliance-water-pump-card · custom:appliance-industrial-pump-card`
+`custom:appliance-water-pump-card · custom:appliance-industrial-pump-card · custom:appliance-sump-pump-card`
 
 **Water pump**: clean, light style for a garden, well, rainwater or pool pump. A source tank on the left (its level follows `entity_level`), the pump volute with a spinning impeller, a finned motor and the delivery pipe pouring into a basin. Water flows in the pipes, waves move in the tank and the basin, ripples spread where the jet lands.
 
 **Industrial pump**: rugged motor-pump unit on a steel skid: internal gear pump with bolted flanges, hazard-striped coupling guard, finned motor with a rating plate showing the live power, terminal box with **RUN / WARNING / FAULT** lights and a pressure gauge whose needle follows `entity_pressure`. While running, the delivery pipe swells with each pulse, pressure rings leave the flange, the needle trembles and the whole unit vibrates.
 
-On both cards the animation speed follows the flow (`entity_flow` / `max_flow`), otherwise the power (`entity_power` / `max_power`). States: off, running, warning (running with an alert), fault and unavailable. Alerts: **no flow while running** (dry run, below `no_flow_threshold`), overpressure (above `pressure_max`), motor too hot (above `temp_max`) and low level (below `level_min`). With a `switch`, `input_boolean` or `fan` entity, an On/Off button is shown (`homeassistant.toggle`). Without a status entity, the state comes from power (above `run_threshold` = running).
+**Sump pump**: buried pit seen in cross-section. Water drips in from the drain, the pit level follows `entity_level` (%) with a red **max** mark at `level_max`, the float rides on the surface, the submersible pump vibrates and pushes water up the discharge pipe. Above `level_max`, or when the alarm float `entity_float` is on, the card raises **High water level** and an alarm beacon flashes on the ground; if the pump is off at that moment the state becomes **alarm**. Without a level sensor, the pit empties while the pump runs. `entity_starts` shows the number of starts (e.g. a `history_stats` count).
+
+On all three cards the animation speed follows the flow (`entity_flow` / `max_flow`), otherwise the power (`entity_power` / `max_power`). States: off, running, warning (running with an alert), fault and unavailable. Alerts: **no flow while running** (dry run, below `no_flow_threshold`), overpressure (above `pressure_max`), motor too hot (above `temp_max`) and low level (below `level_min`). With a `switch`, `input_boolean` or `fan` entity, an On/Off button is shown (`homeassistant.toggle`). Without a status entity, the state comes from power (above `run_threshold` = running).
 
 ## Options
 
@@ -30,9 +32,12 @@ Every value tile can be hidden with its `show_…` option, and `language: fr|en|
 - `pressure_max` (alert above: water 5, industrial 12 bar)
 - `temp_max` (alert above: water 70, industrial 85 °C)
 - `level_min` (alert below: water 15, industrial 10 %)
+- `level_max` (sump pump: alert above, default 80 %)
+- `entity_float` (sump pump: high-level float, binary_sensor)
+- `entity_starts` (sump pump: number of starts)
 - `no_flow_threshold` (L/min, default 0.5)
 - `animations` (default true)
-- `show_status`, `show_controls`, `show_flow`, `show_pressure`, `show_power`, `show_temp`, `show_level`, `show_runtime`, `show_energy`, `show_cost`
+- `show_status`, `show_controls`, `show_flow`, `show_pressure`, `show_power`, `show_temp`, `show_level`, `show_runtime`, `show_starts`, `show_energy`, `show_cost`
 
 ## Examples
 
@@ -62,6 +67,17 @@ entity_energy: sensor.booster_pump_energy
 max_flow: 150
 pressure_max: 10
 fluid_color: "#4caf50"
+```
+
+```yaml
+type: custom:appliance-sump-pump-card
+name: Sump pump
+entity: switch.sump_pump
+entity_power: sensor.sump_pump_power
+entity_level: sensor.sump_pit_level
+entity_float: binary_sensor.sump_high_level
+entity_starts: sensor.sump_pump_starts_today
+level_max: 80
 ```
 
 [← All cards](../../README.md#the-cards)

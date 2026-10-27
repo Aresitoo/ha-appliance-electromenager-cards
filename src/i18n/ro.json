@@ -445,7 +445,12 @@
     "no_flow": "Fără debit: funcționare în gol?",
     "overpressure": "Suprapresiune",
     "overheat": "Motor prea fierbinte",
-    "low_level": "Nivel scăzut"
+    "low_level": "Nivel scăzut",
+    "sump_pump": "Pompă de drenaj",
+    "alarm": "Nivel ridicat",
+    "high_level": "Nivel prea ridicat al apei",
+    "pit": "Bazin",
+    "starts": "Porniri"
   },
   "pool_robot": {
     "name": "Robot de piscină",
@@ -471,5 +476,41 @@
     "energy": "Energie",
     "filter_full": "Filtrul trebuie curățat",
     "low_water": "Nivel scăzut al apei"
+  },
+  "ups": {
+    "name": "UPS",
+    "online": "Pe rețea",
+    "charging": "Se încarcă",
+    "on_battery": "Pe baterie",
+    "low_battery": "Baterie descărcată",
+    "offline": "Oprit",
+    "unavailable": "Indisponibil",
+    "charge": "Baterie",
+    "runtime": "Autonomie",
+    "load": "Sarcină",
+    "power": "Putere",
+    "input": "Intrare",
+    "output": "Ieșire",
+    "energy": "Energie",
+    "overload": "Suprasarcină",
+    "replace_battery": "Înlocuiți bateria"
+  },
+  "underfloor": {
+    "name": "Încălzire în pardoseală",
+    "off": "Oprit",
+    "heating": "Încălzește",
+    "idle": "În așteptare",
+    "fault": "Defect",
+    "temp": "Cameră",
+    "target": "Țintă",
+    "floor": "Pardoseală",
+    "water": "Tur",
+    "power": "Putere",
+    "energy": "Energie",
+    "cost": "Cost",
+    "turn_on": "Pornește",
+    "turn_off": "Oprește",
+    "floor_hot": "Pardoseala prea caldă",
+    "water_hot": "Apa prea caldă"
   }
 }

@@ -445,7 +445,12 @@
     "no_flow": "Kein Durchfluss: Trockenlauf?",
     "overpressure": "Überdruck",
     "overheat": "Motor zu heiß",
-    "low_level": "Niedriger Füllstand"
+    "low_level": "Niedriger Füllstand",
+    "sump_pump": "Hebeanlage",
+    "alarm": "Hochwasser",
+    "high_level": "Wasserstand zu hoch",
+    "pit": "Schacht",
+    "starts": "Starts"
   },
   "pool_robot": {
     "name": "Poolroboter",
@@ -471,5 +476,41 @@
     "energy": "Energie",
     "filter_full": "Filter reinigen",
     "low_water": "Niedriger Wasserstand"
+  },
+  "ups": {
+    "name": "USV",
+    "online": "Netzbetrieb",
+    "charging": "Lädt",
+    "on_battery": "Batteriebetrieb",
+    "low_battery": "Batterie schwach",
+    "offline": "Aus",
+    "unavailable": "Nicht verfügbar",
+    "charge": "Batterie",
+    "runtime": "Laufzeit",
+    "load": "Last",
+    "power": "Leistung",
+    "input": "Eingang",
+    "output": "Ausgang",
+    "energy": "Energie",
+    "overload": "Überlast",
+    "replace_battery": "Batterie ersetzen"
+  },
+  "underfloor": {
+    "name": "Fußbodenheizung",
+    "off": "Aus",
+    "heating": "Heizt",
+    "idle": "Bereit",
+    "fault": "Störung",
+    "temp": "Raum",
+    "target": "Soll",
+    "floor": "Boden",
+    "water": "Vorlauf",
+    "power": "Leistung",
+    "energy": "Energie",
+    "cost": "Kosten",
+    "turn_on": "Einschalten",
+    "turn_off": "Ausschalten",
+    "floor_hot": "Boden zu heiß",
+    "water_hot": "Wasser zu heiß"
   }
 }

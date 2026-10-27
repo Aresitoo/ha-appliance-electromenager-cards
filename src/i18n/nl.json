@@ -445,7 +445,12 @@
     "no_flow": "Geen debiet: drooglopen?",
     "overpressure": "Overdruk",
     "overheat": "Motor te heet",
-    "low_level": "Laag niveau"
+    "low_level": "Laag niveau",
+    "sump_pump": "Dompelpomp",
+    "alarm": "Hoog niveau",
+    "high_level": "Waterniveau te hoog",
+    "pit": "Put",
+    "starts": "Starts"
   },
   "pool_robot": {
     "name": "Zwembadrobot",
@@ -471,5 +476,41 @@
     "energy": "Energie",
     "filter_full": "Filter reinigen",
     "low_water": "Laag waterniveau"
+  },
+  "ups": {
+    "name": "UPS",
+    "online": "Op net",
+    "charging": "Laden",
+    "on_battery": "Op batterij",
+    "low_battery": "Batterij bijna leeg",
+    "offline": "Uit",
+    "unavailable": "Niet beschikbaar",
+    "charge": "Batterij",
+    "runtime": "Looptijd",
+    "load": "Belasting",
+    "power": "Vermogen",
+    "input": "Ingang",
+    "output": "Uitgang",
+    "energy": "Energie",
+    "overload": "Overbelasting",
+    "replace_battery": "Vervang de batterij"
+  },
+  "underfloor": {
+    "name": "Vloerverwarming",
+    "off": "Uit",
+    "heating": "Verwarmt",
+    "idle": "Stand-by",
+    "fault": "Storing",
+    "temp": "Kamer",
+    "target": "Doel",
+    "floor": "Vloer",
+    "water": "Aanvoer",
+    "power": "Vermogen",
+    "energy": "Energie",
+    "cost": "Kosten",
+    "turn_on": "Aanzetten",
+    "turn_off": "Uitzetten",
+    "floor_hot": "Vloer te heet",
+    "water_hot": "Water te heet"
   }
 }

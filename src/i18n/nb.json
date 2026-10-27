@@ -445,7 +445,12 @@
 "no_flow": "Ingen gjennomstrømning: tørrkjøring?",
 "overpressure": "Overtrykk",
 "overheat": "Motoren er for varm",
-"low_level": "Lavt nivå"
+"low_level": "Lavt nivå",
+"sump_pump": "Lensepumpe",
+"alarm": "Høyt nivå",
+"high_level": "For høyt vannivå",
+"pit": "Kum",
+"starts": "Starter"
 },
 "pool_robot": {
 "name": "Bassengrobot",
@@ -471,5 +476,41 @@
 "energy": "Energi",
 "filter_full": "Filteret må rengjøres",
 "low_water": "Lav vannstand"
+},
+"ups": {
+"name": "UPS",
+"online": "På strømnett",
+"charging": "Lader",
+"on_battery": "På batteri",
+"low_battery": "Lavt batteri",
+"offline": "Av",
+"unavailable": "Utilgjengelig",
+"charge": "Batteri",
+"runtime": "Driftstid",
+"load": "Belastning",
+"power": "Effekt",
+"input": "Inngang",
+"output": "Utgang",
+"energy": "Energi",
+"overload": "Overbelastning",
+"replace_battery": "Bytt batteriet"
+},
+"underfloor": {
+"name": "Gulvvarme",
+"off": "Av",
+"heating": "Varmer",
+"idle": "Inaktiv",
+"fault": "Feil",
+"temp": "Rom",
+"target": "Mål",
+"floor": "Gulv",
+"water": "Tur",
+"power": "Effekt",
+"energy": "Energi",
+"cost": "Kostnad",
+"turn_on": "Slå på",
+"turn_off": "Slå av",
+"floor_hot": "Gulvet er for varmt",
+"water_hot": "Vannet er for varmt"
 }
 }

@@ -445,7 +445,12 @@
     "no_flow": "No flow: running dry?",
     "overpressure": "Overpressure",
     "overheat": "Motor too hot",
-    "low_level": "Low level"
+    "low_level": "Low level",
+    "sump_pump": "Sump pump",
+    "alarm": "High level",
+    "high_level": "High water level",
+    "pit": "Pit",
+    "starts": "Starts"
   },
   "pool_robot": {
     "name": "Pool robot",
@@ -471,5 +476,41 @@
     "energy": "Energy",
     "filter_full": "Filter needs cleaning",
     "low_water": "Low water level"
+  },
+  "ups": {
+    "name": "UPS",
+    "online": "On mains",
+    "charging": "Charging",
+    "on_battery": "On battery",
+    "low_battery": "Low battery",
+    "offline": "Off",
+    "unavailable": "Unavailable",
+    "charge": "Battery",
+    "runtime": "Runtime",
+    "load": "Load",
+    "power": "Power",
+    "input": "Input",
+    "output": "Output",
+    "energy": "Energy",
+    "overload": "Overload",
+    "replace_battery": "Replace the battery"
+  },
+  "underfloor": {
+    "name": "Underfloor heating",
+    "off": "Off",
+    "heating": "Heating",
+    "idle": "Idle",
+    "fault": "Fault",
+    "temp": "Room",
+    "target": "Target",
+    "floor": "Floor",
+    "water": "Flow",
+    "power": "Power",
+    "energy": "Energy",
+    "cost": "Cost",
+    "turn_on": "Turn on",
+    "turn_off": "Turn off",
+    "floor_hot": "Floor too hot",
+    "water_hot": "Water too hot"
   }
 }
