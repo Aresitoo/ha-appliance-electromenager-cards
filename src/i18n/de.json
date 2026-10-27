@@ -698,7 +698,8 @@
     "sun_entity": "Sonnen-Entität (Tag / Nacht)",
     "shutter_color": "Farbe des Ladens",
     "show_slider": "Schieberegler anzeigen",
-    "show_tilt": "Neigung anzeigen"
+    "show_tilt": "Neigung anzeigen",
+    "image": "Eigenes Bild (URL)"
   },
   "light": {
     "light_bulb": "Glühbirne",

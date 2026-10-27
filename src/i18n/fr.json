@@ -698,7 +698,8 @@
     "sun_entity": "Entité soleil (jour / nuit)",
     "shutter_color": "Couleur du volet",
     "show_slider": "Afficher les curseurs",
-    "show_tilt": "Afficher l'inclinaison"
+    "show_tilt": "Afficher l'inclinaison",
+    "image": "Image perso (URL)"
   },
   "light": {
     "light_bulb": "Ampoule",

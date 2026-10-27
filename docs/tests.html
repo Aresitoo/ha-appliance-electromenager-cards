@@ -763,6 +763,17 @@ ok('no page errors',__errors.length===0,__errors.join('; '));
  c.h.states['select.m']=mk('select.m','auto'); c.h.states['sensor.p']=mk('sensor.p',30,W); c.el.hass={...c.h,states:{...c.h.states}}; ok('generic images: updates on change',href(c)==='/local/s1.png',href(c));
  c=card('generic',{entity:'switch.s',images:[{image:'/local/off.png'},{state:'on',image:'/local/on.png'}]},[mk('switch.s','on')]); ok('generic images: main entity state',href(c)==='/local/on.png',href(c));
  c=card('generic',{power:'sensor.p',images:[{image:'"><b class="xss">x</b>'}]},[mk('sensor.p',2,W)]); ok('generic images: escaped',!c.sr.querySelector('.xss'));}
+// robots: compact layout and own image
+{let c=card('robot-vacuum-solo',{entity:'vacuum.r',layout:'compact',entity_area:'sensor.a'},[mk('vacuum.r','cleaning',{battery_level:72}),mk('sensor.a',24)]);
+ const k=c.sr.getElementById('card');
+ ok('vacuum compact: layout, status under the name, tiles',k.classList.contains('compact')&&k.dataset.st==='cleaning'&&c.sr.getElementById('cst').textContent==='Nettoyage'&&c.sr.querySelectorAll('.tile').length===3&&!/Statut/.test(c.sr.getElementById('stats').textContent),c.sr.getElementById('stats').textContent);
+ c.sr.querySelector('.btn[data-a=dock]').click(); ok('vacuum compact: dock button',JSON.stringify(c.h.calls[0])==='["vacuum","return_to_base",{"entity_id":"vacuum.r"}]',JSON.stringify(c.h.calls));
+ c=card('robot-vacuum-solo',{entity:'vacuum.r',image:'/local/robot.png'},[mk('vacuum.r','docked',{battery_level:50})]);
+ ok('vacuum own image replaces the drawing',c.sr.querySelector('image.uimg').getAttribute('href')==='/local/robot.png'&&!c.sr.getElementById('ring'));
+ c=card('robot-mower-solo',{entity:'lawn_mower.m',layout:'compact',image:'/local/mower.png',entity_rain:'binary_sensor.r'},[mk('lawn_mower.m','docked',{battery_level:90}),mk('binary_sensor.r','on')]);
+ ok('mower compact + image + rain in status',c.sr.getElementById('card').classList.contains('compact')&&!!c.sr.querySelector('image.uimg')&&/Pluie/.test(c.sr.getElementById('cst').textContent),c.sr.getElementById('cst').textContent);
+ c=card('robot-vacuum-solo',{entity:'vacuum.r',image:'"><b class="xss">x</b>',layout:'compact',name:'<b class="xss">x</b>'},[mk('vacuum.r','cleaning')]);
+ ok('robot image and name escaped',!c.sr.querySelector('.xss'));}
 window.RESULTS=R;
 const fails=R.filter(r=>!r.pass).length;
 document.getElementById('sum').innerHTML=`<b class="${fails?'f':'p'}">${R.length-fails} / ${R.length} tests réussis</b> — fichier testé : <code>dist/ha-appliance-electromenager-cards.js</code>`;
