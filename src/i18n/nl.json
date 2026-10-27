@@ -698,7 +698,8 @@
     "sun_entity": "Zon-entiteit (dag / nacht)",
     "shutter_color": "Kleur van het luik",
     "show_slider": "Schuifregelaars tonen",
-    "show_tilt": "Kanteling tonen"
+    "show_tilt": "Kanteling tonen",
+    "image": "Eigen afbeelding (URL)"
   },
   "light": {
     "light_bulb": "Lamp",

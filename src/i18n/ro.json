@@ -698,7 +698,8 @@
     "sun_entity": "Entitate soare (zi / noapte)",
     "shutter_color": "Culoarea obloanelor",
     "show_slider": "Afișează cursoarele",
-    "show_tilt": "Afișează înclinarea"
+    "show_tilt": "Afișează înclinarea",
+    "image": "Imagine proprie (URL)"
   },
   "light": {
     "light_bulb": "Bec",

@@ -54,4 +54,19 @@ entity_area: sensor.robot_cleaned_area
 entity_time: sensor.robot_cleaning_time
 ```
 
+## Compact layout and your own image
+
+Both cards take two options shared by the vacuum and the mower:
+
+- `layout: compact`: the same size and style as the appliance cards (picture on the left, name and status dot, value tiles, buttons below), to sit next to the washer or the fridge in a grid. The status moves under the name, so the Status tile is not repeated.
+- `image`: your own picture (`/local/my-robot.png` or an `https://` URL) instead of the drawing, dimmed when the robot is docked and bright while it is working. It works with both layouts.
+
+```yaml
+type: custom:appliance-robot-vacuum-solo-card
+entity: vacuum.roborock
+layout: compact
+image: /local/roborock.png
+entity_area: sensor.roborock_cleaned_area
+```
+
 [← All cards](../../README.md#the-cards)

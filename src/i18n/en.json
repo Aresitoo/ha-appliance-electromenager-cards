@@ -698,7 +698,8 @@
     "sun_entity": "Sun entity (day / night)",
     "shutter_color": "Shutter colour",
     "show_slider": "Show sliders",
-    "show_tilt": "Show tilt"
+    "show_tilt": "Show tilt",
+    "image": "Your own image (URL)"
   },
   "light": {
     "light_bulb": "Bulb",
