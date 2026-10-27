@@ -20,6 +20,7 @@ class AppliancePelletBoilerCard extends HTMLElement {
     return {
       schema: [
         { name: 'name', selector: { text: {} } },
+        { name: 'labels', selector: { object: {} } },
         { name: 'entity_status', selector: { entity: { domain: ['sensor', 'select', 'climate', 'switch', 'binary_sensor'] } } },
         { name: 'entity_power', selector: { entity: { domain: 'sensor', device_class: 'power' } } },
         { name: 'entity_energy', selector: { entity: { domain: 'sensor', device_class: 'energy' } } },
@@ -60,6 +61,8 @@ class AppliancePelletBoilerCard extends HTMLElement {
     this._hass = h; this._update(); }
   getCardSize() { return 6; }
   _t(k) { return (I18N_PB[this._config.language || lang(this._hass)] || I18N_PB.en)[k] ?? I18N_PB.en[k] ?? k; }
+  // libellé perso (option labels) sinon traduction
+  _l(k) { const L = this._config && this._config.labels; return L && L[k] != null && L[k] !== '' ? String(L[k]) : this._t(k); }
 
   _build() {
     if (!this.shadowRoot) this.attachShadow({ mode: 'open' });
@@ -249,12 +252,12 @@ class AppliancePelletBoilerCard extends HTMLElement {
 
     const f = (v, d, u) => (v === null ? '—' : `${v.toFixed(d)} ${u}`);
     const it = [];
-    if (c.show_status) it.push([this._t('status'), this._t(st)]);
-    if (c.show_power) it.push([this._t('power'), w === null ? '—' : w >= 1000 ? `${(w / 1000).toFixed(1)} kW` : `${Math.round(w)} W`]);
-    if (c.show_temps) { it.push([this._t('flow'), f(dep, 0, '°C')]); it.push([this._t('ret'), f(ret, 0, '°C')]); }
-    if (c.show_pellets) it.push([this._t('pellets'), f(lvl, 0, '%')]);
-    if (c.show_energy) it.push([this._t('energy'), f(e, 1, 'kWh')]);
-    if (c.show_cost && cost !== null) it.push([this._t('cost'), f(cost, 2, '€')]);
+    if (c.show_status) it.push([this._l('status'), this._t(st)]);
+    if (c.show_power) it.push([this._l('power'), w === null ? '—' : w >= 1000 ? `${(w / 1000).toFixed(1)} kW` : `${Math.round(w)} W`]);
+    if (c.show_temps) { it.push([this._l('flow'), f(dep, 0, '°C')]); it.push([this._l('ret'), f(ret, 0, '°C')]); }
+    if (c.show_pellets) it.push([this._l('pellets'), f(lvl, 0, '%')]);
+    if (c.show_energy) it.push([this._l('energy'), f(e, 1, 'kWh')]);
+    if (c.show_cost && cost !== null) it.push([this._l('cost'), f(cost, 2, '€')]);
     const stats = r.getElementById('stats');
     stats.style.gridTemplateColumns = `repeat(${it.length > 4 ? Math.ceil(it.length / 2) : it.length}, 1fr)`;
     stats.innerHTML = it.map(([l, v]) => `<div class="stat"><div class="v">${esc(v)}</div><div class="l">${esc(l)}</div></div>`).join('');

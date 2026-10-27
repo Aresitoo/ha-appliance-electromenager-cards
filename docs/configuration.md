@@ -23,6 +23,41 @@ All cards have a visual editor. When added from the card picker, entities are de
 | `animations` | `false` to disable animations |
 | `confirm_off` | Washer, dryer, dishwasher: `false` to turn off the safety confirmation (default `true`, see below) |
 
+### Custom tile labels
+
+`labels` renames the tiles under the drawing, in any language. Give the tile key and your text; tiles you leave out keep the built-in translation. In the visual editor, the **Custom tile labels** field takes the same `key: text` lines.
+
+```yaml
+type: custom:appliance-sauna-card
+entity: switch.sauna
+labels:
+  temp: Chaleur
+  power: Conso
+  energy: Total
+```
+
+| Card | Tile keys |
+|---|---|
+| Washer, dryer, fridge, oven… (all appliance cards) | `power`, `energy`, `cost`, `remaining`, `temperature`, `target`, `fridge_temp`, `freezer_temp`, `zone_top`, `zone_bottom`, `humidity`, `level`, `pellets`, `keg`, `battery`, `water`, `today`, `speed`, `progress`, `nozzle`, `bed`; water heater: `grid`, `energy_grid`, `solar_surplus`, `energy_solar`; solar: `production`, `today`, `savings`, `of_peak` |
+| Aquarium | `power`, `energy`, `temp`, `cost` |
+| Linky | `power`, `active`, `hp`, `hc`, `injection`, `injection_power`, `tariff`, `cost` |
+| Battery | `power`, `energy`, `temp` |
+| EV charger | `power`, `energy`, `soc`, `status`, `duration`, `cost` |
+| Robot vacuum (solo) | `battery`, `status`, `area`, `time`, `fan`, `filter`, `brush` |
+| Robot mower (solo) | `battery`, `status`, `area`, `time`, `next`, `blade` |
+| Pellet boiler | `status`, `power`, `flow`, `ret`, `pellets`, `energy`, `cost` |
+| Gas boiler | `power`, `energy`, `gas`, `cost`, `flow`, `ret`, `pressure`, `mod` |
+| Water heat pump | `power`, `heat`, `cop`, `flow`, `ret`, `delta`, `buffer`, `src_in`, `src_out`, `rate`, `energy`, `heat_energy`, `scop` |
+| Diesel heater | `power`, `energy`, `fuel`, `used`, `cost`, `temp`, `flue` |
+| Jacuzzi | `power`, `energy`, `temp`, `target`, `ph`, `cost` |
+| Barrier, gates, garage door | `position`, `power`, `energy`, `cost`, `since` |
+| Sauna | `temp`, `target`, `humidity`, `power`, `energy`, `cost` |
+| Pumps (water, industrial, sump) | `flow`, `pressure`, `power`, `temp`, `level`, `runtime`, `starts`, `energy`, `cost` |
+| Pool robot | `status`, `filter`, `water_level`, `water_temp`, `time`, `battery`, `mode`, `power`, `energy` |
+| UPS | `charge`, `runtime`, `load`, `power`, `input`, `output`, `energy` |
+| Underfloor heating | `temp`, `target`, `floor`, `water`, `power`, `energy`, `cost` |
+| Lights (all 10) | `brightness`, `power`, `energy` |
+
 ## Type-specific options
 
 | Option | Cards |

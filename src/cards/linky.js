@@ -24,6 +24,7 @@ class ApplianceLinkyCard extends HTMLElement {
     return {
       schema: [
         { name: 'name', selector: { text: {} } },
+        { name: 'labels', selector: { object: {} } },
         { name: 'entity_power', selector: { entity: { domain: 'sensor' } } },
         { name: 'entity_active_power', selector: { entity: { domain: 'sensor', device_class: 'power' } } },
         { type: 'grid', name: '', schema: [
@@ -72,6 +73,8 @@ class ApplianceLinkyCard extends HTMLElement {
     this._hass = hass; this._update(); }
   getCardSize() { return 5; }
   _t(k) { return (I18N_LINKY[this._config.language || lang(this._hass)] || I18N_LINKY.en)[k] ?? I18N_LINKY.en[k] ?? k; }
+  // libellé perso (option labels) sinon traduction
+  _l(k) { const L = this._config && this._config.labels; return L && L[k] != null && L[k] !== '' ? String(L[k]) : this._t(k); }
 
   connectedCallback() {
     // Défilement des pages de l'écran LCD toutes les 3 s (et des phases, en mode jauge « cycle »)
@@ -207,7 +210,7 @@ class ApplianceLinkyCard extends HTMLElement {
         return [String(name).toUpperCase(), this._kwh(id)];
       });
     }
-    return [[this._t('hp'), this._kwh(c.entity_hp)], [this._t('hc'), this._kwh(c.entity_hc)]];
+    return [[this._l('hp'), this._kwh(c.entity_hp)], [this._l('hc'), this._kwh(c.entity_hc)]];
   }
 
   // Heures creuses : entité tarif si fournie, sinon plages "HH:MM-HH:MM,..."
@@ -228,16 +231,16 @@ class ApplianceLinkyCard extends HTMLElement {
   _renderLcd() {
     if (!this._built || !this._data) return;
     const d = this._data, c = this._config, pages = [];
-    pages.push([this._t('power'), d.power === null ? '—' : `${Math.round(d.power)} ${d.unit}`]);
-    if (c.entity_active_power) pages.push([this._t('active'), d.active === null ? '—' : `${Math.round(d.active.v)} ${d.active.unit}`]);
+    pages.push([this._l('power'), d.power === null ? '—' : `${Math.round(d.power)} ${d.unit}`]);
+    if (c.entity_active_power) pages.push([this._l('active'), d.active === null ? '—' : `${Math.round(d.active.v)} ${d.active.unit}`]);
     const kwh = (v) => (v === null ? '—' : `${Math.round(v)} kWh`);
     if (c.show_index) d.indexes.forEach(([lab, v]) => pages.push([lab, kwh(v)]));
     if (c.show_injection) {
-      if (c.entity_power_injection) pages.push([this._t('injection_power'), d.injPower === null ? '—' : `${Math.round(d.injPower.v)} ${d.injPower.unit}`]);
-      if (c.entity_injection) pages.push([this._t('injection'), kwh(d.injection)]);
+      if (c.entity_power_injection) pages.push([this._l('injection_power'), d.injPower === null ? '—' : `${Math.round(d.injPower.v)} ${d.injPower.unit}`]);
+      if (c.entity_injection) pages.push([this._l('injection'), kwh(d.injection)]);
     }
-    if (c.show_tariff) pages.push([this._t('tariff'), this._t(d.hcNow ? 'offpeak' : 'peak')]);
-    if (c.show_cost && d.cost !== null) pages.push([this._t('cost'), `${d.cost.toFixed(2)} €`]);
+    if (c.show_tariff) pages.push([this._l('tariff'), this._t(d.hcNow ? 'offpeak' : 'peak')]);
+    if (c.show_cost && d.cost !== null) pages.push([this._l('cost'), `${d.cost.toFixed(2)} €`]);
     const p = pages[(this._page || 0) % pages.length];
     const lab = this.shadowRoot.getElementById('lab'), val = this.shadowRoot.getElementById('val');
     lab.textContent = p[0];

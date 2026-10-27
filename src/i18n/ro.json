@@ -692,7 +692,8 @@
     "follow_light_color": "Urmează culoarea becului",
     "color_cycle": "Ciclu de culori",
     "multicolor": "Instalație multicoloră",
-    "show_brightness": "Afișează luminozitatea"
+    "show_brightness": "Afișează luminozitatea",
+    "labels": "Etichete proprii pentru plăci (cheie: text)"
   },
   "light": {
     "light_bulb": "Bec",

@@ -169,6 +169,8 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
     getGridOptions() { return { columns: 12, min_columns: 6, rows: 'auto' }; }
 
     _t(k) { return T[this._lang()][k] ?? T.en[k] ?? k; }
+    // libellé perso (option labels) sinon traduction
+    _l(k) { const L = this._c && this._c.labels; return L && L[k] != null && L[k] !== '' ? String(L[k]) : this._t(k); }
     _lang() { const l = (this._c.language || (this._hass && this._hass.language) || 'en').slice(0, 2); return T[l] ? l : 'en'; }
     _st(id) { return id && this._hass.states[id]; }
     _num(id) {
@@ -269,7 +271,7 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
         const el = r.querySelector(`.tile[data-k="${k}"]`); const [show, val, unit] = V[k];
         el.classList.toggle('hide', !show || c[opt] === false);
         el.classList.toggle('bad', !!bad[k]);
-        el.querySelector('.lbl').textContent = this._t(k);
+        el.querySelector('.lbl').textContent = this._l(k);
         const small = document.createElement('small'); small.textContent = unit ?? '';
         el.querySelector('.v').replaceChildren(String(val ?? ''), small);
       });
@@ -297,6 +299,7 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
       this._form.data = this._c;
       this._form.schema = [
         { name: 'name', selector: { text: {} } },
+        { name: 'labels', selector: { object: {} } },
         ent('entity'), ent('entity_charge', 'sensor'), ent('entity_runtime', 'sensor'), ent('entity_load', 'sensor'), ent('entity_power', 'sensor'),
         ent('entity_input_voltage', 'sensor'), ent('entity_output_voltage', 'sensor'), ent('entity_energy', 'sensor'),
         { type: 'grid', name: '', schema: [num('battery_low', 0, 100, 1, 20, '%'), num('load_max', 10, 100, 1, 90, '%'), num('mains_min', 0, 250, 1, 100, 'V')] },

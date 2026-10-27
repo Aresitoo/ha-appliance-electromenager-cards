@@ -692,7 +692,8 @@
     "follow_light_color": "Suivre la couleur de l'ampoule",
     "color_cycle": "Défilement des couleurs",
     "multicolor": "Guirlande multicolore",
-    "show_brightness": "Afficher la luminosité"
+    "show_brightness": "Afficher la luminosité",
+    "labels": "Libellés perso des tuiles (clé : texte)"
   },
   "light": {
     "light_bulb": "Ampoule",

@@ -20,6 +20,7 @@ class ApplianceBatteryCard extends HTMLElement {
     return {
       schema: [
         { name: 'name', selector: { text: {} } },
+        { name: 'labels', selector: { object: {} } },
         { name: 'entity_soc', selector: { entity: { domain: 'sensor', device_class: 'battery' } } },
         { name: 'entity_power', selector: { entity: { domain: 'sensor', device_class: 'power' } } },
         { name: 'invert_power', selector: { boolean: {} } },
@@ -59,6 +60,8 @@ class ApplianceBatteryCard extends HTMLElement {
   }
   getCardSize() { return 5; }
   _t(k) { return (I18N_BAT[this._config.language || lang(this._hass)] || I18N_BAT.en)[k] ?? I18N_BAT.en[k] ?? k; }
+  // libellé perso (option labels) sinon traduction
+  _l(k) { const L = this._config && this._config.labels; return L && L[k] != null && L[k] !== '' ? String(L[k]) : this._t(k); }
 
   _build() {
     if (!this.shadowRoot) this.attachShadow({ mode: 'open' });
@@ -186,9 +189,9 @@ class ApplianceBatteryCard extends HTMLElement {
     }
     const f = (v, d, u) => (v === null ? '—' : `${v.toFixed(d)} ${u}`);
     const it = [];
-    if (c.show_power) it.push([this._t('power'), f(p === null ? null : Math.abs(p), 0, 'W')]);
-    if (c.show_energy) it.push([this._t('energy'), f(energy !== null ? energy : (soc === null ? null : c.capacity_kwh * pct / 100), 1, 'kWh')]);
-    if (c.show_temperature) it.push([this._t('temp'), f(temp, 0, '°C')]);
+    if (c.show_power) it.push([this._l('power'), f(p === null ? null : Math.abs(p), 0, 'W')]);
+    if (c.show_energy) it.push([this._l('energy'), f(energy !== null ? energy : (soc === null ? null : c.capacity_kwh * pct / 100), 1, 'kWh')]);
+    if (c.show_temperature) it.push([this._l('temp'), f(temp, 0, '°C')]);
     if (time) it.push(['⏱', time]);
     r.getElementById('stats').innerHTML = it.map(([l, v]) => `<div class="stat"><div class="v">${esc(v)}</div><div class="l">${esc(l)}</div></div>`).join('');
   }

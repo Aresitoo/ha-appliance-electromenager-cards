@@ -692,7 +692,8 @@
     "follow_light_color": "Farbe der Lampe übernehmen",
     "color_cycle": "Farbwechsel",
     "multicolor": "Bunte Lichterkette",
-    "show_brightness": "Helligkeit anzeigen"
+    "show_brightness": "Helligkeit anzeigen",
+    "labels": "Eigene Kachelbeschriftungen (Schlüssel: Text)"
   },
   "light": {
     "light_bulb": "Glühbirne",

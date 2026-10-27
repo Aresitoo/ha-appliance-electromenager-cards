@@ -40,6 +40,7 @@ function buildForm(kind) {
   return {
     schema: [
       { name: "name", selector: { text: {} } },
+      { name: "labels", selector: { object: {} } },
       ...d.fields.map((f) => ({ name: f, selector: SEL[f] })),
       {
         type: "expandable", name: "", title: "Options", flatten: true, schema: [

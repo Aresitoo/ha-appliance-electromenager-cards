@@ -3757,6 +3757,8 @@ class ApplianceCardBase extends HTMLElement {
 
     // stats
     const tiles = [];
+    // libellé perso (option labels) sinon traduction
+    const lb = (k) => (c.labels && c.labels[k] != null && c.labels[k] !== "" ? String(c.labels[k]) : tr(hass, k));
     const tile = (icon, value, label, entity, cls = "") => {
       if (value == null) return;
       tiles.push(`<div class="tile ${cls}" ${entity ? `data-entity="${esc(entity)}"` : ""}>
@@ -3764,58 +3766,58 @@ class ApplianceCardBase extends HTMLElement {
     };
     const tEntity = c.temperature || (["water_heater", "climate"].includes(domainOf(c.entity)) ? c.entity : null);
     if (kind === "chest_freezer" || kind === "drawer_freezer") {
-      if (m.tempVal != null) tile("mdi:snowflake-thermometer", `${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}`, tr(hass, "temperature"), tEntity,
+      if (m.tempVal != null) tile("mdi:snowflake-thermometer", `${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}`, lb("temperature"), tEntity,
         m.alerts.includes("too_warm") ? "warn" : "");
     } else if (kind === "beer_tap") {
-      if (m.tempVal != null) tile("mdi:thermometer", `${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}`, tr(hass, "temperature"), tEntity);
-      if (m.keg != null) tile("mdi:keg", `${fmtNum(hass, m.keg, 0)} %`, tr(hass, "keg"), c.keg_level, m.alerts.includes("keg_low") ? "warn" : "");
+      if (m.tempVal != null) tile("mdi:thermometer", `${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}`, lb("temperature"), tEntity);
+      if (m.keg != null) tile("mdi:keg", `${fmtNum(hass, m.keg, 0)} %`, lb("keg"), c.keg_level, m.alerts.includes("keg_low") ? "warn" : "");
     } else if (kind === "tool_charger") {
-      if (m.batt != null) tile(m.status === "charging" ? "mdi:battery-charging" : "mdi:battery", `${fmtNum(hass, m.batt, 0)} %`, tr(hass, "battery"), c.battery_level);
+      if (m.batt != null) tile(m.status === "charging" ? "mdi:battery-charging" : "mdi:battery", `${fmtNum(hass, m.batt, 0)} %`, lb("battery"), c.battery_level);
     } else if (kind === "wine_cooler") {
       const dual = !!c.zone2_temperature, max1 = c.max_temperature ?? 18, max2 = c.max_temperature_2 ?? max1;
-      if (m.tempVal != null) tile("mdi:thermometer", `${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}`, tr(hass, dual ? "zone_top" : "temperature"), tEntity, m.tempVal > max1 ? "warn" : "");
-      if (dual && m.zone2 != null) tile("mdi:thermometer-low", `${fmtNum(hass, m.zone2, 1)} ${m.zone2Ent?.attributes.unit_of_measurement || m.tempUnit}`, tr(hass, "zone_bottom"), c.zone2_temperature, m.zone2 > max2 ? "warn" : "");
+      if (m.tempVal != null) tile("mdi:thermometer", `${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}`, lb(dual ? "zone_top" : "temperature"), tEntity, m.tempVal > max1 ? "warn" : "");
+      if (dual && m.zone2 != null) tile("mdi:thermometer-low", `${fmtNum(hass, m.zone2, 1)} ${m.zone2Ent?.attributes.unit_of_measurement || m.tempUnit}`, lb("zone_bottom"), c.zone2_temperature, m.zone2 > max2 ? "warn" : "");
     } else if (kind === "fridge") {
-      if ((!c.energy || c.layout !== "split") && m.tempVal != null) tile("mdi:thermometer", `${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}`, tr(hass, "fridge_temp"), tEntity,
+      if ((!c.energy || c.layout !== "split") && m.tempVal != null) tile("mdi:thermometer", `${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}`, lb("fridge_temp"), tEntity,
         m.tempVal > (c.max_temperature ?? 8) ? "warn" : "");
-      if (m.ftemp) tile("mdi:snowflake", fmtUnit(hass, m.ftemp, 1), tr(hass, "freezer_temp"), c.freezer_temperature,
+      if (m.ftemp) tile("mdi:snowflake", fmtUnit(hass, m.ftemp, 1), lb("freezer_temp"), c.freezer_temperature,
         num(m.ftemp) > (c.freezer_max_temperature ?? -12) ? "warn" : "");
     } else if (kind === "radiator") {
       const te = c.temperature || (domainOf(c.entity) === "climate" ? c.entity : null);
-      if (m.tempVal != null) tile("mdi:home-thermometer", `${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}`, tr(hass, "temperature"), te);
-      if (m.targetVal != null) tile("mdi:target", `${fmtNum(hass, m.targetVal, 1)} ${m.tempUnit}`, tr(hass, "target"), c.target_temperature || te);
+      if (m.tempVal != null) tile("mdi:home-thermometer", `${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}`, lb("temperature"), te);
+      if (m.targetVal != null) tile("mdi:target", `${fmtNum(hass, m.targetVal, 1)} ${m.tempUnit}`, lb("target"), c.target_temperature || te);
     } else if (kind === "hob") {
       /* no extra tile */
     } else if (kind === "vmc") {
-      if (m.humidity != null) tile("mdi:water-percent", `${fmtNum(hass, m.humidity, 0)} %`, tr(hass, "humidity"), c.humidity, m.alerts.includes("humid") ? "warn" : "");
+      if (m.humidity != null) tile("mdi:water-percent", `${fmtNum(hass, m.humidity, 0)} %`, lb("humidity"), c.humidity, m.alerts.includes("humid") ? "warn" : "");
     } else if (kind === "printer_3d") {
-      if (m.progress != null) tile("mdi:progress-check", `${fmtNum(hass, m.progress, 0)} %`, tr(hass, "progress"), c.progress);
+      if (m.progress != null) tile("mdi:progress-check", `${fmtNum(hass, m.progress, 0)} %`, lb("progress"), c.progress);
       if (m.nozzles && m.nozzles.length) {
         // une puce par buse : T0, T1, T2…
         m.nozzles.forEach((id, i) => {
           const v = num(hass.states[id]);
           tile("mdi:printer-3d-nozzle-heat", v != null ? `${fmtNum(hass, v, 0)} ${m.tempUnit}` : "—", `T${i}`, id);
         });
-      } else if (m.tempVal != null) tile("mdi:printer-3d-nozzle-heat", `${fmtNum(hass, m.tempVal, 0)} ${m.tempUnit}`, tr(hass, "nozzle"), tEntity);
-      if (m.bedTemp != null) tile("mdi:heat-wave", `${fmtNum(hass, m.bedTemp, 0)} ${m.tempUnit}`, tr(hass, "bed"), c.bed_temperature);
+      } else if (m.tempVal != null) tile("mdi:printer-3d-nozzle-heat", `${fmtNum(hass, m.tempVal, 0)} ${m.tempUnit}`, lb("nozzle"), tEntity);
+      if (m.bedTemp != null) tile("mdi:heat-wave", `${fmtNum(hass, m.bedTemp, 0)} ${m.tempUnit}`, lb("bed"), c.bed_temperature);
     } else if (kind === "pool_pump") {
-      if (m.tempVal != null) tile("mdi:thermometer-water", `${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}`, tr(hass, "water"), tEntity);
-      if (m.runtime != null) tile("mdi:timer-outline", fmtDuration(m.runtime), tr(hass, "today"), c.runtime);
-      if (num(m.speed) != null) tile("mdi:speedometer", fmtUnit(hass, m.speed, 0), tr(hass, "speed"), c.speed);
+      if (m.tempVal != null) tile("mdi:thermometer-water", `${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}`, lb("water"), tEntity);
+      if (m.runtime != null) tile("mdi:timer-outline", fmtDuration(m.runtime), lb("today"), c.runtime);
+      if (num(m.speed) != null) tile("mdi:speedometer", fmtUnit(hass, m.speed, 0), lb("speed"), c.speed);
     } else if (kind === "pellet_stove") {
-      if (m.tempVal != null) tile("mdi:thermometer", `${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}`, tr(hass, "temperature"), tEntity);
-      if (m.targetVal != null) tile("mdi:target", `${fmtNum(hass, m.targetVal, 1)} ${m.tempUnit}`, tr(hass, "target"), c.target_temperature || tEntity);
-      if (m.level != null) tile("mdi:fire", `P${fmtNum(hass, m.level, 0)}`, tr(hass, "level"), c.power_level);
-      if (m.pellets != null) tile("mdi:grain", `${fmtNum(hass, m.pellets, 0)} %`, tr(hass, "pellets"), c.pellet_level, m.alerts.includes("pellets_low") ? "warn" : "");
+      if (m.tempVal != null) tile("mdi:thermometer", `${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}`, lb("temperature"), tEntity);
+      if (m.targetVal != null) tile("mdi:target", `${fmtNum(hass, m.targetVal, 1)} ${m.tempUnit}`, lb("target"), c.target_temperature || tEntity);
+      if (m.level != null) tile("mdi:fire", `P${fmtNum(hass, m.level, 0)}`, lb("level"), c.power_level);
+      if (m.pellets != null) tile("mdi:grain", `${fmtNum(hass, m.pellets, 0)} %`, lb("pellets"), c.pellet_level, m.alerts.includes("pellets_low") ? "warn" : "");
     } else if (["water_heater", "oven", "air_fryer", "ac_split", "heat_pump", "towel_dryer", "server_rack"].includes(kind)) {
-      if (m.tempVal != null) tile("mdi:thermometer", `${fmtNum(hass, m.tempVal, 0)} ${m.tempUnit}`, tr(hass, "temperature"), tEntity);
-      if (m.targetVal != null) tile("mdi:target", `${fmtNum(hass, m.targetVal, 0)} ${m.tempUnit}`, tr(hass, "target"), c.target_temperature || tEntity);
+      if (m.tempVal != null) tile("mdi:thermometer", `${fmtNum(hass, m.tempVal, 0)} ${m.tempUnit}`, lb("temperature"), tEntity);
+      if (m.targetVal != null) tile("mdi:target", `${fmtNum(hass, m.targetVal, 0)} ${m.tempUnit}`, lb("target"), c.target_temperature || tEntity);
     }
-    if (m.remaining != null && m.remaining > 0 && active && kind !== "water_heater") tile("mdi:timer-sand", fmtDuration(m.remaining), tr(hass, "remaining"), c.remaining);
+    if (m.remaining != null && m.remaining > 0 && active && kind !== "water_heater") tile("mdi:timer-sand", fmtDuration(m.remaining), lb("remaining"), c.remaining);
     const solar = kind === "solar";
     const dual = kind === "water_heater" && (m.pwS || m.energyS);
-    if (m.pw && c.show_power !== false) tile(solar ? "mdi:solar-power" : "mdi:flash", fmtPower(hass, m.pw) ?? "—", tr(hass, solar ? "production" : dual ? "grid" : "power"), c.power);
-    if (m.pwS) tile("mdi:solar-power", fmtPower(hass, m.pwS) ?? "—", tr(hass, "solar_surplus"), c.power_solar);
+    if (m.pw && c.show_power !== false) tile(solar ? "mdi:solar-power" : "mdi:flash", fmtPower(hass, m.pw) ?? "—", lb(solar ? "production" : dual ? "grid" : "power"), c.power);
+    if (m.pwS) tile("mdi:solar-power", fmtPower(hass, m.pwS) ?? "—", lb("solar_surplus"), c.power_solar);
     if (m.energy) {
       const eVal = fmtEnergy(hass, m.energy) ?? "—";
       const yp = m.energy.attributes && m.energy.attributes.last_period;
@@ -3823,12 +3825,12 @@ class ApplianceCardBase extends HTMLElement {
         const ydayStr = parseFloat(yp).toFixed(1);
         tile("mdi:history", eVal, `Yday ${ydayStr} kWh`, c.energy);
       } else {
-        tile("mdi:lightning-bolt-circle", eVal, tr(hass, solar ? "today" : dual ? "energy_grid" : "energy"), c.energy);
+        tile("mdi:lightning-bolt-circle", eVal, lb(solar ? "today" : dual ? "energy_grid" : "energy"), c.energy);
       }
     }
-    if (m.energyS) tile("mdi:solar-power-variant", fmtEnergy(hass, m.energyS) ?? "—", tr(hass, "energy_solar"), c.energy_solar);
-    if (m.cost) tile(solar ? "mdi:piggy-bank-outline" : "mdi:cash", fmtUnit(hass, m.cost, 2, 2) ?? "—", tr(hass, solar ? "savings" : "cost"), c.cost);
-    if (solar && m.status !== "night" && m.frac != null && m.pw && !BAD.includes(String(m.pw.state).toLowerCase())) tile("mdi:white-balance-sunny", `${Math.round(m.frac * 100)} %`, tr(hass, "of_peak"), c.power);
+    if (m.energyS) tile("mdi:solar-power-variant", fmtEnergy(hass, m.energyS) ?? "—", lb("energy_solar"), c.energy_solar);
+    if (m.cost) tile(solar ? "mdi:piggy-bank-outline" : "mdi:cash", fmtUnit(hass, m.cost, 2, 2) ?? "—", lb(solar ? "savings" : "cost"), c.cost);
+    if (solar && m.status !== "night" && m.frac != null && m.pw && !BAD.includes(String(m.pw.state).toLowerCase())) tile("mdi:white-balance-sunny", `${Math.round(m.frac * 100)} %`, lb("of_peak"), c.power);
     $("stats").innerHTML = tiles.join("");
     $("stats").style.display = tiles.length ? "" : "none";
   }
@@ -3876,6 +3878,7 @@ function buildForm(kind) {
   return {
     schema: [
       { name: "name", selector: { text: {} } },
+      { name: "labels", selector: { object: {} } },
       ...d.fields.map((f) => ({ name: f, selector: SEL[f] })),
       {
         type: "expandable", name: "", title: "Options", flatten: true, schema: [
@@ -5178,7 +5181,8 @@ console.info(`%c HA-APPLIANCE-CARDS %c v${VERSION} `,
       "follow_light_color": "Follow the bulb colour",
       "color_cycle": "Colour cycle",
       "multicolor": "Multicolour lights",
-      "show_brightness": "Show brightness"
+      "show_brightness": "Show brightness",
+      "labels": "Custom tile labels (key: text)"
     },
     "de": {
       "animations": "Animationen",
@@ -5359,7 +5363,8 @@ console.info(`%c HA-APPLIANCE-CARDS %c v${VERSION} `,
       "follow_light_color": "Farbe der Lampe übernehmen",
       "color_cycle": "Farbwechsel",
       "multicolor": "Bunte Lichterkette",
-      "show_brightness": "Helligkeit anzeigen"
+      "show_brightness": "Helligkeit anzeigen",
+      "labels": "Eigene Kachelbeschriftungen (Schlüssel: Text)"
     },
     "fr": {
       "animations": "Animations",
@@ -5540,9 +5545,11 @@ console.info(`%c HA-APPLIANCE-CARDS %c v${VERSION} `,
       "follow_light_color": "Suivre la couleur de l'ampoule",
       "color_cycle": "Défilement des couleurs",
       "multicolor": "Guirlande multicolore",
-      "show_brightness": "Afficher la luminosité"
+      "show_brightness": "Afficher la luminosité",
+      "labels": "Libellés perso des tuiles (clé : texte)"
     },
     "nb": {
+      "labels": "Egne flisetiketter (nøkkel: tekst)",
       "animations": "Animasjoner",
       "battery_low": "Lavt batteri (%)",
       "buffer_tank": "Akkumulatortank",
@@ -5902,7 +5909,8 @@ console.info(`%c HA-APPLIANCE-CARDS %c v${VERSION} `,
       "follow_light_color": "Kleur van de lamp volgen",
       "color_cycle": "Kleurenwissel",
       "multicolor": "Veelkleurige lichtjes",
-      "show_brightness": "Helderheid tonen"
+      "show_brightness": "Helderheid tonen",
+      "labels": "Eigen tegellabels (sleutel: tekst)"
     },
     "ro": {
       "animations": "Animații",
@@ -6083,7 +6091,8 @@ console.info(`%c HA-APPLIANCE-CARDS %c v${VERSION} `,
       "follow_light_color": "Urmează culoarea becului",
       "color_cycle": "Ciclu de culori",
       "multicolor": "Instalație multicoloră",
-      "show_brightness": "Afișează luminozitatea"
+      "show_brightness": "Afișează luminozitatea",
+      "labels": "Etichete proprii pentru plăci (cheie: text)"
     }
   };
   const lang = (hass) => {
@@ -6176,6 +6185,7 @@ class ApplianceAquariumCard extends HTMLElement {
     return {
       schema: [
         { name: 'name', selector: { text: {} } },
+        { name: 'labels', selector: { object: {} } },
         { name: 'entity_power', selector: { entity: { domain: 'sensor', device_class: 'power' } } },
         { name: 'entity_energy', selector: { entity: { domain: 'sensor', device_class: 'energy' } } },
         { name: 'entity_temperature', selector: { entity: { domain: 'sensor', device_class: 'temperature' } } },
@@ -6220,6 +6230,8 @@ class ApplianceAquariumCard extends HTMLElement {
   getCardSize() { return 5; }
 
   _t(k) { return (I18N_AQUARIUM[this._config.language || lang(this._hass)] || I18N_AQUARIUM.en)[k] ?? I18N_AQUARIUM.en[k] ?? k; }
+  // libellé perso (option labels) sinon traduction
+  _l(k) { const L = this._config && this._config.labels; return L && L[k] != null && L[k] !== '' ? String(L[k]) : this._t(k); }
 
   _build() {
     const c = this._config;
@@ -6360,10 +6372,10 @@ class ApplianceAquariumCard extends HTMLElement {
 
     const fmt = (v, d, u) => v === null ? '—' : `${v.toFixed(d)} ${u}`;
     const items = [];
-    if (c.show_power) items.push(['p', this._t('power'), fmt(power, 0, 'W')]);
-    if (c.show_energy) items.push(['e', this._t('energy'), fmt(energy, 2, 'kWh')]);
-    if (c.show_temperature) items.push(['t', this._t('temp'), fmt(temp, 1, '°C')]);
-    if (c.show_cost) items.push(['c', this._t('cost'), fmt(cost, 2, '€')]);
+    if (c.show_power) items.push(['p', this._l('power'), fmt(power, 0, 'W')]);
+    if (c.show_energy) items.push(['e', this._l('energy'), fmt(energy, 2, 'kWh')]);
+    if (c.show_temperature) items.push(['t', this._l('temp'), fmt(temp, 1, '°C')]);
+    if (c.show_cost) items.push(['c', this._l('cost'), fmt(cost, 2, '€')]);
     root.getElementById('stats').innerHTML = items.map(([k, l, v]) =>
       `<div class="stat ${k}"><div class="v">${esc(v)}</div><div class="l">${esc(l)}</div></div>`).join('');
   }
@@ -6515,6 +6527,7 @@ class ApplianceLinkyCard extends HTMLElement {
     return {
       schema: [
         { name: 'name', selector: { text: {} } },
+        { name: 'labels', selector: { object: {} } },
         { name: 'entity_power', selector: { entity: { domain: 'sensor' } } },
         { name: 'entity_active_power', selector: { entity: { domain: 'sensor', device_class: 'power' } } },
         { type: 'grid', name: '', schema: [
@@ -6563,6 +6576,8 @@ class ApplianceLinkyCard extends HTMLElement {
     this._hass = hass; this._update(); }
   getCardSize() { return 5; }
   _t(k) { return (I18N_LINKY[this._config.language || lang(this._hass)] || I18N_LINKY.en)[k] ?? I18N_LINKY.en[k] ?? k; }
+  // libellé perso (option labels) sinon traduction
+  _l(k) { const L = this._config && this._config.labels; return L && L[k] != null && L[k] !== '' ? String(L[k]) : this._t(k); }
 
   connectedCallback() {
     // Défilement des pages de l'écran LCD toutes les 3 s (et des phases, en mode jauge « cycle »)
@@ -6698,7 +6713,7 @@ class ApplianceLinkyCard extends HTMLElement {
         return [String(name).toUpperCase(), this._kwh(id)];
       });
     }
-    return [[this._t('hp'), this._kwh(c.entity_hp)], [this._t('hc'), this._kwh(c.entity_hc)]];
+    return [[this._l('hp'), this._kwh(c.entity_hp)], [this._l('hc'), this._kwh(c.entity_hc)]];
   }
 
   // Heures creuses : entité tarif si fournie, sinon plages "HH:MM-HH:MM,..."
@@ -6719,16 +6734,16 @@ class ApplianceLinkyCard extends HTMLElement {
   _renderLcd() {
     if (!this._built || !this._data) return;
     const d = this._data, c = this._config, pages = [];
-    pages.push([this._t('power'), d.power === null ? '—' : `${Math.round(d.power)} ${d.unit}`]);
-    if (c.entity_active_power) pages.push([this._t('active'), d.active === null ? '—' : `${Math.round(d.active.v)} ${d.active.unit}`]);
+    pages.push([this._l('power'), d.power === null ? '—' : `${Math.round(d.power)} ${d.unit}`]);
+    if (c.entity_active_power) pages.push([this._l('active'), d.active === null ? '—' : `${Math.round(d.active.v)} ${d.active.unit}`]);
     const kwh = (v) => (v === null ? '—' : `${Math.round(v)} kWh`);
     if (c.show_index) d.indexes.forEach(([lab, v]) => pages.push([lab, kwh(v)]));
     if (c.show_injection) {
-      if (c.entity_power_injection) pages.push([this._t('injection_power'), d.injPower === null ? '—' : `${Math.round(d.injPower.v)} ${d.injPower.unit}`]);
-      if (c.entity_injection) pages.push([this._t('injection'), kwh(d.injection)]);
+      if (c.entity_power_injection) pages.push([this._l('injection_power'), d.injPower === null ? '—' : `${Math.round(d.injPower.v)} ${d.injPower.unit}`]);
+      if (c.entity_injection) pages.push([this._l('injection'), kwh(d.injection)]);
     }
-    if (c.show_tariff) pages.push([this._t('tariff'), this._t(d.hcNow ? 'offpeak' : 'peak')]);
-    if (c.show_cost && d.cost !== null) pages.push([this._t('cost'), `${d.cost.toFixed(2)} €`]);
+    if (c.show_tariff) pages.push([this._l('tariff'), this._t(d.hcNow ? 'offpeak' : 'peak')]);
+    if (c.show_cost && d.cost !== null) pages.push([this._l('cost'), `${d.cost.toFixed(2)} €`]);
     const p = pages[(this._page || 0) % pages.length];
     const lab = this.shadowRoot.getElementById('lab'), val = this.shadowRoot.getElementById('val');
     lab.textContent = p[0];
@@ -6923,6 +6938,7 @@ class ApplianceBatteryCard extends HTMLElement {
     return {
       schema: [
         { name: 'name', selector: { text: {} } },
+        { name: 'labels', selector: { object: {} } },
         { name: 'entity_soc', selector: { entity: { domain: 'sensor', device_class: 'battery' } } },
         { name: 'entity_power', selector: { entity: { domain: 'sensor', device_class: 'power' } } },
         { name: 'invert_power', selector: { boolean: {} } },
@@ -6962,6 +6978,8 @@ class ApplianceBatteryCard extends HTMLElement {
   }
   getCardSize() { return 5; }
   _t(k) { return (I18N_BAT[this._config.language || lang(this._hass)] || I18N_BAT.en)[k] ?? I18N_BAT.en[k] ?? k; }
+  // libellé perso (option labels) sinon traduction
+  _l(k) { const L = this._config && this._config.labels; return L && L[k] != null && L[k] !== '' ? String(L[k]) : this._t(k); }
 
   _build() {
     if (!this.shadowRoot) this.attachShadow({ mode: 'open' });
@@ -7089,9 +7107,9 @@ class ApplianceBatteryCard extends HTMLElement {
     }
     const f = (v, d, u) => (v === null ? '—' : `${v.toFixed(d)} ${u}`);
     const it = [];
-    if (c.show_power) it.push([this._t('power'), f(p === null ? null : Math.abs(p), 0, 'W')]);
-    if (c.show_energy) it.push([this._t('energy'), f(energy !== null ? energy : (soc === null ? null : c.capacity_kwh * pct / 100), 1, 'kWh')]);
-    if (c.show_temperature) it.push([this._t('temp'), f(temp, 0, '°C')]);
+    if (c.show_power) it.push([this._l('power'), f(p === null ? null : Math.abs(p), 0, 'W')]);
+    if (c.show_energy) it.push([this._l('energy'), f(energy !== null ? energy : (soc === null ? null : c.capacity_kwh * pct / 100), 1, 'kWh')]);
+    if (c.show_temperature) it.push([this._l('temp'), f(temp, 0, '°C')]);
     if (time) it.push(['⏱', time]);
     r.getElementById('stats').innerHTML = it.map(([l, v]) => `<div class="stat"><div class="v">${esc(v)}</div><div class="l">${esc(l)}</div></div>`).join('');
   }
@@ -7202,6 +7220,7 @@ class ApplianceEvChargerCard extends HTMLElement {
     return {
       schema: [
         { name: 'name', selector: { text: {} } },
+        { name: 'labels', selector: { object: {} } },
         { name: 'entity_power', selector: { entity: { domain: 'sensor', device_class: 'power' } } },
         { name: 'entity_session_energy', selector: { entity: { domain: 'sensor', device_class: 'energy' } } },
         { name: 'entity_car_soc', selector: { entity: { domain: 'sensor' } } },
@@ -7242,6 +7261,8 @@ class ApplianceEvChargerCard extends HTMLElement {
   connectedCallback() { this._timer = setInterval(() => this._update(), 30000); } // rafraîchit la durée
   disconnectedCallback() { clearInterval(this._timer); }
   _t(k) { return (I18N_EV[this._config.language || lang(this._hass)] || I18N_EV.en)[k] ?? I18N_EV.en[k] ?? k; }
+  // libellé perso (option labels) sinon traduction
+  _l(k) { const L = this._config && this._config.labels; return L && L[k] != null && L[k] !== '' ? String(L[k]) : this._t(k); }
 
   _build() {
     if (!this.shadowRoot) this.attachShadow({ mode: 'open' });
@@ -7382,12 +7403,12 @@ class ApplianceEvChargerCard extends HTMLElement {
 
     const f = (v, d, u) => (v === null ? '—' : `${v.toFixed(d)} ${u}`);
     const it = [];
-    if (c.show_power) it.push([this._t('power'), w === null ? '—' : w >= 1000 ? `${(w / 1000).toFixed(1)} kW` : `${Math.round(w)} W`]);
-    if (c.show_energy) it.push([this._t('energy'), f(energy, 1, 'kWh')]);
-    if (c.show_soc && soc !== null) it.push([this._t('soc'), f(soc, 0, '%')]);
-    if (c.show_status) it.push([this._t('status'), this._t(st)]);
-    if (c.show_duration) it.push([this._t('duration'), dur || '—']);
-    if (c.show_cost) it.push([this._t('cost'), f(cost, 2, '€')]);
+    if (c.show_power) it.push([this._l('power'), w === null ? '—' : w >= 1000 ? `${(w / 1000).toFixed(1)} kW` : `${Math.round(w)} W`]);
+    if (c.show_energy) it.push([this._l('energy'), f(energy, 1, 'kWh')]);
+    if (c.show_soc && soc !== null) it.push([this._l('soc'), f(soc, 0, '%')]);
+    if (c.show_status) it.push([this._l('status'), this._t(st)]);
+    if (c.show_duration) it.push([this._l('duration'), dur || '—']);
+    if (c.show_cost) it.push([this._l('cost'), f(cost, 2, '€')]);
     // 5-6 valeurs → 2 lignes équilibrées
     r.getElementById('stats').style.gridTemplateColumns = `repeat(${it.length > 4 ? Math.ceil(it.length / 2) : it.length}, 1fr)`;
     r.getElementById('stats').innerHTML = it.map(([l, v]) => `<div class="stat"><div class="v">${esc(v)}</div><div class="l">${esc(l)}</div></div>`).join('');
@@ -7554,6 +7575,7 @@ class ApplianceRobotVacuumCard extends HTMLElement {
       schema: [
         { name: 'entity', required: true, selector: { entity: { domain: 'vacuum' } } },
         { name: 'name', selector: { text: {} } },
+        { name: 'labels', selector: { object: {} } },
         { name: 'entity_battery', selector: { entity: { domain: 'sensor', device_class: 'battery' } } },
         { name: 'entity_area', selector: { entity: { domain: 'sensor' } } },
         { name: 'entity_time', selector: { entity: { domain: 'sensor' } } },
@@ -7588,6 +7610,8 @@ class ApplianceRobotVacuumCard extends HTMLElement {
     this._hass = h; this._update(); }
   getCardSize() { return 6; }
   _t(k) { return (I18N_VAC[this._config.language || lang(this._hass)] || I18N_VAC.en)[k] ?? I18N_VAC.en[k] ?? k; }
+  // libellé perso (option labels) sinon traduction
+  _l(k) { const L = this._config && this._config.labels; return L && L[k] != null && L[k] !== '' ? String(L[k]) : this._t(k); }
 
   _call(action) {
     if (!this._hass) return;
@@ -7626,15 +7650,15 @@ class ApplianceRobotVacuumCard extends HTMLElement {
     const batt = this._num(c.entity_battery) ?? (a.battery_level ?? null);
     const area = this._num(c.entity_area), time = this._num(c.entity_time);
     const it = [];
-    if (c.show_battery) it.push([this._t('battery'), batt === null ? '—' : `${Math.round(batt)} %`]);
-    if (c.show_status) it.push([this._t('status'), this._t(emptying ? 'emptying' : st)]);
-    if (c.show_area) it.push([this._t('area'), area === null ? '—' : `${Math.round(area)} m²`]);
-    if (c.show_time) it.push([this._t('time'), time === null ? '—' : `${Math.round(time)} min`]);
-    if (c.show_fan && a.fan_speed) it.push([this._t('fan'), String(a.fan_speed)]);
+    if (c.show_battery) it.push([this._l('battery'), batt === null ? '—' : `${Math.round(batt)} %`]);
+    if (c.show_status) it.push([this._l('status'), this._t(emptying ? 'emptying' : st)]);
+    if (c.show_area) it.push([this._l('area'), area === null ? '—' : `${Math.round(area)} m²`]);
+    if (c.show_time) it.push([this._l('time'), time === null ? '—' : `${Math.round(time)} min`]);
+    if (c.show_fan && a.fan_speed) it.push([this._l('fan'), String(a.fan_speed)]);
     if (c.show_consumables) {
       const fl = this._num(c.entity_filter), br = this._num(c.entity_brush);
-      if (fl !== null) it.push([this._t('filter'), `${Math.round(fl)} %`]);
-      if (br !== null) it.push([this._t('brush'), `${Math.round(br)} %`]);
+      if (fl !== null) it.push([this._l('filter'), `${Math.round(fl)} %`]);
+      if (br !== null) it.push([this._l('brush'), `${Math.round(br)} %`]);
     }
     const stats = r.getElementById('stats');
     stats.style.gridTemplateColumns = `repeat(${it.length > 4 ? Math.ceil(it.length / 2) : it.length}, 1fr)`;
@@ -7899,6 +7923,7 @@ class ApplianceRobotMowerCard extends HTMLElement {
       schema: [
         { name: 'entity', required: true, selector: { entity: { domain: ['lawn_mower', 'vacuum'] } } },
         { name: 'name', selector: { text: {} } },
+        { name: 'labels', selector: { object: {} } },
         { name: 'entity_battery', selector: { entity: { domain: 'sensor', device_class: 'battery' } } },
         { name: 'entity_area', selector: { entity: { domain: 'sensor' } } },
         { name: 'entity_time', selector: { entity: { domain: 'sensor' } } },
@@ -7934,6 +7959,8 @@ class ApplianceRobotMowerCard extends HTMLElement {
     this._hass = h; this._update(); }
   getCardSize() { return 6; }
   _t(k) { return (I18N_MOW[this._config.language || lang(this._hass)] || I18N_MOW.en)[k] ?? I18N_MOW.en[k] ?? k; }
+  // libellé perso (option labels) sinon traduction
+  _l(k) { const L = this._config && this._config.labels; return L && L[k] != null && L[k] !== '' ? String(L[k]) : this._t(k); }
 
   _call(action) {
     if (!this._hass) return;
@@ -7979,12 +8006,12 @@ class ApplianceRobotMowerCard extends HTMLElement {
       next = isNaN(d) ? ns.state : d.toLocaleString(c.language === 'en' ? 'en-GB' : 'fr-FR', { weekday: 'short', hour: '2-digit', minute: '2-digit' });
     }
     const it = [];
-    if (c.show_battery) it.push([this._t('battery'), batt === null ? '—' : `${Math.round(batt)} %`]);
-    if (c.show_status) it.push([this._t('status'), raining && st !== 'mowing' ? `${this._t(st)} · ${this._t('rain')}` : this._t(st)]);
-    if (c.show_area && area !== null) it.push([this._t('area'), `${Math.round(area)} m²`]);
-    if (c.show_time && time !== null) it.push([this._t('time'), time >= 60 ? `${Math.floor(time / 60)}h${String(Math.round(time % 60)).padStart(2, '0')}` : `${Math.round(time)} min`]);
-    if (c.show_next && next) it.push([this._t('next'), next]);
-    if (c.show_blade && blade !== null) it.push([this._t('blade'), `${Math.round(blade)} %`]);
+    if (c.show_battery) it.push([this._l('battery'), batt === null ? '—' : `${Math.round(batt)} %`]);
+    if (c.show_status) it.push([this._l('status'), raining && st !== 'mowing' ? `${this._t(st)} · ${this._t('rain')}` : this._t(st)]);
+    if (c.show_area && area !== null) it.push([this._l('area'), `${Math.round(area)} m²`]);
+    if (c.show_time && time !== null) it.push([this._l('time'), time >= 60 ? `${Math.floor(time / 60)}h${String(Math.round(time % 60)).padStart(2, '0')}` : `${Math.round(time)} min`]);
+    if (c.show_next && next) it.push([this._l('next'), next]);
+    if (c.show_blade && blade !== null) it.push([this._l('blade'), `${Math.round(blade)} %`]);
     const stats = r.getElementById('stats');
     stats.style.gridTemplateColumns = `repeat(${it.length > 4 ? Math.ceil(it.length / 2) : it.length}, 1fr)`;
     stats.innerHTML = it.map(([l, v]) => `<div class="stat"><div class="v">${esc(v)}</div><div class="l">${esc(l)}</div></div>`).join('');
@@ -8206,6 +8233,7 @@ class AppliancePelletBoilerCard extends HTMLElement {
     return {
       schema: [
         { name: 'name', selector: { text: {} } },
+        { name: 'labels', selector: { object: {} } },
         { name: 'entity_status', selector: { entity: { domain: ['sensor', 'select', 'climate', 'switch', 'binary_sensor'] } } },
         { name: 'entity_power', selector: { entity: { domain: 'sensor', device_class: 'power' } } },
         { name: 'entity_energy', selector: { entity: { domain: 'sensor', device_class: 'energy' } } },
@@ -8246,6 +8274,8 @@ class AppliancePelletBoilerCard extends HTMLElement {
     this._hass = h; this._update(); }
   getCardSize() { return 6; }
   _t(k) { return (I18N_PB[this._config.language || lang(this._hass)] || I18N_PB.en)[k] ?? I18N_PB.en[k] ?? k; }
+  // libellé perso (option labels) sinon traduction
+  _l(k) { const L = this._config && this._config.labels; return L && L[k] != null && L[k] !== '' ? String(L[k]) : this._t(k); }
 
   _build() {
     if (!this.shadowRoot) this.attachShadow({ mode: 'open' });
@@ -8435,12 +8465,12 @@ class AppliancePelletBoilerCard extends HTMLElement {
 
     const f = (v, d, u) => (v === null ? '—' : `${v.toFixed(d)} ${u}`);
     const it = [];
-    if (c.show_status) it.push([this._t('status'), this._t(st)]);
-    if (c.show_power) it.push([this._t('power'), w === null ? '—' : w >= 1000 ? `${(w / 1000).toFixed(1)} kW` : `${Math.round(w)} W`]);
-    if (c.show_temps) { it.push([this._t('flow'), f(dep, 0, '°C')]); it.push([this._t('ret'), f(ret, 0, '°C')]); }
-    if (c.show_pellets) it.push([this._t('pellets'), f(lvl, 0, '%')]);
-    if (c.show_energy) it.push([this._t('energy'), f(e, 1, 'kWh')]);
-    if (c.show_cost && cost !== null) it.push([this._t('cost'), f(cost, 2, '€')]);
+    if (c.show_status) it.push([this._l('status'), this._t(st)]);
+    if (c.show_power) it.push([this._l('power'), w === null ? '—' : w >= 1000 ? `${(w / 1000).toFixed(1)} kW` : `${Math.round(w)} W`]);
+    if (c.show_temps) { it.push([this._l('flow'), f(dep, 0, '°C')]); it.push([this._l('ret'), f(ret, 0, '°C')]); }
+    if (c.show_pellets) it.push([this._l('pellets'), f(lvl, 0, '%')]);
+    if (c.show_energy) it.push([this._l('energy'), f(e, 1, 'kWh')]);
+    if (c.show_cost && cost !== null) it.push([this._l('cost'), f(cost, 2, '€')]);
     const stats = r.getElementById('stats');
     stats.style.gridTemplateColumns = `repeat(${it.length > 4 ? Math.ceil(it.length / 2) : it.length}, 1fr)`;
     stats.innerHTML = it.map(([l, v]) => `<div class="stat"><div class="v">${esc(v)}</div><div class="l">${esc(l)}</div></div>`).join('');
@@ -8729,6 +8759,8 @@ svg{display:block;width:100%;max-width:170px;height:var(--appliance-illustration
     getGridOptions() { return { columns: 12, min_columns: 6, rows: 'auto' }; }
 
     _t(k) { return T[this._lang()][k] ?? T.en[k] ?? k; }
+    // libellé perso (option labels) sinon traduction
+    _l(k) { const L = this._c && this._c.labels; return L && L[k] != null && L[k] !== '' ? String(L[k]) : this._t(k); }
     _lang() { const l = (this._c.language || (this._hass && this._hass.language) || 'en').slice(0, 2); return T[l] ? l : 'en'; }
     _st(id) { return id && this._hass.states[id]; }
     _num(id) {
@@ -8840,7 +8872,7 @@ svg{display:block;width:100%;max-width:170px;height:var(--appliance-illustration
       TILES.forEach(([k, , opt]) => {
         const el = r.querySelector(`.tile[data-k="${k}"]`); const [ent, val, unit] = V[k];
         el.classList.toggle('hide', !ent || c[opt] === false);
-        el.querySelector('.lbl').textContent = this._t(k);
+        el.querySelector('.lbl').textContent = this._l(k);
         // valeur + unité en texte (l'unité vient de l'entité ou de la config)
         const small = document.createElement('small'); small.textContent = unit ?? '';
         el.querySelector('.v').replaceChildren(String(val ?? ''), small);
@@ -8868,6 +8900,7 @@ svg{display:block;width:100%;max-width:170px;height:var(--appliance-illustration
       this._form.data = this._c;
       this._form.schema = [
         { name: 'name', selector: { text: {} } },
+        { name: 'labels', selector: { object: {} } },
         ent('entity_status'), ent('entity_flame', 'binary_sensor'), ent('entity_power', 'sensor'), ent('entity_energy', 'sensor'),
         ent('entity_gas', 'sensor'), ent('entity_cost', 'sensor'), { name: 'price_per_unit', selector: { number: { min: 0, step: 0.0001, mode: 'box' } } },
         ent('entity_flow_temp', 'sensor'), ent('entity_return_temp', 'sensor'), ent('entity_pressure', 'sensor'), ent('entity_modulation', 'sensor'),
@@ -9197,6 +9230,7 @@ svg{display:block;width:100%;height:var(--appliance-illustration-height,auto);ma
       return {
         schema: [
           { name: 'name', selector: { text: {} } },
+          { name: 'labels', selector: { object: {} } },
           ent('entity_status', ['climate', 'sensor', 'select', 'input_select', 'water_heater']),
           { type: 'grid', name: '', schema: [ent('entity_power', 'sensor'), ent('entity_heat_power', 'sensor'), ent('entity_cop', 'sensor')] },
           { type: 'grid', name: '', schema: [ent('entity_flow_temp', 'sensor'), ent('entity_return_temp', 'sensor'), ent('entity_flow_rate', 'sensor')] },
@@ -9242,6 +9276,8 @@ svg{display:block;width:100%;height:var(--appliance-illustration-height,auto);ma
     getGridOptions() { return { columns: 12, min_columns: 6, rows: 'auto' }; }
 
     _t(k) { return T[this._lang()][k] ?? T.en[k] ?? k; }
+    // libellé perso (option labels) sinon traduction
+    _l(k) { const L = this._c && this._c.labels; return L && L[k] != null && L[k] !== '' ? String(L[k]) : this._t(k); }
     _lang() { const l = (this._c.language || (this._hass && this._hass.language) || 'en').slice(0, 2); return T[l] ? l : 'en'; }
     _st(id) { return id && this._hass.states[id]; }
     _num(id) {
@@ -9359,7 +9395,7 @@ svg{display:block;width:100%;height:var(--appliance-illustration-height,auto);ma
       TILES.forEach(([k, , opt, more]) => {
         const el = r.querySelector(`.tile[data-k="${k}"]`); const [shown, val, unit] = V[k];
         el.classList.toggle('hide', !shown || c[opt] === false);
-        el.querySelector('.lbl').textContent = this._t(k);
+        el.querySelector('.lbl').textContent = this._l(k);
         // valeur + unité en texte (l'unité vient de l'entité ou de la config)
         const small = document.createElement('small'); small.textContent = unit ?? '';
         el.querySelector('.v').replaceChildren(String(val ?? ''), small);
@@ -9683,6 +9719,8 @@ svg{display:block;width:100%;max-width:190px;height:var(--appliance-illustration
     getGridOptions() { return { columns: 12, min_columns: 6, rows: 'auto' }; }
 
     _t(k) { return T[this._lang()][k] ?? T.en[k] ?? k; }
+    // libellé perso (option labels) sinon traduction
+    _l(k) { const L = this._c && this._c.labels; return L && L[k] != null && L[k] !== '' ? String(L[k]) : this._t(k); }
     _lang() { const l = (this._c.language || (this._hass && this._hass.language) || 'en').slice(0, 2); return T[l] ? l : 'en'; }
     _st(id) { return id && this._hass.states[id]; }
     _num(id) {
@@ -9789,7 +9827,7 @@ svg{display:block;width:100%;max-width:190px;height:var(--appliance-illustration
         const el = r.querySelector(`.tile[data-k="${k}"]`); const [ent, val, unit] = V[k];
         el.classList.toggle('hide', !ent || c[opt] === false);
         el.classList.toggle('bad', (k === 'fuel' && low) || (k === 'flue' && !isNaN(flue) && flue > c.flue_temp_max));
-        el.querySelector('.lbl').textContent = this._t(k);
+        el.querySelector('.lbl').textContent = this._l(k);
         // valeur + unité en texte (l'unité vient de l'entité ou de la config)
         const small = document.createElement('small'); small.textContent = unit ?? '';
         el.querySelector('.v').replaceChildren(String(val ?? ''), small);
@@ -9817,6 +9855,7 @@ svg{display:block;width:100%;max-width:190px;height:var(--appliance-illustration
       this._form.data = this._c;
       this._form.schema = [
         { name: 'name', selector: { text: {} } },
+        { name: 'labels', selector: { object: {} } },
         ent('entity_status'), ent('entity_flame', 'binary_sensor'), ent('entity_power', 'sensor'), ent('entity_energy', 'sensor'),
         ent('entity_fuel_level', 'sensor'), ent('entity_fuel_used', 'sensor'), ent('entity_cost', 'sensor'),
         { name: 'price_per_liter', selector: { number: { min: 0, step: 0.0001, mode: 'box' } } },
@@ -10131,6 +10170,8 @@ svg{display:block;width:100%;max-width:230px;height:var(--appliance-illustration
     getGridOptions() { return { columns: 12, min_columns: 6, rows: 'auto' }; }
 
     _t(k) { return T[this._lang()][k] ?? T.en[k] ?? k; }
+    // libellé perso (option labels) sinon traduction
+    _l(k) { const L = this._c && this._c.labels; return L && L[k] != null && L[k] !== '' ? String(L[k]) : this._t(k); }
     _lang() { const l = (this._c.language || (this._hass && this._hass.language) || 'en').slice(0, 2); return T[l] ? l : 'en'; }
     _st(id) { return id && this._hass.states[id]; }
     _num(id) {
@@ -10240,7 +10281,7 @@ svg{display:block;width:100%;max-width:230px;height:var(--appliance-illustration
         const el = r.querySelector(`.tile[data-k="${k}"]`); const [ent, val, unit] = V[k];
         el.classList.toggle('hide', !ent || c[opt] === false);
         el.classList.toggle('bad', (k === 'ph' && phBad) || (k === 'temp' && hot));
-        el.querySelector('.lbl').textContent = this._t(k);
+        el.querySelector('.lbl').textContent = this._l(k);
         // valeur + unité en texte (l'unité vient de l'entité ou de la config)
         const small = document.createElement('small'); small.textContent = unit ?? '';
         el.querySelector('.v').replaceChildren(String(val ?? ''), small);
@@ -10269,6 +10310,7 @@ svg{display:block;width:100%;max-width:230px;height:var(--appliance-illustration
       this._form.data = this._c;
       this._form.schema = [
         { name: 'name', selector: { text: {} } },
+        { name: 'labels', selector: { object: {} } },
         ent('entity_status'), ent('entity_power', 'sensor'), ent('entity_energy', 'sensor'), ent('entity_cost', 'sensor'),
         { name: 'price_per_kwh', selector: { number: { min: 0, step: 0.0001, mode: 'box' } } },
         ent('entity_temp', 'sensor'), ent('entity_target_temp'), ent('entity_ph', 'sensor'), ent('entity_light'),
@@ -10726,6 +10768,8 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--acc-move:var(--ap
     getGridOptions() { return { columns: 12, min_columns: 6, rows: 'auto' }; }
 
     _t(k) { return T[this._lang()][k] ?? T.en[k] ?? k; }
+    // libellé perso (option labels) sinon traduction
+    _l(k) { const L = this._c && this._c.labels; return L && L[k] != null && L[k] !== '' ? String(L[k]) : this._t(k); }
     _lang() { const l = (this._c.language || (this._hass && this._hass.language) || 'en').slice(0, 2); return T[l] ? l : 'en'; }
     _st(id) { return id && this._hass.states[id]; }
     _num(id) {
@@ -10870,7 +10914,7 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--acc-move:var(--ap
       TILES.forEach(([k, , opt]) => {
         const el = r.querySelector(`.tile[data-k="${k}"]`); const [show, val, unit] = V[k];
         el.classList.toggle('hide', !show || c[opt] === false);
-        el.querySelector('.lbl').textContent = this._t(k);
+        el.querySelector('.lbl').textContent = this._l(k);
         const small = document.createElement('small'); small.textContent = unit ?? '';
         el.querySelector('.v').replaceChildren(String(val ?? ''), small);
       });
@@ -10897,6 +10941,7 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--acc-move:var(--ap
       this._form.data = this._c;
       this._form.schema = [
         { name: 'name', selector: { text: {} } },
+        { name: 'labels', selector: { object: {} } },
         ent('entity'), ent('entity_control'),
         ent('entity_power', 'sensor'), ent('entity_energy', 'sensor'), ent('entity_cost', 'sensor'),
         { name: 'price_per_kwh', selector: { number: { min: 0, step: 0.0001, mode: 'box' } } },
@@ -11213,6 +11258,8 @@ svg{display:block;width:100%;max-width:250px;height:var(--appliance-illustration
     getGridOptions() { return { columns: 12, min_columns: 6, rows: 'auto' }; }
 
     _t(k) { return T[this._lang()][k] ?? T.en[k] ?? k; }
+    // libellé perso (option labels) sinon traduction
+    _l(k) { const L = this._c && this._c.labels; return L && L[k] != null && L[k] !== '' ? String(L[k]) : this._t(k); }
     _lang() { const l = (this._c.language || (this._hass && this._hass.language) || 'en').slice(0, 2); return T[l] ? l : 'en'; }
     _st(id) { return id && this._hass.states[id]; }
     _num(id) {
@@ -11331,7 +11378,7 @@ svg{display:block;width:100%;max-width:250px;height:var(--appliance-illustration
         const el = r.querySelector(`.tile[data-k="${k}"]`); const [show, val, unit] = V[k];
         el.classList.toggle('hide', !show || c[opt] === false);
         el.classList.toggle('bad', k === 'temp' && hot);
-        el.querySelector('.lbl').textContent = this._t(k);
+        el.querySelector('.lbl').textContent = this._l(k);
         const small = document.createElement('small'); small.textContent = unit ?? '';
         el.querySelector('.v').replaceChildren(String(val ?? ''), small);
       });
@@ -11359,6 +11406,7 @@ svg{display:block;width:100%;max-width:250px;height:var(--appliance-illustration
       this._form.data = this._c;
       this._form.schema = [
         { name: 'name', selector: { text: {} } },
+        { name: 'labels', selector: { object: {} } },
         ent('entity'), ent('entity_temp', 'sensor'), ent('entity_target_temp'), ent('entity_humidity', 'sensor'),
         ent('entity_power', 'sensor'), ent('entity_energy', 'sensor'), ent('entity_cost', 'sensor'),
         { name: 'price_per_kwh', selector: { number: { min: 0, step: 0.0001, mode: 'box' } } },
@@ -11903,6 +11951,8 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
     getGridOptions() { return { columns: 12, min_columns: 6, rows: 'auto' }; }
 
     _t(k) { return T[this._lang()][k] ?? T.en[k] ?? k; }
+    // libellé perso (option labels) sinon traduction
+    _l(k) { const L = this._c && this._c.labels; return L && L[k] != null && L[k] !== '' ? String(L[k]) : this._t(k); }
     _lang() { const l = (this._c.language || (this._hass && this._hass.language) || 'en').slice(0, 2); return T[l] ? l : 'en'; }
     _st(id) { return id && this._hass.states[id]; }
     _num(id) {
@@ -12035,7 +12085,7 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
         const el = r.querySelector(`.tile[data-k="${k}"]`); const [show, val, unit] = V[k];
         el.classList.toggle('hide', !show || c[opt] === false);
         el.classList.toggle('bad', !!bad[k]);
-        el.querySelector('.lbl').textContent = this._t(K.sump && k === 'level' ? 'pit' : k);
+        el.querySelector('.lbl').textContent = this._l(K.sump && k === 'level' && !(this._c.labels || {}).level ? 'pit' : k);
         const small = document.createElement('small'); small.textContent = unit ?? '';
         el.querySelector('.v').replaceChildren(String(val ?? ''), small);
       });
@@ -12063,6 +12113,7 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
       this._form.data = this._c;
       this._form.schema = [
         { name: 'name', selector: { text: {} } },
+        { name: 'labels', selector: { object: {} } },
         ent('entity'), ent('entity_power', 'sensor'), ent('entity_flow', 'sensor'), ent('entity_pressure', 'sensor'),
         ent('entity_temp', 'sensor'), ent('entity_level', 'sensor'), ent('entity_fault', 'binary_sensor'), ent('entity_runtime', 'sensor'),
         ...(KINDS[this.kind].sump ? [ent('entity_float', 'binary_sensor'), ent('entity_starts', 'sensor')] : []),
@@ -12447,6 +12498,8 @@ svg{display:block;width:100%;max-width:280px;height:var(--appliance-illustration
     getGridOptions() { return { columns: 12, min_columns: 6, rows: 'auto' }; }
 
     _t(k) { return T[this._lang()][k] ?? T.en[k] ?? k; }
+    // libellé perso (option labels) sinon traduction
+    _l(k) { const L = this._c && this._c.labels; return L && L[k] != null && L[k] !== '' ? String(L[k]) : this._t(k); }
     _lang() { const l = (this._c.language || (this._hass && this._hass.language) || 'en').slice(0, 2); return T[l] ? l : 'en'; }
     _st(id) { return id && this._hass.states[id]; }
     _num(id) {
@@ -12585,7 +12638,7 @@ svg{display:block;width:100%;max-width:280px;height:var(--appliance-illustration
         const el = r.querySelector(`.tile[data-k="${k}"]`); const [show, val, unit] = V[k];
         el.classList.toggle('hide', !show || c[opt] === false);
         el.classList.toggle('bad', !!bad[k]);
-        el.querySelector('.lbl').textContent = this._t(k);
+        el.querySelector('.lbl').textContent = this._l(k);
         const small = document.createElement('small'); small.textContent = unit ?? '';
         el.querySelector('.v').replaceChildren(String(val ?? ''), small);
       });
@@ -12613,6 +12666,7 @@ svg{display:block;width:100%;max-width:280px;height:var(--appliance-illustration
       this._form.data = this._c;
       this._form.schema = [
         { name: 'name', selector: { text: {} } },
+        { name: 'labels', selector: { object: {} } },
         ent('entity'), ent('entity_switch'), ent('entity_status', 'sensor'), ent('entity_filter', 'sensor'), ent('entity_water_level', 'sensor'),
         ent('entity_water_temp', 'sensor'), ent('entity_time', 'sensor'), ent('entity_battery', 'sensor'), ent('entity_mode'),
         ent('entity_power', 'sensor'), ent('entity_energy', 'sensor'),
@@ -12918,6 +12972,8 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
     getGridOptions() { return { columns: 12, min_columns: 6, rows: 'auto' }; }
 
     _t(k) { return T[this._lang()][k] ?? T.en[k] ?? k; }
+    // libellé perso (option labels) sinon traduction
+    _l(k) { const L = this._c && this._c.labels; return L && L[k] != null && L[k] !== '' ? String(L[k]) : this._t(k); }
     _lang() { const l = (this._c.language || (this._hass && this._hass.language) || 'en').slice(0, 2); return T[l] ? l : 'en'; }
     _st(id) { return id && this._hass.states[id]; }
     _num(id) {
@@ -13018,7 +13074,7 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
         const el = r.querySelector(`.tile[data-k="${k}"]`); const [show, val, unit] = V[k];
         el.classList.toggle('hide', !show || c[opt] === false);
         el.classList.toggle('bad', !!bad[k]);
-        el.querySelector('.lbl').textContent = this._t(k);
+        el.querySelector('.lbl').textContent = this._l(k);
         const small = document.createElement('small'); small.textContent = unit ?? '';
         el.querySelector('.v').replaceChildren(String(val ?? ''), small);
       });
@@ -13046,6 +13102,7 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
       this._form.data = this._c;
       this._form.schema = [
         { name: 'name', selector: { text: {} } },
+        { name: 'labels', selector: { object: {} } },
         ent('entity'), ent('entity_charge', 'sensor'), ent('entity_runtime', 'sensor'), ent('entity_load', 'sensor'), ent('entity_power', 'sensor'),
         ent('entity_input_voltage', 'sensor'), ent('entity_output_voltage', 'sensor'), ent('entity_energy', 'sensor'),
         { type: 'grid', name: '', schema: [num('battery_low', 0, 100, 1, 20, '%'), num('load_max', 10, 100, 1, 90, '%'), num('mains_min', 0, 250, 1, 100, 'V')] },
@@ -13327,6 +13384,8 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
     getGridOptions() { return { columns: 12, min_columns: 6, rows: 'auto' }; }
 
     _t(k) { return T[this._lang()][k] ?? T.en[k] ?? k; }
+    // libellé perso (option labels) sinon traduction
+    _l(k) { const L = this._c && this._c.labels; return L && L[k] != null && L[k] !== '' ? String(L[k]) : this._t(k); }
     _lang() { const l = (this._c.language || (this._hass && this._hass.language) || 'en').slice(0, 2); return T[l] ? l : 'en'; }
     _st(id) { return id && this._hass.states[id]; }
     _num(id) {
@@ -13449,7 +13508,7 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
         const el = r.querySelector(`.tile[data-k="${k}"]`); const [show, val, unit] = V[k];
         el.classList.toggle('hide', !show || c[opt] === false);
         el.classList.toggle('bad', !!bad[k]);
-        el.querySelector('.lbl').textContent = this._t(k);
+        el.querySelector('.lbl').textContent = this._l(k);
         const small = document.createElement('small'); small.textContent = unit ?? '';
         el.querySelector('.v').replaceChildren(String(val ?? ''), small);
       });
@@ -13477,6 +13536,7 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
       this._form.data = this._c;
       this._form.schema = [
         { name: 'name', selector: { text: {} } },
+        { name: 'labels', selector: { object: {} } },
         ent('entity'), ent('entity_temp', 'sensor'), ent('entity_target_temp'), ent('entity_floor_temp', 'sensor'), ent('entity_water_temp', 'sensor'),
         ent('entity_power', 'sensor'), ent('entity_energy', 'sensor'), ent('entity_cost', 'sensor'),
         { name: 'price_per_kwh', selector: { number: { min: 0, step: 0.0001, mode: 'box' } } },
@@ -13882,6 +13942,8 @@ svg{display:block;width:100%;height:auto;overflow:visible}
     getGridOptions() { return { columns: 6, min_columns: 4, rows: 'auto' }; }
 
     _t(k) { return T[this._lang()][k] ?? T.en[k] ?? k; }
+    // libellé perso (option labels) sinon traduction
+    _l(k) { const L = this._c && this._c.labels; return L && L[k] != null && L[k] !== '' ? String(L[k]) : this._t(k); }
     _lang() { let l = (this._c.language || (this._hass && (this._hass.locale?.language || this._hass.language)) || 'en').slice(0, 2); if (l === 'no' || l === 'nn') l = 'nb'; return T[l] ? l : 'en'; }
     _st(id) { return id && this._hass.states[id]; }
     _num(id) {
@@ -13984,7 +14046,7 @@ svg{display:block;width:100%;height:auto;overflow:visible}
       r.querySelectorAll('.tile').forEach((el) => {
         const [show, val, unit, opt] = V[el.dataset.k];
         el.classList.toggle('hide', !show || c[opt] === false);
-        el.querySelector('.lbl').textContent = this._t(el.dataset.k);
+        el.querySelector('.lbl').textContent = this._l(el.dataset.k);
         const small = document.createElement('small'); small.textContent = unit ?? '';
         el.querySelector('.v').replaceChildren(String(val ?? ''), small);
       });
@@ -14010,6 +14072,7 @@ svg{display:block;width:100%;height:auto;overflow:visible}
       this._form.data = this._c;
       this._form.schema = [
         { name: 'name', selector: { text: {} } },
+        { name: 'labels', selector: { object: {} } },
         ent('entity'), ent('entity_power', 'sensor'), ent('entity_energy', 'sensor'),
         { name: 'color', selector: { color_rgb: {} } },
         { type: 'grid', name: '', schema: [

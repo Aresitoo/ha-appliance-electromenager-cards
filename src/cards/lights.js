@@ -251,6 +251,8 @@ svg{display:block;width:100%;height:auto;overflow:visible}
     getGridOptions() { return { columns: 6, min_columns: 4, rows: 'auto' }; }
 
     _t(k) { return T[this._lang()][k] ?? T.en[k] ?? k; }
+    // libellé perso (option labels) sinon traduction
+    _l(k) { const L = this._c && this._c.labels; return L && L[k] != null && L[k] !== '' ? String(L[k]) : this._t(k); }
     _lang() { let l = (this._c.language || (this._hass && (this._hass.locale?.language || this._hass.language)) || 'en').slice(0, 2); if (l === 'no' || l === 'nn') l = 'nb'; return T[l] ? l : 'en'; }
     _st(id) { return id && this._hass.states[id]; }
     _num(id) {
@@ -353,7 +355,7 @@ svg{display:block;width:100%;height:auto;overflow:visible}
       r.querySelectorAll('.tile').forEach((el) => {
         const [show, val, unit, opt] = V[el.dataset.k];
         el.classList.toggle('hide', !show || c[opt] === false);
-        el.querySelector('.lbl').textContent = this._t(el.dataset.k);
+        el.querySelector('.lbl').textContent = this._l(el.dataset.k);
         const small = document.createElement('small'); small.textContent = unit ?? '';
         el.querySelector('.v').replaceChildren(String(val ?? ''), small);
       });
@@ -379,6 +381,7 @@ svg{display:block;width:100%;height:auto;overflow:visible}
       this._form.data = this._c;
       this._form.schema = [
         { name: 'name', selector: { text: {} } },
+        { name: 'labels', selector: { object: {} } },
         ent('entity'), ent('entity_power', 'sensor'), ent('entity_energy', 'sensor'),
         { name: 'color', selector: { color_rgb: {} } },
         { type: 'grid', name: '', schema: [
