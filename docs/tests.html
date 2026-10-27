@@ -677,6 +677,16 @@ ok('card size / grid',typeof c.el.getCardSize()==='number'&&c.el.getGridOptions(
  c.sr.querySelector('[data-a=up]').click();
  ok('underfloor +0.5 °C',JSON.stringify(c.h.calls[0])==='["climate","set_temperature",{"entity_id":"climate.f","temperature":21.5}]',JSON.stringify(c.h.calls));
  ok('underfloor electric class',/elec/.test(card('underfloor-heating',{entity:'switch.f',heating_type:'electric'},[mk('switch.f','on')]).sr.querySelector('ha-card').className));}
+// editor labels: self-contained cards show translated labels, not raw option names
+{const lab=window.applianceEditorLabel;
+ ok('editor label fr',lab('entity_floor_temp',{language:'fr'})==='Température du sol',lab('entity_floor_temp',{language:'fr'}));
+ ok('editor label en',lab('show_power',{language:'en'})==='Show power',lab('show_power',{language:'en'}));
+ ok('editor label de fallback',lab('entity_load',{language:'de'})==='Last',lab('entity_load',{language:'de'}));
+ ok('editor label unknown key humanised',lab('entity_foo_bar',{language:'fr'})==='Foo bar',lab('entity_foo_bar',{language:'fr'}));
+ const ed=document.createElement('appliance-underfloor-heating-card-editor'); ed.hass={language:'fr',states:{}}; ed.setConfig({});
+ ok('underfloor editor uses labels',ed._form.computeLabel({name:'entity_water_temp'})==='Température de départ',ed._form.computeLabel({name:'entity_water_temp'}));
+ const f=customElements.get('appliance-robot-vacuum-solo-card').getConfigForm();
+ ok('getConfigForm cards have computeLabel',typeof f.computeLabel==='function'&&f.computeLabel({name:'entity_battery'})!=='entity_battery',f.computeLabel&&f.computeLabel({name:'entity_battery'}));}
 ok('no page errors',__errors.length===0,__errors.join('; '));
 window.RESULTS=R;
 const fails=R.filter(r=>!r.pass).length;

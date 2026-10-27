@@ -310,7 +310,8 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
           bool('show_power'), bool('show_energy'), bool('show_cost'), bool('animations'),
         ] },
       ];
-      this._form.computeLabel = (s) => s.name;
+      // ici, la température de l'eau est celle du départ du circuit
+      this._form.computeLabel = (s) => window.applianceEditorLabel(s.name === 'entity_water_temp' ? 'entity_flow_temp' : s.name, this._hass);
     }
   }
   customElements.define(TAG + '-editor', ApplianceUnderfloorHeatingCardEditor);

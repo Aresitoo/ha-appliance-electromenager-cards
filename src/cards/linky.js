@@ -52,6 +52,7 @@ class ApplianceLinkyCard extends HTMLElement {
         ] },
         { name: 'language', selector: { select: { options: Object.keys(I18N_LINKY) } } },
       ],
+      computeLabel: (s) => window.applianceEditorLabel(s.name),
     };
   }
 

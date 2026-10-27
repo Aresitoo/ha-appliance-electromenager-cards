@@ -46,6 +46,7 @@ class ApplianceRobotMowerCard extends HTMLElement {
         ] },
         { name: 'language', selector: { select: { options: Object.keys(I18N_MOW) } } },
       ],
+      computeLabel: (s) => window.applianceEditorLabel(s.name),
     };
   }
 

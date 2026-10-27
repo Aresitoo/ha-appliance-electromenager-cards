@@ -41,6 +41,7 @@ class ApplianceAquariumCard extends HTMLElement {
         ] },
         { name: 'language', selector: { select: { options: Object.keys(I18N_AQUARIUM) } } },
       ],
+      computeLabel: (s) => window.applianceEditorLabel(s.name),
     };
   }
 
