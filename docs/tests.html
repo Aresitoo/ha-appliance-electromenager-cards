@@ -802,6 +802,11 @@ ok('no page errors',__errors.length===0,__errors.join('; '));
  ok('underfloor: climate as room + setpoint -> 20 / 25',/^20/.test(v('temp'))&&/^25/.test(v('target')),v('temp')+' / '+v('target'));
  c=card('sauna',{entity:'switch.s',entity_target_temp:'climate.daikin'},[mk('switch.s','on'),D]);
  ok('sauna: climate as setpoint -> 25',/^25/.test(c.sr.querySelector('.tile[data-k=target] .v').textContent),c.sr.querySelector('.tile[data-k=target] .v').textContent);}
+// narrow card (≤ 230 px): value tiles keep the full width (issue #95)
+{const c=card('washer',{power:'sensor.p',energy:'sensor.e'},[mk('sensor.p',600,W),mk('sensor.e',0.5,{unit_of_measurement:'kWh'})]);
+ c.el.style.display='block'; c.el.style.width='215px';
+ requestAnimationFrame(()=>{const st=c.sr.getElementById('stats'), top=c.sr.querySelector('.top');
+  ok('narrow card: tiles span the full width',Math.abs(st.getBoundingClientRect().width-top.getBoundingClientRect().width)<2,st.getBoundingClientRect().width+' vs '+top.getBoundingClientRect().width); c.el.style.width='';});}
 window.RESULTS=R;
 const fails=R.filter(r=>!r.pass).length;
 document.getElementById('sum').innerHTML=`<b class="${fails?'f':'p'}">${R.length-fails} / ${R.length} tests réussis</b> — fichier testé : <code>dist/ha-appliance-electromenager-cards.js</code>`;

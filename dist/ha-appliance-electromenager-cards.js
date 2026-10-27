@@ -4367,6 +4367,8 @@ svg { width: 100%; height: 100%; display: block; overflow: visible; }
   .name { white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; }
   .status { justify-content: center; flex-wrap: wrap; }
   .status span:last-child { white-space: normal; overflow: visible; text-overflow: clip; }
+  /* les tuiles gardent toute la largeur (justify-items: center les réduisait à leur contenu) */
+  .stats { justify-self: stretch; width: 100%; }
 }
 
 /* Icon colors for power, yesterday energy, today energy and temperature */
