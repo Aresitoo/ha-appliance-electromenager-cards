@@ -81,8 +81,23 @@ class ApplianceCardBase extends HTMLElement {
     if (this._config.color) this.style.setProperty("--ac-accent", this._config.color);
   }
 
+  // energy_period (day / week / month) : consommation de la période d'après les statistiques de Home Assistant
+  // (même calcul que le tableau de bord Énergie), relue au plus toutes les 5 min ou quand le compteur bouge
+  _fetchPeriod() {
+    const c = this._config, hass = this._hass, per = c.energy_period;
+    if (!["day", "week", "month"].includes(per) || !c.energy || !hass || typeof hass.callWS !== "function") return;
+    const st = hass.states[c.energy], sig = `${per}|${c.energy}|${st ? st.state : ""}`, now = Date.now();
+    if (this._perBusy || (sig === this._perSig && now - (this._perAt || 0) < 300000) || (this._perAt && now - this._perAt < 60000)) return;
+    this._perBusy = true; this._perSig = sig; this._perAt = now;
+    hass.callWS({ type: "recorder/statistic_during_period", statistic_id: c.energy, calendar: { period: per }, types: ["change"], units: { energy: "kWh" } })
+      .then((r) => { this._perKwh = r && Number.isFinite(r.change) ? r.change : null; })
+      .catch(() => { this._perKwh = null; })
+      .finally(() => { this._perBusy = false; if (this._hass) this._render(this._compute()); });
+  }
+
   _update(force) {
     const hass = this._hass;
+    this._fetchPeriod();
     const key = this._ids().map((i) => {
       const s = hass.states[i];
       return s ? `${s.state}|${s.attributes.temperature ?? ""}|${s.attributes.current_temperature ?? ""}` : "x";
@@ -826,7 +841,10 @@ class ApplianceCardBase extends HTMLElement {
     const dual = kind === "water_heater" && (m.pwS || m.energyS);
     if (m.pw && c.show_power !== false) tile(solar ? "mdi:solar-power" : "mdi:flash", fmtPower(hass, m.pw) ?? "—", lb(solar ? "production" : dual ? "grid" : "power"), c.power);
     if (m.pwS) tile("mdi:solar-power", fmtPower(hass, m.pwS) ?? "—", lb("solar_surplus"), c.power_solar);
-    if (m.energy) {
+    const per = ["day", "week", "month"].includes(c.energy_period) && this._perKwh != null ? c.energy_period : null;
+    if (m.energy && per && !dual && !solar) {
+      tile("mdi:calendar-today", `${fmtNum(hass, this._perKwh, 2)} kWh`, c.labels && c.labels.energy ? lb("energy") : tr(hass, `energy_${per}`), c.energy);
+    } else if (m.energy) {
       const eVal = fmtEnergy(hass, m.energy) ?? "—";
       const yp = m.energy.attributes && m.energy.attributes.last_period;
       if (yp !== undefined && yp !== null && !isNaN(parseFloat(yp))) {

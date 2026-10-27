@@ -196,7 +196,11 @@
     "ph_heat": "Chauffe",
     "f_heating_power": "Seuil de phase de chauffe (W)",
     "f_spin_power": "Seuil de phase d'essorage (W)",
-    "f_images": "Images selon l'état (liste : image + above / below / state)"
+    "f_images": "Images selon l'état (liste : image + above / below / state)",
+    "energy_day": "Aujourd'hui",
+    "energy_week": "Cette semaine",
+    "energy_month": "Ce mois",
+    "f_energy_period": "Énergie affichée (compteur ou période)"
   },
   "aquarium": {
     "power": "Puissance",

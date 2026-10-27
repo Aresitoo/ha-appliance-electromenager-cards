@@ -11,6 +11,7 @@ All cards have a visual editor. When added from the card picker, entities are de
 | `power` | Power sensor (W or kW) |
 | `energy` | Energy sensor (Wh, kWh or MWh, shown in kWh) — e.g. today's consumption |
 | `cost` | Cost sensor (any currency) |
+| `energy_period` | `day`, `week` or `month`: show the energy used in the current period instead of the raw counter, computed by Home Assistant from the long-term statistics of `energy` (like the Energy dashboard), so a cumulative smart-plug counter works without a Utility Meter. Needs a sensor with statistics (`state_class: total_increasing`); otherwise the counter is shown |
 | `switch` | Switch controlled by the power button (button hidden if unset) |
 | `threshold` | Power above which the appliance is considered running (W). Defaults: 10 (washer/dryer/dishwasher), 20 (fridge), 50 (others) |
 | `heating_power` | Washer and dishwasher: power draw threshold (W) above which the cycle phase is inferred as `heat` (default: `1000`) |

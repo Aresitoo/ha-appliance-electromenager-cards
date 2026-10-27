@@ -774,6 +774,22 @@ ok('no page errors',__errors.length===0,__errors.join('; '));
  ok('mower compact + image + rain in status',c.sr.getElementById('card').classList.contains('compact')&&!!c.sr.querySelector('image.uimg')&&/Pluie/.test(c.sr.getElementById('cst').textContent),c.sr.getElementById('cst').textContent);
  c=card('robot-vacuum-solo',{entity:'vacuum.r',image:'"><b class="xss">x</b>',layout:'compact',name:'<b class="xss">x</b>'},[mk('vacuum.r','cleaning')]);
  ok('robot image and name escaped',!c.sr.querySelector('.xss'));}
+// energy_period: daily consumption from long-term statistics (recorder/statistic_during_period)
+{const mkc=(per,change,fail)=>{const c=card('washer',{power:'sensor.p',energy:'sensor.e',energy_period:per},[mk('sensor.p',600,W),mk('sensor.e',1234.5,{unit_of_measurement:'kWh',state_class:'total_increasing'})]);return c;};
+ const calls=[]; const orig=hassOf; 
+ const withWS=(c,change,fail)=>{c.h.callWS=(msg)=>{calls.push(msg);return fail?Promise.reject(new Error('x')):Promise.resolve({change});};c.el.hass={...c.h,states:{...c.h.states}};};
+ const c1=mkc('day'); withWS(c1,0.853);
+ const c2=mkc('month'); withWS(c2,42.1);
+ const c3=mkc('day'); withWS(c3,null,true);
+ const c4=mkc(undefined); withWS(c4,5);
+ setTimeout(()=>{
+  const txt=(c)=>c.sr.getElementById('stats').textContent.replace(/\s+/g,' ');
+  ok('energy_period day: today value',/0,85 kWh/.test(txt(c1))&&/Aujourd'hui/.test(txt(c1)),txt(c1));
+  ok('energy_period: statistics request',calls.some(m=>m.type==='recorder/statistic_during_period'&&m.statistic_id==='sensor.e'&&m.calendar.period==='day'&&m.types[0]==='change'),JSON.stringify(calls[0]));
+  ok('energy_period month',/42,1 kWh/.test(txt(c2))&&/Ce mois/.test(txt(c2)),txt(c2));
+  ok('energy_period: failure falls back to the counter',/1.235 kWh/.test(txt(c3))&&/Énergie/.test(txt(c3)),txt(c3));
+  ok('no energy_period: counter',/1.235 kWh/.test(txt(c4))&&calls.length===3,txt(c4)+' '+calls.length);
+ },300);}
 window.RESULTS=R;
 const fails=R.filter(r=>!r.pass).length;
 document.getElementById('sum').innerHTML=`<b class="${fails?'f':'p'}">${R.length-fails} / ${R.length} tests réussis</b> — fichier testé : <code>dist/ha-appliance-electromenager-cards.js</code>`;

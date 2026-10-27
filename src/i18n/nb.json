@@ -1,5 +1,9 @@
 {
 "common": {
+"energy_day": "I dag",
+"energy_week": "Denne uken",
+"energy_month": "Denne måneden",
+"f_energy_period": "Vist energi (teller eller periode)",
 "washer": "Vaskemaskin",
 "dryer": "Tørketrommel",
 "dishwasher": "Oppvaskmaskin",
