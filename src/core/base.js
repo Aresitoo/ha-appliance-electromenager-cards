@@ -130,8 +130,12 @@ class ApplianceCardBase extends HTMLElement {
       if (!m.temp && main.attributes.current_temperature != null) m.tempVal = main.attributes.current_temperature;
       if (!m.target && main.attributes.temperature != null) m.targetVal = main.attributes.temperature;
     }
-    if (m.tempVal == null) m.tempVal = num(m.temp);
-    if (m.targetVal == null) m.targetVal = num(m.target);
+    // une entité climate / water_heater dans temperature ou target_temperature : son état est un mode (« off », « heat »),
+    // les valeurs sont dans current_temperature et temperature
+    const tOf = (st, key) => (st && ["climate", "water_heater"].includes(domainOf(st.entity_id))
+      ? (st.attributes[key] != null && Number.isFinite(Number(st.attributes[key])) ? Number(st.attributes[key]) : null) : num(st));
+    if (m.tempVal == null) m.tempVal = tOf(m.temp, "current_temperature");
+    if (m.targetVal == null) m.targetVal = tOf(m.target, "temperature");
     m.tempUnit = m.temp?.attributes.unit_of_measurement || hass.config?.unit_system?.temperature || "°C";
     m.nozzles = kind === "printer_3d" ? this._nozzles() : [];
     if (m.nozzles.length) {
