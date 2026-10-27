@@ -606,6 +606,8 @@ ok('card size / grid',typeof c.el.getCardSize()==='number'&&c.el.getGridOptions(
  ok('water pump no flow -> warning + dry run alert',cls(c)==='warning'&&/sec/.test(alert(c)),cls(c)+' '+alert(c));
  c=card('water-pump',{entity:'switch.p',entity_flow:'sensor.f',max_flow:40},[mk('switch.p','on'),mk('sensor.f',20,{unit_of_measurement:'L/min'})]);
  ok('water pump speed = flow / max_flow',c.sr.querySelector('ha-card').style.getPropertyValue('--spd')==='0.500',c.sr.querySelector('ha-card').style.getPropertyValue('--spd'));
+ {const m=card('water-pump',{entity:'switch.p',entity_flow:'sensor.f',max_flow:40},[mk('switch.p','on'),mk('sensor.f',1.2,{unit_of_measurement:'m³/h'})]);
+  ok('water pump m³/h converted to L/min',m.sr.querySelector('ha-card').style.getPropertyValue('--spd')==='0.500'&&/1,2/.test(m.sr.querySelector('.tile[data-k=flow]').textContent),m.sr.querySelector('ha-card').style.getPropertyValue('--spd'));}
  c.sr.querySelector('[data-a=power]').click(); ok('water pump toggle',JSON.stringify(c.h.calls[0])==='["homeassistant","toggle",{"entity_id":"switch.p"}]',JSON.stringify(c.h.calls));
  c=card('industrial-pump',{entity:'switch.p',entity_pressure:'sensor.b',entity_temp:'sensor.t'},[mk('switch.p','on'),mk('sensor.b',14,{unit_of_measurement:'bar'}),mk('sensor.t',95,T)]);
  ok('industrial overpressure + overheat -> warning',cls(c)==='warning'&&/Surpression/.test(alert(c))&&/chaud/.test(alert(c)),cls(c)+' '+alert(c));
@@ -629,6 +631,10 @@ ok('card size / grid',typeof c.el.getCardSize()==='number'&&c.el.getGridOptions(
  c.sr.querySelector('[data-a=dock]').click(); c.sr.querySelector('[data-a=pause]').click();
  ok('pool robot dock + pause',JSON.stringify(c.h.calls)==='[["vacuum","return_to_base",{"entity_id":"vacuum.r"}],["vacuum","pause",{"entity_id":"vacuum.r"}]]',JSON.stringify(c.h.calls));
  ok('pool robot vacuum hides power button',c.sr.querySelector('[data-a=power]').classList.contains('hide'));
+ c=card('pool-robot',{entity:'vacuum.r',entity_switch:'switch.plug'},[mk('vacuum.r','unavailable'),mk('switch.plug','off')]);
+ ok('pool robot plug off -> idle',cls(c)==='idle',cls(c));
+ ok('pool robot vacuum + plug shows all buttons',['start','pause','dock','power'].every(a=>!c.sr.querySelector(`[data-a=${a}]`).classList.contains('hide')));
+ c.sr.querySelector('[data-a=power]').click(); ok('pool robot power toggles the plug',JSON.stringify(c.h.calls[0])==='["homeassistant","toggle",{"entity_id":"switch.plug"}]',JSON.stringify(c.h.calls));
  c=card('pool-robot',{entity:'switch.r'},[mk('switch.r','off')]);
  ok('pool robot switch shows only power',!c.sr.querySelector('[data-a=power]').classList.contains('hide')&&c.sr.querySelector('[data-a=start]').classList.contains('hide'));}
 ok('no page errors',__errors.length===0,__errors.join('; '));

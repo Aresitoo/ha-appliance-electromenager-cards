@@ -14,7 +14,7 @@ Every value tile can be hidden with its `show_…` option, and `language: fr|en|
 
 - `entity` (switch, input_boolean, fan, binary_sensor or text sensor)
 - `entity_power`
-- `entity_flow` (L/min, m³/h… same unit as `max_flow`)
+- `entity_flow` (L/min, m³/h, L/h, L/s or gal/min: converted to L/min for the animation and the thresholds, the tile keeps the sensor unit)
 - `entity_pressure` (bar)
 - `entity_temp` (motor or fluid temperature)
 - `entity_level` (tank level in %, water pump drawing)
@@ -23,14 +23,14 @@ Every value tile can be hidden with its `show_…` option, and `language: fr|en|
 - `entity_energy`
 - `entity_cost` or `price_per_kwh` (with `currency`)
 - `fluid_color` (CSS color, default `#3fa9f5`)
-- `max_flow` (water 40, industrial 200)
+- `max_flow` (L/min, whatever the sensor unit: water 40, industrial 200; 12 m³/h = 200 L/min)
 - `max_power` (water 1200 W, industrial 7500 W)
 - `run_threshold` (water 15 W, industrial 100 W)
 - `max_pressure` (top of the gauge: water 6, industrial 16 bar)
 - `pressure_max` (alert above: water 5, industrial 12 bar)
 - `temp_max` (alert above: water 70, industrial 85 °C)
 - `level_min` (alert below: water 15, industrial 10 %)
-- `no_flow_threshold` (default 0.5)
+- `no_flow_threshold` (L/min, default 0.5)
 - `animations` (default true)
 - `show_status`, `show_controls`, `show_flow`, `show_pressure`, `show_power`, `show_temp`, `show_level`, `show_runtime`, `show_energy`, `show_cost`
 

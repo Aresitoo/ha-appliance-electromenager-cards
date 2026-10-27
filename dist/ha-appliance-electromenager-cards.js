@@ -10280,6 +10280,8 @@ svg{display:block;width:100%;max-width:250px;height:var(--appliance-illustration
  * Pompe industrielle : groupe moteur + pompe à engrenage interne sur châssis, finition métal,
  * voyants RUN / ALERTE / DÉFAUT, manomètre, pulsations du tuyau de refoulement, vibrations.
  * La vitesse des animations suit le débit (ou la puissance) : --spd, 0 → 1 de 0 à max_flow.
+ * Le débit est lu en L/min, m³/h, L/h, L/s ou gal/min et converti en L/min pour la vitesse et
+ * les seuils (max_flow, no_flow_threshold) ; la tuile garde l'unité du capteur.
  * États : off, running, warning (marche avec alerte), fault, unavailable.
  */
 (() => {
@@ -10693,6 +10695,17 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
       const u = ((this._st(id).attributes || {}).unit_of_measurement || '').toLowerCase();
       return u === 'kw' ? v * 1000 : v;
     }
+    // débit converti en L/min, quelle que soit l'unité du capteur
+    _lpm(id) {
+      const v = this._num(id); if (isNaN(v)) return NaN;
+      const u = this._unit(id, 'L/min').toLowerCase().replace(/\s/g, '').replace('³', '3');
+      if (/^m3\/h/.test(u)) return v * 1000 / 60;
+      if (/^m3\/min/.test(u)) return v * 1000;
+      if (/^l\/h/.test(u)) return v / 60;
+      if (/^l\/s/.test(u)) return v * 60;
+      if (/^gal\/min|^gpm/.test(u)) return v * 3.78541;
+      return v;
+    }
     _unit(id, d) { const s = this._st(id); return (s && s.attributes && s.attributes.unit_of_measurement) || d; }
     _fmt(v, d = 0) { return isNaN(v) ? '--' : v.toLocaleString(this._lang() === 'fr' ? 'fr-FR' : 'en-US', { maximumFractionDigits: d, minimumFractionDigits: 0 }); }
     _more(id) { if (id) this.dispatchEvent(new CustomEvent('hass-more-info', { detail: { entityId: id }, bubbles: true, composed: true })); }
@@ -10722,7 +10735,7 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
 
     _compute() {
       const c = this._c, s = this._st(c.entity);
-      const pw = this._watts(c.entity_power), flow = this._num(c.entity_flow), pres = this._num(c.entity_pressure);
+      const pw = this._watts(c.entity_power), flow = this._lpm(c.entity_flow), pres = this._num(c.entity_pressure);
       const temp = this._num(c.entity_temp), level = this._num(c.entity_level);
       const txt = s ? String(s.state).toLowerCase() : '';
       const fault = this._st(c.entity_fault);
@@ -10745,6 +10758,7 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
       if (!this._built) this._build();
       const c = this._c, r = this._root, card = this._card, K = KINDS[this.kind];
       const { st, pw, flow, pres, temp, level, alerts } = this._compute();
+      const flowRaw = this._num(c.entity_flow); // valeur affichée, dans l'unité du capteur
       const clamp = (x) => Math.max(0, Math.min(1, x));
       const on = st === 'running' || st === 'warning';
       // vitesse d'animation : débit sinon puissance, au moins 0,25 pour que ça reste lisible
@@ -10771,7 +10785,7 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
       let cost = this._num(c.entity_cost), costU = this._unit(c.entity_cost, c.currency || '€');
       if (isNaN(cost) && c.price_per_kwh && !isNaN(energy)) { cost = energy * Number(c.price_per_kwh); costU = c.currency || '€'; }
       const V = {
-        flow: [c.entity_flow, this._fmt(flow, 1), this._unit(c.entity_flow, 'L/min')],
+        flow: [c.entity_flow, this._fmt(flowRaw, 1), this._unit(c.entity_flow, 'L/min')],
         pressure: [c.entity_pressure, this._fmt(pres, 1), this._unit(c.entity_pressure, 'bar')],
         power: [c.entity_power, isNaN(pw) ? '--' : (pw >= 1000 ? this._fmt(pw / 1000, 2) : this._fmt(pw, 0)), isNaN(pw) ? '' : (pw >= 1000 ? 'kW' : 'W')],
         temp: [c.entity_temp, this._fmt(temp, 0), this._unit(c.entity_temp, '°C')],
@@ -10819,7 +10833,7 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
         { name: 'price_per_kwh', selector: { number: { min: 0, step: 0.0001, mode: 'box' } } },
         { name: 'fluid_color', selector: { text: {} } },
         { type: 'grid', name: '', schema: [
-          num('max_flow', 1, 10000, 1), num('max_power', 10, 100000, 10, 'W'), num('run_threshold', 0, 5000, 1, 'W'),
+          num('max_flow', 1, 10000, 1, 'L/min'), num('max_power', 10, 100000, 10, 'W'), num('run_threshold', 0, 5000, 1, 'W'),
           num('max_pressure', 1, 100, 0.5, 'bar'), num('pressure_max', 0, 100, 0.1, 'bar'), num('temp_max', 20, 150, 1, '°C'), num('level_min', 0, 100, 1, '%'),
         ] },
         { name: 'language', selector: { select: { options: Object.keys(T).map((value) => ({ value, label: { fr: 'Français', en: 'English', de: 'Deutsch', nb: 'Norsk bokmål', ro: 'Română', nl: 'Nederlands' }[value] || value })) } } },
@@ -10867,7 +10881,8 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
  * entity_water_level (repère « min » sur la paroi), la jauge du filtre sur la coque suit
  * entity_filter (saturation, 0 → 100 %).
  * États : cleaning, paused, returning, idle, error, unavailable. Entité vacuum (Démarrer / Pause /
- * Remonter), switch / input_boolean (Marche / Arrêt) ou sensor texte.
+ * Remonter), switch / input_boolean (Marche / Arrêt) ou sensor texte. Les deux se combinent :
+ * entity_switch = prise connectée qui alimente le robot (bouton Marche / Arrêt en plus).
  */
 (() => {
   const TAG = 'appliance-pool-robot-card';
@@ -11176,6 +11191,7 @@ svg{display:block;width:100%;max-width:280px;height:var(--appliance-illustration
       const f = (r, dom) => ids.find((i) => (!dom || i.startsWith(dom + '.')) && r.test(i)) || '';
       return {
         entity: f(re, 'vacuum') || f(re, 'switch'),
+        entity_switch: f(re, 'vacuum') ? f(re, 'switch') : '',
         entity_filter: f(/(pool|piscine|robot|dolphin).*filt/i, 'sensor'),
         entity_water_temp: f(/(pool|piscine).*(temp)/i, 'sensor'),
       };
@@ -11241,14 +11257,26 @@ svg{display:block;width:100%;max-width:280px;height:var(--appliance-illustration
     }
 
     _action(a) {
-      const c = this._c, h = this._hass; if (!h || !c.entity) return;
-      if (a === 'power') { h.callService('homeassistant', 'toggle', { entity_id: c.entity }); return; }
+      const c = this._c, h = this._hass; if (!h || !(c.entity || c.entity_switch)) return;
+      if (a === 'power') { h.callService('homeassistant', 'toggle', { entity_id: this._plug() }); return; }
+      if (!c.entity) return;
       h.callService('vacuum', { start: 'start', pause: 'pause', dock: 'return_to_base' }[a], { entity_id: c.entity });
+    }
+
+    // prise qui alimente le robot : entity_switch, sinon l'entité principale si c'est un switch
+    _plug() {
+      const c = this._c;
+      if (c.entity_switch) return c.entity_switch;
+      return ['switch', 'input_boolean'].includes((c.entity || '').split('.')[0]) ? c.entity : '';
     }
 
     _compute() {
       const c = this._c, s = this._st(c.entity);
       const pw = this._watts(c.entity_power);
+      // prise coupée = robot hors tension, même si l'entité vacuum est devenue indisponible
+      const plug = c.entity_switch && this._st(c.entity_switch);
+      if (plug && plug.state === 'off') return 'idle';
+      if (!s && plug && plug.state === 'on') return !isNaN(pw) && pw <= Number(c.run_threshold) ? 'idle' : 'cleaning';
       const txt = String((this._st(c.entity_status) || {}).state || (s && s.state) || '').toLowerCase();
       if (!s && isNaN(pw)) return 'unavailable';
       if (s && /^(unavailable|unknown)$/.test(s.state) && isNaN(pw)) return 'unavailable';
@@ -11289,16 +11317,17 @@ svg{display:block;width:100%;max-width:280px;height:var(--appliance-illustration
       if (low) alerts.push(this._t('low_water'));
       const al = r.getElementById('pralert'); al.textContent = alerts.join(' · '); al.classList.toggle('on', alerts.length > 0);
 
-      // commandes : vacuum = Démarrer / Pause / Remonter, switch = Marche / Arrêt
-      const d = (c.entity || '').split('.')[0], vac = d === 'vacuum';
+      // commandes : vacuum = Démarrer / Pause / Remonter, prise (switch) = Marche / Arrêt, les deux si entity_switch
+      const d = (c.entity || '').split('.')[0], vac = d === 'vacuum', plugId = this._plug();
+      const plugOn = plugId && (this._st(plugId) || {}).state === 'on';
       const ctl = r.getElementById('prctl');
-      ctl.classList.toggle('hide', c.show_controls === false || !['vacuum', 'switch', 'input_boolean'].includes(d));
+      ctl.classList.toggle('hide', c.show_controls === false || (!vac && !plugId));
       const active = { cleaning: 'start', paused: 'pause', returning: 'dock' }[st];
       ctl.querySelectorAll('button').forEach((b) => {
         const a = b.dataset.a;
-        b.classList.toggle('hide', vac ? a === 'power' : a !== 'power');
-        b.classList.toggle('on', vac && a === active);
-        b.querySelector('span').textContent = this._t(a === 'power' ? (st === 'cleaning' ? 'turn_off' : 'turn_on') : a);
+        b.classList.toggle('hide', a === 'power' ? !plugId : !vac);
+        b.classList.toggle('on', a === 'power' ? !!(plugOn && vac) : vac && a === active);
+        b.querySelector('span').textContent = this._t(a === 'power' ? (plugOn ? 'turn_off' : 'turn_on') : a);
       });
 
       const mode = this._st(c.entity_mode);
@@ -11346,7 +11375,7 @@ svg{display:block;width:100%;max-width:280px;height:var(--appliance-illustration
       this._form.data = this._c;
       this._form.schema = [
         { name: 'name', selector: { text: {} } },
-        ent('entity'), ent('entity_status', 'sensor'), ent('entity_filter', 'sensor'), ent('entity_water_level', 'sensor'),
+        ent('entity'), ent('entity_switch'), ent('entity_status', 'sensor'), ent('entity_filter', 'sensor'), ent('entity_water_level', 'sensor'),
         ent('entity_water_temp', 'sensor'), ent('entity_time', 'sensor'), ent('entity_battery', 'sensor'), ent('entity_mode'),
         ent('entity_power', 'sensor'), ent('entity_energy', 'sensor'),
         { type: 'grid', name: '', schema: [

@@ -5,6 +5,8 @@
  * Pompe industrielle : groupe moteur + pompe à engrenage interne sur châssis, finition métal,
  * voyants RUN / ALERTE / DÉFAUT, manomètre, pulsations du tuyau de refoulement, vibrations.
  * La vitesse des animations suit le débit (ou la puissance) : --spd, 0 → 1 de 0 à max_flow.
+ * Le débit est lu en L/min, m³/h, L/h, L/s ou gal/min et converti en L/min pour la vitesse et
+ * les seuils (max_flow, no_flow_threshold) ; la tuile garde l'unité du capteur.
  * États : off, running, warning (marche avec alerte), fault, unavailable.
  */
 (() => {
@@ -279,6 +281,17 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
       const u = ((this._st(id).attributes || {}).unit_of_measurement || '').toLowerCase();
       return u === 'kw' ? v * 1000 : v;
     }
+    // débit converti en L/min, quelle que soit l'unité du capteur
+    _lpm(id) {
+      const v = this._num(id); if (isNaN(v)) return NaN;
+      const u = this._unit(id, 'L/min').toLowerCase().replace(/\s/g, '').replace('³', '3');
+      if (/^m3\/h/.test(u)) return v * 1000 / 60;
+      if (/^m3\/min/.test(u)) return v * 1000;
+      if (/^l\/h/.test(u)) return v / 60;
+      if (/^l\/s/.test(u)) return v * 60;
+      if (/^gal\/min|^gpm/.test(u)) return v * 3.78541;
+      return v;
+    }
     _unit(id, d) { const s = this._st(id); return (s && s.attributes && s.attributes.unit_of_measurement) || d; }
     _fmt(v, d = 0) { return isNaN(v) ? '--' : v.toLocaleString(this._lang() === 'fr' ? 'fr-FR' : 'en-US', { maximumFractionDigits: d, minimumFractionDigits: 0 }); }
     _more(id) { if (id) this.dispatchEvent(new CustomEvent('hass-more-info', { detail: { entityId: id }, bubbles: true, composed: true })); }
@@ -308,7 +321,7 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
 
     _compute() {
       const c = this._c, s = this._st(c.entity);
-      const pw = this._watts(c.entity_power), flow = this._num(c.entity_flow), pres = this._num(c.entity_pressure);
+      const pw = this._watts(c.entity_power), flow = this._lpm(c.entity_flow), pres = this._num(c.entity_pressure);
       const temp = this._num(c.entity_temp), level = this._num(c.entity_level);
       const txt = s ? String(s.state).toLowerCase() : '';
       const fault = this._st(c.entity_fault);
@@ -331,6 +344,7 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
       if (!this._built) this._build();
       const c = this._c, r = this._root, card = this._card, K = KINDS[this.kind];
       const { st, pw, flow, pres, temp, level, alerts } = this._compute();
+      const flowRaw = this._num(c.entity_flow); // valeur affichée, dans l'unité du capteur
       const clamp = (x) => Math.max(0, Math.min(1, x));
       const on = st === 'running' || st === 'warning';
       // vitesse d'animation : débit sinon puissance, au moins 0,25 pour que ça reste lisible
@@ -357,7 +371,7 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
       let cost = this._num(c.entity_cost), costU = this._unit(c.entity_cost, c.currency || '€');
       if (isNaN(cost) && c.price_per_kwh && !isNaN(energy)) { cost = energy * Number(c.price_per_kwh); costU = c.currency || '€'; }
       const V = {
-        flow: [c.entity_flow, this._fmt(flow, 1), this._unit(c.entity_flow, 'L/min')],
+        flow: [c.entity_flow, this._fmt(flowRaw, 1), this._unit(c.entity_flow, 'L/min')],
         pressure: [c.entity_pressure, this._fmt(pres, 1), this._unit(c.entity_pressure, 'bar')],
         power: [c.entity_power, isNaN(pw) ? '--' : (pw >= 1000 ? this._fmt(pw / 1000, 2) : this._fmt(pw, 0)), isNaN(pw) ? '' : (pw >= 1000 ? 'kW' : 'W')],
         temp: [c.entity_temp, this._fmt(temp, 0), this._unit(c.entity_temp, '°C')],
@@ -405,7 +419,7 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
         { name: 'price_per_kwh', selector: { number: { min: 0, step: 0.0001, mode: 'box' } } },
         { name: 'fluid_color', selector: { text: {} } },
         { type: 'grid', name: '', schema: [
-          num('max_flow', 1, 10000, 1), num('max_power', 10, 100000, 10, 'W'), num('run_threshold', 0, 5000, 1, 'W'),
+          num('max_flow', 1, 10000, 1, 'L/min'), num('max_power', 10, 100000, 10, 'W'), num('run_threshold', 0, 5000, 1, 'W'),
           num('max_pressure', 1, 100, 0.5, 'bar'), num('pressure_max', 0, 100, 0.1, 'bar'), num('temp_max', 20, 150, 1, '°C'), num('level_min', 0, 100, 1, '%'),
         ] },
         { name: 'language', selector: { select: { options: Object.keys(T).map((value) => ({ value, label: { fr: 'Français', en: 'English', de: 'Deutsch', nb: 'Norsk bokmål', ro: 'Română', nl: 'Nederlands' }[value] || value })) } } },

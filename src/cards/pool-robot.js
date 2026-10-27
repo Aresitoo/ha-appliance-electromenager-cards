@@ -5,7 +5,8 @@
  * entity_water_level (repère « min » sur la paroi), la jauge du filtre sur la coque suit
  * entity_filter (saturation, 0 → 100 %).
  * États : cleaning, paused, returning, idle, error, unavailable. Entité vacuum (Démarrer / Pause /
- * Remonter), switch / input_boolean (Marche / Arrêt) ou sensor texte.
+ * Remonter), switch / input_boolean (Marche / Arrêt) ou sensor texte. Les deux se combinent :
+ * entity_switch = prise connectée qui alimente le robot (bouton Marche / Arrêt en plus).
  */
 (() => {
   const TAG = 'appliance-pool-robot-card';
@@ -163,6 +164,7 @@ svg{display:block;width:100%;max-width:280px;height:var(--appliance-illustration
       const f = (r, dom) => ids.find((i) => (!dom || i.startsWith(dom + '.')) && r.test(i)) || '';
       return {
         entity: f(re, 'vacuum') || f(re, 'switch'),
+        entity_switch: f(re, 'vacuum') ? f(re, 'switch') : '',
         entity_filter: f(/(pool|piscine|robot|dolphin).*filt/i, 'sensor'),
         entity_water_temp: f(/(pool|piscine).*(temp)/i, 'sensor'),
       };
@@ -228,14 +230,26 @@ svg{display:block;width:100%;max-width:280px;height:var(--appliance-illustration
     }
 
     _action(a) {
-      const c = this._c, h = this._hass; if (!h || !c.entity) return;
-      if (a === 'power') { h.callService('homeassistant', 'toggle', { entity_id: c.entity }); return; }
+      const c = this._c, h = this._hass; if (!h || !(c.entity || c.entity_switch)) return;
+      if (a === 'power') { h.callService('homeassistant', 'toggle', { entity_id: this._plug() }); return; }
+      if (!c.entity) return;
       h.callService('vacuum', { start: 'start', pause: 'pause', dock: 'return_to_base' }[a], { entity_id: c.entity });
+    }
+
+    // prise qui alimente le robot : entity_switch, sinon l'entité principale si c'est un switch
+    _plug() {
+      const c = this._c;
+      if (c.entity_switch) return c.entity_switch;
+      return ['switch', 'input_boolean'].includes((c.entity || '').split('.')[0]) ? c.entity : '';
     }
 
     _compute() {
       const c = this._c, s = this._st(c.entity);
       const pw = this._watts(c.entity_power);
+      // prise coupée = robot hors tension, même si l'entité vacuum est devenue indisponible
+      const plug = c.entity_switch && this._st(c.entity_switch);
+      if (plug && plug.state === 'off') return 'idle';
+      if (!s && plug && plug.state === 'on') return !isNaN(pw) && pw <= Number(c.run_threshold) ? 'idle' : 'cleaning';
       const txt = String((this._st(c.entity_status) || {}).state || (s && s.state) || '').toLowerCase();
       if (!s && isNaN(pw)) return 'unavailable';
       if (s && /^(unavailable|unknown)$/.test(s.state) && isNaN(pw)) return 'unavailable';
@@ -276,16 +290,17 @@ svg{display:block;width:100%;max-width:280px;height:var(--appliance-illustration
       if (low) alerts.push(this._t('low_water'));
       const al = r.getElementById('pralert'); al.textContent = alerts.join(' · '); al.classList.toggle('on', alerts.length > 0);
 
-      // commandes : vacuum = Démarrer / Pause / Remonter, switch = Marche / Arrêt
-      const d = (c.entity || '').split('.')[0], vac = d === 'vacuum';
+      // commandes : vacuum = Démarrer / Pause / Remonter, prise (switch) = Marche / Arrêt, les deux si entity_switch
+      const d = (c.entity || '').split('.')[0], vac = d === 'vacuum', plugId = this._plug();
+      const plugOn = plugId && (this._st(plugId) || {}).state === 'on';
       const ctl = r.getElementById('prctl');
-      ctl.classList.toggle('hide', c.show_controls === false || !['vacuum', 'switch', 'input_boolean'].includes(d));
+      ctl.classList.toggle('hide', c.show_controls === false || (!vac && !plugId));
       const active = { cleaning: 'start', paused: 'pause', returning: 'dock' }[st];
       ctl.querySelectorAll('button').forEach((b) => {
         const a = b.dataset.a;
-        b.classList.toggle('hide', vac ? a === 'power' : a !== 'power');
-        b.classList.toggle('on', vac && a === active);
-        b.querySelector('span').textContent = this._t(a === 'power' ? (st === 'cleaning' ? 'turn_off' : 'turn_on') : a);
+        b.classList.toggle('hide', a === 'power' ? !plugId : !vac);
+        b.classList.toggle('on', a === 'power' ? !!(plugOn && vac) : vac && a === active);
+        b.querySelector('span').textContent = this._t(a === 'power' ? (plugOn ? 'turn_off' : 'turn_on') : a);
       });
 
       const mode = this._st(c.entity_mode);
@@ -333,7 +348,7 @@ svg{display:block;width:100%;max-width:280px;height:var(--appliance-illustration
       this._form.data = this._c;
       this._form.schema = [
         { name: 'name', selector: { text: {} } },
-        ent('entity'), ent('entity_status', 'sensor'), ent('entity_filter', 'sensor'), ent('entity_water_level', 'sensor'),
+        ent('entity'), ent('entity_switch'), ent('entity_status', 'sensor'), ent('entity_filter', 'sensor'), ent('entity_water_level', 'sensor'),
         ent('entity_water_temp', 'sensor'), ent('entity_time', 'sensor'), ent('entity_battery', 'sensor'), ent('entity_mode'),
         ent('entity_power', 'sensor'), ent('entity_energy', 'sensor'),
         { type: 'grid', name: '', schema: [
