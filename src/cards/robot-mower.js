@@ -216,5 +216,5 @@ const COMMON_CSS_MOW = `
   .stat .v { font-weight:700; font-size:1.02em; } .stat .l { font-size:.7em; opacity:.65; text-transform:uppercase; letter-spacing:.04em; }
   @keyframes blink { 50% { opacity:.3 } } @keyframes breathe { 50% { opacity:.4 } }`;
 define('appliance-robot-mower-solo-card', ApplianceRobotMowerSoloCard);
-window.customCards.push({ type: 'appliance-robot-mower-solo-card', name: 'Robot Mower Solo Card', description: 'Robot tondeuse seule (sans fond ni station), animée, avec commandes', preview: false });
+window.customCards.push({ type: 'appliance-robot-mower-solo-card', name: 'Appliance – Robot mower (solo) / Robot tondeuse (seul)', description: 'Robot tondeuse seule (sans fond ni station), animée, avec commandes', preview: false });
 })();

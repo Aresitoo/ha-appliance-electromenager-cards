@@ -221,5 +221,5 @@ class ApplianceAquariumCard extends HTMLElement {
 
 define('appliance-aquarium-card', ApplianceAquariumCard);
 window.customCards = window.customCards || [];
-window.customCards.push({ type: 'appliance-aquarium-card', name: 'Aquarium Card', description: 'Aquarium animé : puissance, kWh, température, coût', preview: false });
+window.customCards.push({ type: 'appliance-aquarium-card', name: 'Appliance – Aquarium', description: 'Aquarium animé : puissance, kWh, température, coût', preview: false });
 })();

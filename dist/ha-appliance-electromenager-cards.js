@@ -6383,7 +6383,7 @@ class ApplianceAquariumCard extends HTMLElement {
 
 define('appliance-aquarium-card', ApplianceAquariumCard);
 window.customCards = window.customCards || [];
-window.customCards.push({ type: 'appliance-aquarium-card', name: 'Aquarium Card', description: 'Aquarium animé : puissance, kWh, température, coût', preview: false });
+window.customCards.push({ type: 'appliance-aquarium-card', name: 'Appliance – Aquarium', description: 'Aquarium animé : puissance, kWh, température, coût', preview: false });
 })();
 
 /* ================================================================== */
@@ -6834,7 +6834,7 @@ class ApplianceLinkyCard extends HTMLElement {
 
 define('appliance-linky-card', ApplianceLinkyCard);
 window.customCards = window.customCards || [];
-window.customCards.push({ type: 'appliance-linky-card', name: 'Linky Card', description: 'Compteur Linky animé : LCD, jauge, index HP/HC', preview: false });
+window.customCards.push({ type: 'appliance-linky-card', name: 'Appliance – Linky', description: 'Compteur Linky animé : LCD, jauge, index HP/HC', preview: false });
 })();
 
 /* ================================================================== */
@@ -7116,7 +7116,7 @@ class ApplianceBatteryCard extends HTMLElement {
 }
 define('appliance-battery-card', ApplianceBatteryCard);
 window.customCards = window.customCards || [];
-window.customCards.push({ type: 'appliance-battery-card', name: 'Solar Battery Card', description: 'Batterie de stockage solaire animée', preview: false });
+window.customCards.push({ type: 'appliance-battery-card', name: 'Appliance – Solar battery / Batterie solaire', description: 'Batterie de stockage solaire animée', preview: false });
 })();
 
 /* ================================================================== */
@@ -7416,7 +7416,7 @@ class ApplianceEvChargerCard extends HTMLElement {
 }
 define('appliance-ev-charger-card', ApplianceEvChargerCard);
 window.customCards = window.customCards || [];
-window.customCards.push({ type: 'appliance-ev-charger-card', name: 'EV Charger Card', description: 'Wallbox murale animée avec voiture branchée', preview: false });
+window.customCards.push({ type: 'appliance-ev-charger-card', name: 'Appliance – EV charger / Borne de recharge', description: 'Wallbox murale animée avec voiture branchée', preview: false });
 })();
 
 /* ================================================================== */
@@ -7769,7 +7769,7 @@ class ApplianceRobotVacuumSoloCard extends ApplianceRobotVacuumCard {
   }
 }
 define('appliance-robot-vacuum-solo-card', ApplianceRobotVacuumSoloCard);
-window.customCards.push({ type: 'appliance-robot-vacuum-solo-card', name: 'Robot Vacuum Solo Card', description: 'Robot aspirateur seul (sans fond ni station), animé, avec commandes', preview: false });
+window.customCards.push({ type: 'appliance-robot-vacuum-solo-card', name: 'Appliance – Robot vacuum (solo) / Robot aspirateur (seul)', description: 'Robot aspirateur seul (sans fond ni station), animé, avec commandes', preview: false });
 })();
 
 /* ================================================================== */
@@ -8111,7 +8111,7 @@ const COMMON_CSS_MOW = `
   .stat .v { font-weight:700; font-size:1.02em; } .stat .l { font-size:.7em; opacity:.65; text-transform:uppercase; letter-spacing:.04em; }
   @keyframes blink { 50% { opacity:.3 } } @keyframes breathe { 50% { opacity:.4 } }`;
 define('appliance-robot-mower-solo-card', ApplianceRobotMowerSoloCard);
-window.customCards.push({ type: 'appliance-robot-mower-solo-card', name: 'Robot Mower Solo Card', description: 'Robot tondeuse seule (sans fond ni station), animée, avec commandes', preview: false });
+window.customCards.push({ type: 'appliance-robot-mower-solo-card', name: 'Appliance – Robot mower (solo) / Robot tondeuse (seul)', description: 'Robot tondeuse seule (sans fond ni station), animée, avec commandes', preview: false });
 })();
 
 /* ================================================================== */
@@ -8478,7 +8478,7 @@ class AppliancePelletBoilerCard extends HTMLElement {
 }
 define('appliance-pellet-boiler-card', AppliancePelletBoilerCard);
 window.customCards = window.customCards || [];
-window.customCards.push({ type: 'appliance-pellet-boiler-card', name: 'Pellet Boiler Card', description: 'Chaudière à granulés animée (trémie, vis sans fin, flamme, départ/retour)', preview: false });
+window.customCards.push({ type: 'appliance-pellet-boiler-card', name: 'Appliance – Pellet boiler / Chaudière à granulés', description: 'Chaudière à granulés animée (trémie, vis sans fin, flamme, départ/retour)', preview: false });
 })();
 
 /* Carte « Chaudière à gaz » — custom:appliance-gas-boiler-card
