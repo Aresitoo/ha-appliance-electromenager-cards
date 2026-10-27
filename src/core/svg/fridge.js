@@ -28,7 +28,7 @@ const fzInside = (x, y, w, h) => `
 const fridgeLcd = (x, y) => `
 <rect x="${x}" y="${y}" width="30" height="14" rx="2" fill="#0c1720" stroke="#7d868f" stroke-width=".6"/>
 <g class="flake"><path d="M${x + 5.5} ${y + 4}v6M${x + 2.9} ${y + 5.5}l5.2 3M${x + 2.9} ${y + 8.5}l5.2-3" stroke="#38d9ff" stroke-width=".8" stroke-linecap="round"/></g>
-<text class="lcd fr-temp" x="${x + 19.5}" y="${y + 10.8}" text-anchor="middle" fill="#38d9ff" font-size="11.5" font-weight="800">--°</text>`;
+<text class="lcd fr-temp" x="${x + 19.5}" y="${y + 7.4}" text-anchor="middle" fill="#38d9ff" font-size="11.5" font-weight="800">--°</text>`;
 const FRIDGE_DEFS = `<defs>${DEFS}
 <linearGradient id="ID-in" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#dfe9f2"/></linearGradient>
 <linearGradient id="ID-frost" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e9f6ff"/><stop offset="1" stop-color="#bfe0f5"/></linearGradient></defs>`;
