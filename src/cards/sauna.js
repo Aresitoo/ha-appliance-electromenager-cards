@@ -167,8 +167,16 @@ svg{display:block;width:100%;max-width:250px;height:var(--appliance-illustration
     _l(k) { const L = this._c && this._c.labels; return L && L[k] != null && L[k] !== '' ? String(L[k]) : this._t(k); }
     _lang() { const l = (this._c.language || (this._hass && this._hass.language) || 'en').slice(0, 2); return T[l] ? l : 'en'; }
     _st(id) { return id && this._hass.states[id]; }
+    // consigne : attribut temperature d'une entité climate / water_heater, sinon valeur numérique de l'état
+    _tgt(id) {
+      const s = this._st(id);
+      if (s && /^(climate|water_heater)\./.test(s.entity_id)) { const t = Number(s.attributes && s.attributes.temperature); return s.attributes && s.attributes.temperature != null && isFinite(t) ? t : NaN; }
+      return this._num(id);
+    }
     _num(id) {
       const s = this._st(id); if (!s) return NaN;
+      // climate / water_heater : l'état est un mode, la température actuelle est dans current_temperature
+      if (/^(climate|water_heater)\./.test(s.entity_id)) { const t = Number(s.attributes && s.attributes.current_temperature); return s.attributes && s.attributes.current_temperature != null && isFinite(t) ? t : NaN; }
       const v = parseFloat(String(s.state).replace(',', '.'));
       return isFinite(v) ? v : NaN;
     }
@@ -228,7 +236,7 @@ svg{display:block;width:100%;max-width:250px;height:var(--appliance-illustration
       const pw = this._watts(c.entity_power);
       let temp = this._num(c.entity_temp);
       if (isNaN(temp) && isFinite(Number(a.current_temperature))) temp = Number(a.current_temperature);
-      let target = this._num(c.entity_target_temp);
+      let target = this._tgt(c.entity_target_temp);
       if (isNaN(target) && isFinite(Number(a.temperature))) target = Number(a.temperature);
       if (isNaN(target)) target = Number(c.target_temp);
       const txt = s ? String(s.state).toLowerCase() : '';

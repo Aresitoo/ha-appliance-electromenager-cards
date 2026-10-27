@@ -790,6 +790,18 @@ ok('no page errors',__errors.length===0,__errors.join('; '));
   ok('energy_period: failure falls back to the counter',/1.235 kWh/.test(txt(c3))&&/Énergie/.test(txt(c3)),txt(c3));
   ok('no energy_period: counter',/1.235 kWh/.test(txt(c4))&&calls.length===3,txt(c4)+' '+calls.length);
  },300);}
+// climate / water_heater entity used as temperature or setpoint (state is a mode, values in attributes) — issue #94
+{const D=mk('climate.daikin','off',{current_temperature:20,temperature:25});
+ const txt=(c)=>c.sr.getElementById('stats').textContent.replace(/\s+/g,' ');
+ let c=card('heat-pump',{power:'sensor.p',temperature:'climate.daikin',target_temperature:'climate.daikin'},[mk('sensor.p',900,W),D]);
+ ok('core: climate as temperature + target -> 20 / 25',/20 °C/.test(txt(c))&&/25 °C/.test(txt(c)),txt(c));
+ c=card('water-heater',{power:'sensor.p',target_temperature:'water_heater.bal'},[mk('sensor.p',0,W),mk('water_heater.bal','eco',{current_temperature:48,temperature:55})]);
+ ok('core: water_heater as target -> 55',/55 °C/.test(txt(c))&&!/48 °C Consigne/.test(txt(c)),txt(c));
+ c=card('underfloor-heating',{entity:'switch.pc',entity_temp:'climate.daikin',entity_target_temp:'climate.daikin'},[mk('switch.pc','on'),D]);
+ const v=(k)=>c.sr.querySelector(`.tile[data-k=${k}] .v`).textContent;
+ ok('underfloor: climate as room + setpoint -> 20 / 25',/^20/.test(v('temp'))&&/^25/.test(v('target')),v('temp')+' / '+v('target'));
+ c=card('sauna',{entity:'switch.s',entity_target_temp:'climate.daikin'},[mk('switch.s','on'),D]);
+ ok('sauna: climate as setpoint -> 25',/^25/.test(c.sr.querySelector('.tile[data-k=target] .v').textContent),c.sr.querySelector('.tile[data-k=target] .v').textContent);}
 window.RESULTS=R;
 const fails=R.filter(r=>!r.pass).length;
 document.getElementById('sum').innerHTML=`<b class="${fails?'f':'p'}">${R.length-fails} / ${R.length} tests réussis</b> — fichier testé : <code>dist/ha-appliance-electromenager-cards.js</code>`;

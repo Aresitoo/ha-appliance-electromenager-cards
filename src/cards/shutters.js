@@ -189,6 +189,8 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--sh-move:var(--app
     _st(id) { return id && this._hass.states[id]; }
     _num(id) {
       const s = this._st(id); if (!s) return NaN;
+      // climate / water_heater : l'état est un mode, la température actuelle est dans current_temperature
+      if (/^(climate|water_heater)\./.test(s.entity_id)) { const t = Number(s.attributes && s.attributes.current_temperature); return s.attributes && s.attributes.current_temperature != null && isFinite(t) ? t : NaN; }
       const v = parseFloat(String(s.state).replace(',', '.'));
       return isFinite(v) ? v : NaN;
     }
