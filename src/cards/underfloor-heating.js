@@ -307,7 +307,7 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
         { name: 'price_per_kwh', selector: { number: { min: 0, step: 0.0001, mode: 'box' } } },
         { name: 'heating_type', selector: { select: { options: ['water', 'electric'] } } },
         { type: 'grid', name: '', schema: [num('floor_max', 20, 40, 0.5, 29, '°C'), num('water_max', 25, 70, 1, 45, '°C'), num('heat_threshold', 0, 5000, 1, 20, 'W')] },
-        { name: 'language', selector: { select: { options: Object.keys(T).map((value) => ({ value, label: { fr: 'Français', en: 'English', de: 'Deutsch', nb: 'Norsk bokmål', ro: 'Română', nl: 'Nederlands' }[value] || value })) } } },
+        { name: 'language', selector: { select: { options: Object.keys(T).map((value) => ({ value, label: { fr: 'Français', en: 'English', de: 'Deutsch', nb: 'Norsk bokmål', ro: 'Română', nl: 'Nederlands', ru: 'Русский' }[value] || value })) } } },
         { type: 'grid', name: '', schema: [
           bool('show_status'), bool('show_controls'), bool('show_temp'), bool('show_floor'), bool('show_water'),
           bool('show_power'), bool('show_energy'), bool('show_cost'), bool('animations'),
