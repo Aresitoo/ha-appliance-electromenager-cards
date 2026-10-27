@@ -97,4 +97,36 @@ entity_energy: sensor.poele_sauna_energie
 price_per_kwh: 0.2516
 ```
 
+**Pompe à eau** : `custom:appliance-water-pump-card`, style sobre pour une pompe d'arrosage, de puits, de récupération d'eau de pluie ou de piscine. Cuve source (son niveau suit `entity_level` en %), volute avec roue à aubes qui tourne, moteur à ailettes, tuyau de refoulement qui se déverse dans un bassin. L'eau circule dans les tuyaux, des vagues bougent dans la cuve et le bassin, des ronds se forment sous le jet. La vitesse de l'animation suit le débit (`entity_flow` / `max_flow`), sinon la puissance (`entity_power` / `max_power`). Le capteur de débit peut être en L/min, m³/h, L/h, L/s ou gal/min : il est converti en L/min pour l'animation et les seuils (`max_flow`, `no_flow_threshold` en L/min ; 12 m³/h = 200 L/min), la tuile garde l'unité du capteur.
+
+**Pompe industrielle** : `custom:appliance-industrial-pump-card`, groupe motopompe robuste sur châssis acier : pompe à engrenage interne à brides boulonnées, carter d'accouplement rayé, moteur à ailettes avec plaque affichant la puissance, voyants **RUN / ALERTE / DÉFAUT** et manomètre dont l'aiguille suit `entity_pressure`. En marche, le tuyau de refoulement gonfle à chaque pulsation, des ondes de pression partent de la bride, l'aiguille tremble et le groupe vibre.
+
+Pour les deux pompes : états arrêt, en marche, alerte (en marche avec une alerte), défaut (`entity_fault` à `on`) et indisponible. Alertes : pas de débit en marche (marche à sec), surpression (`pressure_max`), moteur trop chaud (`temp_max`), niveau bas (`level_min`). Bouton Démarrer/Arrêter avec une entité `switch`, `input_boolean` ou `fan`. Couleur du fluide réglable (`fluid_color`). Options : voir [pumps.md](cards/pumps.md).
+
+```yaml
+type: custom:appliance-water-pump-card
+name: Pompe d'arrosage
+entity: switch.pompe_arrosage
+entity_power: sensor.pompe_arrosage_puissance
+entity_flow: sensor.pompe_arrosage_debit
+entity_pressure: sensor.pompe_arrosage_pression
+entity_level: sensor.cuve_eau_pluie_niveau
+entity_energy: sensor.pompe_arrosage_energie
+price_per_kwh: 0.2516
+```
+
+**Robot de piscine** : `custom:appliance-pool-robot-card`, bassin vu en coupe (margelle, carrelage, eau avec vagues et reflets au fond) et robot à chenilles avec son câble flottant. En nettoyage, le robot fait des allers-retours sur le fond et fait demi-tour à chaque paroi, chenilles et brosse avant tournent, les débris sont aspirés, des bulles remontent. La surface de l'eau suit `entity_water_level` avec un repère rouge **min** sur la paroi, et la fenêtre du filtre sur la coque se remplit selon `entity_filter` (rouge au-delà de `filter_alert`, 80 %). États : nettoyage, pause, remontée, au repos, erreur, indisponible. Avec une entité `vacuum`, boutons **Démarrer / Pause / Remonter** ; avec un `switch`, un bouton Marche/Arrêt. Les deux se combinent : `entity` = le vacuum, `entity_switch` = la prise qui alimente le robot (bouton Marche/Arrêt en plus ; prise coupée = robot au repos, même si le vacuum est indisponible). Tuiles : état, filtre, niveau d'eau, température de l'eau, temps restant, batterie, mode, puissance, énergie. Options : voir [pool-robot.md](cards/pool-robot.md).
+
+```yaml
+type: custom:appliance-pool-robot-card
+entity: vacuum.robot_piscine
+entity_switch: switch.prise_robot_piscine
+entity_power: sensor.prise_robot_piscine_puissance
+entity_filter: sensor.robot_piscine_filtre
+entity_water_level: sensor.piscine_niveau_eau
+entity_water_temp: sensor.piscine_temperature
+entity_time: sensor.robot_piscine_temps_restant
+entity_mode: select.robot_piscine_mode
+```
+
 **Développement et traductions** : `dist/` est généré, on modifie `src/` puis on lance `node build.js` (sans dépendance). Le code est découpé en petits fichiers : `src/core/` pour les 28 cartes de base (un dessin par appareil dans `svg/`, un fichier CSS par appareil dans `style/`), `src/cards/` pour les cartes autonomes, et les textes dans un fichier par langue (`src/i18n/en.json`, `src/i18n/fr.json`, `src/i18n/de.json`, `src/i18n/nb.json`, `src/i18n/nl.json`, `src/i18n/ro.json`). Voir *Development and translations* plus haut.

@@ -623,6 +623,39 @@ const SCEN = [
       range(ctl, 'Puissance poêle', 'sensor.sauna_power', 0, 9000, 50, 6000, 'W', W);
       set('sensor.sauna_energy', 18.5, KWH);
     } },
+  { kind: 'water-pump', title: 'Pompe à eau', lang: true,
+    cfg: { entity: 'switch.water_pump', entity_power: 'sensor.water_pump_power', entity_flow: 'sensor.water_pump_flow', entity_pressure: 'sensor.water_pump_pressure', entity_level: 'sensor.rain_tank_level', entity_energy: 'sensor.water_pump_energy', price_per_kwh: 0.2 },
+    build(ctl) {
+      select(ctl, 'État', 'switch.water_pump', [['on', 'Marche / On'], ['off', 'Arrêt / Off']], 'on');
+      range(ctl, 'Débit', 'sensor.water_pump_flow', 0, 40, 0.5, 22, 'L/min', { unit_of_measurement: 'L/min' });
+      range(ctl, 'Pression', 'sensor.water_pump_pressure', 0, 6, 0.1, 2.8, 'bar', { unit_of_measurement: 'bar' });
+      range(ctl, 'Niveau cuve', 'sensor.rain_tank_level', 0, 100, 1, 64, '%', { unit_of_measurement: '%' });
+      range(ctl, 'Puissance', 'sensor.water_pump_power', 0, 1200, 10, 750, 'W', W);
+      set('sensor.water_pump_energy', 1.6, KWH);
+    } },
+  { kind: 'industrial-pump', title: 'Pompe industrielle', lang: true,
+    cfg: { entity: 'switch.process_pump', entity_power: 'sensor.process_pump_power', entity_flow: 'sensor.process_pump_flow', entity_pressure: 'sensor.process_pump_pressure', entity_temp: 'sensor.process_pump_motor_temp', entity_fault: 'binary_sensor.process_pump_fault', entity_runtime: 'sensor.process_pump_runtime', entity_energy: 'sensor.process_pump_energy', price_per_kwh: 0.2 },
+    build(ctl) {
+      select(ctl, 'État', 'switch.process_pump', [['on', 'Marche / On'], ['off', 'Arrêt / Off']], 'on');
+      select(ctl, 'Défaut', 'binary_sensor.process_pump_fault', [['off', 'Non / No'], ['on', 'Oui / Yes']], 'off');
+      range(ctl, 'Débit', 'sensor.process_pump_flow', 0, 12, 0.1, 8.4, 'm³/h', { unit_of_measurement: 'm³/h' });
+      range(ctl, 'Pression', 'sensor.process_pump_pressure', 0, 16, 0.1, 8.5, 'bar', { unit_of_measurement: 'bar' });
+      range(ctl, 'Temp. moteur', 'sensor.process_pump_motor_temp', 20, 110, 1, 62, '°C', T);
+      range(ctl, 'Puissance', 'sensor.process_pump_power', 0, 7500, 50, 5500, 'W', W);
+      set('sensor.process_pump_runtime', 6.4, { unit_of_measurement: 'h' }); set('sensor.process_pump_energy', 35.2, KWH);
+    } },
+  { kind: 'pool-robot', title: 'Robot de piscine', lang: true,
+    cfg: { entity: 'vacuum.pool_robot', entity_switch: 'switch.pool_robot_plug', entity_power: 'sensor.pool_robot_power', entity_filter: 'sensor.pool_robot_filter', entity_water_level: 'sensor.pool_water_level', entity_water_temp: 'sensor.pool_water_temp', entity_time: 'sensor.pool_robot_time_left', entity_mode: 'select.pool_robot_mode' },
+    build(ctl) {
+      set('vacuum.pool_robot', 'cleaning', { friendly_name: 'Robot piscine' });
+      ROBOT_SEL['vacuum.pool_robot'] = select(ctl, 'État', 'vacuum.pool_robot', [['cleaning', 'Nettoyage / Cleaning'], ['returning', 'Remontée / Coming up'], ['paused', 'En pause / Paused'], ['idle', 'Au repos / Idle'], ['error', 'Erreur / Error']], 'cleaning');
+      range(ctl, 'Filtre (saleté)', 'sensor.pool_robot_filter', 0, 100, 1, 35, '%', { unit_of_measurement: '%' });
+      range(ctl, 'Niveau d’eau', 'sensor.pool_water_level', 0, 100, 1, 90, '%', { unit_of_measurement: '%' });
+      range(ctl, 'Temps restant', 'sensor.pool_robot_time_left', 0, 180, 1, 95, 'min', { unit_of_measurement: 'min' });
+      select(ctl, 'Prise', 'switch.pool_robot_plug', [['on', 'Marche / On'], ['off', 'Arrêt / Off']], 'on');
+      range(ctl, 'Puissance', 'sensor.pool_robot_power', 0, 250, 5, 160, 'W', W);
+      set('sensor.pool_water_temp', 26.5, T); set('select.pool_robot_mode', 'Fond + parois');
+    } },
 ];
 const ROBOT_SEL = {};
 
