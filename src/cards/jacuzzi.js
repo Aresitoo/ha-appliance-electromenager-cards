@@ -328,7 +328,7 @@ svg{display:block;width:100%;max-width:230px;height:var(--appliance-illustration
           { name: 'animations', selector: { boolean: {} }, default: true },
         ] },
       ];
-      this._form.computeLabel = (s) => s.name;
+      this._form.computeLabel = (s) => window.applianceEditorLabel(s.name, this._hass);
     }
   }
   customElements.define(TAG + '-editor', ApplianceJacuzziCardEditor);

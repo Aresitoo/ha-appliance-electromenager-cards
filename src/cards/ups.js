@@ -305,7 +305,7 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
           bool('show_status'), bool('show_charge'), bool('show_runtime'), bool('show_load'), bool('show_power'), bool('show_voltage'), bool('show_energy'), bool('animations'),
         ] },
       ];
-      this._form.computeLabel = (s) => s.name;
+      this._form.computeLabel = (s) => window.applianceEditorLabel(s.name, this._hass);
     }
   }
   customElements.define(TAG + '-editor', ApplianceUpsCardEditor);

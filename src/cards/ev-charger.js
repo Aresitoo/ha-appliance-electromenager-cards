@@ -40,6 +40,7 @@ class ApplianceEvChargerCard extends HTMLElement {
         ] },
         { name: 'language', selector: { select: { options: Object.keys(I18N_EV) } } },
       ],
+      computeLabel: (s) => window.applianceEditorLabel(s.name),
     };
   }
 

@@ -40,6 +40,7 @@ class ApplianceBatteryCard extends HTMLElement {
         { name: 'status_position', selector: { select: { mode: 'dropdown', options: ['auto', 'inside', 'below'] } } },
         { name: 'language', selector: { select: { options: Object.keys(I18N_BAT) } } },
       ],
+      computeLabel: (s) => window.applianceEditorLabel(s.name),
     };
   }
 

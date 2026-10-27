@@ -360,7 +360,7 @@ svg{display:block;width:100%;max-width:280px;height:var(--appliance-illustration
           bool('show_time'), bool('show_battery'), bool('show_mode'), bool('show_power'), bool('show_energy'), bool('animations'),
         ] },
       ];
-      this._form.computeLabel = (s) => s.name;
+      this._form.computeLabel = (s) => window.applianceEditorLabel(s.name, this._hass);
     }
   }
   customElements.define(TAG + '-editor', AppliancePoolRobotCardEditor);

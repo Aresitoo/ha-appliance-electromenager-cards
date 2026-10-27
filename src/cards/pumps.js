@@ -523,7 +523,7 @@ svg{display:block;width:100%;max-width:270px;height:var(--appliance-illustration
           bool('show_level'), bool('show_runtime'), bool('show_starts'), bool('show_energy'), bool('show_cost'), bool('animations'),
         ] },
       ];
-      this._form.computeLabel = (s) => s.name;
+      this._form.computeLabel = (s) => window.applianceEditorLabel(s.name, this._hass);
     }
   }
 

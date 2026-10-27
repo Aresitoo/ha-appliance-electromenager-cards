@@ -183,6 +183,7 @@ svg{display:block;width:100%;height:var(--appliance-illustration-height,auto);ma
           { type: 'grid', name: '', schema: SHOW.map((name) => ({ name, selector: { boolean: {} }, default: true })) },
           { name: 'language', selector: { select: { options: Object.keys(T) } } },
         ],
+        computeLabel: (s) => window.applianceEditorLabel(s.name),
       };
     }
     setConfig(c) {
