@@ -200,7 +200,10 @@
     "energy_day": "Vandaag",
     "energy_week": "Deze week",
     "energy_month": "Deze maand",
-    "f_energy_period": "Getoonde energie (teller of periode)"
+    "f_energy_period": "Getoonde energie (teller of periode)",
+    "flex_temp": "Flexzone",
+    "f_flex_temperature": "Temperatuursensor flexzone",
+    "f_flex_max_temperature": "Alarm flexzone boven (°C)"
   },
   "aquarium": {
     "power": "Vermogen",

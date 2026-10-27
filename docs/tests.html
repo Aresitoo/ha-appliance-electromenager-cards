@@ -807,6 +807,14 @@ ok('no page errors',__errors.length===0,__errors.join('; '));
  c.el.style.display='block'; c.el.style.width='215px';
  requestAnimationFrame(()=>{const st=c.sr.getElementById('stats'), top=c.sr.querySelector('.top');
   ok('narrow card: tiles span the full width',Math.abs(st.getBoundingClientRect().width-top.getBoundingClientRect().width)<2,st.getBoundingClientRect().width+' vs '+top.getBoundingClientRect().width); c.el.style.width='';});}
+// fridge flex zone (third compartment) — issue #38
+{const T2={unit_of_measurement:'°C'}, st=()=>[mk('sensor.p',90,W),mk('sensor.t',4,T2),mk('sensor.f',-18,T2),mk('sensor.x',-3,T2)];
+ let c=card('fridge',{style:'four_door',power:'sensor.p',temperature:'sensor.t',freezer_temperature:'sensor.f',flex_temperature:'sensor.x'},st());
+ ok('fridge flex: tile and door display',/-3 °C/.test(c.sr.getElementById('stats').textContent)&&/Zone flex/.test(c.sr.getElementById('stats').textContent)&&c.sr.querySelector('.lcd3').textContent==='-3°',c.sr.getElementById('stats').textContent);
+ ok('fridge flex: no alert without threshold',!c.wrap.classList.contains('alert'));
+ c=card('fridge',{style:'french',power:'sensor.p',temperature:'sensor.t',flex_temperature:'sensor.x',flex_max_temperature:-5},st());
+ ok('fridge flex: alert above flex_max_temperature, french drawer display',c.wrap.classList.contains('alert')&&!!c.sr.querySelector('.fzd-pull .lcd3'),c.wrap.className);
+ c=card('fridge',{style:'four_door',power:'sensor.p'},st()); ok('fridge without flex: no flex display',!c.sr.querySelector('.lcd3'));}
 window.RESULTS=R;
 const fails=R.filter(r=>!r.pass).length;
 document.getElementById('sum').innerHTML=`<b class="${fails?'f':'p'}">${R.length-fails} / ${R.length} tests réussis</b> — fichier testé : <code>dist/ha-appliance-electromenager-cards.js</code>`;

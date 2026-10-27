@@ -71,6 +71,7 @@ labels:
 | `freezer_temperature`, `freezer_door` | fridge |
 | `power_level` (1–5), `pellet_level` (%), `ignition_threshold` (default 250 W), `pellet_alert` (default 15 %) | pellet stove |
 | `temperature` (water), `runtime` (filtration time today), `speed` (rpm or %), `max_power` | pool pump |
+| `flex_temperature`, `flex_max_temperature` | Fridge: third compartment (flex / convertible zone) temperature sensor, shown as a Flex zone tile and on the lower right door (`four_door`) or top drawer (`french`); optional alert threshold |
 | `progress`, `remaining`, `program` (job name), `temperature` (nozzle), `nozzle_temperatures` (list of 2–4 nozzle sensors, shown as T0, T1…), `bed_temperature`, `filament_color` | 3D printer |
 | `temperature`, `door`, `freezer_max_temperature` (default −12 °C) | chest freezer, drawer freezer |
 | `power` (production), `energy` (today), `cost` (savings), `max_power` (peak Wp, default 3000), `sun_entity` (default `sun.sun`) | solar panels |

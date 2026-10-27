@@ -215,7 +215,10 @@ const STRINGS = {
     "energy_day": "Today",
     "energy_week": "This week",
     "energy_month": "This month",
-    "f_energy_period": "Energy shown (counter or period)"
+    "f_energy_period": "Energy shown (counter or period)",
+    "flex_temp": "Flex zone",
+    "f_flex_temperature": "Flex zone temperature sensor",
+    "f_flex_max_temperature": "Alert flex zone above (°C)"
   },
   "de": {
     "washer": "Waschmaschine",
@@ -418,7 +421,10 @@ const STRINGS = {
     "energy_day": "Heute",
     "energy_week": "Diese Woche",
     "energy_month": "Dieser Monat",
-    "f_energy_period": "Angezeigte Energie (Zähler oder Zeitraum)"
+    "f_energy_period": "Angezeigte Energie (Zähler oder Zeitraum)",
+    "flex_temp": "Flex-Zone",
+    "f_flex_temperature": "Temperatursensor Flex-Zone",
+    "f_flex_max_temperature": "Alarm Flex-Zone über (°C)"
   },
   "fr": {
     "washer": "Lave-linge",
@@ -621,9 +627,15 @@ const STRINGS = {
     "energy_day": "Aujourd'hui",
     "energy_week": "Cette semaine",
     "energy_month": "Ce mois",
-    "f_energy_period": "Énergie affichée (compteur ou période)"
+    "f_energy_period": "Énergie affichée (compteur ou période)",
+    "flex_temp": "Zone flex",
+    "f_flex_temperature": "Capteur température zone flex",
+    "f_flex_max_temperature": "Alerte zone flex au-dessus de (°C)"
   },
   "nb": {
+    "flex_temp": "Fleksisone",
+    "f_flex_temperature": "Temperatursensor fleksisone",
+    "f_flex_max_temperature": "Varsle fleksisone over (°C)",
     "energy_day": "I dag",
     "energy_week": "Denne uken",
     "energy_month": "Denne måneden",
@@ -1027,7 +1039,10 @@ const STRINGS = {
     "energy_day": "Vandaag",
     "energy_week": "Deze week",
     "energy_month": "Deze maand",
-    "f_energy_period": "Getoonde energie (teller of periode)"
+    "f_energy_period": "Getoonde energie (teller of periode)",
+    "flex_temp": "Flexzone",
+    "f_flex_temperature": "Temperatuursensor flexzone",
+    "f_flex_max_temperature": "Alarm flexzone boven (°C)"
   },
   "ro": {
     "washer": "Mașină de spălat rufe",
@@ -1230,7 +1245,10 @@ const STRINGS = {
     "energy_day": "Azi",
     "energy_week": "Săptămâna aceasta",
     "energy_month": "Luna aceasta",
-    "f_energy_period": "Energie afișată (contor sau perioadă)"
+    "f_energy_period": "Energie afișată (contor sau perioadă)",
+    "flex_temp": "Zonă flex",
+    "f_flex_temperature": "Senzor temperatură zonă flex",
+    "f_flex_max_temperature": "Alertă zonă flex peste (°C)"
   },
   "ru": {
     "washer": "Стиральная машина",
@@ -1433,7 +1451,10 @@ const STRINGS = {
     "energy_day": "Сегодня",
     "energy_week": "На этой неделе",
     "energy_month": "В этом месяце",
-    "f_energy_period": "Отображаемая энергия (счётчик или период)"
+    "f_energy_period": "Отображаемая энергия (счётчик или период)",
+    "flex_temp": "Флекс-зона",
+    "f_flex_temperature": "Датчик температуры флекс-зоны",
+    "f_flex_max_temperature": "Оповещать о флекс-зоне выше (°C)"
   }
 };
 const lang = (hass) => {
@@ -2026,6 +2047,10 @@ const fridgeLcd = (x, y) => `
 <rect x="${x}" y="${y}" width="30" height="14" rx="2" fill="#0c1720" stroke="#7d868f" stroke-width=".6"/>
 <g class="flake"><path d="M${x + 5.5} ${y + 4}v6M${x + 2.9} ${y + 5.5}l5.2 3M${x + 2.9} ${y + 8.5}l5.2-3" stroke="#38d9ff" stroke-width=".8" stroke-linecap="round"/></g>
 <text class="lcd fr-temp" x="${x + 19.5}" y="${y + 10.8}" text-anchor="middle" fill="#38d9ff" font-size="11.5" font-weight="800">--°</text>`;
+// afficheur de la zone flex (option flex_temperature)
+const flexLcd = (x, y) => `
+<rect x="${x}" y="${y}" width="22" height="11" rx="2" fill="#0c1720" stroke="#7d868f" stroke-width=".6"/>
+<text class="lcd3" x="${x + 11}" y="${y + 8.4}" text-anchor="middle" fill="#7cf0c4" font-size="8.5" font-weight="800">--°</text>`;
 const FRIDGE_DEFS = `<defs>${DEFS}
 <linearGradient id="ID-in" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#dfe9f2"/></linearGradient>
 <linearGradient id="ID-frost" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e9f6ff"/><stop offset="1" stop-color="#bfe0f5"/></linearGradient></defs>`;
@@ -2113,7 +2138,7 @@ ${fzInside(29, 86, 62, 41)}
   <path d="M30 8v71" stroke="#fff" stroke-opacity=".55" stroke-width="2"/>
 </g>`,
 
-  four_door: () => `
+  four_door: (flex) => `
 <ellipse cx="60" cy="134" rx="50" ry="4.5" fill="url(#ID-shadow)"/>
 <rect x="16" y="4" width="88" height="126" rx="6" fill="#9aa2ab"/>
 <rect x="19" y="7" width="82" height="70" rx="3" fill="url(#ID-in)"/>
@@ -2129,6 +2154,7 @@ ${fzInside(19, 82, 40, 45)}${fzInside(61, 82, 40, 45)}
   <rect x="60.4" y="80" width="43.6" height="50" rx="5" fill="url(#ID-inox)" stroke="#8f979f" stroke-width=".7"/>
   <rect x="63.8" y="88" width="3.2" height="30" rx="1.6" fill="url(#ID-chrome)" stroke="#6f7781" stroke-width=".4"/>
   <path d="M71 84v42" stroke="#fff" stroke-opacity=".4" stroke-width="2"/>
+  ${flex ? flexLcd(74, 86) : ""}
 </g>
 <g class="fr-door fr-l">
   <rect x="16" y="4" width="43.6" height="75" rx="5" fill="url(#ID-inox)" stroke="#8f979f" stroke-width=".7"/>
@@ -2143,7 +2169,7 @@ ${fzInside(19, 82, 40, 45)}${fzInside(61, 82, 40, 45)}
 </g>`,
 
   // French door : deux portes battantes en haut, deux tiroirs de congélation en bas
-  french: () => `
+  french: (flex) => `
 <ellipse cx="60" cy="134" rx="50" ry="4.5" fill="url(#ID-shadow)"/>
 <rect x="16" y="4" width="88" height="126" rx="6" fill="#9aa2ab"/>
 <rect x="19" y="7" width="82" height="70" rx="3" fill="url(#ID-in)"/>
@@ -2152,7 +2178,7 @@ ${fridgeFood(19, 7, 82, 70)}
 <rect x="19" y="82" width="82" height="45" rx="3" fill="url(#ID-frost)"/>
 <path d="M21 106h78" stroke="#a9cbe2" stroke-width="1"/>
 ${fzDrawer(16, 106, 88, 24, "fzd")}
-${fzDrawer(16, 81, 88, 23, "fzd fzd-pull")}
+<g class="fzd fzd-pull">${fzDrawer(16, 81, 88, 23, "")}${flex ? flexLcd(76, 88) : ""}</g>
 <g class="fr-door fr-l">
   <rect x="16" y="4" width="43.6" height="75" rx="5" fill="url(#ID-inox)" stroke="#8f979f" stroke-width=".7"/>
   <rect x="53" y="16" width="3.2" height="46" rx="1.6" fill="url(#ID-chrome)" stroke="#6f7781" stroke-width=".4"/>
@@ -2196,7 +2222,7 @@ ${fridgeFood(62, 7, 43, 120)}
 </g>`,
 };
 
-SVG.fridge = (c) => `${FRIDGE_DEFS}${FRIDGE[fridgeStyle(c)]()}${fridgeMist}`;
+SVG.fridge = (c) => `${FRIDGE_DEFS}${FRIDGE[fridgeStyle(c)](!!(c && c.flex_temperature))}${fridgeMist}`;
 
 /* Carte générique : l'utilisateur fournit sa propre image (option `image`) */
 SVG.generic = (c = {}) => {
@@ -3124,7 +3150,7 @@ const DEF = {
     fields: ["entity", "power", "energy", "cost", "temperature", "zone2_temperature", "door", "switch"],
     keys: ["cave_a_vin", "cave", "vin", "wine", "cellar", "wine_cooler", "wine_fridge", "vinotheque"] },
   fridge: { accent: "cold", threshold: 20,
-    fields: ["entity", "power", "energy", "cost", "temperature", "freezer_temperature", "door", "freezer_door", "switch"],
+    fields: ["entity", "power", "energy", "cost", "temperature", "freezer_temperature", "flex_temperature", "door", "freezer_door", "switch"],
     keys: ["refrigerateur", "frigo", "fridge", "refrigerator", "frigidaire"] },
   pellet_stove: { accent: "heat", threshold: 20,
     fields: ["entity", "power", "energy", "cost", "temperature", "target_temperature", "power_level", "pellet_level", "switch"],
@@ -3303,7 +3329,7 @@ class ApplianceCardBase extends HTMLElement {
   _ids() {
     const c = this._config;
     return ["entity", "power", "power_solar", "energy_solar", "energy", "cost", "remaining", "progress", "program", "door", "switch",
-      "power_level", "pellet_level", "runtime", "speed", "bed_temperature", "humidity", "light", "keg_level", "pouring", "battery_level", "zone2_temperature", "zone_1", "zone_2", "zone_3", "zone_4", "mode", "window", "temperature", "target_temperature", "freezer_temperature", "freezer_door"].map((k) => c[k]).filter(Boolean).concat(this._nozzles())
+      "power_level", "pellet_level", "runtime", "speed", "bed_temperature", "humidity", "light", "keg_level", "pouring", "battery_level", "zone2_temperature", "zone_1", "zone_2", "zone_3", "zone_4", "mode", "window", "temperature", "target_temperature", "freezer_temperature", "flex_temperature", "freezer_door"].map((k) => c[k]).filter(Boolean).concat(this._nozzles())
       .concat(Array.isArray(c.images) ? c.images.map((i) => i && typeof i.entity === "string" && i.entity).filter(Boolean) : []);
   }
 
@@ -3380,7 +3406,7 @@ class ApplianceCardBase extends HTMLElement {
       energy: S(c.energy), energyS: S(c.energy_solar), cost: S(c.cost), remaining: parseRemaining(S(c.remaining)),
       progress: num(S(c.progress)), program: S(c.program), door: S(c.door),
       temp: S(c.temperature), target: S(c.target_temperature),
-      ftemp: S(c.freezer_temperature), fdoor: S(c.freezer_door),
+      ftemp: S(c.freezer_temperature), fdoor: S(c.freezer_door), flex: S(c.flex_temperature),
       level: num(S(c.power_level)), pellets: num(S(c.pellet_level)),
       runtime: parseRemaining(S(c.runtime)), speed: S(c.speed), bedTemp: num(S(c.bed_temperature)), humidity: num(S(c.humidity)), mode: S(c.mode), window: S(c.window), light: S(c.light), keg: num(S(c.keg_level)), pouring: S(c.pouring), batt: num(S(c.battery_level)), zone2: num(S(c.zone2_temperature)), zone2Ent: S(c.zone2_temperature),
       status: "idle", phase: null, alerts: [],
@@ -3662,6 +3688,9 @@ class ApplianceCardBase extends HTMLElement {
       const maxF = c.max_temperature ?? 8, maxZ = c.freezer_max_temperature ?? -12;
       if (m.tempVal != null && m.tempVal > maxF) m.alerts.push("too_warm");
       if (num(m.ftemp) != null && num(m.ftemp) > maxZ) m.alerts.push("too_warm");
+      // zone flex (3e compartiment à température réglable) : alerte seulement si un seuil est donné
+      m.flexVal = m.flex && ["climate", "water_heater"].includes(domainOf(m.flex.entity_id)) ? num({ state: m.flex.attributes.current_temperature }) : num(m.flex);
+      if (m.flexVal != null && c.flex_max_temperature != null && m.flexVal > c.flex_max_temperature) m.alerts.push("too_warm");
     } else {
       m.status = base;
     }
@@ -3868,6 +3897,8 @@ class ApplianceCardBase extends HTMLElement {
     const sr = this.shadowRoot;
     const lcdEl = sr.querySelector(".lcd");
     if (lcdEl) lcdEl.textContent = this._lcdText(m);
+    const lcd3 = sr.querySelector(".lcd3");
+    if (lcd3) lcd3.textContent = m.status === "unavailable" || m.flexVal == null ? "--°" : `${fmtNum(hass, m.flexVal, 0)}°`;
     const lcd2 = sr.querySelector(".lcd2");
     if (lcd2) lcd2.textContent = m.status === "unavailable" ? "--" : m.zone2 != null ? `${fmtNum(hass, m.zone2, 0)}°` : "--°";
     if (kind === "generic" && Array.isArray(c.images)) {
@@ -4068,6 +4099,8 @@ class ApplianceCardBase extends HTMLElement {
         m.tempVal > (c.max_temperature ?? 8) ? "warn" : "");
       if (m.ftemp) tile("mdi:snowflake", fmtUnit(hass, m.ftemp, 1), lb("freezer_temp"), c.freezer_temperature,
         num(m.ftemp) > (c.freezer_max_temperature ?? -12) ? "warn" : "");
+      if (m.flexVal != null) tile("mdi:thermometer-lines", `${fmtNum(hass, m.flexVal, 1)} ${m.flex.attributes.unit_of_measurement || m.tempUnit}`, lb("flex_temp"), c.flex_temperature,
+        c.flex_max_temperature != null && m.flexVal > c.flex_max_temperature ? "warn" : "");
     } else if (kind === "radiator") {
       const te = c.temperature || (domainOf(c.entity) === "climate" ? c.entity : null);
       if (m.tempVal != null) tile("mdi:home-thermometer", `${fmtNum(hass, m.tempVal, 1)} ${m.tempUnit}`, lb("temperature"), te);
@@ -4144,6 +4177,7 @@ const SEL = {
   temperature: { entity: { domain: ["sensor", "input_number"], device_class: "temperature" } },
   target_temperature: { entity: { domain: ["sensor", "input_number", "number"] } },
   freezer_temperature: { entity: { domain: "sensor", device_class: "temperature" } },
+  flex_temperature: { entity: { domain: ["sensor", "climate"] } },
   power_level: { entity: { domain: ["sensor", "number", "input_number", "select", "input_select"] } },
   pellet_level: { entity: { domain: ["sensor", "number", "input_number"] } },
   runtime: { entity: { domain: ["sensor"] } },
@@ -4192,6 +4226,7 @@ function buildForm(kind) {
               { value: "french", label: "French door" }, { value: "four_door", label: "4 portes / 4-door" }, { value: "american", label: "Américain / Side-by-side" }] } } },
             { name: "max_temperature", selector: { number: { min: 0, max: 15, step: 0.5, mode: "box" } } },
             { name: "freezer_max_temperature", selector: { number: { min: -30, max: 0, step: 0.5, mode: "box" } } },
+            { name: "flex_max_temperature", selector: { number: { min: -30, max: 15, step: 0.5, mode: "box" } } },
           ] : []),
           ...(d.fields.includes("energy") ? [{ name: "energy_period", selector: { select: { mode: "dropdown", options: [
             { value: "", label: tr(null, "energy") }, ...["day", "week", "month"].map((value) => ({ value, label: tr(null, `energy_${value}`) }))] } } }] : []),

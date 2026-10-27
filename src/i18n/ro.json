@@ -200,7 +200,10 @@
     "energy_day": "Azi",
     "energy_week": "Săptămâna aceasta",
     "energy_month": "Luna aceasta",
-    "f_energy_period": "Energie afișată (contor sau perioadă)"
+    "f_energy_period": "Energie afișată (contor sau perioadă)",
+    "flex_temp": "Zonă flex",
+    "f_flex_temperature": "Senzor temperatură zonă flex",
+    "f_flex_max_temperature": "Alertă zonă flex peste (°C)"
   },
   "aquarium": {
     "power": "Putere",
