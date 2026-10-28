@@ -205,7 +205,8 @@
     "flex_temp": "Zonă flex",
     "f_flex_temperature": "Senzor temperatură zonă flex",
     "f_flex_max_temperature": "Alertă zonă flex peste (°C)",
-    "f_illustration_size": "Dimensiunea ilustrației"
+    "f_illustration_size": "Dimensiunea ilustrației",
+    "f_transparent": "Fundal transparent"
   },
   "aquarium": {
     "power": "Putere",
@@ -710,7 +711,8 @@
     "show_slider": "Afișează cursoarele",
     "show_tilt": "Afișează înclinarea",
     "image": "Imagine proprie (URL)",
-    "illustration_size": "Dimensiunea ilustrației"
+    "illustration_size": "Dimensiunea ilustrației",
+    "transparent": "Fundal transparent"
   },
   "light": {
     "light_bulb": "Bec",

@@ -220,7 +220,8 @@ const STRINGS = {
     "flex_temp": "Flex zone",
     "f_flex_temperature": "Flex zone temperature sensor",
     "f_flex_max_temperature": "Alert flex zone above (°C)",
-    "f_illustration_size": "Illustration size"
+    "f_illustration_size": "Illustration size",
+    "f_transparent": "Transparent background"
   },
   "de": {
     "washer": "Waschmaschine",
@@ -428,7 +429,8 @@ const STRINGS = {
     "flex_temp": "Flex-Zone",
     "f_flex_temperature": "Temperatursensor Flex-Zone",
     "f_flex_max_temperature": "Alarm Flex-Zone über (°C)",
-    "f_illustration_size": "Größe der Illustration"
+    "f_illustration_size": "Größe der Illustration",
+    "f_transparent": "Transparenter Hintergrund"
   },
   "fr": {
     "washer": "Lave-linge",
@@ -636,10 +638,12 @@ const STRINGS = {
     "flex_temp": "Zone flex",
     "f_flex_temperature": "Capteur température zone flex",
     "f_flex_max_temperature": "Alerte zone flex au-dessus de (°C)",
-    "f_illustration_size": "Taille de l'illustration"
+    "f_illustration_size": "Taille de l'illustration",
+    "f_transparent": "Fond transparent"
   },
   "nb": {
     "f_illustration_size": "Størrelse på illustrasjonen",
+    "f_transparent": "Gjennomsiktig bakgrunn",
     "flex_temp": "Fleksisone",
     "f_flex_temperature": "Temperatursensor fleksisone",
     "f_flex_max_temperature": "Varsle fleksisone over (°C)",
@@ -1052,7 +1056,8 @@ const STRINGS = {
     "flex_temp": "Flexzone",
     "f_flex_temperature": "Temperatuursensor flexzone",
     "f_flex_max_temperature": "Alarm flexzone boven (°C)",
-    "f_illustration_size": "Grootte van de illustratie"
+    "f_illustration_size": "Grootte van de illustratie",
+    "f_transparent": "Transparante achtergrond"
   },
   "ro": {
     "washer": "Mașină de spălat rufe",
@@ -1260,7 +1265,8 @@ const STRINGS = {
     "flex_temp": "Zonă flex",
     "f_flex_temperature": "Senzor temperatură zonă flex",
     "f_flex_max_temperature": "Alertă zonă flex peste (°C)",
-    "f_illustration_size": "Dimensiunea ilustrației"
+    "f_illustration_size": "Dimensiunea ilustrației",
+    "f_transparent": "Fundal transparent"
   },
   "ru": {
     "washer": "Стиральная машина",
@@ -1468,7 +1474,8 @@ const STRINGS = {
     "flex_temp": "Флекс-зона",
     "f_flex_temperature": "Датчик температуры флекс-зоны",
     "f_flex_max_temperature": "Оповещать о флекс-зоне выше (°C)",
-    "f_illustration_size": "Размер иллюстрации"
+    "f_illustration_size": "Размер иллюстрации",
+    "f_transparent": "Прозрачный фон"
   }
 };
 const lang = (hass) => {
@@ -4246,6 +4253,7 @@ function buildForm(kind) {
           ...(d.fields.includes("energy") ? [{ name: "energy_period", selector: { select: { mode: "dropdown", options: [
             { value: "", label: tr(null, "energy") }, ...["day", "week", "month"].map((value) => ({ value, label: tr(null, `energy_${value}`) }))] } } }] : []),
           { name: "illustration_size", selector: { number: { min: 30, max: 300, step: 5, mode: "slider", unit_of_measurement: "%" } } },
+          { name: "transparent", selector: { boolean: {} } },
           { name: "animations", selector: { boolean: {} }, default: true },
           ...(kind === "generic" ? [{ name: "image", selector: { text: {} } }, { name: "images", selector: { object: {} } }] : []),
           ...(kind === "printer_3d" ? [
@@ -5568,7 +5576,8 @@ console.info(`%c HA-APPLIANCE-CARDS %c v${VERSION} `,
       "show_slider": "Show sliders",
       "show_tilt": "Show tilt",
       "image": "Your own image (URL)",
-      "illustration_size": "Illustration size"
+      "illustration_size": "Illustration size",
+      "transparent": "Transparent background"
     },
     "de": {
       "animations": "Animationen",
@@ -5757,7 +5766,8 @@ console.info(`%c HA-APPLIANCE-CARDS %c v${VERSION} `,
       "show_slider": "Schieberegler anzeigen",
       "show_tilt": "Neigung anzeigen",
       "image": "Eigenes Bild (URL)",
-      "illustration_size": "Größe der Illustration"
+      "illustration_size": "Größe der Illustration",
+      "transparent": "Transparenter Hintergrund"
     },
     "fr": {
       "animations": "Animations",
@@ -5946,10 +5956,12 @@ console.info(`%c HA-APPLIANCE-CARDS %c v${VERSION} `,
       "show_slider": "Afficher les curseurs",
       "show_tilt": "Afficher l'inclinaison",
       "image": "Image perso (URL)",
-      "illustration_size": "Taille de l'illustration"
+      "illustration_size": "Taille de l'illustration",
+      "transparent": "Fond transparent"
     },
     "nb": {
       "illustration_size": "Størrelse på illustrasjonen",
+      "transparent": "Gjennomsiktig bakgrunn",
       "image": "Eget bilde (URL)",
       "sun_entity": "Sol-entitet (dag / natt)",
       "shutter_color": "Farge på skodden",
@@ -6324,7 +6336,8 @@ console.info(`%c HA-APPLIANCE-CARDS %c v${VERSION} `,
       "show_slider": "Schuifregelaars tonen",
       "show_tilt": "Kanteling tonen",
       "image": "Eigen afbeelding (URL)",
-      "illustration_size": "Grootte van de illustratie"
+      "illustration_size": "Grootte van de illustratie",
+      "transparent": "Transparante achtergrond"
     },
     "ro": {
       "animations": "Animații",
@@ -6513,7 +6526,8 @@ console.info(`%c HA-APPLIANCE-CARDS %c v${VERSION} `,
       "show_slider": "Afișează cursoarele",
       "show_tilt": "Afișează înclinarea",
       "image": "Imagine proprie (URL)",
-      "illustration_size": "Dimensiunea ilustrației"
+      "illustration_size": "Dimensiunea ilustrației",
+      "transparent": "Fundal transparent"
     },
     "ru": {
       "animations": "Анимации",
@@ -6702,7 +6716,8 @@ console.info(`%c HA-APPLIANCE-CARDS %c v${VERSION} `,
       "show_slider": "Показывать ползунки",
       "show_tilt": "Показывать наклон",
       "image": "Своё изображение (URL)",
-      "illustration_size": "Размер иллюстрации"
+      "illustration_size": "Размер иллюстрации",
+      "transparent": "Прозрачный фон"
     }
   };
   const lang = (hass) => {
@@ -6719,6 +6734,9 @@ console.info(`%c HA-APPLIANCE-CARDS %c v${VERSION} `,
     else el.style.removeProperty('--illus-scale');
     // dessin agrandi : la carte passe en disposition empilée plus tôt (voir card.css), sinon le titre est tronqué
     el.toggleAttribute('illus-big', n > 100);
+    // transparent : la carte laisse voir le fond du tableau de bord (variables de ha-card, héritées dans le shadow DOM)
+    const T = { '--ha-card-background': 'transparent', '--ha-card-box-shadow': 'none', '--ha-card-border-width': '0' };
+    for (const [k, v] of Object.entries(T)) { if (cfg && cfg.transparent) el.style.setProperty(k, v); else el.style.removeProperty(k); }
   };
   window.applianceEditorLabel = (name, hass) => (name ? (L[lang(hass)] || L.en)[name] ?? L.en[name] ?? human(name) : '');
 })();
@@ -6814,6 +6832,7 @@ class ApplianceAquariumCard extends HTMLElement {
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
         { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
+        { name: 'transparent', selector: { boolean: {} } },
         { name: 'entity_power', selector: { entity: { domain: 'sensor', device_class: 'power' } } },
         { name: 'entity_energy', selector: { entity: { domain: 'sensor', device_class: 'energy' } } },
         { name: 'entity_temperature', selector: { entity: { domain: 'sensor', device_class: 'temperature' } } },
@@ -7178,6 +7197,7 @@ class ApplianceLinkyCard extends HTMLElement {
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
         { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
+        { name: 'transparent', selector: { boolean: {} } },
         { name: 'entity_power', selector: { entity: { domain: 'sensor' } } },
         { name: 'entity_active_power', selector: { entity: { domain: 'sensor', device_class: 'power' } } },
         { type: 'grid', name: '', schema: [
@@ -7606,6 +7626,7 @@ class ApplianceBatteryCard extends HTMLElement {
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
         { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
+        { name: 'transparent', selector: { boolean: {} } },
         { name: 'entity_soc', selector: { entity: { domain: 'sensor', device_class: 'battery' } } },
         { name: 'entity_power', selector: { entity: { domain: 'sensor', device_class: 'power' } } },
         { name: 'invert_power', selector: { boolean: {} } },
@@ -7904,6 +7925,7 @@ class ApplianceEvChargerCard extends HTMLElement {
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
         { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
+        { name: 'transparent', selector: { boolean: {} } },
         { name: 'entity_power', selector: { entity: { domain: 'sensor', device_class: 'power' } } },
         { name: 'entity_session_energy', selector: { entity: { domain: 'sensor', device_class: 'energy' } } },
         { name: 'entity_car_soc', selector: { entity: { domain: 'sensor' } } },
@@ -8283,6 +8305,7 @@ class ApplianceRobotVacuumCard extends HTMLElement {
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
         { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
+        { name: 'transparent', selector: { boolean: {} } },
         { name: 'entity_battery', selector: { entity: { domain: 'sensor', device_class: 'battery' } } },
         { name: 'entity_area', selector: { entity: { domain: 'sensor' } } },
         { name: 'entity_time', selector: { entity: { domain: 'sensor' } } },
@@ -8691,6 +8714,7 @@ class ApplianceRobotMowerCard extends HTMLElement {
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
         { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
+        { name: 'transparent', selector: { boolean: {} } },
         { name: 'entity_battery', selector: { entity: { domain: 'sensor', device_class: 'battery' } } },
         { name: 'entity_area', selector: { entity: { domain: 'sensor' } } },
         { name: 'entity_time', selector: { entity: { domain: 'sensor' } } },
@@ -9054,6 +9078,7 @@ class AppliancePelletBoilerCard extends HTMLElement {
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
         { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
+        { name: 'transparent', selector: { boolean: {} } },
         { name: 'entity_status', selector: { entity: { domain: ['sensor', 'select', 'climate', 'switch', 'binary_sensor'] } } },
         { name: 'entity_power', selector: { entity: { domain: 'sensor', device_class: 'power' } } },
         { name: 'entity_energy', selector: { entity: { domain: 'sensor', device_class: 'energy' } } },
@@ -9747,6 +9772,7 @@ svg{display:block;width:100%;max-width:calc(170px * var(--illus-scale,1));height
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
         { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
+        { name: 'transparent', selector: { boolean: {} } },
         ent('entity_status'), ent('entity_flame', 'binary_sensor'), ent('entity_power', 'sensor'), ent('entity_energy', 'sensor'),
         ent('entity_gas', 'sensor'), ent('entity_cost', 'sensor'), { name: 'price_per_unit', selector: { number: { min: 0, step: 0.0001, mode: 'box' } } },
         ent('entity_flow_temp', 'sensor'), ent('entity_return_temp', 'sensor'), ent('entity_pressure', 'sensor'), ent('entity_modulation', 'sensor'),
@@ -10100,6 +10126,7 @@ svg{display:block;width:100%;max-width:calc(100% * var(--illus-scale,1));height:
           { name: 'name', selector: { text: {} } },
           { name: 'labels', selector: { object: {} } },
           { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
+          { name: 'transparent', selector: { boolean: {} } },
           ent('entity_status', ['climate', 'sensor', 'select', 'input_select', 'water_heater']),
           { type: 'grid', name: '', schema: [ent('entity_power', 'sensor'), ent('entity_heat_power', 'sensor'), ent('entity_cop', 'sensor')] },
           { type: 'grid', name: '', schema: [ent('entity_flow_temp', 'sensor'), ent('entity_return_temp', 'sensor'), ent('entity_flow_rate', 'sensor')] },
@@ -10750,6 +10777,7 @@ svg{display:block;width:100%;max-width:calc(190px * var(--illus-scale,1));height
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
         { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
+        { name: 'transparent', selector: { boolean: {} } },
         ent('entity_status'), ent('entity_flame', 'binary_sensor'), ent('entity_power', 'sensor'), ent('entity_energy', 'sensor'),
         ent('entity_fuel_level', 'sensor'), ent('entity_fuel_used', 'sensor'), ent('entity_cost', 'sensor'),
         { name: 'price_per_liter', selector: { number: { min: 0, step: 0.0001, mode: 'box' } } },
@@ -11233,6 +11261,7 @@ svg{display:block;width:100%;max-width:calc(230px * var(--illus-scale,1));height
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
         { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
+        { name: 'transparent', selector: { boolean: {} } },
         ent('entity_status'), ent('entity_power', 'sensor'), ent('entity_energy', 'sensor'), ent('entity_cost', 'sensor'),
         { name: 'price_per_kwh', selector: { number: { min: 0, step: 0.0001, mode: 'box' } } },
         ent('entity_temp', 'sensor'), ent('entity_target_temp'), ent('entity_ph', 'sensor'), ent('entity_light'),
@@ -11889,6 +11918,7 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--acc-move:var(--ap
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
         { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
+        { name: 'transparent', selector: { boolean: {} } },
         ent('entity'), ent('entity_control'),
         ent('entity_power', 'sensor'), ent('entity_energy', 'sensor'), ent('entity_cost', 'sensor'),
         { name: 'price_per_kwh', selector: { number: { min: 0, step: 0.0001, mode: 'box' } } },
@@ -12381,6 +12411,7 @@ svg{display:block;width:100%;max-width:calc(250px * var(--illus-scale,1));height
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
         { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
+        { name: 'transparent', selector: { boolean: {} } },
         ent('entity'), ent('entity_temp', 'sensor'), ent('entity_target_temp'), ent('entity_humidity', 'sensor'),
         ent('entity_power', 'sensor'), ent('entity_energy', 'sensor'), ent('entity_cost', 'sensor'),
         { name: 'price_per_kwh', selector: { number: { min: 0, step: 0.0001, mode: 'box' } } },
@@ -13120,6 +13151,7 @@ svg{display:block;width:100%;max-width:calc(270px * var(--illus-scale,1));height
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
         { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
+        { name: 'transparent', selector: { boolean: {} } },
         ent('entity'), ent('entity_power', 'sensor'), ent('entity_flow', 'sensor'), ent('entity_pressure', 'sensor'),
         ent('entity_temp', 'sensor'), ent('entity_level', 'sensor'), ent('entity_fault', 'binary_sensor'), ent('entity_runtime', 'sensor'),
         ...(KINDS[this.kind].sump ? [ent('entity_float', 'binary_sensor'), ent('entity_starts', 'sensor')] : []),
@@ -13702,6 +13734,7 @@ svg{display:block;width:100%;max-width:calc(280px * var(--illus-scale,1));height
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
         { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
+        { name: 'transparent', selector: { boolean: {} } },
         ent('entity'), ent('entity_switch'), ent('entity_status', 'sensor'), ent('entity_filter', 'sensor'), ent('entity_water_level', 'sensor'),
         ent('entity_water_temp', 'sensor'), ent('entity_time', 'sensor'), ent('entity_battery', 'sensor'), ent('entity_mode'),
         ent('entity_power', 'sensor'), ent('entity_energy', 'sensor'),
@@ -14160,6 +14193,7 @@ svg{display:block;width:100%;max-width:calc(270px * var(--illus-scale,1));height
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
         { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
+        { name: 'transparent', selector: { boolean: {} } },
         ent('entity'), ent('entity_charge', 'sensor'), ent('entity_runtime', 'sensor'), ent('entity_load', 'sensor'), ent('entity_power', 'sensor'),
         ent('entity_input_voltage', 'sensor'), ent('entity_output_voltage', 'sensor'), ent('entity_energy', 'sensor'),
         { type: 'grid', name: '', schema: [num('battery_low', 0, 100, 1, 20, '%'), num('load_max', 10, 100, 1, 90, '%'), num('mains_min', 0, 250, 1, 100, 'V')] },
@@ -14622,6 +14656,7 @@ svg{display:block;width:100%;max-width:calc(270px * var(--illus-scale,1));height
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
         { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
+        { name: 'transparent', selector: { boolean: {} } },
         ent('entity'), ent('entity_temp', 'sensor'), ent('entity_target_temp'), ent('entity_floor_temp', 'sensor'), ent('entity_water_temp', 'sensor'),
         ent('entity_power', 'sensor'), ent('entity_energy', 'sensor'), ent('entity_cost', 'sensor'),
         { name: 'price_per_kwh', selector: { number: { min: 0, step: 0.0001, mode: 'box' } } },
@@ -15183,6 +15218,7 @@ svg{display:block;width:100%;height:auto;overflow:visible}
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
         { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
+        { name: 'transparent', selector: { boolean: {} } },
         ent('entity'), ent('entity_power', 'sensor'), ent('entity_energy', 'sensor'),
         { name: 'color', selector: { color_rgb: {} } },
         { type: 'grid', name: '', schema: [
@@ -15696,6 +15732,7 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--sh-move:var(--app
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
         { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
+        { name: 'transparent', selector: { boolean: {} } },
         ent('entity', 'cover'), ent('entity_power', 'sensor'), ent('sun_entity', 'sun'),
         { type: 'grid', name: '', schema: [
           { name: 'color', selector: { text: {} } },

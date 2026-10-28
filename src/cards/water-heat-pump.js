@@ -168,6 +168,7 @@ svg{display:block;width:100%;max-width:calc(100% * var(--illus-scale,1));height:
           { name: 'name', selector: { text: {} } },
           { name: 'labels', selector: { object: {} } },
           { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
+          { name: 'transparent', selector: { boolean: {} } },
           ent('entity_status', ['climate', 'sensor', 'select', 'input_select', 'water_heater']),
           { type: 'grid', name: '', schema: [ent('entity_power', 'sensor'), ent('entity_heat_power', 'sensor'), ent('entity_cop', 'sensor')] },
           { type: 'grid', name: '', schema: [ent('entity_flow_temp', 'sensor'), ent('entity_return_temp', 'sensor'), ent('entity_flow_rate', 'sensor')] },

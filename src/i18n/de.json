@@ -205,7 +205,8 @@
     "flex_temp": "Flex-Zone",
     "f_flex_temperature": "Temperatursensor Flex-Zone",
     "f_flex_max_temperature": "Alarm Flex-Zone über (°C)",
-    "f_illustration_size": "Größe der Illustration"
+    "f_illustration_size": "Größe der Illustration",
+    "f_transparent": "Transparenter Hintergrund"
   },
   "aquarium": {
     "power": "Leistung",
@@ -710,7 +711,8 @@
     "show_slider": "Schieberegler anzeigen",
     "show_tilt": "Neigung anzeigen",
     "image": "Eigenes Bild (URL)",
-    "illustration_size": "Größe der Illustration"
+    "illustration_size": "Größe der Illustration",
+    "transparent": "Transparenter Hintergrund"
   },
   "light": {
     "light_bulb": "Glühbirne",
