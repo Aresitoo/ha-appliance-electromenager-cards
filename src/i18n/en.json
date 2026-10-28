@@ -611,6 +611,7 @@
     "ignition_threshold": "Ignition threshold (W)",
     "indexes": "Meter indexes",
     "invert": "Invert state",
+    "invert_position": "Invert position (open ↔ closed)",
     "invert_power": "Invert power sign",
     "jets_threshold": "Jets threshold (W)",
     "language": "Language",

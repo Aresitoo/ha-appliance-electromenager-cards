@@ -618,6 +618,7 @@
 "ignition_threshold": "Tenningsterskel (W)",
 "indexes": "Målerindekser",
 "invert": "Inverter tilstand",
+"invert_position": "Inverter posisjon (åpen ↔ lukket)",
 "invert_power": "Inverter effektfortegn",
 "jets_threshold": "Dyseterskel (W)",
 "language": "Språk",

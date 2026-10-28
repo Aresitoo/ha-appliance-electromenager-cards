@@ -5469,6 +5469,7 @@ console.info(`%c HA-APPLIANCE-CARDS %c v${VERSION} `,
       "ignition_threshold": "Ignition threshold (W)",
       "indexes": "Meter indexes",
       "invert": "Invert state",
+      "invert_position": "Invert position (open ↔ closed)",
       "invert_power": "Invert power sign",
       "jets_threshold": "Jets threshold (W)",
       "language": "Language",
@@ -5657,6 +5658,7 @@ console.info(`%c HA-APPLIANCE-CARDS %c v${VERSION} `,
       "ignition_threshold": "Zündschwelle (W)",
       "indexes": "Zählerstände",
       "invert": "Zustand umkehren",
+      "invert_position": "Position umkehren (offen ↔ geschlossen)",
       "invert_power": "Leistungsvorzeichen umkehren",
       "jets_threshold": "Düsenschwelle (W)",
       "language": "Sprache",
@@ -5845,6 +5847,7 @@ console.info(`%c HA-APPLIANCE-CARDS %c v${VERSION} `,
       "ignition_threshold": "Seuil d'allumage (W)",
       "indexes": "Index du compteur",
       "invert": "Inverser l'état",
+      "invert_position": "Inverser la position (ouvert ↔ fermé)",
       "invert_power": "Inverser le signe de la puissance",
       "jets_threshold": "Seuil des jets (W)",
       "language": "Langue",
@@ -6040,6 +6043,7 @@ console.info(`%c HA-APPLIANCE-CARDS %c v${VERSION} `,
       "ignition_threshold": "Tenningsterskel (W)",
       "indexes": "Målerindekser",
       "invert": "Inverter tilstand",
+      "invert_position": "Inverter posisjon (åpen ↔ lukket)",
       "invert_power": "Inverter effektfortegn",
       "jets_threshold": "Dyseterskel (W)",
       "language": "Språk",
@@ -6221,6 +6225,7 @@ console.info(`%c HA-APPLIANCE-CARDS %c v${VERSION} `,
       "ignition_threshold": "Ontstekingsdrempel (W)",
       "indexes": "Meterstanden",
       "invert": "Status omkeren",
+      "invert_position": "Positie omkeren (open ↔ dicht)",
       "invert_power": "Teken van vermogen omkeren",
       "jets_threshold": "Jetsdrempel (W)",
       "language": "Taal",
@@ -6409,6 +6414,7 @@ console.info(`%c HA-APPLIANCE-CARDS %c v${VERSION} `,
       "ignition_threshold": "Prag de aprindere (W)",
       "indexes": "Indexuri contor",
       "invert": "Inversează starea",
+      "invert_position": "Inversează poziția (deschis ↔ închis)",
       "invert_power": "Inversează semnul puterii",
       "jets_threshold": "Prag jeturi (W)",
       "language": "Limbă",
@@ -6597,6 +6603,7 @@ console.info(`%c HA-APPLIANCE-CARDS %c v${VERSION} `,
       "ignition_threshold": "Порог розжига (Вт)",
       "indexes": "Индексы счётчика",
       "invert": "Инвертировать состояние",
+      "invert_position": "Инвертировать положение (открыто ↔ закрыто)",
       "invert_power": "Инвертировать знак мощности",
       "jets_threshold": "Порог форсунок (Вт)",
       "language": "Язык",
@@ -15569,7 +15576,7 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--sh-move:var(--app
         if (this._hass && this._c.entity) this._hass.callService('cover', `${b.dataset.a}_cover`, { entity_id: this._c.entity });
       }));
       root.querySelector('#shpos input').addEventListener('change', (e) => {
-        if (this._hass) this._hass.callService('cover', 'set_cover_position', { entity_id: this._c.entity, position: Number(e.target.value) });
+        if (this._hass) this._hass.callService('cover', 'set_cover_position', { entity_id: this._c.entity, position: this._c.invert ? 100 - Number(e.target.value) : Number(e.target.value) });
       });
       root.querySelector('#shtilt input').addEventListener('change', (e) => {
         if (this._hass) this._hass.callService('cover', 'set_cover_tilt_position', { entity_id: this._c.entity, tilt_position: Number(e.target.value) });
@@ -15590,6 +15597,14 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--sh-move:var(--app
         if (a.current_tilt_position != null && isFinite(Number(a.current_tilt_position))) tilt = Math.max(0, Math.min(100, Number(a.current_tilt_position)));
       }
       const known = !isNaN(pos); // position réelle fournie par la cover
+      // invert : cover qui remonte sa position à l'envers (fréquent avec Tuya), 0 = ouvert et 100 = fermé.
+      // L'état HA en découle et est donc faux lui aussi : on le recalcule depuis la position corrigée.
+      if (c.invert && st !== 'unavailable') {
+        if (st === 'opening' || st === 'closing') st = st === 'opening' ? 'closing' : 'opening';
+        else if (known) st = 'open';
+        else st = st === 'open' ? 'closed' : 'open';
+        if (known) pos = 100 - pos;
+      }
       if (!known) pos = st === 'open' || st === 'opening' ? 100 : 0;
       else if (st === 'open' && pos < 100) st = pos > 0 ? 'partial' : 'closed';
       return { st, pos, known, tilt, s };
@@ -15686,6 +15701,7 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--sh-move:var(--app
           { name: 'color', selector: { text: {} } },
           { name: 'travel_time', selector: { number: { min: 0, max: 120, step: 1, mode: 'box', unit_of_measurement: 's' } } },
         ] },
+        bool('invert', false),
         { name: 'language', selector: { select: { options: Object.keys(T).map((value) => ({ value, label: { fr: 'Français', en: 'English', de: 'Deutsch', nb: 'Norsk bokmål', ro: 'Română', nl: 'Nederlands', ru: 'Русский' }[value] || value })) } } },
         { type: 'grid', name: '', schema: [
           bool('show_status'), bool('show_controls'), bool('show_slider'), bool('show_position'),
@@ -15693,7 +15709,7 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--sh-move:var(--app
         ] },
       ];
       // « color » a le libellé « couleur de la lumière » pour les lampes : ici, couleur du volet
-      this._form.computeLabel = (s) => window.applianceEditorLabel(s.name === 'color' ? 'shutter_color' : s.name, this._hass);
+      this._form.computeLabel = (s) => window.applianceEditorLabel(s.name === 'color' ? 'shutter_color' : s.name === 'invert' ? 'invert_position' : s.name, this._hass);
     }
   }
 

@@ -611,6 +611,7 @@
     "ignition_threshold": "Ontstekingsdrempel (W)",
     "indexes": "Meterstanden",
     "invert": "Status omkeren",
+    "invert_position": "Positie omkeren (open ↔ dicht)",
     "invert_power": "Teken van vermogen omkeren",
     "jets_threshold": "Jetsdrempel (W)",
     "language": "Taal",
