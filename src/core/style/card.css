@@ -7,7 +7,8 @@
   --ac-lcd: #38d9ff;
   display: block; height: 100%;
 }
-ha-card { display: block; height: 100%; cursor: pointer; overflow: hidden; container-type: inline-size; }
+/* carte plus haute que son contenu (grille en sections) : contenu centré verticalement ; « safe » garde le haut visible si ça déborde */
+ha-card { display: flex; flex-direction: column; justify-content: safe center; height: 100%; cursor: pointer; overflow: hidden; container-type: inline-size; }
 .wrap { padding: 14px; display: flex; flex-direction: column; gap: 12px; --c: var(--ac-accent, var(--ac-active)); }
 .wrap.accent-heat { --c: var(--ac-accent, var(--ac-heat)); }
 .wrap.accent-cold { --c: var(--ac-accent, var(--ac-cold)); }
@@ -73,6 +74,16 @@ svg { width: 100%; height: 100%; display: block; overflow: visible; }
   .status span:last-child { white-space: normal; overflow: visible; text-overflow: clip; }
   /* les tuiles gardent toute la largeur (justify-items: center les réduisait à leur contenu) */
   .stats { justify-self: stretch; width: 100%; }
+}
+/* même disposition empilée, plus tôt, quand illustration_size agrandit le dessin (attribut posé par applianceSize) */
+@container (max-width: 320px) {
+  :host([illus-big]) .top { grid-template-columns: minmax(0, 1fr); grid-template-areas: "illus" "head" "stats"; justify-items: center; }
+  :host([illus-big]) .head { flex-direction: column; align-items: center; text-align: center; width: 100%; }
+  :host([illus-big]) .info { align-items: center; width: 100%; }
+  :host([illus-big]) .name { white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; }
+  :host([illus-big]) .status { justify-content: center; flex-wrap: wrap; }
+  :host([illus-big]) .status span:last-child { white-space: normal; overflow: visible; text-overflow: clip; }
+  :host([illus-big]) .stats { justify-self: stretch; width: 100%; }
 }
 
 /* Icon colors for power, yesterday energy, today energy and temperature */

@@ -155,6 +155,7 @@
     "toggle": "Pornește/oprește",
     "confirm_off": "Ciclu în desfășurare – apasă din nou pentru a tăia alimentarea",
     "f_name": "Nume",
+    "f_labels": "Etichete proprii pentru plăci (cheie: text)",
     "f_entity": "Entitate de stare (switch, sensor, input_select…)",
     "f_power": "Senzor de putere (W)",
     "f_energy": "Senzor de energie (kWh)",
