@@ -170,6 +170,7 @@ const STRINGS = {
     "toggle": "Turn on/off",
     "confirm_off": "Cycle running – click again to cut power",
     "f_name": "Name",
+    "f_labels": "Custom tile labels (key: text)",
     "f_entity": "Status entity (switch, sensor, input_select…)",
     "f_power": "Power sensor (W)",
     "f_energy": "Energy sensor (kWh)",
@@ -377,6 +378,7 @@ const STRINGS = {
     "toggle": "Ein/Aus",
     "confirm_off": "Zyklus läuft – erneut klicken zum Abschalten",
     "f_name": "Name",
+    "f_labels": "Eigene Kachelbeschriftungen (Schlüssel: Text)",
     "f_entity": "Status-Entität (switch, sensor, input_select…)",
     "f_power": "Leistungssensor (W)",
     "f_energy": "Energiesensor (kWh)",
@@ -584,6 +586,7 @@ const STRINGS = {
     "toggle": "Allumer/éteindre",
     "confirm_off": "Cycle en cours – cliquer encore pour couper",
     "f_name": "Nom",
+    "f_labels": "Libellés perso des tuiles (clé : texte)",
     "f_entity": "Entité d'état (switch, sensor, input_select…)",
     "f_power": "Capteur de puissance (W)",
     "f_energy": "Capteur d'énergie (kWh)",
@@ -800,6 +803,7 @@ const STRINGS = {
     "toggle": "Slå på/av",
     "confirm_off": "Syklus pågår – trykk igjen for å bryte strømmen",
     "f_name": "Navn",
+    "f_labels": "Egne flisetiketter (nøkkel: tekst)",
     "f_entity": "Status-entitet (switch, sensor, input_select…)",
     "f_power": "Effektsensor (W)",
     "f_energy": "Energisensor (kWh)",
@@ -998,6 +1002,7 @@ const STRINGS = {
     "toggle": "Aan/uit",
     "confirm_off": "Cyclus bezig – klik nog eens om de stroom te onderbreken",
     "f_name": "Naam",
+    "f_labels": "Eigen tegellabels (sleutel: tekst)",
     "f_entity": "Statusentiteit (switch, sensor, input_select…)",
     "f_power": "Vermogenssensor (W)",
     "f_energy": "Energiesensor (kWh)",
@@ -1205,6 +1210,7 @@ const STRINGS = {
     "toggle": "Pornește/oprește",
     "confirm_off": "Ciclu în desfășurare – apasă din nou pentru a tăia alimentarea",
     "f_name": "Nume",
+    "f_labels": "Etichete proprii pentru plăci (cheie: text)",
     "f_entity": "Entitate de stare (switch, sensor, input_select…)",
     "f_power": "Senzor de putere (W)",
     "f_energy": "Senzor de energie (kWh)",
@@ -1412,6 +1418,7 @@ const STRINGS = {
     "toggle": "Вкл./выкл.",
     "confirm_off": "Цикл выполняется – нажмите ещё раз, чтобы отключить питание",
     "f_name": "Название",
+    "f_labels": "Свои подписи плиток (ключ: текст)",
     "f_entity": "Сущность статуса (switch, sensor, input_select…)",
     "f_power": "Датчик мощности (Вт)",
     "f_energy": "Датчик энергии (кВт·ч)",
@@ -4428,6 +4435,16 @@ svg { width: 100%; height: 100%; display: block; overflow: visible; }
   /* les tuiles gardent toute la largeur (justify-items: center les réduisait à leur contenu) */
   .stats { justify-self: stretch; width: 100%; }
 }
+/* même disposition empilée, plus tôt, quand illustration_size agrandit le dessin (attribut posé par applianceSize) */
+@container (max-width: 320px) {
+  :host([illus-big]) .top { grid-template-columns: minmax(0, 1fr); grid-template-areas: "illus" "head" "stats"; justify-items: center; }
+  :host([illus-big]) .head { flex-direction: column; align-items: center; text-align: center; width: 100%; }
+  :host([illus-big]) .info { align-items: center; width: 100%; }
+  :host([illus-big]) .name { white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; }
+  :host([illus-big]) .status { justify-content: center; flex-wrap: wrap; }
+  :host([illus-big]) .status span:last-child { white-space: normal; overflow: visible; text-overflow: clip; }
+  :host([illus-big]) .stats { justify-self: stretch; width: 100%; }
+}
 
 /* Icon colors for power, yesterday energy, today energy and temperature */
 .lbl ha-icon[icon="mdi:flash"] {
@@ -6692,6 +6709,8 @@ console.info(`%c HA-APPLIANCE-CARDS %c v${VERSION} `,
     const n = Number(cfg && cfg.illustration_size);
     if (n > 0) el.style.setProperty('--illus-scale', String(Math.max(0.3, Math.min(3, n / 100))));
     else el.style.removeProperty('--illus-scale');
+    // dessin agrandi : la carte passe en disposition empilée plus tôt (voir card.css), sinon le titre est tronqué
+    el.toggleAttribute('illus-big', n > 100);
   };
   window.applianceEditorLabel = (name, hass) => (name ? (L[lang(hass)] || L.en)[name] ?? L.en[name] ?? human(name) : '');
 })();

@@ -17,6 +17,8 @@
     const n = Number(cfg && cfg.illustration_size);
     if (n > 0) el.style.setProperty('--illus-scale', String(Math.max(0.3, Math.min(3, n / 100))));
     else el.style.removeProperty('--illus-scale');
+    // dessin agrandi : la carte passe en disposition empilée plus tôt (voir card.css), sinon le titre est tronqué
+    el.toggleAttribute('illus-big', n > 100);
   };
   window.applianceEditorLabel = (name, hass) => (name ? (L[lang(hass)] || L.en)[name] ?? L.en[name] ?? human(name) : '');
 })();

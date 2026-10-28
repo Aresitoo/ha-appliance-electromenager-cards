@@ -164,6 +164,7 @@
 "toggle": "Slå på/av",
 "confirm_off": "Syklus pågår – trykk igjen for å bryte strømmen",
 "f_name": "Navn",
+"f_labels": "Egne flisetiketter (nøkkel: tekst)",
 "f_entity": "Status-entitet (switch, sensor, input_select…)",
 "f_power": "Effektsensor (W)",
 "f_energy": "Energisensor (kWh)",

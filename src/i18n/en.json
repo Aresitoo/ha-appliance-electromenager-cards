@@ -155,6 +155,7 @@
     "toggle": "Turn on/off",
     "confirm_off": "Cycle running – click again to cut power",
     "f_name": "Name",
+    "f_labels": "Custom tile labels (key: text)",
     "f_entity": "Status entity (switch, sensor, input_select…)",
     "f_power": "Power sensor (W)",
     "f_energy": "Energy sensor (kWh)",

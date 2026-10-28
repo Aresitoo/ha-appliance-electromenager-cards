@@ -155,6 +155,7 @@
     "toggle": "Aan/uit",
     "confirm_off": "Cyclus bezig – klik nog eens om de stroom te onderbreken",
     "f_name": "Naam",
+    "f_labels": "Eigen tegellabels (sleutel: tekst)",
     "f_entity": "Statusentiteit (switch, sensor, input_select…)",
     "f_power": "Vermogenssensor (W)",
     "f_energy": "Energiesensor (kWh)",
