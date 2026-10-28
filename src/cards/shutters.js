@@ -229,7 +229,7 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--sh-move:var(--app
         if (this._hass && this._c.entity) this._hass.callService('cover', `${b.dataset.a}_cover`, { entity_id: this._c.entity });
       }));
       root.querySelector('#shpos input').addEventListener('change', (e) => {
-        if (this._hass) this._hass.callService('cover', 'set_cover_position', { entity_id: this._c.entity, position: Number(e.target.value) });
+        if (this._hass) this._hass.callService('cover', 'set_cover_position', { entity_id: this._c.entity, position: this._c.invert ? 100 - Number(e.target.value) : Number(e.target.value) });
       });
       root.querySelector('#shtilt input').addEventListener('change', (e) => {
         if (this._hass) this._hass.callService('cover', 'set_cover_tilt_position', { entity_id: this._c.entity, tilt_position: Number(e.target.value) });
@@ -250,6 +250,14 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--sh-move:var(--app
         if (a.current_tilt_position != null && isFinite(Number(a.current_tilt_position))) tilt = Math.max(0, Math.min(100, Number(a.current_tilt_position)));
       }
       const known = !isNaN(pos); // position réelle fournie par la cover
+      // invert : cover qui remonte sa position à l'envers (fréquent avec Tuya), 0 = ouvert et 100 = fermé.
+      // L'état HA en découle et est donc faux lui aussi : on le recalcule depuis la position corrigée.
+      if (c.invert && st !== 'unavailable') {
+        if (st === 'opening' || st === 'closing') st = st === 'opening' ? 'closing' : 'opening';
+        else if (known) st = 'open';
+        else st = st === 'open' ? 'closed' : 'open';
+        if (known) pos = 100 - pos;
+      }
       if (!known) pos = st === 'open' || st === 'opening' ? 100 : 0;
       else if (st === 'open' && pos < 100) st = pos > 0 ? 'partial' : 'closed';
       return { st, pos, known, tilt, s };
@@ -346,6 +354,7 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--sh-move:var(--app
           { name: 'color', selector: { text: {} } },
           { name: 'travel_time', selector: { number: { min: 0, max: 120, step: 1, mode: 'box', unit_of_measurement: 's' } } },
         ] },
+        bool('invert', false),
         { name: 'language', selector: { select: { options: Object.keys(T).map((value) => ({ value, label: { fr: 'Français', en: 'English', de: 'Deutsch', nb: 'Norsk bokmål', ro: 'Română', nl: 'Nederlands', ru: 'Русский' }[value] || value })) } } },
         { type: 'grid', name: '', schema: [
           bool('show_status'), bool('show_controls'), bool('show_slider'), bool('show_position'),
@@ -353,7 +362,7 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--sh-move:var(--app
         ] },
       ];
       // « color » a le libellé « couleur de la lumière » pour les lampes : ici, couleur du volet
-      this._form.computeLabel = (s) => window.applianceEditorLabel(s.name === 'color' ? 'shutter_color' : s.name, this._hass);
+      this._form.computeLabel = (s) => window.applianceEditorLabel(s.name === 'color' ? 'shutter_color' : s.name === 'invert' ? 'invert_position' : s.name, this._hass);
     }
   }
 

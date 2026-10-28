@@ -752,7 +752,20 @@ ok('no page errors',__errors.length===0,__errors.join('; '));
  ok('swing no stop hidden with stop support, no slider without position support',!c.sr.querySelector('[data-a=stop]').classList.contains('hide')&&c.sr.getElementById('shpos').classList.contains('hide'));
  c=card('swing-shutter',{entity:'cover.v',color:'red;background:url(x)'},[mk('cover.v','open')]);
  ok('swing bad colour ignored',v(c,'--sc')==='#4f7d5c',v(c,'--sc'));
- c=card('roller-shutter',{entity:'cover.v'},[mk('cover.v','unavailable')]); ok('roller unavailable',/unavailable/.test(cls(c))&&badge(c)==='Indisponible');}
+ c=card('roller-shutter',{entity:'cover.v'},[mk('cover.v','unavailable')]); ok('roller unavailable',/unavailable/.test(cls(c))&&badge(c)==='Indisponible');
+ // invert: position remontée à l'envers (Tuya), 100 = fermé
+ c=card('roller-shutter',{entity:'cover.v',invert:true},[mk('cover.v','open',{current_position:100,supported_features:15})]);
+ ok('invert: reported 100 -> closed 0',/closed/.test(cls(c))&&v(c,'--p')==='0'&&c.sr.querySelector('[data-a=close]').disabled,cls(c)+' '+v(c,'--p'));
+ c=card('roller-shutter',{entity:'cover.v',invert:true},[mk('cover.v','closed',{current_position:0,supported_features:15})]);
+ ok('invert: reported 0 -> open 100',/\bopen\b/.test(cls(c))&&v(c,'--p')==='100',cls(c)+' '+v(c,'--p'));
+ c=card('roller-shutter',{entity:'cover.v',invert:true},[mk('cover.v','open',{current_position:30,supported_features:15})]);
+ ok('invert: reported 30 -> open at 70 %',/partial/.test(cls(c))&&badge(c)==='Ouvert à 70 %',badge(c));
+ {const pi=c.sr.querySelector('#shpos input'); ok('invert: slider shows 70',pi.value==='70',pi.value); pi.value='80'; pi.dispatchEvent(new Event('change'));
+ ok('invert: slider 80 -> set_cover_position 20',JSON.stringify(c.h.calls[0])==='["cover","set_cover_position",{"entity_id":"cover.v","position":20}]',JSON.stringify(c.h.calls));}
+ c=card('roller-shutter',{entity:'cover.v',invert:true},[mk('cover.v','opening',{current_position:40})]);
+ ok('invert: opening -> closing 60 %',/closing/.test(cls(c))&&badge(c)==='Fermeture… 60 %',badge(c));
+ c=card('roller-shutter',{entity:'cover.v',invert:true},[mk('cover.v','closed')]);
+ ok('invert: closed without position -> open',/\bopen\b/.test(cls(c))&&v(c,'--p')==='100',cls(c));}
 // generic: conditional images (power thresholds, state, other entity)
 {const href=(c)=>c.sr.querySelector('.gn-img').getAttribute('href');
  const imgs=[{image:'/local/off.png'},{above:20,image:'/local/s1.png'},{above:60,image:'/local/s2.png'},{state:'boost',entity:'select.m',image:'/local/boost.png'}];

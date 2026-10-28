@@ -21,6 +21,7 @@ The badge shows **Open**, **Closed**, **Open 40 %** or **Closing… 65 %**; whil
 - `sun_entity` (default `sun.sun`; day view if missing)
 - `color` (CSS colour of the slats or leaves; defaults: aluminium, beige, green)
 - `travel_time` (s, full travel: the drawing moves at the speed of the motor; default 1.2 s per change)
+- `invert` (`true` for a cover that reports its position upside down, 0 = open and 100 = closed, as some Tuya shutters do: the drawing, badge, tiles and slider are flipped; the Open / Close buttons are unchanged)
 - `animations`, `show_status`, `show_controls`, `show_slider`, `show_position`, `show_tilt`, `show_power`, `show_since`
 - `labels` (tile keys: `position`, `tilt`, `power`, `since`)
 - `language: fr|en|de|nb|nl|ro|ru`

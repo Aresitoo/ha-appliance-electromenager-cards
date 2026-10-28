@@ -611,6 +611,7 @@
     "ignition_threshold": "Zündschwelle (W)",
     "indexes": "Zählerstände",
     "invert": "Zustand umkehren",
+    "invert_position": "Position umkehren (offen ↔ geschlossen)",
     "invert_power": "Leistungsvorzeichen umkehren",
     "jets_threshold": "Düsenschwelle (W)",
     "language": "Sprache",
