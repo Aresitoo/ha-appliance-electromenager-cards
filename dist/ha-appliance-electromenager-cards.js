@@ -4368,7 +4368,8 @@ const STYLE = `
   --ac-lcd: #38d9ff;
   display: block; height: 100%;
 }
-ha-card { display: block; height: 100%; cursor: pointer; overflow: hidden; container-type: inline-size; }
+/* carte plus haute que son contenu (grille en sections) : contenu centré verticalement ; « safe » garde le haut visible si ça déborde */
+ha-card { display: flex; flex-direction: column; justify-content: safe center; height: 100%; cursor: pointer; overflow: hidden; container-type: inline-size; }
 .wrap { padding: 14px; display: flex; flex-direction: column; gap: 12px; --c: var(--ac-accent, var(--ac-active)); }
 .wrap.accent-heat { --c: var(--ac-accent, var(--ac-heat)); }
 .wrap.accent-cold { --c: var(--ac-accent, var(--ac-cold)); }
