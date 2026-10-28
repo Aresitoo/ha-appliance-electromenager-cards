@@ -19,11 +19,12 @@ const has=(c,cls)=>c.wrap.classList.contains(cls);
 const tags=['washer','dryer','dishwasher','water-heater','oven','microwave','fridge','pellet-stove','pool-pump','printer-3d','chest-freezer','drawer-freezer','solar','vmc','hob','radiator','air-fryer','coffee-maker','tv','range-hood','ac-split','heat-pump','towel-dryer','server-rack','desktop-pc','laptop','wine-cooler','beer-tap','av-receiver','fan','generic','tool-charger','ceiling-fan'];
 tags.forEach(t=>ok(`registered ${t}`,customElements.get(`appliance-${t}-card`)));
 // card picker: every core card and every self-contained card listed exactly once
-const solo=['aquarium','linky','battery','ev-charger','robot-vacuum-solo','robot-mower-solo','pellet-boiler','gas-boiler','water-heat-pump','diesel-heater','jacuzzi','barrier','sliding-gate','swing-gate','garage-door','sauna','water-pump','industrial-pump','pool-robot','sump-pump','ups','underfloor-heating'];
+const solo=['aquarium','linky','battery','ev-charger','robot-vacuum-solo','robot-mower-solo','pellet-boiler','gas-boiler','water-heat-pump','diesel-heater','jacuzzi','barrier','sliding-gate','swing-gate','garage-door','sauna','water-pump','industrial-pump','pool-robot','sump-pump','ups','underfloor-heating','light-bulb','color-bulb','filament-bulb','pendant-light','pendant-cluster','desk-lamp','floor-lamp','chandelier','garden-spotlight','christmas-tree','roller-shutter','venetian-blind','swing-shutter'];
 solo.forEach(t=>ok(`registered ${t}`,customElements.get(`appliance-${t}-card`)));
 const picked=window.customCards.map(c=>c.type), wanted=[...tags,...solo].map(t=>`appliance-${t}-card`);
 ok(`customCards = ${wanted.length}`,picked.length===wanted.length&&wanted.every(t=>picked.filter(p=>p===t).length===1),
   [...wanted.filter(t=>!picked.includes(t)).map(t=>`missing ${t}`),...picked.filter(t=>!wanted.includes(t)).map(t=>`extra ${t}`),`${picked.length} entries`].join(', '));
+{const np=window.customCards.filter(c=>c.type.startsWith('appliance-')&&!c.name.startsWith('Appliance – ')).map(c=>c.name); ok('picker names start with Appliance –',!np.length,np.join(', '));}
 // config validation
 try{document.createElement('appliance-washer-card').setConfig({});ok('empty config throws',false)}catch(e){ok('empty config throws',/entity|power/.test(e.message),e.message)}
 
@@ -567,6 +568,8 @@ ok('card size / grid',typeof c.el.getCardSize()==='number'&&c.el.getGridOptions(
   ['sump-pump',{name:X,entity:'switch.p',entity_level:'sensor.l',entity_starts:'sensor.s'},[mk('switch.p','on'),mk('sensor.l',50,U),mk('sensor.s',3,U)]],
   ['ups',{name:X,entity:'sensor.u',entity_charge:'sensor.c',entity_load:'sensor.l',entity_energy:'sensor.e'},[mk('sensor.u',X),mk('sensor.c',80,U),mk('sensor.l',30,U),mk('sensor.e',3,U)]],
   ['underfloor-heating',{name:X,entity:'climate.f',entity_floor_temp:'sensor.f',entity_energy:'sensor.e',price_per_kwh:1,currency:X},[mk('climate.f','heat',{current_temperature:20,temperature:21}),mk('sensor.f',25,U),mk('sensor.e',3,U)]],
+  ['roller-shutter',{name:X,entity:'cover.v',entity_power:'sensor.p',color:X,labels:{position:X}},[mk('cover.v','open',{current_position:X}),mk('sensor.p',8,U)]],
+  ['pendant-light',{name:X,entity:'light.l',entity_power:'sensor.p',color:X},[mk('light.l','on',{brightness:200}),mk('sensor.p',8,U)]],
   ['pool-robot',{name:X,entity:'vacuum.r',entity_filter:'sensor.f',entity_water_temp:'sensor.t',entity_mode:'select.m'},[mk('vacuum.r','cleaning',{error:X}),mk('sensor.f',50,U),mk('sensor.t',26,U),mk('select.m',X)]],
  ];
  xs.forEach(([t,cfg,st])=>{const c=card(t,cfg,st); ok(`no HTML injection ${t}`,!c.sr.querySelector('.xss'),c.sr.querySelectorAll('.xss').length+' injected'); c.el.remove();});}
@@ -677,7 +680,165 @@ ok('card size / grid',typeof c.el.getCardSize()==='number'&&c.el.getGridOptions(
  c.sr.querySelector('[data-a=up]').click();
  ok('underfloor +0.5 °C',JSON.stringify(c.h.calls[0])==='["climate","set_temperature",{"entity_id":"climate.f","temperature":21.5}]',JSON.stringify(c.h.calls));
  ok('underfloor electric class',/elec/.test(card('underfloor-heating',{entity:'switch.f',heating_type:'electric'},[mk('switch.f','on')]).sr.querySelector('ha-card').className));}
+// editor labels: self-contained cards show translated labels, not raw option names
+{const lab=window.applianceEditorLabel;
+ ok('editor label fr',lab('entity_floor_temp',{language:'fr'})==='Température du sol',lab('entity_floor_temp',{language:'fr'}));
+ ok('editor label en',lab('show_power',{language:'en'})==='Show power',lab('show_power',{language:'en'}));
+ ok('editor label de fallback',lab('entity_load',{language:'de'})==='Last',lab('entity_load',{language:'de'}));
+ ok('editor label unknown key humanised',lab('entity_foo_bar',{language:'fr'})==='Foo bar',lab('entity_foo_bar',{language:'fr'}));
+ const ed=document.createElement('appliance-underfloor-heating-card-editor'); ed.hass={language:'fr',states:{}}; ed.setConfig({});
+ ok('underfloor editor uses labels',ed._form.computeLabel({name:'entity_water_temp'})==='Température de départ',ed._form.computeLabel({name:'entity_water_temp'}));
+ const f=customElements.get('appliance-robot-vacuum-solo-card').getConfigForm();
+ ok('getConfigForm cards have computeLabel',typeof f.computeLabel==='function'&&f.computeLabel({name:'entity_battery'})!=='entity_battery',f.computeLabel&&f.computeLabel({name:'entity_battery'}));}
+// lights: state, colour from the bulb or the option, brightness, controls
+{const lc=(c)=>c.sr.querySelector('ha-card').style.getPropertyValue('--lc'), cls=(c)=>c.sr.querySelector('ha-card').className.trim().split(' ')[0];
+ let c=card('pendant-light',{entity:'light.l'},[mk('light.l','on',{brightness:128,rgb_color:[10,20,30]})]);
+ ok('light on, rgb colour followed',cls(c)==='on'&&lc(c)==='rgb(10,20,30)'&&c.sr.querySelector('ha-card').style.getPropertyValue('--b')==='0.502',lc(c));
+ c=card('floor-lamp',{entity:'light.l'},[mk('light.l','on',{color_temp_kelvin:2700})]);
+ ok('kelvin -> warm colour',/^rgb\(255,1\d\d,\d+\)$/.test(lc(c)),lc(c));
+ c=card('chandelier',{entity:'light.l',follow_light_color:false,color:[1,2,3]},[mk('light.l','on',{rgb_color:[9,9,9]})]);
+ ok('option colour when not following the bulb',lc(c)==='rgb(1,2,3)',lc(c));
+ c=card('desk-lamp',{entity:'light.l'},[mk('light.l','off')]);
+ ok('light off',cls(c)==='off'&&c.sr.querySelector('ha-card').style.getPropertyValue('--b')==='0.000',cls(c));
+ c.sr.querySelector('[data-a=on]').click(); ok('turn on -> light.turn_on',JSON.stringify(c.h.calls[0])==='["light","turn_on",{"entity_id":"light.l"}]',JSON.stringify(c.h.calls));
+ c=card('color-bulb',{entity:'light.l'},[mk('light.l','on',{rgb_color:[255,0,0]})]);
+ c.sr.querySelector('[data-a=color]').click(); ok('colour button -> next preset',c.h.calls[0][1]==='turn_on'&&Array.isArray(c.h.calls[0][2].rgb_color),JSON.stringify(c.h.calls));
+ c=card('light-bulb',{entity:'switch.s'},[mk('switch.s','on')]);
+ c.sr.querySelector('[data-a=off]').click(); ok('switch -> homeassistant.turn_off',JSON.stringify(c.h.calls[0])==='["homeassistant","turn_off",{"entity_id":"switch.s"}]',JSON.stringify(c.h.calls));
+ c=card('christmas-tree',{entity:'light.l',multicolor:false,color:[0,0,255]},[mk('light.l','on')]);
+ ok('tree single colour',[...c.sr.querySelectorAll('.xb')].every((e)=>e.style.fill==='rgb(0, 0, 255)'),c.sr.querySelector('.xb').style.fill);
+ c=card('garden-spotlight',{entity_power:'sensor.p'},[mk('sensor.p',12,W)]);
+ ok('power only -> on',cls(c)==='on',cls(c));}
 ok('no page errors',__errors.length===0,__errors.join('; '));
+// labels: custom tile names override translations, empty values fall back
+{const lbls=(c)=>[...c.sr.querySelectorAll('.lbl,.tile .l,.stat .l')].map(e=>e.textContent.trim());
+ let c=card('washer',{power:'sensor.p',labels:{power:'Conso'}},[mk('sensor.p',500,W)]);
+ ok('labels: core tile',lbls(c).includes('Conso'),lbls(c));
+ c=card('sauna',{entity:'switch.s',entity_power:'sensor.p',labels:{power:'Chauffe',temp:''}},[mk('switch.s','on'),mk('sensor.p',6000,W)]);
+ ok('labels: tile card',lbls(c).includes('Chauffe')&&!lbls(c).includes('Puissance'),lbls(c));
+ c=card('battery',{entity_soc:'sensor.b',entity_power:'sensor.p',labels:{power:'Flux'}},[mk('sensor.b',50,{unit_of_measurement:'%'}),mk('sensor.p',300,W)]);
+ ok('labels: stat card',lbls(c).includes('Flux'),lbls(c));
+ c=card('battery',{entity_soc:'sensor.b',entity_power:'sensor.p',labels:{power:''}},[mk('sensor.b',50,{unit_of_measurement:'%'}),mk('sensor.p',300,W)]);
+ ok('labels: empty falls back',lbls(c).includes('Puissance'),lbls(c));
+ c=card('battery',{entity_soc:'sensor.b',entity_power:'sensor.p',labels:{power:'<b class="xss">x</b>'}},[mk('sensor.b',50,{unit_of_measurement:'%'}),mk('sensor.p',300,W)]);
+ ok('labels: escaped',!c.sr.querySelector('.xss'),c.sr.innerHTML.slice(0,80));
+ c=card('washer',{power:'sensor.p',labels:{power:'<b class="xss">x</b>'}},[mk('sensor.p',500,W)]);
+ ok('labels: core escaped',!c.sr.querySelector('.xss'));}
+// russian
+{let c=card('washer',{power:'sensor.p'},[mk('sensor.p',500,W)],'ru'); ok('ru: core card',/Стиральная машина/.test(c.txt()),c.txt());
+ c=card('sauna',{entity:'switch.s',entity_power:'sensor.p'},[mk('switch.s','on'),mk('sensor.p',6000,W)],'ru'); ok('ru: sauna',/Нагреватель/.test(c.sr.textContent),c.sr.textContent.slice(0,120));
+ c=card('battery',{entity_soc:'sensor.b',entity_power:'sensor.p'},[mk('sensor.b',50,{unit_of_measurement:'%'}),mk('sensor.p',300,W)],'ru'); ok('ru: battery',/Мощность/.test(c.sr.textContent),c.sr.textContent.slice(0,120));}
+// transparent: fond, ombre et bordure de ha-card retirés, sur une carte du cœur et une carte autonome
+{let c=card('washer',{power:'sensor.p',transparent:true},[mk('sensor.p',0,W)]); ok('transparent: core card',c.el.style.getPropertyValue('--ha-card-background')==='transparent'&&c.el.style.getPropertyValue('--ha-card-box-shadow')==='none');
+ c=card('roller-shutter',{entity:'cover.v',transparent:true},[mk('cover.v','open')]); ok('transparent: shutter card',c.el.style.getPropertyValue('--ha-card-background')==='transparent');
+ c.el.setConfig({entity:'cover.v'}); ok('transparent: off again',c.el.style.getPropertyValue('--ha-card-background')==='');}
+// shutters: position, tilt, day / night, controls and sliders
+{const cls=(c)=>c.sr.querySelector('ha-card').className, v=(c,k)=>c.sr.querySelector('ha-card').style.getPropertyValue(k), badge=(c)=>c.sr.getElementById('shbadge').textContent;
+ let c=card('roller-shutter',{entity:'cover.v'},[mk('cover.v','open',{current_position:40,supported_features:15}),mk('sun.sun','above_horizon')]);
+ ok('roller partial 40 %',/partial/.test(cls(c))&&v(c,'--p')==='40'&&badge(c)==='Ouvert à 40 %',cls(c)+' '+badge(c));
+ ok('roller day',!/isnight/.test(cls(c)),cls(c));
+ c.sr.querySelector('[data-a=close]').click(); ok('roller close -> cover.close_cover',JSON.stringify(c.h.calls[0])==='["cover","close_cover",{"entity_id":"cover.v"}]',JSON.stringify(c.h.calls));
+ const pi=c.sr.querySelector('#shpos input'); pi.value='70'; pi.dispatchEvent(new Event('change'));
+ ok('roller slider -> set_cover_position',JSON.stringify(c.h.calls[1])==='["cover","set_cover_position",{"entity_id":"cover.v","position":70}]',JSON.stringify(c.h.calls));
+ c=card('roller-shutter',{entity:'cover.v'},[mk('cover.v','closed',{current_position:0}),mk('sun.sun','below_horizon')]);
+ ok('roller closed at night',/closed/.test(cls(c))&&/isnight/.test(cls(c))&&v(c,'--p')==='0',cls(c));
+ c=card('roller-shutter',{entity:'cover.v'},[mk('cover.v','closing',{current_position:65})]);
+ ok('roller closing badge with position',/closing/.test(cls(c))&&badge(c)==='Fermeture… 65 %',badge(c));
+ ok('roller close disabled while closing',c.sr.querySelector('[data-a=close]').disabled);
+ c=card('roller-shutter',{entity:'cover.v'},[mk('cover.v','open')]);
+ ok('roller open without position -> 100, no slider',v(c,'--p')==='100'&&c.sr.getElementById('shpos').classList.contains('hide'));
+ c=card('venetian-blind',{entity:'cover.v'},[mk('cover.v','closed',{current_position:0,current_tilt_position:60,supported_features:255})]);
+ ok('venetian tilt 60',v(c,'--t')==='60'&&!c.sr.getElementById('shtilt').classList.contains('hide')&&!c.sr.querySelector('.tile[data-k=tilt]').classList.contains('hide'));
+ const ti=c.sr.querySelector('#shtilt input'); ti.value='20'; ti.dispatchEvent(new Event('change'));
+ ok('venetian tilt slider -> set_cover_tilt_position',JSON.stringify(c.h.calls[0])==='["cover","set_cover_tilt_position",{"entity_id":"cover.v","tilt_position":20}]',JSON.stringify(c.h.calls));
+ c=card('swing-shutter',{entity:'cover.v',color:'#3f6f9a'},[mk('cover.v','open',{current_position:100,supported_features:11})]);
+ ok('swing two leaves, colour',c.sr.querySelectorAll('.leaf').length===2&&v(c,'--sc')==='#3f6f9a');
+ ok('swing no stop hidden with stop support, no slider without position support',!c.sr.querySelector('[data-a=stop]').classList.contains('hide')&&c.sr.getElementById('shpos').classList.contains('hide'));
+ c=card('swing-shutter',{entity:'cover.v',color:'red;background:url(x)'},[mk('cover.v','open')]);
+ ok('swing bad colour ignored',v(c,'--sc')==='#4f7d5c',v(c,'--sc'));
+ c=card('roller-shutter',{entity:'cover.v'},[mk('cover.v','unavailable')]); ok('roller unavailable',/unavailable/.test(cls(c))&&badge(c)==='Indisponible');
+ // invert: position remontée à l'envers (Tuya), 100 = fermé
+ c=card('roller-shutter',{entity:'cover.v',invert:true},[mk('cover.v','open',{current_position:100,supported_features:15})]);
+ ok('invert: reported 100 -> closed 0',/closed/.test(cls(c))&&v(c,'--p')==='0'&&c.sr.querySelector('[data-a=close]').disabled,cls(c)+' '+v(c,'--p'));
+ c=card('roller-shutter',{entity:'cover.v',invert:true},[mk('cover.v','closed',{current_position:0,supported_features:15})]);
+ ok('invert: reported 0 -> open 100',/\bopen\b/.test(cls(c))&&v(c,'--p')==='100',cls(c)+' '+v(c,'--p'));
+ c=card('roller-shutter',{entity:'cover.v',invert:true},[mk('cover.v','open',{current_position:30,supported_features:15})]);
+ ok('invert: reported 30 -> open at 70 %',/partial/.test(cls(c))&&badge(c)==='Ouvert à 70 %',badge(c));
+ {const pi=c.sr.querySelector('#shpos input'); ok('invert: slider shows 70',pi.value==='70',pi.value); pi.value='80'; pi.dispatchEvent(new Event('change'));
+ ok('invert: slider 80 -> set_cover_position 20',JSON.stringify(c.h.calls[0])==='["cover","set_cover_position",{"entity_id":"cover.v","position":20}]',JSON.stringify(c.h.calls));}
+ c=card('roller-shutter',{entity:'cover.v',invert:true},[mk('cover.v','opening',{current_position:40})]);
+ ok('invert: opening -> closing 60 %',/closing/.test(cls(c))&&badge(c)==='Fermeture… 60 %',badge(c));
+ c=card('roller-shutter',{entity:'cover.v',invert:true},[mk('cover.v','closed')]);
+ ok('invert: closed without position -> open',/\bopen\b/.test(cls(c))&&v(c,'--p')==='100',cls(c));}
+// generic: conditional images (power thresholds, state, other entity)
+{const href=(c)=>c.sr.querySelector('.gn-img').getAttribute('href');
+ const imgs=[{image:'/local/off.png'},{above:20,image:'/local/s1.png'},{above:60,image:'/local/s2.png'},{state:'boost',entity:'select.m',image:'/local/boost.png'}];
+ let c=card('generic',{power:'sensor.p',images:imgs},[mk('sensor.p',2,W),mk('select.m','auto')]); ok('generic images: default under 20 W',href(c)==='/local/off.png',href(c));
+ c=card('generic',{power:'sensor.p',images:imgs},[mk('sensor.p',35,W),mk('select.m','auto')]); ok('generic images: speed 1 above 20 W',href(c)==='/local/s1.png',href(c));
+ c=card('generic',{power:'sensor.p',images:imgs},[mk('sensor.p',0.08,{unit_of_measurement:'kW'}),mk('select.m','auto')]); ok('generic images: kW converted (80 W -> speed 2)',href(c)==='/local/s2.png',href(c));
+ c=card('generic',{power:'sensor.p',images:imgs},[mk('sensor.p',80,W),mk('select.m','boost')]); ok('generic images: state of other entity wins (last match)',href(c)==='/local/boost.png',href(c));
+ c.h.states['select.m']=mk('select.m','auto'); c.h.states['sensor.p']=mk('sensor.p',30,W); c.el.hass={...c.h,states:{...c.h.states}}; ok('generic images: updates on change',href(c)==='/local/s1.png',href(c));
+ c=card('generic',{entity:'switch.s',images:[{image:'/local/off.png'},{state:'on',image:'/local/on.png'}]},[mk('switch.s','on')]); ok('generic images: main entity state',href(c)==='/local/on.png',href(c));
+ c=card('generic',{power:'sensor.p',images:[{image:'"><b class="xss">x</b>'}]},[mk('sensor.p',2,W)]); ok('generic images: escaped',!c.sr.querySelector('.xss'));}
+// robots: compact layout and own image
+{let c=card('robot-vacuum-solo',{entity:'vacuum.r',layout:'compact',entity_area:'sensor.a'},[mk('vacuum.r','cleaning',{battery_level:72}),mk('sensor.a',24)]);
+ const k=c.sr.getElementById('card');
+ ok('vacuum compact: layout, status under the name, tiles',k.classList.contains('compact')&&k.dataset.st==='cleaning'&&c.sr.getElementById('cst').textContent==='Nettoyage'&&c.sr.querySelectorAll('.tile').length===3&&!/Statut/.test(c.sr.getElementById('stats').textContent),c.sr.getElementById('stats').textContent);
+ c.sr.querySelector('.btn[data-a=dock]').click(); ok('vacuum compact: dock button',JSON.stringify(c.h.calls[0])==='["vacuum","return_to_base",{"entity_id":"vacuum.r"}]',JSON.stringify(c.h.calls));
+ c=card('robot-vacuum-solo',{entity:'vacuum.r',image:'/local/robot.png'},[mk('vacuum.r','docked',{battery_level:50})]);
+ ok('vacuum own image replaces the drawing',c.sr.querySelector('image.uimg').getAttribute('href')==='/local/robot.png'&&!c.sr.getElementById('ring'));
+ c=card('robot-mower-solo',{entity:'lawn_mower.m',layout:'compact',image:'/local/mower.png',entity_rain:'binary_sensor.r'},[mk('lawn_mower.m','docked',{battery_level:90}),mk('binary_sensor.r','on')]);
+ ok('mower compact + image + rain in status',c.sr.getElementById('card').classList.contains('compact')&&!!c.sr.querySelector('image.uimg')&&/Pluie/.test(c.sr.getElementById('cst').textContent),c.sr.getElementById('cst').textContent);
+ c=card('robot-vacuum-solo',{entity:'vacuum.r',image:'"><b class="xss">x</b>',layout:'compact',name:'<b class="xss">x</b>'},[mk('vacuum.r','cleaning')]);
+ ok('robot image and name escaped',!c.sr.querySelector('.xss'));}
+// energy_period: daily consumption from long-term statistics (recorder/statistic_during_period)
+{const mkc=(per,change,fail)=>{const c=card('washer',{power:'sensor.p',energy:'sensor.e',energy_period:per},[mk('sensor.p',600,W),mk('sensor.e',1234.5,{unit_of_measurement:'kWh',state_class:'total_increasing'})]);return c;};
+ const calls=[]; const orig=hassOf; 
+ const withWS=(c,change,fail)=>{c.h.callWS=(msg)=>{calls.push(msg);return fail?Promise.reject(new Error('x')):Promise.resolve({change});};c.el.hass={...c.h,states:{...c.h.states}};};
+ const c1=mkc('day'); withWS(c1,0.853);
+ const c2=mkc('month'); withWS(c2,42.1);
+ const c3=mkc('day'); withWS(c3,null,true);
+ const c4=mkc(undefined); withWS(c4,5);
+ setTimeout(()=>{
+  const txt=(c)=>c.sr.getElementById('stats').textContent.replace(/\s+/g,' ');
+  ok('energy_period day: today value',/0,85 kWh/.test(txt(c1))&&/Aujourd'hui/.test(txt(c1)),txt(c1));
+  ok('energy_period: statistics request',calls.some(m=>m.type==='recorder/statistic_during_period'&&m.statistic_id==='sensor.e'&&m.calendar.period==='day'&&m.types[0]==='change'),JSON.stringify(calls[0]));
+  ok('energy_period month',/42,1 kWh/.test(txt(c2))&&/Ce mois/.test(txt(c2)),txt(c2));
+  ok('energy_period: failure falls back to the counter',/1.235 kWh/.test(txt(c3))&&/Énergie/.test(txt(c3)),txt(c3));
+  ok('no energy_period: counter',/1.235 kWh/.test(txt(c4))&&calls.length===3,txt(c4)+' '+calls.length);
+ },300);}
+// climate / water_heater entity used as temperature or setpoint (state is a mode, values in attributes) — issue #94
+{const D=mk('climate.daikin','off',{current_temperature:20,temperature:25});
+ const txt=(c)=>c.sr.getElementById('stats').textContent.replace(/\s+/g,' ');
+ let c=card('heat-pump',{power:'sensor.p',temperature:'climate.daikin',target_temperature:'climate.daikin'},[mk('sensor.p',900,W),D]);
+ ok('core: climate as temperature + target -> 20 / 25',/20 °C/.test(txt(c))&&/25 °C/.test(txt(c)),txt(c));
+ c=card('water-heater',{power:'sensor.p',target_temperature:'water_heater.bal'},[mk('sensor.p',0,W),mk('water_heater.bal','eco',{current_temperature:48,temperature:55})]);
+ ok('core: water_heater as target -> 55',/55 °C/.test(txt(c))&&!/48 °C Consigne/.test(txt(c)),txt(c));
+ c=card('underfloor-heating',{entity:'switch.pc',entity_temp:'climate.daikin',entity_target_temp:'climate.daikin'},[mk('switch.pc','on'),D]);
+ const v=(k)=>c.sr.querySelector(`.tile[data-k=${k}] .v`).textContent;
+ ok('underfloor: climate as room + setpoint -> 20 / 25',/^20/.test(v('temp'))&&/^25/.test(v('target')),v('temp')+' / '+v('target'));
+ c=card('sauna',{entity:'switch.s',entity_target_temp:'climate.daikin'},[mk('switch.s','on'),D]);
+ ok('sauna: climate as setpoint -> 25',/^25/.test(c.sr.querySelector('.tile[data-k=target] .v').textContent),c.sr.querySelector('.tile[data-k=target] .v').textContent);}
+// narrow card (≤ 230 px): value tiles keep the full width (issue #95)
+{const c=card('washer',{power:'sensor.p',energy:'sensor.e'},[mk('sensor.p',600,W),mk('sensor.e',0.5,{unit_of_measurement:'kWh'})]);
+ c.el.style.display='block'; c.el.style.width='215px';
+ requestAnimationFrame(()=>{const st=c.sr.getElementById('stats'), top=c.sr.querySelector('.top');
+  ok('narrow card: tiles span the full width',Math.abs(st.getBoundingClientRect().width-top.getBoundingClientRect().width)<2,st.getBoundingClientRect().width+' vs '+top.getBoundingClientRect().width); c.el.style.width='';});}
+// fridge flex zone (third compartment) — issue #38
+{const T2={unit_of_measurement:'°C'}, st=()=>[mk('sensor.p',90,W),mk('sensor.t',4,T2),mk('sensor.f',-18,T2),mk('sensor.x',-3,T2)];
+ let c=card('fridge',{style:'four_door',power:'sensor.p',temperature:'sensor.t',freezer_temperature:'sensor.f',flex_temperature:'sensor.x'},st());
+ ok('fridge flex: tile and door display',/-3 °C/.test(c.sr.getElementById('stats').textContent)&&/Zone flex/.test(c.sr.getElementById('stats').textContent)&&c.sr.querySelector('.lcd3').textContent==='-3°',c.sr.getElementById('stats').textContent);
+ ok('fridge flex: no alert without threshold',!c.wrap.classList.contains('alert'));
+ c=card('fridge',{style:'french',power:'sensor.p',temperature:'sensor.t',flex_temperature:'sensor.x',flex_max_temperature:-5},st());
+ ok('fridge flex: alert above flex_max_temperature, french drawer display',c.wrap.classList.contains('alert')&&!!c.sr.querySelector('.fzd-pull .lcd3'),c.wrap.className);
+ c=card('fridge',{style:'four_door',power:'sensor.p'},st()); ok('fridge without flex: no flex display',!c.sr.querySelector('.lcd3'));}
+// sizing: illustration_size and free grid resizing (sections dashboards)
+{const tags=['washer','sauna','roller-shutter','battery','linky','robot-vacuum-solo','light-bulb'];
+ const cfgs={washer:{power:'sensor.p'},sauna:{entity:'switch.s'},'roller-shutter':{entity:'cover.v'},battery:{entity_soc:'sensor.b'},linky:{entity_power:'sensor.p'},'robot-vacuum-solo':{entity:'vacuum.r'},'light-bulb':{entity:'light.l'}};
+ for(const t of tags){const c=card(t,{...cfgs[t],illustration_size:150},[mk('sensor.p',10,W),mk('switch.s','on'),mk('cover.v','open'),mk('sensor.b',50),mk('vacuum.r','docked'),mk('light.l','on')]);
+  const g=c.el.getGridOptions?c.el.getGridOptions():null;
+  ok(`size ${t}: illustration_size 150 -> --illus-scale 1.5, min 3 columns`,c.el.style.getPropertyValue('--illus-scale')==='1.5'&&g&&g.min_columns===3&&g.min_rows===1,c.el.style.getPropertyValue('--illus-scale')+' '+JSON.stringify(g));}
+ const c=card('washer',{power:'sensor.p',illustration_size:9999},[mk('sensor.p',10,W)]); ok('size: clamped to 300 %',c.el.style.getPropertyValue('--illus-scale')==='3');}
 window.RESULTS=R;
 const fails=R.filter(r=>!r.pass).length;
 document.getElementById('sum').innerHTML=`<b class="${fails?'f':'p'}">${R.length-fails} / ${R.length} tests réussis</b> — fichier testé : <code>dist/ha-appliance-electromenager-cards.js</code>`;

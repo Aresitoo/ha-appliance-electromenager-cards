@@ -11,7 +11,7 @@
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); // texte → HTML sûr
 
   const CSS = `
-:host{display:block}
+:host{display:block}:host{height:100%} ha-card{height:100%;box-sizing:border-box}
 ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--wp-heat:var(--appliance-heat-color,#ff8a3d);--wp-cold:var(--appliance-cold-color,#2b9af9);
   --wp-alert:var(--appliance-alert-color,#db4437)}
 .head{display:flex;align-items:center;justify-content:space-between;gap:8px}
@@ -20,7 +20,7 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--wp-heat:var(--app
 .heating .badge{background:color-mix(in srgb,var(--wp-heat) 22%,transparent);color:var(--wp-heat)}
 .dhw .badge,.cooling .badge{background:color-mix(in srgb,var(--wp-cold) 22%,transparent);color:var(--wp-cold)}
 .alarm .badge{background:color-mix(in srgb,var(--wp-alert) 22%,transparent);color:var(--wp-alert)}
-svg{display:block;width:100%;height:var(--appliance-illustration-height,auto);margin:2px auto 0;overflow:visible}
+svg{display:block;width:100%;max-width:calc(100% * var(--illus-scale,1));height:var(--appliance-illustration-height,auto);margin:2px auto 0;overflow:visible}
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(76px,1fr));gap:6px;margin-top:6px}
 .tile{box-sizing:border-box;background:var(--secondary-background-color);border-radius:10px;padding:5px 7px;min-width:0;overflow:hidden;text-align:center;cursor:pointer}
 .tile .l{display:flex;align-items:center;justify-content:center;gap:3px;font-size:10px;line-height:14px;color:var(--secondary-text-color);min-width:0}
@@ -166,6 +166,9 @@ svg{display:block;width:100%;height:var(--appliance-illustration-height,auto);ma
       return {
         schema: [
           { name: 'name', selector: { text: {} } },
+          { name: 'labels', selector: { object: {} } },
+          { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
+          { name: 'transparent', selector: { boolean: {} } },
           ent('entity_status', ['climate', 'sensor', 'select', 'input_select', 'water_heater']),
           { type: 'grid', name: '', schema: [ent('entity_power', 'sensor'), ent('entity_heat_power', 'sensor'), ent('entity_cop', 'sensor')] },
           { type: 'grid', name: '', schema: [ent('entity_flow_temp', 'sensor'), ent('entity_return_temp', 'sensor'), ent('entity_flow_rate', 'sensor')] },
@@ -183,9 +186,11 @@ svg{display:block;width:100%;height:var(--appliance-illustration-height,auto);ma
           { type: 'grid', name: '', schema: SHOW.map((name) => ({ name, selector: { boolean: {} }, default: true })) },
           { name: 'language', selector: { select: { options: Object.keys(T) } } },
         ],
+        computeLabel: (s) => window.applianceEditorLabel(s.name),
       };
     }
     setConfig(c) {
+      if (window.applianceSize) window.applianceSize(this, c);
       if (!c || typeof c !== 'object') throw new Error('Invalid configuration');
       this._c = { ...Object.fromEntries(SHOW.map((k) => [k, true])), threshold: 100, off_threshold: 0.5, ...c };
       this._built = false;
@@ -207,13 +212,17 @@ svg{display:block;width:100%;height:var(--appliance-illustration-height,auto);ma
       if (!this._dt) this._dt = setTimeout(() => { this._dt = null; if (this._hass) this._render(); }, left + 50);
       return false;
     }
-    getGridOptions() { return { columns: 12, min_columns: 6, rows: 'auto' }; }
+    getGridOptions() { return { columns: 12, min_columns: 3, rows: 'auto', min_rows: 1 }; }
 
     _t(k) { return T[this._lang()][k] ?? T.en[k] ?? k; }
+    // libellé perso (option labels) sinon traduction
+    _l(k) { const L = this._c && this._c.labels; return L && L[k] != null && L[k] !== '' ? String(L[k]) : this._t(k); }
     _lang() { const l = (this._c.language || (this._hass && this._hass.language) || 'en').slice(0, 2); return T[l] ? l : 'en'; }
     _st(id) { return id && this._hass.states[id]; }
     _num(id) {
       const s = this._st(id); if (!s) return NaN;
+      // climate / water_heater : l'état est un mode, la température actuelle est dans current_temperature
+      if (/^(climate|water_heater)\./.test(s.entity_id)) { const t = Number(s.attributes && s.attributes.current_temperature); return s.attributes && s.attributes.current_temperature != null && isFinite(t) ? t : NaN; }
       const v = parseFloat(String(s.state).replace(',', '.'));
       return isFinite(v) ? v : NaN;
     }
@@ -327,7 +336,7 @@ svg{display:block;width:100%;height:var(--appliance-illustration-height,auto);ma
       TILES.forEach(([k, , opt, more]) => {
         const el = r.querySelector(`.tile[data-k="${k}"]`); const [shown, val, unit] = V[k];
         el.classList.toggle('hide', !shown || c[opt] === false);
-        el.querySelector('.lbl').textContent = this._t(k);
+        el.querySelector('.lbl').textContent = this._l(k);
         // valeur + unité en texte (l'unité vient de l'entité ou de la config)
         const small = document.createElement('small'); small.textContent = unit ?? '';
         el.querySelector('.v').replaceChildren(String(val ?? ''), small);

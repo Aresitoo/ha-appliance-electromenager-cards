@@ -60,13 +60,50 @@ cost: sensor.lave_linge_cout_jour
 
 **Cave à vin bi-zone** : ajoute `zone2_temperature` (zone basse, vins blancs) pour avoir deux afficheurs, une séparation, une zone basse plus froide et deux pastilles Zone haute / Zone basse. `max_temperature_2` règle l'alerte de la zone basse (par défaut `max_temperature`).
 
+**Zone flex du frigo** : `flex_temperature` (capteur) ajoute une tuile « Zone flex » pour le 3e compartiment à température réglable, et un petit écran sur la porte basse droite (`style: four_door`) ou le tiroir du haut (`style: french`) ; `flex_max_temperature` déclenche l'alerte « Trop chaud ».
+
+**Taille des cartes** : dans un tableau de bord en sections, toutes les cartes se redimensionnent à la souris, en largeur (dès 3 colonnes) et en hauteur. `illustration_size` (en %, 30 à 300, champ « Taille de l'illustration » de l'éditeur) agrandit ou réduit le dessin, sur toutes les cartes et dans tous les types de tableau de bord. `transparent: true` (« Fond transparent » dans l'éditeur) retire le fond, l'ombre et la bordure de la carte, pour laisser voir le fond d'écran du tableau de bord.
+
 **Plusieurs appareils du même type** : chaque carte est indépendante (ses propres entités, son état, ses minuteries). Deux lave-linge ou plusieurs frigos peuvent cohabiter, il suffit de donner à chaque carte ses entités (et un `name`).
 
-**Carte générique** (`custom:appliance-generic-card`) : pour tout appareil sans carte dédiée (enceinte, lampe, pompe…), renseigne ta propre image dans `image` (`/local/mon-appareil.png` pour un fichier de `config/www/`, ou une URL `https://`). La carte garde le statut (en cours / inactif / éteint), la puissance, l'énergie, le coût et le bouton ; l'image est atténuée quand l'appareil est éteint et brille doucement en marche.
+**Consommation du jour** : avec un compteur d'énergie cumulé (la plupart des prises connectées), `energy_period: day` (ou `week`, `month`) affiche ce qui a été consommé depuis minuit au lieu du compteur total. Home Assistant le calcule à partir des statistiques longue durée, comme le tableau de bord Énergie : plus besoin de créer un Utility Meter par appareil. Il faut un capteur avec statistiques (`state_class: total_increasing`), sinon la carte affiche le compteur.
+
+```yaml
+type: custom:appliance-washer-card
+power: sensor.prise_lave_linge_puissance
+energy: sensor.prise_lave_linge_energie
+energy_period: day
+```
+
+**Libellés perso des tuiles** : l'option `labels` renomme les tuiles sous le dessin, dans la langue de ton choix. Tu donnes la clé de la tuile et ton texte ; les tuiles non listées gardent la traduction. Le champ **Libellés perso des tuiles** de l'éditeur visuel prend les mêmes lignes `clé: texte`. La liste des clés par carte est dans [configuration.md](configuration.md#custom-tile-labels).
+
+```yaml
+type: custom:appliance-sauna-card
+entity: switch.sauna
+labels:
+  temp: Chaleur
+  power: Conso
+  energy: Total
+```
+
+**Carte générique** (`custom:appliance-generic-card`) : pour tout appareil sans carte dédiée (enceinte, lampe, pompe…), renseigne ta propre image dans `image` (`/local/mon-appareil.png` pour un fichier de `config/www/`, ou une URL `https://`). La carte garde le statut (en cours / inactif / éteint), la puissance, l'énergie, le coût et le bouton ; l'image est atténuée quand l'appareil est éteint et brille doucement en marche. **Plusieurs images selon l'état** : `images` est une liste d'entrées `image` avec des conditions ; la carte affiche la dernière entrée dont toutes les conditions sont vraies (une entrée sans condition sert d'image par défaut, à mettre en premier). `above` / `below` comparent la puissance en W (ou la valeur de l'`entity` de l'entrée), `state` l'état de l'entité de la carte (ou de l'`entity` de l'entrée).
+
+```yaml
+type: custom:appliance-generic-card
+name: VMC double flux
+power: sensor.vmc_puissance
+images:
+  - image: /local/vmc-arret.png        # par défaut
+  - above: 20
+    image: /local/vmc-vitesse1.png     # au-dessus de 20 W
+  - above: 60
+    image: /local/vmc-vitesse2.png     # au-dessus de 60 W
+```
+
 
 **Sèche-serviettes, baie informatique, PC fixe, PC portable, cave à vin** : cinq cartes pilotées par une prise connectée (`power`). `custom:appliance-towel-dryer-card` : au-dessus de 50 W, les barres rougeoient, la chaleur monte, les serviettes se balancent et fument ; prise allumée sous le seuil : « Consigne atteinte ». `custom:appliance-server-rack-card` (homelab) : au-dessus de 30 W, les LED clignotent, les ventilateurs tournent, les baies de disques s'allument en bleu et les données circulent dans les câbles ; la vitesse suit la charge (`max_power`, 300 W par défaut) et l'onduleur affiche la puissance. `custom:appliance-desktop-pc-card` : au-dessus de 40 W, l'écran s'allume (code qui s'écrit, graphique, curseur) et les ventilateurs RGB tournent ; entre 0,5 W et le seuil : veille (voyant orange). `custom:appliance-laptop-card` : au-dessus de 15 W, l'écran affiche un tableau de bord animé et le clavier est rétroéclairé ; en dessous : veille. `custom:appliance-wine-cooler-card` : cave vitrée ; quand le compresseur tourne (au-dessus de 15 W), l'intérieur s'éclaire, l'air froid circule entre les bouteilles et la condensation coule ; la porte s'ouvre avec un capteur `door` ; alerte au-dessus de `max_temperature` (18 °C).
 
-**Aquarium, Linky, batterie, borne de recharge, robots, chaudière à granulés** : sept cartes avec leurs propres options (`entity_…`, voir le tableau en anglais) et l'éditeur visuel. Chaque tuile se masque avec son option `show_…`. `custom:appliance-aquarium-card` : poissons qui nagent, bulles et queues plus rapides selon la puissance, eau qui change de couleur selon la température (alerte hors plage), éclairage jour/nuit. `custom:appliance-linky-card` : compteur vert anis avec écran LCD qui défile (puissance, index HP/HC, période en cours, coût — les boutons changent de page), jauge par rapport à la puissance souscrite (alerte au-delà de 95 %), voyant conso qui clignote plus vite quand ça consomme ; en triphasé, avec `entity_power_l1`…`l3` (`SINSTS1`…`3`), chaque phase est comparée à 1/3 de la puissance souscrite, avec une barre par phase ; `phase_gauge` choisit la jauge : `needles` (par défaut) une aiguille de couleur par phase, `cycle` L1 → L2 → L3 toutes les 3 s, `max` la phase la plus chargée ; l'alerte suit toujours la phase la plus chargée ; `entity_active_power` (capteur en W, par ex. le helper « Dérivée » sur la somme des index) affiche la consommation réelle sous la jauge et sur l'écran ; `indexes` (liste d'`entity` + `name`) remplace HP/HC par autant de pages que d'index (les 6 index Tempo, semaine/week-end…), en kWh même si le capteur est en Wh ; `entity_injection` (`EAIT`) et `entity_power_injection` (`SINSTI`) ajoutent l'index et la puissance injectés, avec un voyant « prod » allumé pendant l'injection. `custom:appliance-battery-card` : trois modules reliés par des câbles orange, sans fond ; le niveau monte dans les modules, l'énergie circule dans un sens en charge et dans l'autre en décharge, avec le temps restant avant plein ou vide. `custom:appliance-ev-charger-card` : wallbox murale et voiture de profil ; voyant selon le statut, énergie qui circule dans le câble, jauge de batterie sur la portière, durée et coût de la session. `custom:appliance-robot-vacuum-solo-card` et `custom:appliance-robot-mower-solo-card` : le robot seul, sans fond ; brosses, lidar et anneau de batterie pour l'aspirateur, roues, lame, herbe projetée et pluie pour la tondeuse, avec les boutons **Démarrer / Pause / Base**. `custom:appliance-pellet-boiler-card` : chaudière à granulés sans fond, avec trémie, hublot de niveau et vis sans fin ; à l'allumage la résistance rougit, en chauffe la flamme danse, les granulés montent dans la vis et l'eau circule dans les tuyaux départ/retour qui rougissent avec la température ; alerte « Granulés bas » sous `pellet_alert` (15 %).
+**Aquarium, Linky, batterie, borne de recharge, robots, chaudière à granulés** : sept cartes avec leurs propres options (`entity_…`, voir le tableau en anglais) et l'éditeur visuel. Chaque tuile se masque avec son option `show_…`. `custom:appliance-aquarium-card` : poissons qui nagent, bulles et queues plus rapides selon la puissance, eau qui change de couleur selon la température (alerte hors plage), éclairage jour/nuit. `custom:appliance-linky-card` : compteur vert anis avec écran LCD qui défile (puissance, index HP/HC, période en cours, coût — les boutons changent de page), jauge par rapport à la puissance souscrite (alerte au-delà de 95 %), voyant conso qui clignote plus vite quand ça consomme ; en triphasé, avec `entity_power_l1`…`l3` (`SINSTS1`…`3`), chaque phase est comparée à 1/3 de la puissance souscrite, avec une barre par phase ; `phase_gauge` choisit la jauge : `needles` (par défaut) une aiguille de couleur par phase, `cycle` L1 → L2 → L3 toutes les 3 s, `max` la phase la plus chargée ; l'alerte suit toujours la phase la plus chargée ; `entity_active_power` (capteur en W, par ex. le helper « Dérivée » sur la somme des index) affiche la consommation réelle sous la jauge et sur l'écran ; `indexes` (liste d'`entity` + `name`) remplace HP/HC par autant de pages que d'index (les 6 index Tempo, semaine/week-end…), en kWh même si le capteur est en Wh ; `entity_injection` (`EAIT`) et `entity_power_injection` (`SINSTI`) ajoutent l'index et la puissance injectés, avec un voyant « prod » allumé pendant l'injection. `custom:appliance-battery-card` : trois modules reliés par des câbles orange, sans fond ; le niveau monte dans les modules, l'énergie circule dans un sens en charge et dans l'autre en décharge, avec le temps restant avant plein ou vide. `custom:appliance-ev-charger-card` : wallbox murale et voiture de profil ; voyant selon le statut, énergie qui circule dans le câble, jauge de batterie sur la portière, durée et coût de la session. `custom:appliance-robot-vacuum-solo-card` et `custom:appliance-robot-mower-solo-card` : le robot seul, sans fond ; brosses, lidar et anneau de batterie pour l'aspirateur, roues, lame, herbe projetée et pluie pour la tondeuse, avec les boutons **Démarrer / Pause / Base**. `layout: compact` donne aux deux robots le même format que les cartes électroménager (vignette à gauche, nom et point d'état, tuiles, boutons dessous) ; `image` remplace le dessin par ta propre photo (`/local/mon-robot.png`). `custom:appliance-pellet-boiler-card` : chaudière à granulés sans fond, avec trémie, hublot de niveau et vis sans fin ; à l'allumage la résistance rougit, en chauffe la flamme danse, les granulés montent dans la vis et l'eau circule dans les tuyaux départ/retour qui rougissent avec la température ; alerte « Granulés bas » sous `pellet_alert` (15 %).
 
 **PAC eau/eau (géothermie, nappe)** : `custom:appliance-water-heat-pump-card`, sans ventilateur ni flux d'air, contrairement à l'unité extérieure de la carte *Pompe à chaleur*. Le compresseur vibre entre l'évaporateur (boucle de captage qui descend dans le sol, à gauche) et le condenseur (boucle de chauffage vers un radiateur, à droite). Le départ et le retour passent du bleu (20 °C) au rouge (55 °C), l'eau circule quand le débit est non nul. Le COP vient de `entity_cop`, ou est calculé avec un compteur de chaleur (`entity_heat_power`) et un compteur électrique (`entity_power`). Températures de captage facultatives. Options : voir le tableau en anglais.
 
@@ -160,6 +197,25 @@ entity: climate.plancher_sejour
 entity_floor_temp: sensor.sejour_temperature_sol
 entity_water_temp: sensor.plancher_temperature_depart
 price_per_kwh: 0.2516
+```
+
+**Éclairage** : 10 luminaires animés, `custom:appliance-light-bulb-card` (ampoule), `-color-bulb-` (ampoule couleur), `-filament-bulb-` (ampoule à filament), `-pendant-light-` (suspension), `-pendant-cluster-` (suspensions en grappe), `-desk-lamp-` (lampe de bureau), `-floor-lamp-` (lampadaire), `-chandelier-` (lustre), `-garden-spotlight-` (spot de jardin), `-christmas-tree-card` (sapin de Noël). Éteints, on voit le luminaire nu ; allumés, ils rayonnent dans la couleur de la lumière, à la luminosité de l'ampoule : verre qui se remplit de lumière, filament incandescent, cône de lumière, globes qui se balancent, bougies qui vacillent, cristaux qui scintillent, faisceau du spot, guirlande qui clignote. **Couleur** : par défaut celle de l'ampoule dans Home Assistant (RVB ou température de blanc) ; décoche `follow_light_color` pour utiliser la couleur choisie dans l'éditeur (`color`). L'ampoule couleur a un bouton **Couleur** et un défilement des teintes (`color_cycle`), le sapin une guirlande multicolore ou d'une seule couleur (`multicolor: false`). Boutons Allumer / Éteindre, tuiles luminosité, puissance, énergie. Options : voir [lights.md](cards/lights.md).
+
+```yaml
+type: custom:appliance-chandelier-card
+entity: light.salle_a_manger
+follow_light_color: false
+color: [255, 190, 110]
+```
+
+**Volets et stores** : 3 cartes pilotées par une entité `cover`, `custom:appliance-roller-shutter-card` (volet roulant), `-venetian-blind-` (store vénitien), `-swing-shutter-card` (volets battants). La vue par la fenêtre suit le soleil : ciel de jour avec le soleil, ou ciel de nuit avec la lune et les étoiles quand `sun.sun` est sous l'horizon (`sun_entity` pour une autre entité). Volet roulant : les lames alu remontent dans le coffre selon `current_position`, avec des jours de lumière entre les lames et un faisceau dans la pièce quand il est ouvert. Store vénitien : les lamelles se tassent sous le caisson et pivotent selon `current_tilt_position`, avec un curseur **Inclinaison**. Volets battants : deux vantaux à persiennes qui pivotent en 3D et se rabattent contre le mur. Pendant le mouvement, le voyant du coffre clignote et une flèche suit le volet ; `travel_time` (s) règle la vitesse du dessin sur celle du moteur. Boutons Ouvrir / Stop / Fermer, curseur de position, tuiles position, inclinaison, moteur et dernier changement ; `color` change la couleur des lames ou des vantaux. `invert: true` (« Inverser la position » dans l'éditeur) corrige une cover qui remonte sa position à l'envers (0 = ouvert, 100 = fermé), fréquent avec Tuya : dessin, badge, tuiles et curseur sont inversés, les boutons Ouvrir / Fermer ne changent pas. Options : voir [shutters.md](cards/shutters.md).
+
+```yaml
+type: custom:appliance-roller-shutter-card
+name: Volet séjour
+entity: cover.volet_sejour
+entity_power: sensor.volet_sejour_puissance
+travel_time: 20
 ```
 
 **Développement et traductions** : `dist/` est généré, on modifie `src/` puis on lance `node build.js` (sans dépendance). Le code est découpé en petits fichiers : `src/core/` pour les 28 cartes de base (un dessin par appareil dans `svg/`, un fichier CSS par appareil dans `style/`), `src/cards/` pour les cartes autonomes, et les textes dans un fichier par langue (`src/i18n/en.json`, `src/i18n/fr.json`, `src/i18n/de.json`, `src/i18n/nb.json`, `src/i18n/nl.json`, `src/i18n/ro.json`). Voir *Development and translations* plus haut.

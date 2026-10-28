@@ -16,7 +16,7 @@
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); // texte → HTML sûr
 
   const CSS = `
-:host{display:block}
+:host{display:block}:host{height:100%} ha-card{height:100%;box-sizing:border-box}
 ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--pr-ok:var(--appliance-ok-color,#43a047);--pr-cold:var(--appliance-cold-color,#2b9af9);
   --pr-warn:#ffa31a;--pr-alert:var(--appliance-alert-color,#db4437);--wl:.85;--dirt:0;--pr-water:#2fa6d9}
 .head{display:flex;align-items:center;justify-content:space-between;gap:8px}
@@ -27,7 +27,7 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--pr-ok:var(--appli
 .error .badge{background:color-mix(in srgb,var(--pr-alert) 22%,transparent);color:var(--pr-alert)}
 .alert{display:none;margin-top:4px;font-size:11px;color:var(--pr-alert);font-weight:500;text-align:center}
 .alert.on{display:block}
-svg{display:block;width:100%;max-width:280px;height:var(--appliance-illustration-height,auto);margin:2px auto 0;overflow:visible;cursor:pointer}
+svg{display:block;width:100%;max-width:calc(280px * var(--illus-scale,1));height:var(--appliance-illustration-height,auto);margin:2px auto 0;overflow:visible;cursor:pointer}
 .ctl{display:flex;justify-content:center;gap:6px;margin-top:6px}
 .ctl.hide,.ctl button.hide{display:none}
 .ctl button{flex:1 1 0;max-width:120px;display:flex;align-items:center;justify-content:center;gap:4px;border:0;border-radius:10px;padding:6px 4px;cursor:pointer;
@@ -170,6 +170,7 @@ svg{display:block;width:100%;max-width:280px;height:var(--appliance-illustration
       };
     }
     setConfig(c) {
+      if (window.applianceSize) window.applianceSize(this, c);
       if (!c || typeof c !== 'object') throw new Error('Invalid configuration');
       this._c = { show_status: true, show_controls: true, show_status_tile: true, show_filter: true, show_water_level: true, show_water_temp: true,
         show_time: true, show_battery: true, show_mode: true, show_power: true, show_energy: true,
@@ -179,13 +180,17 @@ svg{display:block;width:100%;max-width:280px;height:var(--appliance-illustration
     }
     set hass(h) { this._hass = h; if (this._c) this._render(); }
     getCardSize() { return 6; }
-    getGridOptions() { return { columns: 12, min_columns: 6, rows: 'auto' }; }
+    getGridOptions() { return { columns: 12, min_columns: 3, rows: 'auto', min_rows: 1 }; }
 
     _t(k) { return T[this._lang()][k] ?? T.en[k] ?? k; }
+    // libellé perso (option labels) sinon traduction
+    _l(k) { const L = this._c && this._c.labels; return L && L[k] != null && L[k] !== '' ? String(L[k]) : this._t(k); }
     _lang() { const l = (this._c.language || (this._hass && this._hass.language) || 'en').slice(0, 2); return T[l] ? l : 'en'; }
     _st(id) { return id && this._hass.states[id]; }
     _num(id) {
       const s = this._st(id); if (!s) return NaN;
+      // climate / water_heater : l'état est un mode, la température actuelle est dans current_temperature
+      if (/^(climate|water_heater)\./.test(s.entity_id)) { const t = Number(s.attributes && s.attributes.current_temperature); return s.attributes && s.attributes.current_temperature != null && isFinite(t) ? t : NaN; }
       const v = parseFloat(String(s.state).replace(',', '.'));
       return isFinite(v) ? v : NaN;
     }
@@ -320,7 +325,7 @@ svg{display:block;width:100%;max-width:280px;height:var(--appliance-illustration
         const el = r.querySelector(`.tile[data-k="${k}"]`); const [show, val, unit] = V[k];
         el.classList.toggle('hide', !show || c[opt] === false);
         el.classList.toggle('bad', !!bad[k]);
-        el.querySelector('.lbl').textContent = this._t(k);
+        el.querySelector('.lbl').textContent = this._l(k);
         const small = document.createElement('small'); small.textContent = unit ?? '';
         el.querySelector('.v').replaceChildren(String(val ?? ''), small);
       });
@@ -348,19 +353,22 @@ svg{display:block;width:100%;max-width:280px;height:var(--appliance-illustration
       this._form.data = this._c;
       this._form.schema = [
         { name: 'name', selector: { text: {} } },
+        { name: 'labels', selector: { object: {} } },
+        { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
+        { name: 'transparent', selector: { boolean: {} } },
         ent('entity'), ent('entity_switch'), ent('entity_status', 'sensor'), ent('entity_filter', 'sensor'), ent('entity_water_level', 'sensor'),
         ent('entity_water_temp', 'sensor'), ent('entity_time', 'sensor'), ent('entity_battery', 'sensor'), ent('entity_mode'),
         ent('entity_power', 'sensor'), ent('entity_energy', 'sensor'),
         { type: 'grid', name: '', schema: [
           num('filter_alert', 0, 100, 1, 80), num('water_level_min', 0, 1000, 1, 70), num('water_level_full', 1, 1000, 1, 100), num('run_threshold', 0, 2000, 1, 30),
         ] },
-        { name: 'language', selector: { select: { options: Object.keys(T).map((value) => ({ value, label: { fr: 'Français', en: 'English', de: 'Deutsch', nb: 'Norsk bokmål', ro: 'Română', nl: 'Nederlands' }[value] || value })) } } },
+        { name: 'language', selector: { select: { options: Object.keys(T).map((value) => ({ value, label: { fr: 'Français', en: 'English', de: 'Deutsch', nb: 'Norsk bokmål', ro: 'Română', nl: 'Nederlands', ru: 'Русский' }[value] || value })) } } },
         { type: 'grid', name: '', schema: [
           bool('show_status'), bool('show_controls'), bool('show_status_tile'), bool('show_filter'), bool('show_water_level'), bool('show_water_temp'),
           bool('show_time'), bool('show_battery'), bool('show_mode'), bool('show_power'), bool('show_energy'), bool('animations'),
         ] },
       ];
-      this._form.computeLabel = (s) => s.name;
+      this._form.computeLabel = (s) => window.applianceEditorLabel(s.name, this._hass);
     }
   }
   customElements.define(TAG + '-editor', AppliancePoolRobotCardEditor);

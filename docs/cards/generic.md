@@ -13,5 +13,29 @@ power: sensor.tasmota_sonos_power
 switch: switch.tasmota_sonos
 ```
 
+## Several images by state
+
+`images` shows a different picture depending on the power, the state of the card's entity or another entity (e.g. a 2-speed ventilation unit). Each entry has an `image` and optional conditions; the card shows the **last** entry whose conditions are all true, and an entry without a condition always matches (use it first, as the default).
+
+- `above` / `below`: compare the power in W (`power`, kW converted), or the value of `entity` when the entry has one
+- `state`: state (or list of states) of the card's `entity`, or of the entry's `entity`
+- `entity`: another entity for this entry's conditions
+
+```yaml
+type: custom:appliance-generic-card
+name: Heat recovery ventilation
+power: sensor.hrv_power
+images:
+  - image: /local/hrv-off.png        # default
+  - above: 20
+    image: /local/hrv-speed1.png     # above 20 W
+  - above: 60
+    image: /local/hrv-speed2.png     # above 60 W
+  - entity: select.hrv_mode
+    state: boost
+    image: /local/hrv-boost.png
+```
+
+`image` still works on its own; with `images`, it is the default picture.
 
 [← All cards](../../README.md#the-cards)

@@ -20,6 +20,9 @@ class AppliancePelletBoilerCard extends HTMLElement {
     return {
       schema: [
         { name: 'name', selector: { text: {} } },
+        { name: 'labels', selector: { object: {} } },
+        { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
+        { name: 'transparent', selector: { boolean: {} } },
         { name: 'entity_status', selector: { entity: { domain: ['sensor', 'select', 'climate', 'switch', 'binary_sensor'] } } },
         { name: 'entity_power', selector: { entity: { domain: 'sensor', device_class: 'power' } } },
         { name: 'entity_energy', selector: { entity: { domain: 'sensor', device_class: 'energy' } } },
@@ -44,10 +47,12 @@ class AppliancePelletBoilerCard extends HTMLElement {
         ] },
         { name: 'language', selector: { select: { options: Object.keys(I18N_PB) } } },
       ],
+      computeLabel: (s) => window.applianceEditorLabel(s.name),
     };
   }
 
   setConfig(config) {
+    if (window.applianceSize) window.applianceSize(this, config);
     this._config = { show_power: true, show_energy: true, show_cost: true, show_temps: true, show_pellets: true, show_status: true,
       price_per_kwh: 0, threshold: 30, ignition_threshold: 300, pellet_alert: 15, flow_temp_max: 80, ...config };
     this._built = false; this._build();
@@ -58,7 +63,10 @@ class AppliancePelletBoilerCard extends HTMLElement {
     if (l && l !== this._lng) { this._lng = l; this._hass = h; this._built = false; this._build(); }
     this._hass = h; this._update(); }
   getCardSize() { return 6; }
+  getGridOptions() { return { columns: 12, min_columns: 3, rows: 'auto', min_rows: 1 }; }
   _t(k) { return (I18N_PB[this._config.language || lang(this._hass)] || I18N_PB.en)[k] ?? I18N_PB.en[k] ?? k; }
+  // libellé perso (option labels) sinon traduction
+  _l(k) { const L = this._config && this._config.labels; return L && L[k] != null && L[k] !== '' ? String(L[k]) : this._t(k); }
 
   _build() {
     if (!this.shadowRoot) this.attachShadow({ mode: 'open' });
@@ -70,12 +78,12 @@ class AppliancePelletBoilerCard extends HTMLElement {
     const tube = 'M76 172 L136 112';
     this.shadowRoot.innerHTML = `
     <style>
-      :host { display:block; }
+      :host { display:block; }:host{height:100%} ha-card{height:100%;box-sizing:border-box}
       ha-card { padding:12px; overflow:hidden; }
       .title { font-weight:600; margin:0 4px 4px; display:flex; justify-content:space-between; align-items:center; gap:6px; }
       .badge { font-size:.75em; color:#fff; background:#e53935; border-radius:10px; padding:2px 8px; display:none; animation:blink 1s infinite; }
       .alarm .badge.al, .low .badge.lo { display:inline-block; } .badge.lo { background:#fb8c00; }
-      svg { width:100%; height:auto; display:block; overflow:visible; }
+      svg { width:100%; max-width:calc(100% * var(--illus-scale,1)); margin-left:auto; margin-right:auto; height:auto; display:block; overflow:visible; }
       /* Flamme dans le hublot */
       .flame { transform-box:fill-box; transform-origin:50% 100%; opacity:0; transition:opacity .8s; }
       .ignition .flame.small, .heating .flame, .extinguishing .flame.small { opacity:1; animation:flick .35s ease-in-out infinite alternate; }
@@ -248,12 +256,12 @@ class AppliancePelletBoilerCard extends HTMLElement {
 
     const f = (v, d, u) => (v === null ? '—' : `${v.toFixed(d)} ${u}`);
     const it = [];
-    if (c.show_status) it.push([this._t('status'), this._t(st)]);
-    if (c.show_power) it.push([this._t('power'), w === null ? '—' : w >= 1000 ? `${(w / 1000).toFixed(1)} kW` : `${Math.round(w)} W`]);
-    if (c.show_temps) { it.push([this._t('flow'), f(dep, 0, '°C')]); it.push([this._t('ret'), f(ret, 0, '°C')]); }
-    if (c.show_pellets) it.push([this._t('pellets'), f(lvl, 0, '%')]);
-    if (c.show_energy) it.push([this._t('energy'), f(e, 1, 'kWh')]);
-    if (c.show_cost && cost !== null) it.push([this._t('cost'), f(cost, 2, '€')]);
+    if (c.show_status) it.push([this._l('status'), this._t(st)]);
+    if (c.show_power) it.push([this._l('power'), w === null ? '—' : w >= 1000 ? `${(w / 1000).toFixed(1)} kW` : `${Math.round(w)} W`]);
+    if (c.show_temps) { it.push([this._l('flow'), f(dep, 0, '°C')]); it.push([this._l('ret'), f(ret, 0, '°C')]); }
+    if (c.show_pellets) it.push([this._l('pellets'), f(lvl, 0, '%')]);
+    if (c.show_energy) it.push([this._l('energy'), f(e, 1, 'kWh')]);
+    if (c.show_cost && cost !== null) it.push([this._l('cost'), f(cost, 2, '€')]);
     const stats = r.getElementById('stats');
     stats.style.gridTemplateColumns = `repeat(${it.length > 4 ? Math.ceil(it.length / 2) : it.length}, 1fr)`;
     stats.innerHTML = it.map(([l, v]) => `<div class="stat"><div class="v">${esc(v)}</div><div class="l">${esc(l)}</div></div>`).join('');
@@ -261,5 +269,5 @@ class AppliancePelletBoilerCard extends HTMLElement {
 }
 define('appliance-pellet-boiler-card', AppliancePelletBoilerCard);
 window.customCards = window.customCards || [];
-window.customCards.push({ type: 'appliance-pellet-boiler-card', name: 'Pellet Boiler Card', description: 'Chaudière à granulés animée (trémie, vis sans fin, flamme, départ/retour)', preview: false });
+window.customCards.push({ type: 'appliance-pellet-boiler-card', name: 'Appliance – Pellet boiler / Chaudière à granulés', description: 'Chaudière à granulés animée (trémie, vis sans fin, flamme, départ/retour)', preview: false });
 })();

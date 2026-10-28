@@ -13,7 +13,7 @@
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); // texte → HTML sûr
 
   const CSS = `
-:host{display:block}
+:host{display:block}:host{height:100%} ha-card{height:100%;box-sizing:border-box}
 ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--sn-heat-c:var(--appliance-heat-color,#ff8a3d);--sn-ok:var(--appliance-ok-color,#43a047);
   --sn-cold:var(--appliance-cold-color,#2b9af9);--sn-alert:var(--appliance-alert-color,#db4437);--heat:0;--tf:0}
 .head{display:flex;align-items:center;justify-content:space-between;gap:8px}
@@ -25,7 +25,7 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--sn-heat-c:var(--a
 .fault .badge{background:color-mix(in srgb,var(--sn-alert) 22%,transparent);color:var(--sn-alert)}
 .alert{display:none;margin-top:4px;font-size:11px;color:var(--sn-alert);font-weight:500;text-align:center}
 .alert.on{display:block}
-svg{display:block;width:100%;max-width:250px;height:var(--appliance-illustration-height,auto);margin:2px auto 0;overflow:visible;cursor:pointer}
+svg{display:block;width:100%;max-width:calc(250px * var(--illus-scale,1));height:var(--appliance-illustration-height,auto);margin:2px auto 0;overflow:visible;cursor:pointer}
 .ctl{display:flex;justify-content:center;gap:6px;margin-top:6px}
 .ctl.hide,.ctl button.hide{display:none}
 .ctl button{flex:1 1 0;max-width:120px;display:flex;align-items:center;justify-content:center;gap:4px;border:0;border-radius:10px;padding:6px 4px;cursor:pointer;
@@ -152,6 +152,7 @@ svg{display:block;width:100%;max-width:250px;height:var(--appliance-illustration
       };
     }
     setConfig(c) {
+      if (window.applianceSize) window.applianceSize(this, c);
       if (!c || typeof c !== 'object') throw new Error('Invalid configuration');
       this._c = { show_status: true, show_controls: true, show_temp: true, show_humidity: true, show_power: true, show_energy: true, show_cost: true,
         target_temp: 80, ready_margin: 3, heater_threshold: 300, off_threshold: 5, temp_max: 110, temp_scale: 120, ...c };
@@ -160,13 +161,23 @@ svg{display:block;width:100%;max-width:250px;height:var(--appliance-illustration
     }
     set hass(h) { this._hass = h; if (this._c) this._render(); }
     getCardSize() { return 5; }
-    getGridOptions() { return { columns: 12, min_columns: 6, rows: 'auto' }; }
+    getGridOptions() { return { columns: 12, min_columns: 3, rows: 'auto', min_rows: 1 }; }
 
     _t(k) { return T[this._lang()][k] ?? T.en[k] ?? k; }
+    // libellé perso (option labels) sinon traduction
+    _l(k) { const L = this._c && this._c.labels; return L && L[k] != null && L[k] !== '' ? String(L[k]) : this._t(k); }
     _lang() { const l = (this._c.language || (this._hass && this._hass.language) || 'en').slice(0, 2); return T[l] ? l : 'en'; }
     _st(id) { return id && this._hass.states[id]; }
+    // consigne : attribut temperature d'une entité climate / water_heater, sinon valeur numérique de l'état
+    _tgt(id) {
+      const s = this._st(id);
+      if (s && /^(climate|water_heater)\./.test(s.entity_id)) { const t = Number(s.attributes && s.attributes.temperature); return s.attributes && s.attributes.temperature != null && isFinite(t) ? t : NaN; }
+      return this._num(id);
+    }
     _num(id) {
       const s = this._st(id); if (!s) return NaN;
+      // climate / water_heater : l'état est un mode, la température actuelle est dans current_temperature
+      if (/^(climate|water_heater)\./.test(s.entity_id)) { const t = Number(s.attributes && s.attributes.current_temperature); return s.attributes && s.attributes.current_temperature != null && isFinite(t) ? t : NaN; }
       const v = parseFloat(String(s.state).replace(',', '.'));
       return isFinite(v) ? v : NaN;
     }
@@ -226,7 +237,7 @@ svg{display:block;width:100%;max-width:250px;height:var(--appliance-illustration
       const pw = this._watts(c.entity_power);
       let temp = this._num(c.entity_temp);
       if (isNaN(temp) && isFinite(Number(a.current_temperature))) temp = Number(a.current_temperature);
-      let target = this._num(c.entity_target_temp);
+      let target = this._tgt(c.entity_target_temp);
       if (isNaN(target) && isFinite(Number(a.temperature))) target = Number(a.temperature);
       if (isNaN(target)) target = Number(c.target_temp);
       const txt = s ? String(s.state).toLowerCase() : '';
@@ -281,7 +292,7 @@ svg{display:block;width:100%;max-width:250px;height:var(--appliance-illustration
         const el = r.querySelector(`.tile[data-k="${k}"]`); const [show, val, unit] = V[k];
         el.classList.toggle('hide', !show || c[opt] === false);
         el.classList.toggle('bad', k === 'temp' && hot);
-        el.querySelector('.lbl').textContent = this._t(k);
+        el.querySelector('.lbl').textContent = this._l(k);
         const small = document.createElement('small'); small.textContent = unit ?? '';
         el.querySelector('.v').replaceChildren(String(val ?? ''), small);
       });
@@ -309,6 +320,9 @@ svg{display:block;width:100%;max-width:250px;height:var(--appliance-illustration
       this._form.data = this._c;
       this._form.schema = [
         { name: 'name', selector: { text: {} } },
+        { name: 'labels', selector: { object: {} } },
+        { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
+        { name: 'transparent', selector: { boolean: {} } },
         ent('entity'), ent('entity_temp', 'sensor'), ent('entity_target_temp'), ent('entity_humidity', 'sensor'),
         ent('entity_power', 'sensor'), ent('entity_energy', 'sensor'), ent('entity_cost', 'sensor'),
         { name: 'price_per_kwh', selector: { number: { min: 0, step: 0.0001, mode: 'box' } } },
@@ -317,13 +331,13 @@ svg{display:block;width:100%;max-width:250px;height:var(--appliance-illustration
           num('heater_threshold', 0, 15000, 10, 'W'), num('off_threshold', 0, 500, 0.5, 'W'),
           num('temp_max', 60, 140, 1, '°C'), num('temp_scale', 60, 150, 1, '°C'),
         ] },
-        { name: 'language', selector: { select: { options: Object.keys(T).map((value) => ({ value, label: { fr: 'Français', en: 'English', de: 'Deutsch', nb: 'Norsk bokmål', ro: 'Română', nl: 'Nederlands' }[value] || value })) } } },
+        { name: 'language', selector: { select: { options: Object.keys(T).map((value) => ({ value, label: { fr: 'Français', en: 'English', de: 'Deutsch', nb: 'Norsk bokmål', ro: 'Română', nl: 'Nederlands', ru: 'Русский' }[value] || value })) } } },
         { type: 'grid', name: '', schema: [
           bool('show_status'), bool('show_controls'), bool('show_temp'), bool('show_humidity'),
           bool('show_power'), bool('show_energy'), bool('show_cost'), bool('animations'),
         ] },
       ];
-      this._form.computeLabel = (s) => s.name;
+      this._form.computeLabel = (s) => window.applianceEditorLabel(s.name, this._hass);
     }
   }
   customElements.define(TAG + '-editor', ApplianceSaunaCardEditor);

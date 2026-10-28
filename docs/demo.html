@@ -93,7 +93,13 @@ const hass = () => ({
     // robots : les boutons Démarrer / Pause / Base changent l'état simulé
     const robot = { start: 'cleaning', start_mowing: 'mowing', pause: 'paused', return_to_base: 'returning', dock: 'returning' }[service];
     if (cur && robot && (domain === 'vacuum' || domain === 'lawn_mower')) { set(data.entity_id, robot); if (ROBOT_SEL[data.entity_id]) ROBOT_SEL[data.entity_id].value = robot; refresh(); }
-    if (cur && domain === 'cover') simCover(data.entity_id, service);
+    if (cur && domain === 'cover') simCover(data.entity_id, service, data);
+    // lumières : allumer / éteindre, et couleur choisie par la carte
+    if (cur && domain === 'light') {
+      const at = { ...cur.attributes, ...(data.rgb_color ? { rgb_color: data.rgb_color } : {}) };
+      set(data.entity_id, service === 'turn_off' ? 'off' : 'on', at); if (LIGHT_SEL[data.entity_id]) LIGHT_SEL[data.entity_id].value = states[data.entity_id].state; refresh();
+    }
+    if (cur && domain === 'homeassistant' && service !== 'toggle') { set(data.entity_id, service === 'turn_off' ? 'off' : 'on'); refresh(); }
     if (cur && domain === 'climate') {
       if (service === 'set_hvac_mode') { set(data.entity_id, data.hvac_mode); cur.attributes.hvac_action = data.hvac_mode === 'off' ? 'off' : 'heating'; }
       if (service === 'set_temperature') cur.attributes.temperature = data.temperature;
@@ -104,17 +110,21 @@ const hass = () => ({
 const refresh = () => { const h = hass(); cards.forEach((c) => (c.hass = h)); };
 // portails, barrière, garage : les boutons font bouger la cover simulée (position pas à pas si elle en a une)
 const COVER = {}, COVER_SEL = {};
-function simCover(id, service) {
+function simCover(id, service, data = {}) {
   const cur = states[id], a = cur.attributes, travel = a._travel || 8;
   clearInterval(COVER[id]); clearTimeout(COVER[id]);
   const done = (st) => { set(id, st); if (COVER_SEL[id]) COVER_SEL[id].value = st; refresh(); };
   if (service === 'stop_cover') { done(a.current_position === 0 ? 'closed' : 'open'); return; }
-  const up = service === 'open_cover';
+  if (service === 'set_cover_tilt_position') { a.current_tilt_position = data.tilt_position; refresh(); return; }
+  const target = service === 'set_cover_position' ? data.position : service === 'open_cover' ? 100 : 0;
+  const up = a.current_position == null ? service === 'open_cover' : target > a.current_position;
+  if (a.current_position != null && target === a.current_position) return;
   done(up ? 'opening' : 'closing');
   if (a.current_position == null) { COVER[id] = setTimeout(() => done(up ? 'open' : 'closed'), travel * 1000); return; }
   COVER[id] = setInterval(() => {
-    a.current_position = Math.max(0, Math.min(100, Math.round(a.current_position + (up ? 100 : -100) / travel)));
-    if (a.current_position === 0 || a.current_position === 100) { clearInterval(COVER[id]); done(a.current_position ? 'open' : 'closed'); } else refresh();
+    const np = Math.round(a.current_position + (up ? 100 : -100) / travel);
+    a.current_position = up ? Math.min(target, np) : Math.max(target, np);
+    if (a.current_position === target) { clearInterval(COVER[id]); done(a.current_position ? 'open' : 'closed'); } else refresh();
   }, 1000);
 }
 const COVER_STATES = [['closed', 'Fermé / Closed'], ['open', 'Ouvert / Open'], ['opening', 'Ouverture / Opening'], ['closing', 'Fermeture / Closing'], ['unavailable', 'Indisponible']];
@@ -685,8 +695,68 @@ const SCEN = [
       range(ctl, 'Puissance', 'sensor.underfloor_power', 0, 3000, 10, 1200, 'W', W);
       set('sensor.underfloor_energy', 9.4, KWH);
     } },
+  { kind: 'light-bulb', title: 'Ampoule', lang: true,
+    cfg: { entity: 'light.demo_light_bulb', entity_power: 'sensor.demo_light_bulb_power' },
+    build(ctl) { lightCtl(ctl, 'light.demo_light_bulb', 'sensor.demo_light_bulb_power', { brightness: 230, color_temp_kelvin: 2700 }); } },
+  { kind: 'color-bulb', title: 'Ampoule couleur', lang: true,
+    cfg: { entity: 'light.demo_color_bulb', entity_power: 'sensor.demo_color_bulb_power' },
+    build(ctl) { lightCtl(ctl, 'light.demo_color_bulb', 'sensor.demo_color_bulb_power', { brightness: 255, rgb_color: [255, 80, 200] }); } },
+  { kind: 'filament-bulb', title: 'Ampoule à filament', lang: true,
+    cfg: { entity: 'light.demo_filament_bulb', entity_power: 'sensor.demo_filament_bulb_power' },
+    build(ctl) { lightCtl(ctl, 'light.demo_filament_bulb', 'sensor.demo_filament_bulb_power', { brightness: 200 }); } },
+  { kind: 'pendant-light', title: 'Suspension', lang: true,
+    cfg: { entity: 'light.demo_pendant_light', entity_power: 'sensor.demo_pendant_light_power' },
+    build(ctl) { lightCtl(ctl, 'light.demo_pendant_light', 'sensor.demo_pendant_light_power', { brightness: 255, color_temp_kelvin: 3000 }); } },
+  { kind: 'pendant-cluster', title: 'Suspensions en grappe', lang: true,
+    cfg: { entity: 'light.demo_pendant_cluster', entity_power: 'sensor.demo_pendant_cluster_power' },
+    build(ctl) { lightCtl(ctl, 'light.demo_pendant_cluster', 'sensor.demo_pendant_cluster_power', { brightness: 220, color_temp_kelvin: 2600 }); } },
+  { kind: 'desk-lamp', title: 'Lampe de bureau', lang: true,
+    cfg: { entity: 'light.demo_desk_lamp', entity_power: 'sensor.demo_desk_lamp_power' },
+    build(ctl) { lightCtl(ctl, 'light.demo_desk_lamp', 'sensor.demo_desk_lamp_power', { brightness: 255, color_temp_kelvin: 4000 }); } },
+  { kind: 'floor-lamp', title: 'Lampadaire', lang: true,
+    cfg: { entity: 'light.demo_floor_lamp', entity_power: 'sensor.demo_floor_lamp_power' },
+    build(ctl) { lightCtl(ctl, 'light.demo_floor_lamp', 'sensor.demo_floor_lamp_power', { brightness: 210, color_temp_kelvin: 2700 }); } },
+  { kind: 'chandelier', title: 'Lustre', lang: true,
+    cfg: { entity: 'light.demo_chandelier', entity_power: 'sensor.demo_chandelier_power' },
+    build(ctl) { lightCtl(ctl, 'light.demo_chandelier', 'sensor.demo_chandelier_power', { brightness: 240 }); } },
+  { kind: 'garden-spotlight', title: 'Spot de jardin', lang: true,
+    cfg: { entity: 'light.demo_garden_spotlight', entity_power: 'sensor.demo_garden_spotlight_power' },
+    build(ctl) { lightCtl(ctl, 'light.demo_garden_spotlight', 'sensor.demo_garden_spotlight_power', { brightness: 255, rgb_color: [120, 190, 255] }); } },
+  { kind: 'christmas-tree', title: 'Sapin de Noël', lang: true,
+    cfg: { entity: 'light.demo_christmas_tree', entity_power: 'sensor.demo_christmas_tree_power' },
+    build(ctl) { lightCtl(ctl, 'light.demo_christmas_tree', 'sensor.demo_christmas_tree_power', { brightness: 255 }); } },
+  { kind: 'roller-shutter', title: 'Volet roulant', lang: true,
+    cfg: { entity: 'cover.demo_roller_shutter', entity_power: 'sensor.demo_roller_shutter_power', travel_time: 10 },
+    build(ctl) { shutterCtl(ctl, 'cover.demo_roller_shutter', 'sensor.demo_roller_shutter_power', 10, 40); } },
+  { kind: 'venetian-blind', title: 'Store vénitien', lang: true,
+    cfg: { entity: 'cover.demo_venetian_blind', entity_power: 'sensor.demo_venetian_blind_power', travel_time: 8 },
+    build(ctl) { shutterCtl(ctl, 'cover.demo_venetian_blind', 'sensor.demo_venetian_blind_power', 8, 0, 60); } },
+  { kind: 'swing-shutter', title: 'Volets battants', lang: true,
+    cfg: { entity: 'cover.demo_swing_shutter', entity_power: 'sensor.demo_swing_shutter_power', travel_time: 8 },
+    build(ctl) { shutterCtl(ctl, 'cover.demo_swing_shutter', 'sensor.demo_swing_shutter_power', 8, 100); } },
 ];
-const ROBOT_SEL = {};
+const ROBOT_SEL = {}, LIGHT_SEL = {};
+// volets : cover positionnable (et inclinable pour le store vénitien), moteur, soleil jour / nuit
+function shutterCtl(ctl, id, pw, travel, pos, tilt) {
+  cover(ctl, id, travel, true, pos > 0 ? 'open' : 'closed');
+  Object.assign(states[id].attributes, { current_position: pos, supported_features: tilt == null ? 15 : 255 }, tilt == null ? {} : { current_tilt_position: tilt });
+  select(ctl, 'Soleil', 'sun.sun', [['above_horizon', 'Jour / Day'], ['below_horizon', 'Nuit / Night']], 'above_horizon');
+  range(ctl, 'Puissance moteur', pw, 0, 300, 1, 0, 'W', W);
+}
+// lumières : état, luminosité et couleur simulés
+function lightCtl(ctl, id, pw, attrs) {
+  set(id, 'on', { ...attrs });
+  LIGHT_SEL[id] = select(ctl, 'État', id, [['on', 'Allumée / On'], ['off', 'Éteinte / Off']], 'on');
+  states[id].attributes = { ...attrs };
+  const lab = document.createElement('label'); lab.textContent = 'Luminosité';
+  const inp = Object.assign(document.createElement('input'), { type: 'range', min: 10, max: 255, value: attrs.brightness || 255 });
+  inp.oninput = () => { states[id].attributes.brightness = +inp.value; refresh(); };
+  const lab2 = document.createElement('label'); lab2.textContent = 'Couleur';
+  const col = Object.assign(document.createElement('input'), { type: 'color', value: '#ffc46b' });
+  col.oninput = () => { const v = col.value; states[id].attributes.rgb_color = [1, 3, 5].map((i) => parseInt(v.slice(i, i + 2), 16)); delete states[id].attributes.color_temp_kelvin; refresh(); };
+  ctl.append(lab, inp, document.createElement('span'), lab2, col, document.createElement('span'));
+  set(pw, 8.5, W);
+}
 
 // les cartes autonomes prennent leur langue dans l'option `language`, pas dans Home Assistant
 const scenCfg = (s) => ({ ...s.cfg, ...(s.lang ? { language: lang } : {}), ...(animations ? {} : { animations: false }) });
