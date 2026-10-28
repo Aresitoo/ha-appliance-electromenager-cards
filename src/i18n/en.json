@@ -205,7 +205,8 @@
     "flex_temp": "Flex zone",
     "f_flex_temperature": "Flex zone temperature sensor",
     "f_flex_max_temperature": "Alert flex zone above (°C)",
-    "f_illustration_size": "Illustration size"
+    "f_illustration_size": "Illustration size",
+    "f_transparent": "Transparent background"
   },
   "aquarium": {
     "power": "Power",
@@ -710,7 +711,8 @@
     "show_slider": "Show sliders",
     "show_tilt": "Show tilt",
     "image": "Your own image (URL)",
-    "illustration_size": "Illustration size"
+    "illustration_size": "Illustration size",
+    "transparent": "Transparent background"
   },
   "light": {
     "light_bulb": "Bulb",

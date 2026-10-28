@@ -62,7 +62,7 @@ cost: sensor.lave_linge_cout_jour
 
 **Zone flex du frigo** : `flex_temperature` (capteur) ajoute une tuile « Zone flex » pour le 3e compartiment à température réglable, et un petit écran sur la porte basse droite (`style: four_door`) ou le tiroir du haut (`style: french`) ; `flex_max_temperature` déclenche l'alerte « Trop chaud ».
 
-**Taille des cartes** : dans un tableau de bord en sections, toutes les cartes se redimensionnent à la souris, en largeur (dès 3 colonnes) et en hauteur. `illustration_size` (en %, 30 à 300, champ « Taille de l'illustration » de l'éditeur) agrandit ou réduit le dessin, sur toutes les cartes et dans tous les types de tableau de bord.
+**Taille des cartes** : dans un tableau de bord en sections, toutes les cartes se redimensionnent à la souris, en largeur (dès 3 colonnes) et en hauteur. `illustration_size` (en %, 30 à 300, champ « Taille de l'illustration » de l'éditeur) agrandit ou réduit le dessin, sur toutes les cartes et dans tous les types de tableau de bord. `transparent: true` (« Fond transparent » dans l'éditeur) retire le fond, l'ombre et la bordure de la carte, pour laisser voir le fond d'écran du tableau de bord.
 
 **Plusieurs appareils du même type** : chaque carte est indépendante (ses propres entités, son état, ses minuteries). Deux lave-linge ou plusieurs frigos peuvent cohabiter, il suffit de donner à chaque carte ses entités (et un `name`).
 

@@ -1,6 +1,7 @@
 {
 "common": {
 "f_illustration_size": "Størrelse på illustrasjonen",
+"f_transparent": "Gjennomsiktig bakgrunn",
 "flex_temp": "Fleksisone",
 "f_flex_temperature": "Temperatursensor fleksisone",
 "f_flex_max_temperature": "Varsle fleksisone over (°C)",
@@ -525,6 +526,7 @@
 },
 "editor": {
 "illustration_size": "Størrelse på illustrasjonen",
+"transparent": "Gjennomsiktig bakgrunn",
 "image": "Eget bilde (URL)",
 "sun_entity": "Sol-entitet (dag / natt)",
 "shutter_color": "Farge på skodden",

@@ -324,6 +324,7 @@ svg{display:block;width:100%;max-width:calc(230px * var(--illus-scale,1));height
         { name: 'name', selector: { text: {} } },
         { name: 'labels', selector: { object: {} } },
         { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
+        { name: 'transparent', selector: { boolean: {} } },
         ent('entity_status'), ent('entity_power', 'sensor'), ent('entity_energy', 'sensor'), ent('entity_cost', 'sensor'),
         { name: 'price_per_kwh', selector: { number: { min: 0, step: 0.0001, mode: 'box' } } },
         ent('entity_temp', 'sensor'), ent('entity_target_temp'), ent('entity_ph', 'sensor'), ent('entity_light'),
