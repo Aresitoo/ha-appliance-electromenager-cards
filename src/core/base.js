@@ -108,6 +108,28 @@ class ApplianceCardBase extends HTMLElement {
     this._render(this._compute());
   }
 
+  /* Cycle sur prise connectée : un simple dépassement de seuil ne suffit pas.
+     Une prise laisse passer des pics de quelques secondes même appareil éteint
+     (mesuré : 0 W au repos avec des pointes à 117 W), et un tambour inverter
+     descend sous le seuil plusieurs minutes en cours de cycle. On exige donc
+     start_delay secondes de puissance tenue pour démarrer, et stop_delay
+     secondes sous le seuil pour s'arrêter. */
+  _cycleLatch(above) {
+    const c = this._config;
+    const onMs = Math.max(0, (+(c.start_delay ?? 60)) * 1000);
+    const offMs = Math.max(0, (+(c.stop_delay ?? 600)) * 1000);
+    const now = Date.now();
+    if (above) {
+      if (this._cycHighSince == null) this._cycHighSince = now;
+      this._cycLastHigh = now;
+      if (!this._cycOn && now - this._cycHighSince >= onMs) this._cycOn = true;
+    } else {
+      this._cycHighSince = null;
+      if (this._cycOn && this._cycLastHigh != null && now - this._cycLastHigh >= offMs) this._cycOn = false;
+    }
+    return !!this._cycOn;
+  }
+
   /* ---------------- state model ---------------- */
   _compute() {
     const hass = this._hass, c = this._config, d = this._def, kind = this._kind;
@@ -167,7 +189,13 @@ class ApplianceCardBase extends HTMLElement {
     /* un état explicite (binary_sensor / input_boolean) prime sur la puissance : la prise peut être coupée alors que l'appareil tourne */
     const explicitState = !!main && ["input_boolean", "binary_sensor"].includes(domainOf(c.entity)) && !BAD.includes(String(main.state).toLowerCase());
     if (base === null && !pw && !pwS && ref) base = "unavailable";
-    const powered = watts !== null && watts > threshold;
+    const poweredRaw = watts !== null && watts > threshold;
+    /* cycle (lave-linge, sèche-linge, lave-vaisselle) : la puissance doit être tenue
+       pour démarrer et son absence tenue pour s'arrêter, sinon un pic de prise suffit
+       à animer une machine éteinte. Un état explicite (binary_sensor / input_boolean)
+       continue de prime sur la puissance. */
+    const cycleKind = ["washer", "dryer", "dishwasher"].includes(kind);
+    const powered = cycleKind && !explicitState ? this._cycleLatch(poweredRaw) : poweredRaw;
     if (base === "on" || base === null) {
       if (watts !== null) base = powered ? "running" : (base === "on" ? "standby" : "idle");
       else base = base === "on" ? "running" : "idle";
