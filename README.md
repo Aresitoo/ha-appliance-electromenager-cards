@@ -20,7 +20,7 @@ A simple smart plug with a power sensor is enough. Connected appliances can add 
 > - `drawer_freezer` LCD text moved to `y="18.5"`;
 > - washer, dryer and dishwasher default running threshold at `4 W`, so an inverter drum pause does not end a cycle.
 >
-> Install with HACS → ⋮ → *Custom repositories* → `https://github.com/Aresitoo/ha-appliance-electromenager-cards`, category **Dashboard**. Bug reports and new card ideas belong upstream in [skyrotter's issues](https://github.com/skyrotter/ha-appliance-electromenager-cards/issues), and the donation links below go to the original author, not to me.
+> Install with HACS → ⋮ → *Custom repositories* → `https://github.com/Aresitoo/ha-appliance-electromenager-cards`, category **Dashboard**. Bug reports and new card ideas belong upstream in [skyrotter's issues](https://github.com/skyrotter/ha-appliance-electromenager-cards/issues); the tracker here is only switched on because HACS' repository checks demand it, and the donation links below go to the original author, not to me.
 
 ## Installation
 

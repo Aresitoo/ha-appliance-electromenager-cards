@@ -20,7 +20,7 @@ Une simple prise connectée avec un capteur de puissance suffit. Les appareils c
 > - texte de l'afficheur `drawer_freezer` remonté à `y="18.5"` ;
 > - seuil de marche par défaut des lave-linge, sèche-linge et lave-vaisselle à `4 W`, pour qu'une pause du tambour ne termine pas le cycle.
 >
-> Installation : HACS → ⋮ → *Dépôts personnalisés* → `https://github.com/Aresitoo/ha-appliance-electromenager-cards`, catégorie **Dashboard**. Les rapports de bug et les idées de nouvelles cartes vont en amont, dans les [issues de skyrotter](https://github.com/skyrotter/ha-appliance-electromenager-cards/issues) ; les liens de don ci-dessous vont à l'auteur original, pas à moi.
+> Installation : HACS → ⋮ → *Dépôts personnalisés* → `https://github.com/Aresitoo/ha-appliance-electromenager-cards`, catégorie **Dashboard**. Les rapports de bug et les idées de nouvelles cartes vont en amont, dans les [issues de skyrotter](https://github.com/skyrotter/ha-appliance-electromenager-cards/issues) ; le tracker ici n'est activé que parce que les contrôles de dépôt de HACS l'exigent, et les liens de don ci-dessous vont à l'auteur original, pas à moi.
 
 ## Installation
 
