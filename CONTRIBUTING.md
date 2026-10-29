@@ -4,7 +4,7 @@ Thanks for helping! Bug reports, card ideas, translations and pull requests are 
 
 ## Ways to help
 
-- **Report a bug or suggest a card or style**: open an [issue](https://github.com/skyrotter/ha-appliance-electromenager-cards/issues/new/choose). For a new illustration, photos or product links help a lot.
+- **Report a bug or suggest a card or style**: open an [issue](https://github.com/Aresitoo/ha-appliance-electromenager-cards/issues/new/choose). For a new illustration, photos or product links help a lot.
 - **Translate**: add or improve a language in `src/i18n/`. English is the reference; missing keys fall back to English. See [Development and translations](docs/development.md).
 - **Share your dashboard**: a screenshot of the cards in your own Home Assistant is the best proof that they work.
 
