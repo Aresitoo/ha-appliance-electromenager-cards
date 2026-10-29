@@ -8,7 +8,7 @@
  */
 (() => {
 "use strict";
-const VERSION = "1.35.0";
+const VERSION = "1.35.3";
 
 /* ------------------------------------------------------------------ */
 /* i18n — strings live in src/i18n/<lang>.json, inlined by build.js    */
@@ -4196,8 +4196,9 @@ const SEL = {
   door: { entity: { domain: "binary_sensor" } },
   freezer_door: { entity: { domain: "binary_sensor" } },
   switch: { entity: { domain: ["switch", "input_boolean", "light"] } },
-  temperature: { entity: { domain: ["sensor", "input_number"], device_class: "temperature" } },
-  target_temperature: { entity: { domain: ["sensor", "input_number", "number"] } },
+  // climate / water_heater acceptés : la carte lit alors current_temperature / temperature (pas l'état, qui est un mode)
+  temperature: { entity: { filter: [{ domain: ["sensor", "input_number"], device_class: "temperature" }, { domain: ["climate", "water_heater"] }] } },
+  target_temperature: { entity: { domain: ["sensor", "input_number", "number", "climate", "water_heater"] } },
   freezer_temperature: { entity: { domain: "sensor", device_class: "temperature" } },
   flex_temperature: { entity: { domain: ["sensor", "climate"] } },
   power_level: { entity: { domain: ["sensor", "number", "input_number", "select", "input_select"] } },
@@ -10781,7 +10782,7 @@ svg{display:block;width:100%;max-width:calc(190px * var(--illus-scale,1));height
         ent('entity_status'), ent('entity_flame', 'binary_sensor'), ent('entity_power', 'sensor'), ent('entity_energy', 'sensor'),
         ent('entity_fuel_level', 'sensor'), ent('entity_fuel_used', 'sensor'), ent('entity_cost', 'sensor'),
         { name: 'price_per_liter', selector: { number: { min: 0, step: 0.0001, mode: 'box' } } },
-        ent('entity_temp', 'sensor'), ent('entity_flue_temp', 'sensor'), ent('entity_modulation', 'sensor'),
+        ent('entity_temp', ['sensor', 'climate', 'water_heater']), ent('entity_flue_temp', 'sensor'), ent('entity_modulation', 'sensor'),
         { type: 'grid', name: '', schema: [
           { name: 'threshold', selector: { number: { min: 0, max: 2000, step: 1, mode: 'box', unit_of_measurement: 'W' } } },
           { name: 'ignition_threshold', selector: { number: { min: 0, max: 2000, step: 1, mode: 'box', unit_of_measurement: 'W' } } },
@@ -11264,7 +11265,7 @@ svg{display:block;width:100%;max-width:calc(230px * var(--illus-scale,1));height
         { name: 'transparent', selector: { boolean: {} } },
         ent('entity_status'), ent('entity_power', 'sensor'), ent('entity_energy', 'sensor'), ent('entity_cost', 'sensor'),
         { name: 'price_per_kwh', selector: { number: { min: 0, step: 0.0001, mode: 'box' } } },
-        ent('entity_temp', 'sensor'), ent('entity_target_temp'), ent('entity_ph', 'sensor'), ent('entity_light'),
+        ent('entity_temp', ['sensor', 'climate', 'water_heater']), ent('entity_target_temp'), ent('entity_ph', 'sensor'), ent('entity_light'),
         { type: 'grid', name: '', schema: [
           num('filter_threshold', 0, 2000, 1, 'W'), num('jets_threshold', 0, 5000, 1, 'W'),
           num('heater_threshold', 0, 10000, 1, 'W'), num('power_max', 100, 10000, 10, 'W'),
@@ -12412,7 +12413,7 @@ svg{display:block;width:100%;max-width:calc(250px * var(--illus-scale,1));height
         { name: 'labels', selector: { object: {} } },
         { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
         { name: 'transparent', selector: { boolean: {} } },
-        ent('entity'), ent('entity_temp', 'sensor'), ent('entity_target_temp'), ent('entity_humidity', 'sensor'),
+        ent('entity'), ent('entity_temp', ['sensor', 'climate', 'water_heater']), ent('entity_target_temp'), ent('entity_humidity', 'sensor'),
         ent('entity_power', 'sensor'), ent('entity_energy', 'sensor'), ent('entity_cost', 'sensor'),
         { name: 'price_per_kwh', selector: { number: { min: 0, step: 0.0001, mode: 'box' } } },
         { type: 'grid', name: '', schema: [
@@ -13153,7 +13154,7 @@ svg{display:block;width:100%;max-width:calc(270px * var(--illus-scale,1));height
         { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
         { name: 'transparent', selector: { boolean: {} } },
         ent('entity'), ent('entity_power', 'sensor'), ent('entity_flow', 'sensor'), ent('entity_pressure', 'sensor'),
-        ent('entity_temp', 'sensor'), ent('entity_level', 'sensor'), ent('entity_fault', 'binary_sensor'), ent('entity_runtime', 'sensor'),
+        ent('entity_temp', ['sensor', 'climate', 'water_heater']), ent('entity_level', 'sensor'), ent('entity_fault', 'binary_sensor'), ent('entity_runtime', 'sensor'),
         ...(KINDS[this.kind].sump ? [ent('entity_float', 'binary_sensor'), ent('entity_starts', 'sensor')] : []),
         ent('entity_energy', 'sensor'), ent('entity_cost', 'sensor'),
         { name: 'price_per_kwh', selector: { number: { min: 0, step: 0.0001, mode: 'box' } } },
@@ -14657,7 +14658,7 @@ svg{display:block;width:100%;max-width:calc(270px * var(--illus-scale,1));height
         { name: 'labels', selector: { object: {} } },
         { name: 'illustration_size', selector: { number: { min: 30, max: 300, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
         { name: 'transparent', selector: { boolean: {} } },
-        ent('entity'), ent('entity_temp', 'sensor'), ent('entity_target_temp'), ent('entity_floor_temp', 'sensor'), ent('entity_water_temp', 'sensor'),
+        ent('entity'), ent('entity_temp', ['sensor', 'climate', 'water_heater']), ent('entity_target_temp'), ent('entity_floor_temp', 'sensor'), ent('entity_water_temp', 'sensor'),
         ent('entity_power', 'sensor'), ent('entity_energy', 'sensor'), ent('entity_cost', 'sensor'),
         { name: 'price_per_kwh', selector: { number: { min: 0, step: 0.0001, mode: 'box' } } },
         { name: 'heating_type', selector: { select: { options: ['water', 'electric'] } } },
@@ -15626,7 +15627,10 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--sh-move:var(--app
     _compute() {
       const c = this._c, s = this._st(c.entity);
       let st = 'unavailable', pos = NaN, tilt = NaN;
-      if (s && !/^(unavailable|unknown)$/i.test(String(s.state))) {
+      // unknown : HA ne connaît pas l'état (ex. après redémarrage), mais la cover reste pilotable
+      if (s && /^unknown$/i.test(String(s.state))) {
+        st = 'unknown';
+      } else if (s && !/^(unavailable|unknown)$/i.test(String(s.state))) {
         const v = String(s.state).toLowerCase(), a = s.attributes || {};
         st = ['open', 'closed', 'opening', 'closing'].includes(v) ? v : /^(on|true|1)$/.test(v) ? 'open' : 'closed';
         if (a.current_position != null && isFinite(Number(a.current_position))) pos = Math.max(0, Math.min(100, Number(a.current_position)));
@@ -15635,7 +15639,7 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--sh-move:var(--app
       const known = !isNaN(pos); // position réelle fournie par la cover
       // invert : cover qui remonte sa position à l'envers (fréquent avec Tuya), 0 = ouvert et 100 = fermé.
       // L'état HA en découle et est donc faux lui aussi : on le recalcule depuis la position corrigée.
-      if (c.invert && st !== 'unavailable') {
+      if (c.invert && st !== 'unavailable' && st !== 'unknown') {
         if (st === 'opening' || st === 'closing') st = st === 'opening' ? 'closing' : 'opening';
         else if (known) st = 'open';
         else st = st === 'open' ? 'closed' : 'open';
@@ -15671,7 +15675,7 @@ ha-card{display:block;padding:10px 12px 12px;overflow:hidden;--sh-move:var(--app
       const badge = r.getElementById('shbadge');
       const moving = st === 'opening' || st === 'closing';
       badge.textContent = st === 'partial' ? `${this._t('partial')} ${Math.round(pos)} %` : moving && known ? `${this._t(st)}… ${Math.round(pos)} %` : this._t(st);
-      badge.style.display = c.show_status === false ? 'none' : '';
+      badge.style.display = c.show_status === false || st === 'unknown' ? 'none' : '';
 
       // commandes et curseurs selon ce que la cover sait faire (supported_features)
       const isCover = (c.entity || '').startsWith('cover.');

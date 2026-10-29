@@ -14,8 +14,9 @@ const SEL = {
   door: { entity: { domain: "binary_sensor" } },
   freezer_door: { entity: { domain: "binary_sensor" } },
   switch: { entity: { domain: ["switch", "input_boolean", "light"] } },
-  temperature: { entity: { domain: ["sensor", "input_number"], device_class: "temperature" } },
-  target_temperature: { entity: { domain: ["sensor", "input_number", "number"] } },
+  // climate / water_heater acceptés : la carte lit alors current_temperature / temperature (pas l'état, qui est un mode)
+  temperature: { entity: { filter: [{ domain: ["sensor", "input_number"], device_class: "temperature" }, { domain: ["climate", "water_heater"] }] } },
+  target_temperature: { entity: { domain: ["sensor", "input_number", "number", "climate", "water_heater"] } },
   freezer_temperature: { entity: { domain: "sensor", device_class: "temperature" } },
   flex_temperature: { entity: { domain: ["sensor", "climate"] } },
   power_level: { entity: { domain: ["sensor", "number", "input_number", "select", "input_select"] } },
