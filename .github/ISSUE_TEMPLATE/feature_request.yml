@@ -1,0 +1,22 @@
+name: New card, style or feature
+description: Suggest an appliance, a layout or an option
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like to see?
+      description: Name the appliance or option. Photos or product links help a lot for a new illustration.
+    validations:
+      required: true
+  - type: textarea
+    id: entities
+    attributes:
+      label: Which entities do you have for it?
+      description: For example a smart plug power sensor, a status entity, a door sensor.
+  - type: checkboxes
+    id: pr
+    attributes:
+      label: Contribution
+      options:
+        - label: I could prepare a pull request (see CONTRIBUTING.md)

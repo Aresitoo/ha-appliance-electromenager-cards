@@ -3,11 +3,11 @@
 /* ------------------------------------------------------------------ */
 const CYCLE_FIELDS = ["entity", "power", "energy", "cost", "remaining", "progress", "program", "door", "switch"];
 const DEF = {
-  washer: { accent: "active", threshold: 10, heating_power: 1000, spin_power: 200, fields: CYCLE_FIELDS,
+  washer: { accent: "active", threshold: 4, heating_power: 1000, spin_power: 200, fields: CYCLE_FIELDS,
     keys: ["lave_linge", "lavelinge", "washing_machine", "washer", "machine_a_laver"] },
-  dryer: { accent: "active", threshold: 10, fields: CYCLE_FIELDS,
+  dryer: { accent: "active", threshold: 4, fields: CYCLE_FIELDS,
     keys: ["seche_linge", "sechelinge", "tumble_dryer", "dryer"] },
-  dishwasher: { accent: "active", threshold: 10, heating_power: 1000, fields: CYCLE_FIELDS,
+  dishwasher: { accent: "active", threshold: 4, heating_power: 1000, fields: CYCLE_FIELDS,
     keys: ["lave_vaisselle", "lavevaisselle", "dishwasher"] },
   water_heater: { accent: "heat", threshold: 50,
     fields: ["entity", "power", "power_solar", "energy", "energy_solar", "cost", "temperature", "target_temperature", "switch"],
@@ -70,7 +70,7 @@ const DEF = {
     fields: ["entity", "power", "energy", "cost", "temperature", "zone2_temperature", "door", "switch"],
     keys: ["cave_a_vin", "cave", "vin", "wine", "cellar", "wine_cooler", "wine_fridge", "vinotheque"] },
   fridge: { accent: "cold", threshold: 20,
-    fields: ["entity", "power", "energy", "cost", "temperature", "freezer_temperature", "door", "freezer_door", "switch"],
+    fields: ["entity", "power", "energy", "cost", "temperature", "freezer_temperature", "flex_temperature", "door", "freezer_door", "switch"],
     keys: ["refrigerateur", "frigo", "fridge", "refrigerator", "frigidaire"] },
   pellet_stove: { accent: "heat", threshold: 20,
     fields: ["entity", "power", "energy", "cost", "temperature", "target_temperature", "power_level", "pellet_level", "switch"],

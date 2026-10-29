@@ -93,9 +93,46 @@ const hass = () => ({
     // robots : les boutons Démarrer / Pause / Base changent l'état simulé
     const robot = { start: 'cleaning', start_mowing: 'mowing', pause: 'paused', return_to_base: 'returning', dock: 'returning' }[service];
     if (cur && robot && (domain === 'vacuum' || domain === 'lawn_mower')) { set(data.entity_id, robot); if (ROBOT_SEL[data.entity_id]) ROBOT_SEL[data.entity_id].value = robot; refresh(); }
+    if (cur && domain === 'cover') simCover(data.entity_id, service, data);
+    // lumières : allumer / éteindre, et couleur choisie par la carte
+    if (cur && domain === 'light') {
+      const at = { ...cur.attributes, ...(data.rgb_color ? { rgb_color: data.rgb_color } : {}) };
+      set(data.entity_id, service === 'turn_off' ? 'off' : 'on', at); if (LIGHT_SEL[data.entity_id]) LIGHT_SEL[data.entity_id].value = states[data.entity_id].state; refresh();
+    }
+    if (cur && domain === 'homeassistant' && service !== 'toggle') { set(data.entity_id, service === 'turn_off' ? 'off' : 'on'); refresh(); }
+    if (cur && domain === 'climate') {
+      if (service === 'set_hvac_mode') { set(data.entity_id, data.hvac_mode); cur.attributes.hvac_action = data.hvac_mode === 'off' ? 'off' : 'heating'; }
+      if (service === 'set_temperature') cur.attributes.temperature = data.temperature;
+      refresh();
+    }
   },
 });
 const refresh = () => { const h = hass(); cards.forEach((c) => (c.hass = h)); };
+// portails, barrière, garage : les boutons font bouger la cover simulée (position pas à pas si elle en a une)
+const COVER = {}, COVER_SEL = {};
+function simCover(id, service, data = {}) {
+  const cur = states[id], a = cur.attributes, travel = a._travel || 8;
+  clearInterval(COVER[id]); clearTimeout(COVER[id]);
+  const done = (st) => { set(id, st); if (COVER_SEL[id]) COVER_SEL[id].value = st; refresh(); };
+  if (service === 'stop_cover') { done(a.current_position === 0 ? 'closed' : 'open'); return; }
+  if (service === 'set_cover_tilt_position') { a.current_tilt_position = data.tilt_position; refresh(); return; }
+  const target = service === 'set_cover_position' ? data.position : service === 'open_cover' ? 100 : 0;
+  const up = a.current_position == null ? service === 'open_cover' : target > a.current_position;
+  if (a.current_position != null && target === a.current_position) return;
+  done(up ? 'opening' : 'closing');
+  if (a.current_position == null) { COVER[id] = setTimeout(() => done(up ? 'open' : 'closed'), travel * 1000); return; }
+  COVER[id] = setInterval(() => {
+    const np = Math.round(a.current_position + (up ? 100 : -100) / travel);
+    a.current_position = up ? Math.min(target, np) : Math.max(target, np);
+    if (a.current_position === target) { clearInterval(COVER[id]); done(a.current_position ? 'open' : 'closed'); } else refresh();
+  }, 1000);
+}
+const COVER_STATES = [['closed', 'Fermé / Closed'], ['open', 'Ouvert / Open'], ['opening', 'Ouverture / Opening'], ['closing', 'Fermeture / Closing'], ['unavailable', 'Indisponible']];
+function cover(ctl, id, travel, withPos, val) {
+  const attrs = { supported_features: withPos ? 15 : 11, _travel: travel, ...(withPos ? { current_position: val === 'open' ? 100 : 0 } : {}) };
+  COVER_SEL[id] = select(ctl, 'État', id, COVER_STATES, val, (v) => { clearInterval(COVER[id]); clearTimeout(COVER[id]); if (withPos && (v === 'open' || v === 'closed')) states[id].attributes.current_position = v === 'open' ? 100 : 0; });
+  states[id].attributes = attrs;
+}
 
 /* ---------- control widgets ---------- */
 const T_ = (fr, en) => (lang === 'fr' ? fr : en);
@@ -558,8 +595,168 @@ const SCEN = [
       select(ctl, 'Éclairage LED', 'light.spa', [['on', 'Allumé / On'], ['off', 'Éteint / Off']], 'on');
       set('sensor.spa_energy', 6.8, KWH);
     } },
+  { kind: 'barrier', title: 'Barrière levante', lang: true,
+    cfg: { entity: 'cover.barrier', entity_power: 'sensor.barrier_power', entity_energy: 'sensor.barrier_energy', price_per_kwh: 0.2, travel_time: 4 },
+    build(ctl) {
+      cover(ctl, 'cover.barrier', 4, false, 'closed');
+      range(ctl, 'Puissance moteur', 'sensor.barrier_power', 0, 300, 1, 3, 'W', W);
+      set('sensor.barrier_energy', 0.42, KWH);
+    } },
+  { kind: 'sliding-gate', title: 'Portail coulissant', lang: true,
+    cfg: { entity: 'cover.sliding_gate', entity_power: 'sensor.gate_power', entity_energy: 'sensor.gate_energy', price_per_kwh: 0.2, travel_time: 10 },
+    build(ctl) {
+      cover(ctl, 'cover.sliding_gate', 10, true, 'closed');
+      range(ctl, 'Puissance moteur', 'sensor.gate_power', 0, 400, 1, 4, 'W', W);
+      set('sensor.gate_energy', 1.3, KWH);
+    } },
+  { kind: 'swing-gate', title: 'Portail battant', lang: true,
+    cfg: { entity: 'cover.swing_gate', entity_power: 'sensor.swing_power', entity_energy: 'sensor.swing_energy', price_per_kwh: 0.2, travel_time: 8, leaves: 2 },
+    build(ctl) {
+      cover(ctl, 'cover.swing_gate', 8, false, 'closed');
+      range(ctl, 'Puissance moteur', 'sensor.swing_power', 0, 400, 1, 4, 'W', W);
+      set('sensor.swing_energy', 0.9, KWH);
+    } },
+  { kind: 'garage-door', title: 'Porte de garage', lang: true,
+    cfg: { entity: 'cover.garage', entity_power: 'sensor.garage_power', entity_energy: 'sensor.garage_energy', price_per_kwh: 0.2, travel_time: 10 },
+    build(ctl) {
+      cover(ctl, 'cover.garage', 10, true, 'closed');
+      range(ctl, 'Puissance moteur', 'sensor.garage_power', 0, 500, 1, 5, 'W', W);
+      set('sensor.garage_energy', 2.4, KWH);
+    } },
+  { kind: 'sauna', title: 'Sauna', lang: true,
+    cfg: { entity: 'climate.sauna', entity_temp: 'sensor.sauna_temp', entity_humidity: 'sensor.sauna_humidity', entity_power: 'sensor.sauna_power', entity_energy: 'sensor.sauna_energy', price_per_kwh: 0.2 },
+    build(ctl) {
+      select(ctl, 'Mode', 'climate.sauna', [['heat', 'Chauffe / Heat'], ['off', 'Arrêt / Off'], ['error', 'Défaut / Fault']], 'heat');
+      states['climate.sauna'].attributes = { temperature: 80, hvac_action: 'heating', min_temp: 40, max_temp: 110, target_temp_step: 1 };
+      range(ctl, 'Température cabine', 'sensor.sauna_temp', 15, 120, 1, 62, '°C', T);
+      range(ctl, 'Humidité', 'sensor.sauna_humidity', 0, 100, 1, 12, '%', { unit_of_measurement: '%' });
+      range(ctl, 'Puissance poêle', 'sensor.sauna_power', 0, 9000, 50, 6000, 'W', W);
+      set('sensor.sauna_energy', 18.5, KWH);
+    } },
+  { kind: 'water-pump', title: 'Pompe à eau', lang: true,
+    cfg: { entity: 'switch.water_pump', entity_power: 'sensor.water_pump_power', entity_flow: 'sensor.water_pump_flow', entity_pressure: 'sensor.water_pump_pressure', entity_level: 'sensor.rain_tank_level', entity_energy: 'sensor.water_pump_energy', price_per_kwh: 0.2 },
+    build(ctl) {
+      select(ctl, 'État', 'switch.water_pump', [['on', 'Marche / On'], ['off', 'Arrêt / Off']], 'on');
+      range(ctl, 'Débit', 'sensor.water_pump_flow', 0, 40, 0.5, 22, 'L/min', { unit_of_measurement: 'L/min' });
+      range(ctl, 'Pression', 'sensor.water_pump_pressure', 0, 6, 0.1, 2.8, 'bar', { unit_of_measurement: 'bar' });
+      range(ctl, 'Niveau cuve', 'sensor.rain_tank_level', 0, 100, 1, 64, '%', { unit_of_measurement: '%' });
+      range(ctl, 'Puissance', 'sensor.water_pump_power', 0, 1200, 10, 750, 'W', W);
+      set('sensor.water_pump_energy', 1.6, KWH);
+    } },
+  { kind: 'industrial-pump', title: 'Pompe industrielle', lang: true,
+    cfg: { entity: 'switch.process_pump', entity_power: 'sensor.process_pump_power', entity_flow: 'sensor.process_pump_flow', entity_pressure: 'sensor.process_pump_pressure', entity_temp: 'sensor.process_pump_motor_temp', entity_fault: 'binary_sensor.process_pump_fault', entity_runtime: 'sensor.process_pump_runtime', entity_energy: 'sensor.process_pump_energy', price_per_kwh: 0.2 },
+    build(ctl) {
+      select(ctl, 'État', 'switch.process_pump', [['on', 'Marche / On'], ['off', 'Arrêt / Off']], 'on');
+      select(ctl, 'Défaut', 'binary_sensor.process_pump_fault', [['off', 'Non / No'], ['on', 'Oui / Yes']], 'off');
+      range(ctl, 'Débit', 'sensor.process_pump_flow', 0, 12, 0.1, 8.4, 'm³/h', { unit_of_measurement: 'm³/h' });
+      range(ctl, 'Pression', 'sensor.process_pump_pressure', 0, 16, 0.1, 8.5, 'bar', { unit_of_measurement: 'bar' });
+      range(ctl, 'Temp. moteur', 'sensor.process_pump_motor_temp', 20, 110, 1, 62, '°C', T);
+      range(ctl, 'Puissance', 'sensor.process_pump_power', 0, 7500, 50, 5500, 'W', W);
+      set('sensor.process_pump_runtime', 6.4, { unit_of_measurement: 'h' }); set('sensor.process_pump_energy', 35.2, KWH);
+    } },
+  { kind: 'pool-robot', title: 'Robot de piscine', lang: true,
+    cfg: { entity: 'vacuum.pool_robot', entity_switch: 'switch.pool_robot_plug', entity_power: 'sensor.pool_robot_power', entity_filter: 'sensor.pool_robot_filter', entity_water_level: 'sensor.pool_water_level', entity_water_temp: 'sensor.pool_water_temp', entity_time: 'sensor.pool_robot_time_left', entity_mode: 'select.pool_robot_mode' },
+    build(ctl) {
+      set('vacuum.pool_robot', 'cleaning', { friendly_name: 'Robot piscine' });
+      ROBOT_SEL['vacuum.pool_robot'] = select(ctl, 'État', 'vacuum.pool_robot', [['cleaning', 'Nettoyage / Cleaning'], ['returning', 'Remontée / Coming up'], ['paused', 'En pause / Paused'], ['idle', 'Au repos / Idle'], ['error', 'Erreur / Error']], 'cleaning');
+      range(ctl, 'Filtre (saleté)', 'sensor.pool_robot_filter', 0, 100, 1, 35, '%', { unit_of_measurement: '%' });
+      range(ctl, 'Niveau d’eau', 'sensor.pool_water_level', 0, 100, 1, 90, '%', { unit_of_measurement: '%' });
+      range(ctl, 'Temps restant', 'sensor.pool_robot_time_left', 0, 180, 1, 95, 'min', { unit_of_measurement: 'min' });
+      select(ctl, 'Prise', 'switch.pool_robot_plug', [['on', 'Marche / On'], ['off', 'Arrêt / Off']], 'on');
+      range(ctl, 'Puissance', 'sensor.pool_robot_power', 0, 250, 5, 160, 'W', W);
+      set('sensor.pool_water_temp', 26.5, T); set('select.pool_robot_mode', 'Fond + parois');
+    } },
+  { kind: 'sump-pump', title: 'Pompe de relevage', lang: true,
+    cfg: { entity: 'switch.sump_pump', entity_power: 'sensor.sump_pump_power', entity_level: 'sensor.sump_pit_level', entity_float: 'binary_sensor.sump_high_float', entity_starts: 'sensor.sump_pump_starts_today', entity_energy: 'sensor.sump_pump_energy', price_per_kwh: 0.2 },
+    build(ctl) {
+      select(ctl, 'État', 'switch.sump_pump', [['on', 'Marche / On'], ['off', 'Arrêt / Off']], 'on');
+      range(ctl, 'Niveau fosse', 'sensor.sump_pit_level', 0, 100, 1, 45, '%', { unit_of_measurement: '%' });
+      select(ctl, 'Flotteur alarme', 'binary_sensor.sump_high_float', [['off', 'Bas / Low'], ['on', 'Haut / High']], 'off');
+      range(ctl, 'Puissance', 'sensor.sump_pump_power', 0, 800, 10, 420, 'W', W);
+      set('sensor.sump_pump_starts_today', 14, {}); set('sensor.sump_pump_energy', 0.35, KWH);
+    } },
+  { kind: 'ups', title: 'Onduleur', lang: true,
+    cfg: { entity: 'sensor.ups_status_data', entity_charge: 'sensor.ups_battery_charge', entity_runtime: 'sensor.ups_battery_runtime', entity_load: 'sensor.ups_load', entity_power: 'sensor.ups_power', entity_input_voltage: 'sensor.ups_input_voltage' },
+    build(ctl) {
+      select(ctl, 'Statut NUT', 'sensor.ups_status_data', [['OL', 'OL (secteur)'], ['OL CHRG', 'OL CHRG (charge)'], ['OB DISCHRG', 'OB (sur batterie)'], ['OB LB', 'OB LB (batterie faible)'], ['OL RB', 'OL RB (batterie à remplacer)'], ['OFF', 'OFF']], 'OL');
+      range(ctl, 'Batterie', 'sensor.ups_battery_charge', 0, 100, 1, 100, '%', { unit_of_measurement: '%', device_class: 'battery' });
+      range(ctl, 'Autonomie', 'sensor.ups_battery_runtime', 0, 7200, 60, 2460, 's', { unit_of_measurement: 's' }, (v) => `${Math.round(v / 60)} min`);
+      range(ctl, 'Charge', 'sensor.ups_load', 0, 100, 1, 34, '%', { unit_of_measurement: '%' });
+      range(ctl, 'Tension entrée', 'sensor.ups_input_voltage', 0, 250, 1, 231, 'V', { unit_of_measurement: 'V' });
+      set('sensor.ups_power', 145, W);
+    } },
+  { kind: 'underfloor-heating', title: 'Plancher chauffant', lang: true,
+    cfg: { entity: 'climate.underfloor', entity_floor_temp: 'sensor.floor_temp', entity_water_temp: 'sensor.underfloor_flow_temp', entity_power: 'sensor.underfloor_power', entity_energy: 'sensor.underfloor_energy', price_per_kwh: 0.2 },
+    build(ctl) {
+      select(ctl, 'Mode', 'climate.underfloor', [['heat', 'Chauffe / Heat'], ['off', 'Arrêt / Off']], 'heat');
+      states['climate.underfloor'].attributes = { current_temperature: 19.6, temperature: 21, hvac_action: 'heating', min_temp: 5, max_temp: 30, target_temp_step: 0.5 };
+      range(ctl, 'Température sol', 'sensor.floor_temp', 15, 35, 0.5, 25.5, '°C', T);
+      range(ctl, 'Départ eau', 'sensor.underfloor_flow_temp', 20, 55, 1, 34, '°C', T);
+      range(ctl, 'Puissance', 'sensor.underfloor_power', 0, 3000, 10, 1200, 'W', W);
+      set('sensor.underfloor_energy', 9.4, KWH);
+    } },
+  { kind: 'light-bulb', title: 'Ampoule', lang: true,
+    cfg: { entity: 'light.demo_light_bulb', entity_power: 'sensor.demo_light_bulb_power' },
+    build(ctl) { lightCtl(ctl, 'light.demo_light_bulb', 'sensor.demo_light_bulb_power', { brightness: 230, color_temp_kelvin: 2700 }); } },
+  { kind: 'color-bulb', title: 'Ampoule couleur', lang: true,
+    cfg: { entity: 'light.demo_color_bulb', entity_power: 'sensor.demo_color_bulb_power' },
+    build(ctl) { lightCtl(ctl, 'light.demo_color_bulb', 'sensor.demo_color_bulb_power', { brightness: 255, rgb_color: [255, 80, 200] }); } },
+  { kind: 'filament-bulb', title: 'Ampoule à filament', lang: true,
+    cfg: { entity: 'light.demo_filament_bulb', entity_power: 'sensor.demo_filament_bulb_power' },
+    build(ctl) { lightCtl(ctl, 'light.demo_filament_bulb', 'sensor.demo_filament_bulb_power', { brightness: 200 }); } },
+  { kind: 'pendant-light', title: 'Suspension', lang: true,
+    cfg: { entity: 'light.demo_pendant_light', entity_power: 'sensor.demo_pendant_light_power' },
+    build(ctl) { lightCtl(ctl, 'light.demo_pendant_light', 'sensor.demo_pendant_light_power', { brightness: 255, color_temp_kelvin: 3000 }); } },
+  { kind: 'pendant-cluster', title: 'Suspensions en grappe', lang: true,
+    cfg: { entity: 'light.demo_pendant_cluster', entity_power: 'sensor.demo_pendant_cluster_power' },
+    build(ctl) { lightCtl(ctl, 'light.demo_pendant_cluster', 'sensor.demo_pendant_cluster_power', { brightness: 220, color_temp_kelvin: 2600 }); } },
+  { kind: 'desk-lamp', title: 'Lampe de bureau', lang: true,
+    cfg: { entity: 'light.demo_desk_lamp', entity_power: 'sensor.demo_desk_lamp_power' },
+    build(ctl) { lightCtl(ctl, 'light.demo_desk_lamp', 'sensor.demo_desk_lamp_power', { brightness: 255, color_temp_kelvin: 4000 }); } },
+  { kind: 'floor-lamp', title: 'Lampadaire', lang: true,
+    cfg: { entity: 'light.demo_floor_lamp', entity_power: 'sensor.demo_floor_lamp_power' },
+    build(ctl) { lightCtl(ctl, 'light.demo_floor_lamp', 'sensor.demo_floor_lamp_power', { brightness: 210, color_temp_kelvin: 2700 }); } },
+  { kind: 'chandelier', title: 'Lustre', lang: true,
+    cfg: { entity: 'light.demo_chandelier', entity_power: 'sensor.demo_chandelier_power' },
+    build(ctl) { lightCtl(ctl, 'light.demo_chandelier', 'sensor.demo_chandelier_power', { brightness: 240 }); } },
+  { kind: 'garden-spotlight', title: 'Spot de jardin', lang: true,
+    cfg: { entity: 'light.demo_garden_spotlight', entity_power: 'sensor.demo_garden_spotlight_power' },
+    build(ctl) { lightCtl(ctl, 'light.demo_garden_spotlight', 'sensor.demo_garden_spotlight_power', { brightness: 255, rgb_color: [120, 190, 255] }); } },
+  { kind: 'christmas-tree', title: 'Sapin de Noël', lang: true,
+    cfg: { entity: 'light.demo_christmas_tree', entity_power: 'sensor.demo_christmas_tree_power' },
+    build(ctl) { lightCtl(ctl, 'light.demo_christmas_tree', 'sensor.demo_christmas_tree_power', { brightness: 255 }); } },
+  { kind: 'roller-shutter', title: 'Volet roulant', lang: true,
+    cfg: { entity: 'cover.demo_roller_shutter', entity_power: 'sensor.demo_roller_shutter_power', travel_time: 10 },
+    build(ctl) { shutterCtl(ctl, 'cover.demo_roller_shutter', 'sensor.demo_roller_shutter_power', 10, 40); } },
+  { kind: 'venetian-blind', title: 'Store vénitien', lang: true,
+    cfg: { entity: 'cover.demo_venetian_blind', entity_power: 'sensor.demo_venetian_blind_power', travel_time: 8 },
+    build(ctl) { shutterCtl(ctl, 'cover.demo_venetian_blind', 'sensor.demo_venetian_blind_power', 8, 0, 60); } },
+  { kind: 'swing-shutter', title: 'Volets battants', lang: true,
+    cfg: { entity: 'cover.demo_swing_shutter', entity_power: 'sensor.demo_swing_shutter_power', travel_time: 8 },
+    build(ctl) { shutterCtl(ctl, 'cover.demo_swing_shutter', 'sensor.demo_swing_shutter_power', 8, 100); } },
 ];
-const ROBOT_SEL = {};
+const ROBOT_SEL = {}, LIGHT_SEL = {};
+// volets : cover positionnable (et inclinable pour le store vénitien), moteur, soleil jour / nuit
+function shutterCtl(ctl, id, pw, travel, pos, tilt) {
+  cover(ctl, id, travel, true, pos > 0 ? 'open' : 'closed');
+  Object.assign(states[id].attributes, { current_position: pos, supported_features: tilt == null ? 15 : 255 }, tilt == null ? {} : { current_tilt_position: tilt });
+  select(ctl, 'Soleil', 'sun.sun', [['above_horizon', 'Jour / Day'], ['below_horizon', 'Nuit / Night']], 'above_horizon');
+  range(ctl, 'Puissance moteur', pw, 0, 300, 1, 0, 'W', W);
+}
+// lumières : état, luminosité et couleur simulés
+function lightCtl(ctl, id, pw, attrs) {
+  set(id, 'on', { ...attrs });
+  LIGHT_SEL[id] = select(ctl, 'État', id, [['on', 'Allumée / On'], ['off', 'Éteinte / Off']], 'on');
+  states[id].attributes = { ...attrs };
+  const lab = document.createElement('label'); lab.textContent = 'Luminosité';
+  const inp = Object.assign(document.createElement('input'), { type: 'range', min: 10, max: 255, value: attrs.brightness || 255 });
+  inp.oninput = () => { states[id].attributes.brightness = +inp.value; refresh(); };
+  const lab2 = document.createElement('label'); lab2.textContent = 'Couleur';
+  const col = Object.assign(document.createElement('input'), { type: 'color', value: '#ffc46b' });
+  col.oninput = () => { const v = col.value; states[id].attributes.rgb_color = [1, 3, 5].map((i) => parseInt(v.slice(i, i + 2), 16)); delete states[id].attributes.color_temp_kelvin; refresh(); };
+  ctl.append(lab, inp, document.createElement('span'), lab2, col, document.createElement('span'));
+  set(pw, 8.5, W);
+}
 
 // les cartes autonomes prennent leur langue dans l'option `language`, pas dans Home Assistant
 const scenCfg = (s) => ({ ...s.cfg, ...(s.lang ? { language: lang } : {}), ...(animations ? {} : { animations: false }) });

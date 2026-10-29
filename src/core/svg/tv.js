@@ -1,9 +1,28 @@
-SVG.tv = () => `
+/* style de télé : murale (défaut, rien autour), sur pied central, sur deux pieds */
+const tvStyle = (c) => ({ wall: "wall", mural: "wall", stand: "stand", pied: "stand", base: "stand", feet: "feet", pieds: "feet", legs: "feet" }[String(c?.style || "wall").toLowerCase()] || "wall");
+const TV_STAND = {
+  wall: "",
+  // pied central trapézoïdal
+  stand: `
+<ellipse cx="60" cy="113.5" rx="30" ry="2.6" fill="url(#ID-shadow)"/>
+<rect x="53" y="102" width="14" height="7" fill="#15181d"/>
+<path d="M40 113l5-5h30l5 5z" fill="#0b0d10" stroke="#2c3138" stroke-width=".5"/>
+<path d="M45 108h30" stroke="#fff" stroke-opacity=".18" stroke-width=".6"/>`,
+  // deux pieds inclinés aux extrémités
+  feet: `
+<ellipse cx="60" cy="108.5" rx="46" ry="2.4" fill="url(#ID-shadow)"/>
+<path d="M13 102l-5 5.6q-.8 1 .5 1h10.5q1.5 0 2-1l3.5-5.6z" fill="#0b0d10" stroke="#2c3138" stroke-width=".5"/>
+<path d="M107 102l5 5.6q.8 1-.5 1h-10.5q-1.5 0-2-1l-3.5-5.6z" fill="#0b0d10" stroke="#2c3138" stroke-width=".5"/>`,
+};
+
+SVG.tv = (c) => `
 <defs>${DEFS}<clipPath id="ID-scr"><rect x="4" y="38" width="112" height="63" rx="1"/></clipPath>
 <linearGradient id="ID-off" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1b2027"/><stop offset=".6" stop-color="#0a0c0f"/><stop offset="1" stop-color="#14181d"/></linearGradient>
 <linearGradient id="ID-hero" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0f5a73"/><stop offset=".55" stop-color="#3b2a7a"/><stop offset="1" stop-color="#0f1420"/></linearGradient>
 <linearGradient id="ID-fade" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#0f1420" stop-opacity=".95"/><stop offset=".6" stop-color="#0f1420" stop-opacity="0"/></linearGradient>
+<linearGradient id="ID-gloss" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".16"/><stop offset=".7" stop-color="#fff" stop-opacity="0"/></linearGradient>
 <linearGradient id="ID-logo" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#38e1ff"/><stop offset="1" stop-color="#8a5cff"/></linearGradient></defs>
+${TV_STAND[tvStyle(c)]}
 <rect x="2.5" y="36.5" width="115" height="66" rx="2" fill="#0b0d10" stroke="#2c3138" stroke-width=".7"/>
 <rect x="4" y="38" width="112" height="63" rx="1" fill="url(#ID-off)"/>
 <g clip-path="url(#ID-scr)">
@@ -48,5 +67,6 @@ SVG.tv = () => `
   <rect class="tv-flash" x="4" y="38" width="112" height="63" fill="#eef6ff"/>
 </g>
 <path d="M4 38L46 38L4 78z" fill="#fff" opacity=".06"/>
+<path class="tv-gloss" d="M4 38L78 38L30 101H4z" fill="url(#ID-gloss)"/>
 <rect x="4" y="38" width="112" height="63" rx="1" fill="none" stroke="#000" stroke-opacity=".5"/>
 <circle class="tv-led" cx="60" cy="101.8" r=".7"/>`;

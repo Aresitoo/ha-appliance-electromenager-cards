@@ -15,6 +15,8 @@
 .tv-boot .tv-content { animation: tv-reveal 3.2s both; }
 .tv-flash { opacity: 0; transform-box: view-box; transform-origin: 60px 69.5px; }
 .tv-shut .tv-flash { animation: tv-shut .9s ease-in both; }
+.tv-gloss { transition: opacity .5s; }
+.k-tv.st-screen_on .tv-gloss { opacity: .35; }
 .tv-led { fill: #3a2222; transition: fill .4s; }
 .k-tv.st-standby .tv-led { fill: #ff3b30; filter: drop-shadow(0 0 1.2px #ff3b30); }
 .k-tv.st-screen_on .tv-led { fill: #ffffff; opacity: .45; }

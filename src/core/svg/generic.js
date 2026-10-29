@@ -1,6 +1,8 @@
 /* Carte générique : l'utilisateur fournit sa propre image (option `image`) */
 SVG.generic = (c = {}) => {
-  const src = String((c && c.image) || "").trim();
+  // `images` (liste conditionnelle) : on part de la première ; la carte choisit ensuite selon l'état
+  const list = Array.isArray(c && c.images) ? c.images.filter((i) => i && i.image) : [];
+  const src = String((c && c.image) || (list[0] && list[0].image) || "").trim();
   const art = src
     ? `<image class="gn-img" href="${esc(src)}" x="4" y="6" width="112" height="124" preserveAspectRatio="xMidYMid meet"/>`
     // pas d'image : pictogramme de prise pour inviter à renseigner `image`

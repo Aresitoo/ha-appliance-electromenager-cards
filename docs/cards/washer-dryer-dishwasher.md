@@ -1,5 +1,24 @@
 # Smart plug + cycle detection (recommended for washer, dryer, dishwasher)
 
+## Quick start: a smart plug is enough
+
+A smart plug with a power sensor is all you need. No helper, no automation:
+
+```yaml
+type: custom:appliance-dryer-card   # or appliance-washer-card / appliance-dishwasher-card
+power: sensor.dryer_plug_power
+energy: sensor.dryer_plug_energy_today   # optional
+```
+
+How the card reads the power:
+- **Running**: power is above `threshold` (**10 W by default** for washer, dryer and dishwasher).
+- **Idle**: power is at or below `threshold`. If your plug itself draws a few watts, or the appliance sits at more than 10 W in standby, raise it: `threshold: 15`. Check your plug's power history to choose the value.
+- The dryer shows **Drying** while it runs (the phase detection below only applies to washers and dishwashers).
+
+The rest of this page is only needed if the card flickers during a cycle.
+
+## Cycle detection (stops the flicker)
+
 A washer pauses, soaks and heats in steps: its power can drop to a few watts for several minutes in the middle of a cycle. Reading raw power alone makes the card flicker between *Running* and *Standby*. This automation fixes that. It decides a cycle has **started** when power stays above 100 W for 30 s, and that it has **ended** when power stays below 20 W for 8 minutes.
 
 **1. Create the helper:** Settings → Devices & services → Helpers → Create helper → Toggle → name it `Washer running` (entity `input_boolean.washer_running`). Or in YAML:
@@ -61,21 +80,30 @@ power: sensor.washer_plug_power
 energy: sensor.washer_plug_energy_today
 ```
 
-Suggested values: washer 100 W / 20 W / 8 min, dryer 100 W / 15 W / 5 min, dishwasher 50 W / 10 W / 10 min (dishwashers sit at a few watts while drying). Adjust them to your appliance by looking at its power history. Requires Home Assistant 2024.10 or newer for the `triggers:` / `actions:` syntax; on older versions, use `trigger:` / `platform:` / `action:` / `service:`.
+Suggested values for the automation (start above / end below / end delay): washer 100 W / 20 W / 8 min, dryer 100 W / 15 W / 5 min, dishwasher 50 W / 10 W / 10 min (dishwashers sit at a few watts while drying). Adjust them to your appliance by looking at its power history.
+
+For a dryer, use the same automation with its own plug and helper (`input_boolean.dryer_running`), then:
+
+```yaml
+type: custom:appliance-dryer-card
+entity: input_boolean.dryer_running
+power: sensor.dryer_plug_power
+energy: sensor.dryer_plug_energy_today
+``` Requires Home Assistant 2024.10 or newer for the `triggers:` / `actions:` syntax; on older versions, use `trigger:` / `platform:` / `action:` / `service:`.
 
 
 
 
-### Automatic cycle phase detection from power draw
+### Automatic cycle phase detection from power draw (washer and dishwasher)
 
-When monitoring an appliance through a smart plug without a smart cloud integration, the card automatically infers the cycle phase from live wattage:
+When the appliance has no smart integration that reports its program, the card infers the cycle phase from the live power. A phase given by a status or program entity (for example Home Connect) always takes priority. This applies to **washers and dishwashers only**: a dryer shows *Drying* while it runs.
 
-- **Heating (`heat`)**: power $\ge$ `heating_power` (default: `1000` W). The wash water heating element is active (shows steam and warm glow on dishwasher).
-- **Spinning (`spin`)**: power $\ge$ `spin_power` (default: `200` W on washing machines).
-- **Washing (`wash`)**: normal wash agitation (circulation pump / drum agitation).
-- **Drying (`dry`)**: on dishwashers, when power drops below 15 W during an active cycle (e.g. door auto-release air-dry).
+- **Heating (`heat`)**: power ≥ `heating_power` (default `1000` W). The heating element is on (steam and a warm glow on the dishwasher).
+- **Spinning (`spin`)**: on washers, power ≥ `spin_power` (default `200` W).
+- **Washing (`wash`)**: any other power above `threshold`.
+- **Drying (`dry`)**: on dishwashers, when power falls to `threshold` or less (10 W by default) within 20 minutes after the cycle was active. The card keeps this memory in the browser, so it is lost when you reload the page.
 
-You can customize the power thresholds in YAML if your appliance runs at different wattages:
+You can change the power thresholds if your appliance runs at different wattages:
 
 ```yaml
 type: custom:appliance-washer-card
